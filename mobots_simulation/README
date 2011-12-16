@@ -1,4 +1,5 @@
-zuerst 'rosmake mobots_simulation' ausführen
+zuallererst 'rospack profile' ausführen, um die package liste neu zu indizieren. Damit mobots_simulation übernommen wird, muss der übergeordnete Ordner im ROS PATH sein.
+dann 'rosmake mobots_simulation' ausführen
 dann 'rosrun mobots_simulation launchwrapper.sh' startet den ganzen fladen
 evtl. müssen zuvor noch pakete installiert werden..
 
