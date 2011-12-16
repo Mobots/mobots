@@ -1,0 +1,19 @@
+<package>
+  <description brief="mobots_simulation">
+
+     mobots_simulation
+
+  </description>
+  <author>jonas</author>
+  <license>roflcopter</license>
+  <review status="unreviewed" notes=""/>
+  <url>https://github.com/Mobots/mobots</url>
+	<depend package="roscpp" />
+	<depend package="gazebo" />
+	<depend package="erratic_teleop" />
+	<depend package="image_view" />
+	<depend package="gazebo_msgs" />
+
+</package>
+
+

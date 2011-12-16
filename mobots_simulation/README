@@ -1,0 +1,7 @@
+zuerst 'rosmake mobots_simulation' ausführen
+dann 'rosrun mobots_simulation launchwrapper.sh' startet den ganzen fladen
+evtl. müssen zuvor noch pakete installiert werden..
+
+Momentan fährt der mit "w" leider immer in globale x-Richtung,
+wenn man die referenz von "Welt" auf "mobot" stellt, klappt es auch nicht wirklich.
+Da muss man noch rumprobieren.
