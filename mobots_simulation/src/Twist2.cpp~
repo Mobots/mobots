@@ -1,5 +1,0 @@
-#include <geometry_msgs/Twist.h>
-#include "Twist2.h"
-
-class Twist2 : public geometry_msgs::Twist{
-}
