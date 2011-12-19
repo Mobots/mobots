@@ -1,0 +1,14 @@
+<package>
+  <description brief="david_sim">
+
+     david_sim
+
+  </description>
+  <author>David</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/david_sim</url>
+
+</package>
+
+
