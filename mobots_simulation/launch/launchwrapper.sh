@@ -4,8 +4,8 @@ trap "killall python; killall image_view; killall gazebo;" INT HUP TERM
 roscore &
 sleep 2
 rosrun image_view image_view image:=/my_cam/image &
-xterm -e rosrun erratic_teleop erratic_keyboard_teleop &
-rosrun mobots_simulation mobots_teleop_bridge &
+xterm -e rosrun mobots_simulation keyboard & #_walk_vel:=0.1 _run_vel:=0.5 &
+rosrun mobots_simulation mobots_teleop_bridge _walk_vel:=0.01 _run_vel:=0.5 &
 rosparam load $(rospack find mobots_simulation)/models/gazebo_camera.urdf test_cam
 roslaunch mobots_simulation streetmap.launch &
 gazebo_pid=$(echo $!)

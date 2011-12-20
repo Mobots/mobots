@@ -18,9 +18,6 @@ void teleopCallback(const geometry_msgs::Twist &twistMsg){
 	modelState.reference_frame = std::string("world"); 
 
 	modelState.twist = twistMsg;
-	modelState.twist.linear.x /= 2;
-	modelState.twist.linear.y /= 2;
-	modelState.twist.angular.z *= 0.1;
 
 	modelState.pose = getState.response.pose;
 	
