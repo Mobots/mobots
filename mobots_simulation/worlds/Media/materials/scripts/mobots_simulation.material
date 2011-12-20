@@ -1,0 +1,41 @@
+material MobotsSimulation/Bremen
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+         texture bremen_openstreetmaps.png
+      }
+    }
+  }
+}
+
+material MobotsSimulation/Toronto
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+         texture toronto_gmaps.png
+      }
+    }
+  }
+}
+
+material MobotsSimulation/Tehran
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+         texture pocket_map_of_tehran.jpg
+      }
+    }
+  }
+}
