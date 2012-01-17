@@ -27,9 +27,9 @@
 
   <link name="camera">
     <visual>
-      <origin xyz="0 0 0" rpy="0 1.57079633 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <box size="0.1 0.1 0.1" />
+        <box size="0.1 0.1 0.05" />
       </geometry>
     </visual>
 
@@ -50,6 +50,7 @@
   </link>
 
   <joint name="base_to_camera" type="fixed">
+	<origin xyz="0 0 0" rpy="0.0 1.57 0.0" />
     <parent link="base_link"/>
     <child link="camera"/>
   </joint>
@@ -61,10 +62,10 @@
       <hfov>90</hfov>
       <nearClip>0.01</nearClip>
       <farClip>100</farClip>
-      <updateRate>20.0</updateRate>
+      <updateRate>0.05</updateRate>
       <controller:gazebo_ros_camera name="camera_controller" plugin="libgazebo_ros_camera.so">
         <alwaysOn>true</alwaysOn>
-        <updateRate>20.0</updateRate>
+        <updateRate>0.05</updateRate>
         <imageTopicName>my_cam/image</imageTopicName>
         <frameName>deine mudda</frameName>
         <interface:camera name="camera_iface" />

@@ -13,6 +13,7 @@
   <depend package="erratic_teleop" />
   <depend package="image_view" />
   <depend package="gazebo_msgs" />
+	<depend package="cv_bridge" />
 
   <export>
     <gazebo gazebo_media_path="${prefix}/worlds" />

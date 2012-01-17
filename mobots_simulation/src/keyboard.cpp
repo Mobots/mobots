@@ -43,6 +43,8 @@
 #define KEYCODE_A 0x61
 #define KEYCODE_S 0x73
 #define KEYCODE_D 0x64
+#define KEYCODE_LEFT 0x6a
+#define KEYCODE_RIGHT 0x6b
 
 #define KEYCODE_A_CAP 0x41
 #define KEYCODE_D_CAP 0x44
@@ -54,7 +56,7 @@ class ErraticKeyboardTeleopNode
     private:
         double walk_vel_;
         double run_vel_;
-        //double yaw_rate_;
+        double yaw_rate_;
         //double yaw_rate_run_;
         
         geometry_msgs::Twist cmdvel_;
@@ -69,7 +71,7 @@ class ErraticKeyboardTeleopNode
             ros::NodeHandle n_private("~");
             n_private.param("walk_vel", walk_vel_, 0.5);
             n_private.param("run_vel", run_vel_, 1.0);
-            //n_private.param("yaw_rate", yaw_rate_, 1.0);
+            n_private.param("yaw_rate", yaw_rate_, 0.5);
             //n_private.param("yaw_rate_run", yaw_rate_run_, 1.5);
         }
         
@@ -80,6 +82,7 @@ class ErraticKeyboardTeleopNode
         {
             cmdvel_.linear.x = 0.0;
             cmdvel_.linear.y = 0.0;
+				cmdvel_.angular.z = 0.0;
             pub_.publish(cmdvel_);
         }
 };
@@ -114,6 +117,7 @@ void ErraticKeyboardTeleopNode::keyboardLoop()
     bool dirty = false;
     int speed = 0;
     int turn = 0;
+	 int real_turn = 0; //lol
     
     // get the console in raw mode
     tcgetattr(kfd, &cooked);
@@ -124,8 +128,9 @@ void ErraticKeyboardTeleopNode::keyboardLoop()
     tcsetattr(kfd, TCSANOW, &raw);
     
     puts("Reading from keyboard");
-    puts("Use WASD keys to control the robot");
+    puts("Use WASD keys to navigate along global x/y axis");
     puts("Press Shift to move faster");
+	 puts("Use J/K to turn around");
     
     struct pollfd ufd;
     ufd.fd = kfd;
@@ -168,12 +173,14 @@ void ErraticKeyboardTeleopNode::keyboardLoop()
                 max_tv = walk_vel_;
                 speed = 1;
                 turn = 0;
+					 real_turn = 0;
                 dirty = true;
                 break;
             case KEYCODE_S:
                 max_tv = walk_vel_;
                 speed = -1;
                 turn = 0;
+					 real_turn = 0;
                 dirty = true;
                 break;
             case KEYCODE_A:
@@ -181,49 +188,67 @@ void ErraticKeyboardTeleopNode::keyboardLoop()
                 speed = 0;
                 turn = 1;
                 dirty = true;
+					 real_turn = 0;
                 break;
             case KEYCODE_D:
                 max_rv = walk_vel_;
                 speed = 0;
                 turn = -1;
                 dirty = true;
+					 real_turn = 0;
                 break;
                 
             case KEYCODE_W_CAP:
                 max_tv = run_vel_;
                 speed = 1;
-                //turn = 0;
+                turn = 0;
                 dirty = true;
+					 real_turn = 0;
                 break;
             case KEYCODE_S_CAP:
                 max_tv = run_vel_;
                 speed = -1;
                 turn = 0;
                 dirty = true;
+					 real_turn = 0;
                 break;
             case KEYCODE_A_CAP:
                 max_rv = run_vel_;
                 speed = 0;
                 turn = 1;
                 dirty = true;
+					 real_turn = 0;
                 break;
             case KEYCODE_D_CAP:
                 max_rv = run_vel_;
                 speed = 0;
                 turn = -1;
                 dirty = true;
+					 real_turn = 0;
                 break;
-                
+            case KEYCODE_LEFT:
+					real_turn = 1;
+					speed = 0;
+					turn = 0;
+					dirty = true;					
+					break;
+            case KEYCODE_RIGHT:
+					real_turn = -1;
+					speed = 0;
+					turn = 0;
+					dirty = true;					
+					break;
             default:
                 max_tv = walk_vel_;
-                //max_rv = yaw_rate_;
+                max_rv = walk_vel_;
                 speed = 0;
                 turn = 0;
+					 real_turn = 0;
                 dirty = false;
         }
-        
         cmdvel_.linear.x = speed * max_tv;
         cmdvel_.linear.y = turn * max_rv;
+        cmdvel_.angular.z = real_turn * yaw_rate_;
         pub_.publish(cmdvel_);
     }
 }
