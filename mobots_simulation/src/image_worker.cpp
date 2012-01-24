@@ -22,18 +22,19 @@ int main(int argc, char **argv){
 
 void imageCallback(const sensor_msgs::ImageConstPtr &msg){
 	cv_bridge::CvImagePtr cv_ptr;
+	cv_bridge::CvImagePtr p2;
 	try{
-		cv_ptr = cv_bridge::toCvCopy(msg);
+		cv_ptr = cv_bridge::toCvCopy(msg, "mono8");
+		p2 = cv_bridge::toCvCopy(msg);
 	}catch(cv_bridge::Exception &e){
 		ROS_ERROR("cv_bridge exception: %s", e.what());	
 	}
 	double time = (double)cv::getTickCount();
-	cv::ORB detector;
+	//cv::FAST detector;
 	std::vector<cv::KeyPoint> keypoints;
 	cv::Mat mask;
-	detector(cv_ptr->image, mask, keypoints);
+	cv::FAST(cv_ptr->image, keypoints, 1);
 	time = ((double)cv::getTickCount() - time)/cv::getTickFrequency();
-	//cv::Mat out;
-	cv::drawKeypoints(cv_ptr->image, keypoints, cv_ptr->image);
-	image_pub.publish(cv_ptr->toImageMsg());
+	cv::drawKeypoints(p2->image, keypoints, p2->image);
+	image_pub.publish(p2->toImageMsg());
 }

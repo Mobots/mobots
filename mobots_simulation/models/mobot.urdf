@@ -5,7 +5,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://mobots_simulation/models/mobot.stl" scale="0.01 0.01 0.01" />
+        <cylinder length="0.01" radius="0.1"/>
       </geometry>
     </visual>
 
@@ -29,7 +29,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <box size="0.1 0.1 0.05" />
+        <box size="0.02 0.1 0.1" />
       </geometry>
     </visual>
 
@@ -62,10 +62,10 @@
       <hfov>90</hfov>
       <nearClip>0.01</nearClip>
       <farClip>100</farClip>
-      <updateRate>0.05</updateRate>
+      <updateRate>20</updateRate>
       <controller:gazebo_ros_camera name="camera_controller" plugin="libgazebo_ros_camera.so">
         <alwaysOn>true</alwaysOn>
-        <updateRate>0.05</updateRate>
+        <updateRate>20</updateRate>
         <imageTopicName>my_cam/image</imageTopicName>
         <frameName>deine mudda</frameName>
         <interface:camera name="camera_iface" />
