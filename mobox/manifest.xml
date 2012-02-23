@@ -1,0 +1,17 @@
+<package>
+  <description brief="mobox">
+
+     mobox
+
+  </description>
+  <author>David Weigel</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/mobox</url>
+
+  <depend package="roscpp" />
+  <depend package="image_view" />
+
+</package>
+
+
