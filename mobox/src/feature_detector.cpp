@@ -15,7 +15,7 @@ image_transport::Subscriber image_sub;
 image_transport::Publisher image_pub;
 FeatureDetector *detector;
 int frameCount;
-int msecs;
+double time;
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "feature_detector");
@@ -28,6 +28,8 @@ int main(int argc, char **argv) {
   dynamic_reconfigure::Server<mobox::DetectorConfig> server;
   server.setCallback(configureCallback);
   detector = new OrbFeatureDetector;
+  
+  time = (double)getTickCount();
 
   ros::spin();
 }
@@ -57,17 +59,15 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg) {
     ROS_ERROR("cv_bridge exception: %s", e.what());
   }
   std::vector<KeyPoint> keypoints;
-  double time = (double)getTickCount();
   detector->detect(cv_ptr->image, keypoints);
-  time = ((double)getTickCount() - time)*1000/getTickFrequency();
   drawKeypoints(p2->image, keypoints, p2->image, Scalar(50, 50));
   image_pub.publish(p2->toImageMsg());
   
-  msecs += time;
+  double timeDiff = ((double)getTickCount() - time)*1000/getTickFrequency();
   frameCount++;
-  if(msecs >= 1000){
+  if(timeDiff >= 1000){
     ROS_INFO("Currently processing %i images per second", frameCount);
-    msecs = 0;
+    time = (double)getTickCount();
     frameCount = 0;    
   }
 }

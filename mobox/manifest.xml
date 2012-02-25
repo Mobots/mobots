@@ -11,6 +11,7 @@
 
   <depend package="roscpp" />
   <depend package="image_view" />
+  <depend package="dynamic_reconfigure" />
 
 </package>
 

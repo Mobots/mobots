@@ -1,6 +1,6 @@
 #!/bin/sh
 #export OGRE_RTT_MODE=Copy #bug workaround
-trap "killall python; killall image_view; killall gazebo; exit" INT HUP TERM 
+trap "killall python; killall image_view; killall gazebo; \n" INT HUP TERM 
 
 roscore &
 roscore_pid=$(echo $!)
