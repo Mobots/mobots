@@ -15,7 +15,7 @@ image_transport::Subscriber image_sub;
 image_transport::Publisher image_pub;
 FeatureDetector *detector;
 int frameCount;
-double time;
+double time1;
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "feature_detector");
@@ -24,12 +24,12 @@ int main(int argc, char **argv) {
 
   image_sub = it.subscribe("/usb_cam/image_raw", 10, imageCallback);
   image_pub = it.advertise("/my_cam/featured", 10);
-  
+
   dynamic_reconfigure::Server<mobox::DetectorConfig> server;
   server.setCallback(configureCallback);
   detector = new OrbFeatureDetector;
-  
-  time = (double)getTickCount();
+
+  time1 = (double)getTickCount();
 
   ros::spin();
 }
@@ -62,12 +62,12 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg) {
   detector->detect(cv_ptr->image, keypoints);
   drawKeypoints(p2->image, keypoints, p2->image, Scalar(50, 50));
   image_pub.publish(p2->toImageMsg());
-  
-  double timeDiff = ((double)getTickCount() - time)*1000/getTickFrequency();
+
+  double timeDiff = ((double)getTickCount() - time1)*1000/getTickFrequency();
   frameCount++;
   if(timeDiff >= 1000){
     ROS_INFO("Currently processing %i images per second", frameCount);
-    time = (double)getTickCount();
-    frameCount = 0;    
+    time1 = (double)getTickCount();
+    frameCount = 0;
   }
 }
