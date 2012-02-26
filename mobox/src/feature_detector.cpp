@@ -1,3 +1,5 @@
+#include <cstdio>
+
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
@@ -12,10 +14,12 @@ void imageCallback(const sensor_msgs::ImageConstPtr&);
 void configureCallback(const mobox::DetectorConfig&, uint32_t);
 
 image_transport::Subscriber image_sub;
+
 image_transport::Publisher image_pub;
 FeatureDetector *detector;
 int frameCount;
 double time1;
+int currentFPS;
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "feature_detector");
@@ -27,7 +31,7 @@ int main(int argc, char **argv) {
 
   dynamic_reconfigure::Server<mobox::DetectorConfig> server;
   server.setCallback(configureCallback);
-  detector = new OrbFeatureDetector;
+  detector = new FastFeatureDetector;
 
   time1 = (double)getTickCount();
 
@@ -61,12 +65,16 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg) {
   std::vector<KeyPoint> keypoints;
   detector->detect(cv_ptr->image, keypoints);
   drawKeypoints(p2->image, keypoints, p2->image, Scalar(50, 50));
+  char fps[8]; //3 zahlen, leerzeichen, fps und \0
+  sprintf(fps, "%i fps", currentFPS);
+  putText(p2->image, std::string(fps), Point(400, 70), 0, (double)1.5, Scalar(50, 50));
   image_pub.publish(p2->toImageMsg());
 
   double timeDiff = ((double)getTickCount() - time1)*1000/getTickFrequency();
   frameCount++;
   if(timeDiff >= 1000){
-    ROS_INFO("Currently processing %i images per second", frameCount);
+    currentFPS = frameCount;
+    //ROS_INFO("Currently processing %i images per second", frameCount);
     time1 = (double)getTickCount();
     frameCount = 0;
   }
