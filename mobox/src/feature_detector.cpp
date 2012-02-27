@@ -17,6 +17,7 @@ image_transport::Subscriber image_sub;
 
 image_transport::Publisher image_pub;
 FeatureDetector *detector;
+DescriptorExtractor *extractor;
 int frameCount;
 double time1;
 int currentFPS;
@@ -32,6 +33,7 @@ int main(int argc, char **argv) {
   dynamic_reconfigure::Server<mobox::DetectorConfig> server;
   server.setCallback(configureCallback);
   detector = new FastFeatureDetector;
+  extractor = new SiftDescriptorExtractor;
 
   time1 = (double)getTickCount();
 
@@ -40,16 +42,17 @@ int main(int argc, char **argv) {
 
 void configureCallback(const mobox::DetectorConfig &newConfig, uint32_t level){
   delete detector;
+  delete extractor;
   switch(newConfig.detector){
-    case 0: detector = new FastFeatureDetector; break;
-    case 1: detector = new StarFeatureDetector; break;
-    case 2: detector = new SiftFeatureDetector; break;
-    case 3: detector = new SurfFeatureDetector; break;
-    case 4: detector = new OrbFeatureDetector; break;
-    case 5: detector = new MserFeatureDetector; break;
-    case 6: detector = new GoodFeaturesToTrackDetector; break;
-    case 7: detector = new DenseFeatureDetector; break;
-    case 8: detector = new SimpleBlobDetector; break;
+    case 0: detector = new FastFeatureDetector;  extractor = new SiftDescriptorExtractor; break;
+    case 1: detector = new StarFeatureDetector;  extractor = new SiftDescriptorExtractor; break;
+    case 2: detector = new SiftFeatureDetector;  extractor = new SiftDescriptorExtractor; break;
+    case 3: detector = new SurfFeatureDetector;  extractor = new SurfDescriptorExtractor; break;
+    case 4: detector = new OrbFeatureDetector;  extractor = new OrbDescriptorExtractor; break;
+    case 5: detector = new MserFeatureDetector;  extractor = new SiftDescriptorExtractor; break;
+    case 6: detector = new GoodFeaturesToTrackDetector;  extractor = new SiftDescriptorExtractor; break;
+    case 7: detector = new DenseFeatureDetector;  extractor = new SiftDescriptorExtractor; break;
+    case 8: detector = new SimpleBlobDetector;  extractor = new SiftDescriptorExtractor; break;
   }
 }
 
@@ -64,6 +67,8 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg) {
   }
   std::vector<KeyPoint> keypoints;
   detector->detect(cv_ptr->image, keypoints);
+  //Mat descriptors;
+  //extractor->compute(cv_ptr->image, keypoints, descriptors);
   drawKeypoints(p2->image, keypoints, p2->image, Scalar(50, 50));
   char fps[8]; //3 zahlen, leerzeichen, fps und \0
   sprintf(fps, "%i fps", currentFPS);
