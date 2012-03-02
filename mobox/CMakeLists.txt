@@ -34,4 +34,5 @@ rosbuild_find_ros_package(dynamic_reconfigure)
 include(${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
 gencfg()
 
+rosbuild_add_executable(mouse_node src/mouse.cpp)
 rosbuild_add_executable(feature_detector src/feature_detector.cpp)
