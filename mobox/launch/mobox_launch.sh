@@ -6,10 +6,11 @@ roscore &
 roscore_pid=$(echo $!)
 sleep 2
 
-rosrun usb_cam usb_cam_node _video_device:="/dev/video1" _pixel_format:="yuyv"&
+rosrun usb_cam usb_cam_node _video_device:="/dev/video0" _pixel_format:="yuyv"&
 rosrun mobox feature_detector &
 rosrun image_view image_view image:=/usb_cam/image_raw &
 rosrun image_view image_view image:=/my_cam/featured &
 roslaunch mobots_simulation mobots_world.launch &
 rosrun gazebo spawn_model -file $(rospack find mobox)/models/mobot.urdf -urdf -model mobot -z 0.3
+#rosrun mobox mouse_node
 wait $roscore_pid
