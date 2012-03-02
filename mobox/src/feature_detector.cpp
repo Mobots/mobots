@@ -27,13 +27,13 @@ int main(int argc, char **argv) {
   ros::NodeHandle nh;
   image_transport::ImageTransport it(nh);
 
-  image_sub = it.subscribe("/usb_cam/image_raw", 10, imageCallback);
-  image_pub = it.advertise("/my_cam/featured", 10);
+  image_sub = it.subscribe("/usb_cam/image_raw", 2, imageCallback);
+  image_pub = it.advertise("/my_cam/featured", 2);
 
   dynamic_reconfigure::Server<mobox::DetectorConfig> server;
   server.setCallback(configureCallback);
-  detector = new FastFeatureDetector;
-  extractor = new SiftDescriptorExtractor;
+  detector = new OrbFeatureDetector;
+  extractor = new OrbDescriptorExtractor;
 
   time1 = (double)getTickCount();
 
@@ -67,12 +67,12 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg) {
   }
   std::vector<KeyPoint> keypoints;
   detector->detect(cv_ptr->image, keypoints);
-  //Mat descriptors;
-  //extractor->compute(cv_ptr->image, keypoints, descriptors);
+  Mat descriptors;
+  extractor->compute(cv_ptr->image, keypoints, descriptors);
   drawKeypoints(p2->image, keypoints, p2->image, Scalar(50, 50));
   char fps[8]; //3 zahlen, leerzeichen, fps und \0
   sprintf(fps, "%i fps", currentFPS);
-  putText(p2->image, std::string(fps), Point(400, 70), 0, (double)1.5, Scalar(50, 50));
+  putText(p2->image, std::string(fps), Point(400, 70), 0, (double)1.7, Scalar(150, 50));
   image_pub.publish(p2->toImageMsg());
 
   double timeDiff = ((double)getTickCount() - time1)*1000/getTickFrequency();
