@@ -3,12 +3,12 @@
 #include <signal.h>
 #include <unistd.h>
 #include <ros/ros.h>
-#include <gazebo_msgs/ModelState.h>
+/*#include <gazebo_msgs/ModelState.h>
 #include <gazebo_msgs/SetModelState.h>
 #include <gazebo_msgs/GetModelState.h>
 
 ros::ServiceClient gazeboSetClient;
-ros::ServiceClient gazeboGetClient;
+ros::ServiceClient gazeboGetClient;*/
 
 void handleSignal(int signal){
   exit(0);
@@ -17,11 +17,11 @@ void handleSignal(int signal){
 int main(int argc, char **argv){
   ros::init(argc, argv, "mouse_node");
   
-  ros::NodeHandle n;
+  /*ros::NodeHandle n;
   gazeboSetClient = n.serviceClient<gazebo_msgs::SetModelState>("/gazebo/set_model_state");
   gazeboSetClient.waitForExistence();
   gazeboGetClient = n.serviceClient<gazebo_msgs::GetModelState>("/gazebo/get_model_state", true);
-  gazeboGetClient.waitForExistence();
+  gazeboGetClient.waitForExistence();*/
   
   FILE *fmouse;
   char b[3];
@@ -42,8 +42,8 @@ int main(int argc, char **argv){
     yo=(b[0]&128)>0;
     xd=b[1];
     yd=b[2];
-    printf("xd=%d yd=%d\n", xd, yd);
-    gazebo_msgs::GetModelState getState;
+    printf("xdelta = %d ydelta = %d\n", xd, yd);
+    /*gazebo_msgs::GetModelState getState;
     getState.request.model_name = std::string("mobot");
     getState.request.relative_entity_name = std::string("world");
     gazeboGetClient.call(getState);
@@ -54,14 +54,16 @@ int main(int argc, char **argv){
 
     modelState.twist.linear.x = double(xd); //b[1];
     modelState.twist.linear.y = double(yd); //b[2];
-	 modelState.twist.linear.z = 0;
-
+    modelState.twist.linear.z = 0;
+    modelState.twist.angular.x = 0;
+    modelState.twist.angular.y = 0;
+    modelState.twist.angular.z = 0;
+    
     modelState.pose = getState.response.pose;
     
     gazebo_msgs::SetModelState setModelState; 
     setModelState.request.model_state = modelState;
-    gazeboSetClient.call(setModelState);  
-	 sleep(1);
+    gazeboSetClient.call(setModelState);*/
   }
   fclose(fmouse);
 }

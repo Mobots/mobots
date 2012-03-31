@@ -21,6 +21,8 @@ DescriptorExtractor *extractor;
 int frameCount;
 double time1;
 int currentFPS;
+double timeCount;
+double currentTime;
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "feature_detector");
