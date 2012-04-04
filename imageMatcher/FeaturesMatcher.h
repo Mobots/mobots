@@ -32,5 +32,5 @@ class GpuFeaturesMatcher : public FeaturesMatcher{
 public:
   virtual ~GpuFeaturesMatcher(){}
   GpuFeaturesMatcher(){}
-  virtual void findDelta(const ImageFeatures& img1, const ImageFeatures& img2, Delta& delta) const;
+  virtual void findDelta(const ImageFeatures& img1, const ImageFeatures& img2, Delta& delta) const{}
 };
