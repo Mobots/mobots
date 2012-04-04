@@ -27,23 +27,31 @@ int main(int argc, char **argv){
   matcher->findDelta(features1, features2, delta);
   cout << "deltaX " << delta.x << endl;
   cout << "deltaY " << delta.y << endl;
+  
   cout << "rot " << delta.theta << endl;
+  //delta.theta = 0;
   int maxSize2 = sqrt(image2.cols*image2.cols + image2.rows*image2.rows);
   int maxWidth = max(image1.cols, maxSize2) + abs(delta.x);
   int maxHeight = max(image1.rows, maxSize2) + abs(delta.y);
   int centerX = maxWidth/2;
   int centerY = maxHeight/2;
   Mat result;
-  result.create(Size(900, 900), CV_MAKETYPE(image1.depth(), 3));
-  Mat outImg1 = result(Rect(0, 0, image1.cols, image1.rows));
+  result.create(Size(1400, 1400), CV_MAKETYPE(image1.depth(), 3));
+  Mat outImg1 = result(Rect_<double>(delta.x, 0, image1.cols, image1.rows));
+  //Mat outImg12 = result(Rect_<double>(delta.x, max(image1.rows, image2.rows), image1.cols, image1.rows));
+  
   cout << maxWidth << "w " << maxHeight << "h" << endl;
   cout << centerX-image1.cols/2+delta.x << "x " << centerY-image1.rows/2+delta.y << " y" << endl;
   cout << maxSize2 << "width " << maxSize2 << "height" << endl;
-  Mat outImg2 = result(Rect(delta.x, image1.rows, maxSize2, maxSize2));
+  
+  Mat outImg2 = result(Rect_<double>(0, 0, maxSize2, maxSize2));
+  //Mat outImg22 = result(Rect_<double>(0, max(image1.rows, image2.rows), maxSize2, maxSize2));
   Point2f center(image2.cols/2, image2.rows/2);
-  Mat rotMat = getRotationMatrix2D(center, delta.theta, 1.0);
-  warpAffine(image2, outImg2, rotMat, outImg2.size(), INTER_LINEAR, BORDER_TRANSPARENT);
+  Mat rotMat = getRotationMatrix2D(center, 30, 1.0);
   image1.copyTo(outImg1);
+  warpAffine(image2, outImg2, rotMat, outImg2.size(), INTER_LINEAR, BORDER_TRANSPARENT);
+  //warpAffine(image2, outImg22, rotMat, outImg2.size(), INTER_LINEAR, BORDER_TRANSPARENT);
+  //image1.copyTo(outImg12);
   imshow("result", result);
   waitKey(0);
 }

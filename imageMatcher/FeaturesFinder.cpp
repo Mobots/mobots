@@ -1,7 +1,9 @@
 #include <opencv2/gpu/gpumat.hpp>
+#include <iostream>
 
 #include "FeaturesFinder.h"
 
+using namespace std;
 using namespace cv::gpu;
 
 void assertGpu(){
@@ -9,7 +11,8 @@ void assertGpu(){
   if(cudaCnt < 1){
     stringstream ss;
     ss << "[GPU] cuda card count " << cudaCnt;
-    throw ss.str();
+    cerr << ss.str() << endl;
+    exit(1);
   }
 }
 
@@ -24,13 +27,14 @@ GpuFeaturesFinder::GpuFeaturesFinder(){
 
 void SurfGpuFeaturesFinder::findFeatures(const cv::Mat& image, ImageFeatures& features)const{
   //requires grayscale
-  
-  /*GpuMat keypoints;
+  SURF_GPU detector(600); 
+  GpuMat gpuImage;
+  gpuImage.upload(image);
+  GpuMat keypoints;
   GpuMat descriptors;
-  detector(image, GpuMat(), keypoints);
-  detector(image, GpuMat(), keypoints, descriptors, true); //true?
+  detector(gpuImage, GpuMat(), keypoints, descriptors); //true?
   detector.downloadKeypoints(keypoints, features.keypoints);
-  descriptors.download(features.descriptors);*/
+  descriptors.download(features.descriptors);
 }
 
 
