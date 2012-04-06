@@ -1,0 +1,19 @@
+<package>
+  <description brief="Custom messages for the MoBots project.">
+
+     The package mobots_msgs contains ROS message types, which are used
+     in the MoBots project.
+
+  </description>
+  <author>David Weigel</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/mobots_msgs</url>
+
+  <depend package="sensor_msgs"/> <!-- for Image.msg -->
+  <depend package="geometry_msgs"/> <!-- for Pose.msg -->
+  <!-- Or is the frame in the Image Header maybe enough (instead of Pose)? -->
+
+</package>
+
+
