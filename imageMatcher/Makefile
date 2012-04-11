@@ -13,7 +13,7 @@ CFLAGS = -Wall
 
 # define any directories containing header files other than /usr/include
 #
-INCLUDES = 
+INCLUDES = -I/usr/local/include/opencv -I/usr/include/opencv
 
 # define library paths in addition to /usr/lib
 #   if I wanted to include libraries not in /usr/lib I'd specify
@@ -23,8 +23,9 @@ INCLUDES =
 # define any libraries to link into executable:
 #   if I want to link in libraries (libx.so or libx.a) I use the -llibname 
 #   option, something like (this will link in libmylib.so and libm.so:
-LIBS = -lopencv_gpu
-OPENCV_LIBS = `pkg-config opencv --cflags --libs`
+OPENCV_LIBS = -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_ml -lopencv_video \
+-lopencv_features2d -lopencv_calib3d -lopencv_objdetect -lopencv_contrib -lopencv_legacy \
+-lopencv_flann -lopencv_gpu
 # define the C source files
 SRCS = testFeatures.cpp FeaturesFinder.cpp FeaturesMatcher.cpp
 
@@ -52,7 +53,7 @@ MAIN = testFeatures
 all:    $(MAIN)
 
 $(MAIN): $(OBJS) 
-	$(CC) $(CFLAGS) $(INCLUDES) -o $(MAIN) $(OBJS) $(LIBS) $(OPENCV_LIBS)
+	$(CC) $(CFLAGS) $(INCLUDES) -o $(MAIN) $(OBJS) $(OPENCV_LIBS)
 
 # this is a suffix replacement rule for building .o's from .c's
 # it uses automatic variables $<: the name of the prerequisite of
