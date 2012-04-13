@@ -1,5 +1,6 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
+#include "mobots_msgs/MobotImagePose.h"
 
 /**
  * This server is used to check if the toro_client.cpp works.
@@ -22,7 +23,7 @@ int main(int argc, char **argv)
 		msg.format = ss.str();
 		msg.mobotID = count;
 		
-		ROS_INFO("MobotID: %s / format: %s", msg.mobotID, msg.format.c_str());
+		ROS_INFO("MobotID: %s", msg.mobotID);
 		
 		pub.publish(msg);
 		

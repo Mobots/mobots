@@ -1,14 +1,14 @@
 <package>
   <description brief="toro_wrapper">
 
-     toro_wrapper
+     toro_wrapper is a wrapper for the TORO tool. It accepts images with pose and robotID information. It returns the list of images of a robot with pose.
 
   </description>
   <author>Moritz Ulmer</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/toro_wrapper</url>
-
+  <url>http://pc3.bime.de/dokuwiki/doku.php</url>
+  <depend package="std_msgs"/>
+  <depend package="roscpp"/>
+  <depend package="mobots_msgs">
 </package>
-
-
