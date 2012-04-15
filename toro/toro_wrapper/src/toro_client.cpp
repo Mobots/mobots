@@ -7,7 +7,7 @@
  */
 void imageHandler(const mobots_msgs::MobotImagePose::ConstPtr& msg)
 {
-	ROS_INFO("MobotID: %i", msg->mobotID);
+-	ROS_INFO("MobotID: %i / Header: %i - %s / image: %s", msg->mobotID, msg->header.seq, msg->header.frame_id, msg->imagePose.image.encoding);
 }
 
 /**
