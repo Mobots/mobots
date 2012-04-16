@@ -9,6 +9,7 @@ using namespace std;
 
 Mat image1; //for debug
 Mat image2;
+Mat aff;
 
 inline double toDegree(double rad){
   return rad * 180 / 3.14159265;
@@ -30,8 +31,11 @@ int main(int argc, char **argv){
   cvtColor(image1, image1Gray, CV_RGB2GRAY); //FeatureDetecter etc. arbeiten alle auf Graustufenbildern
   cvtColor(image2, image2Gray, CV_RGB2GRAY);
   double time = (double)getTickCount();
-  Ptr<FeaturesFinder> finder = new SurfFeaturesFinder();
-  Ptr<FeaturesMatcher> matcher = new CpuFeaturesMatcher(CpuFeaturesMatcher::SURF_DEFAULT);
+  Ptr<FeaturesFinder> finder = new SurfFeaturesFinder(400, 3, 4,
+		     4, 2, false);
+  /*ORB::CommonParams params;
+  Ptr<FeaturesFinder> finder = new OrbFeaturesFinder(700, params);*/
+  Ptr<FeaturesMatcher> matcher = new CpuFeaturesMatcher("FlannBased");
   ImageFeatures features1;
   ImageFeatures features2;
   ImageMatchResult matchResult;
@@ -46,7 +50,8 @@ int main(int argc, char **argv){
   Mat outImg2 = result(Rect(0, 0, image2.cols, image2.rows));
   image2.copyTo(outImg2);
   //without INTER_CUBIC the result looks like shit if there is a rotation, but it could be expensive
-  warpPerspective(image1, result, matchResult.H, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  
+  warpPerspective(image1, result, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
   cout << "time in s: " << ((double)getTickCount() - time)/getTickFrequency() << endl;
   imshow("result", result);
   imwrite("out.png", result);

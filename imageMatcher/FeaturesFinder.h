@@ -46,6 +46,20 @@ public:
   ~SurfFeaturesFinder(){}
 };
 
+class FastFeaturesFinder : public CpuFeaturesFinder{
+public:
+  /**
+   * first half of the arguments are for detector, second half for extractor
+   */
+  FastFeaturesFinder(int threshold=1, bool nonmaxSuppression=true,
+		     int nOctaves = 4, int nOctaveLayers = 2, bool extended = false){
+    set(new FastFeatureDetector(threshold, nonmaxSuppression), 
+      new SurfDescriptorExtractor(nOctaves, nOctaveLayers, extended));
+  }
+  ~FastFeaturesFinder(){}
+};
+
+
 class OrbFeaturesFinder : public CpuFeaturesFinder{
 public:
   OrbFeaturesFinder(size_t n_features = 700, ORB::CommonParams params = ORB::CommonParams()){
