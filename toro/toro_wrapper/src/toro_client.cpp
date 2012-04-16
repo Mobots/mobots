@@ -5,9 +5,9 @@
 /**
  * The imageHandler method.
  */
-void imageHandler(const boost::shared_ptr<Message const>& msg)
+void imageHandler(const mobots_msgs::MobotImagePose::ConstPtr& msg)
 {
-	ROS_INFO("MobotID: %s", msg->mobotID);
+-	ROS_INFO("MobotID: %i / Header: %i - %s / image: %s", msg->mobotID, msg->header.seq, msg->header.frame_id, msg->imagePose.image.encoding);
 }
 
 /**
@@ -20,6 +20,7 @@ int main(int argc, char **argv)
 	ros::NodeHandle handle;
 	// The topic name is mobot_image_pose
 	ros::Subscriber sub = handle.subscribe("mobot_image_pose", 1000, imageHandler);
+	ROS_INFO("Check: Spin-pre");
 	ros::spin();
 	return 0;
 }
