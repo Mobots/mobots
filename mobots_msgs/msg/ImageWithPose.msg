@@ -1,5 +1,5 @@
 # This represents an image together with the pose at which it was taken.
 
 uint8 mobotID		                          # ID of the Mobot which sent the image
-sensor_msgs/Image image
+sensor_msgs/CompressedImage image
 geometry_msgs/PoseWithCovarianceStamped pose  # Maybe use Pose2DWithCovarianceStamped...

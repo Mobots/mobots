@@ -7,26 +7,31 @@
 #include "iostream"
 #include "fstream"
 
+int mobotNumber = 3; //Anzahl der Mobots
+int *imageCounter;
+std::ofstream imageFile;
+
 /**
- * The imageHandler method.
+ * The imageHandler method. 
+ * Image naming convention: mobotID-imageNo.jpeg
+ * TODO add session IDs and folders
  */
 void imageHandler(const mobots_msgs::ImageWithPose::ConstPtr& msg)
 {
-	ROS_INFO("MobotID: %i / Header: %i - %s / image: %s", msg->mobotID, msg->image.header.seq, msg->image.header.frame_id.c_str(), msg->image.encoding.c_str());
-}
+	ROS_INFO("MobotID: %i / Pose: %f,%f,%f", msg->mobotID, msg->pose.pose.pose.position.x, msg->pose.pose.pose.position.y, msg->pose.pose.pose.position.z);
+	char fn[200];
+	sprintf(fn, "/home/moritz/id%i-%i.jpeg", msg->mobotID, imageCounter[msg->mobotID]);
+	ROS_INFO("%s", fn);
+	
+	imageFile.open(fn, std::ios::binary);
+	ROS_INFO("data.size: %i", msg->image.data.size());
+	imageFile.write((const char*) &(msg->image.data[0
+	]), (std::streamsize) msg->image.data.size());
+	ROS_INFO("Fileopen check2");
 
-void imageCallback(const sensor_msgs::ImageConstPtr& msg)
-{
-	ROS_INFO("Got a callback!");
-  sensor_msgs::CvBridge bridge;
-  try
-  {
-    cvShowImage("view", bridge.imgMsgToCv(msg, "bgr8"));
-  }
-  catch (sensor_msgs::CvBridgeException& e)
-  {
-    ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
-  }
+	imageFile.close();
+	
+	imageCounter[msg->mobotID]++;
 }
 
 /**
@@ -38,16 +43,15 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "toro_client");
 	ros::NodeHandle handle;
 	// The topic name is mobot_image_pose
-	/*ros::Subscriber sub = handle.subscribe("mobot_image_pose", 1000, imageHandler);
+	ros::Subscriber sub = handle.subscribe("mobot_image_pose", 10, imageHandler);
+	
+	imageCounter = new int[mobotNumber];
+	for(int i = 0; i < mobotNumber; i++)
+	{
+		imageCounter[i] = 0;
+	}
+	
 	ROS_INFO("Check: Spin-pre");
 	ros::spin();
-	return 0;*/
-	
-	cvNamedWindow("view");
-	cvStartWindowThread();
-	image_transport::ImageTransport it(handle);
-	image_transport::Subscriber sub = it.subscribe("mobot_image_pose", 1, imageCallback);
-	ros::spin();
-	cvDestroyWindow("view");
 	return 0;
 }
