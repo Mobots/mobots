@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "FeaturesFinder.h"
+#include "profile.h"
 
 using namespace std;
 using namespace cv::gpu;
@@ -17,8 +18,10 @@ void assertGpu(){
 }
 
 void CpuFeaturesFinder::findFeatures(const cv::Mat& image, ImageFeatures& features)const{
+  moduleStarted("cpu features finder");
   detector->detect(image, features.keypoints);
   extractor->compute(image, features.keypoints, features.descriptors);
+  moduleEnded();
 }
 
 GpuFeaturesFinder::GpuFeaturesFinder(){

@@ -4,6 +4,8 @@
 #include "FeaturesFinder.h"
 #include "FeaturesMatcher.h"
 
+
+
 using namespace cv;
 using namespace std;
 
@@ -15,14 +17,10 @@ inline double toDegree(double rad){
   return rad * 180 / 3.14159265;
 }
 
-/*
- * The first image will be stitched to the second one
- */
-int main(int argc, char **argv){
-  if(argc == 1){
-    argv = (char**)calloc(128, sizeof(char)); //should be enough..
-    argv[1] = "map2_30degrees.png";
-    argv[2] = "map2.png";
+int main(int argc, char** argv){
+  if(argc < 3){
+    cout << "not enough arguments" << endl;
+    return 1;
   }
   image1 = imread(argv[1], 1); //1 for colours
   image2 = imread(argv[2], 1);
@@ -31,29 +29,32 @@ int main(int argc, char **argv){
   cvtColor(image1, image1Gray, CV_RGB2GRAY); //FeatureDetecter etc. arbeiten alle auf Graustufenbildern
   cvtColor(image2, image2Gray, CV_RGB2GRAY);
   double time = (double)getTickCount();
-  Ptr<FeaturesFinder> finder = new SurfFeaturesFinder(400, 3, 4,
-		     4, 2, false);
-  /*ORB::CommonParams params;
-  Ptr<FeaturesFinder> finder = new OrbFeaturesFinder(700, params);*/
-  Ptr<FeaturesMatcher> matcher = new CpuFeaturesMatcher("FlannBased");
+  Ptr<FeaturesFinder> finder = new SurfFeaturesFinder(400, 3, 4, 4, 2, false);
+  //Ptr<FeaturesFinder> finder = new OrbFeaturesFinder(1000);
+  Ptr<FeaturesMatcher> matcher = new CpuFeaturesMatcher(CpuFeaturesMatcher::SURF_DEFAULT);
   ImageFeatures features1;
   ImageFeatures features2;
-  ImageMatchResult matchResult;
+  Delta delta;
   finder->findFeatures(image1Gray, features1);
   finder->findFeatures(image2Gray, features2);
-  matcher->match(features1, features2, matchResult);
-  cout << "deltaX " << matchResult.delta.x << endl;
-  cout << "deltaY " << matchResult.delta.y << endl;
-  cout << "theta " << matchResult.delta.theta << " rad = " << toDegree(matchResult.delta.theta) << "°" << endl;
+  bool matchResult = matcher->match(features1, features2, delta);
+  if(!matchResult){
+    cout << "images do not overlap at all" << endl;
+    return 1;
+  }
+  cout << "deltaX " << delta.x << endl;
+  cout << "deltaY " << delta.y << endl;
+  cout << "theta " << delta.theta << " rad = " << toDegree(delta.theta) << "°" << endl;
   Mat result;
   result.create(Size(image1.cols+image2.cols, image1.rows+image2.rows), image2.type());
   Mat outImg2 = result(Rect(0, 0, image2.cols, image2.rows));
   image2.copyTo(outImg2);
-  //without INTER_CUBIC the result looks like shit if there is a rotation, but it could be expensive
-  
-  warpPerspective(image1, result, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  /*Mat aff = getRotationMatrix2D(Point2f(0,0), -99.9, 1.0);
+  aff.at<double>(0,2) = delta.x;
+  aff.at<double>(1,2) = delta.y;*/
+  warpAffine(image1, result, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
   cout << "time in s: " << ((double)getTickCount() - time)/getTickFrequency() << endl;
   imshow("result", result);
-  imwrite("out.png", result);
+  //imwrite("out.png", result);
   waitKey(0);
 }
