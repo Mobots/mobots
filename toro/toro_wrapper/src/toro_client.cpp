@@ -1,11 +1,12 @@
 #include "ros/ros.h"
 #include "mobots_msgs/ImageWithPose.h"
+#include "mobots_msgs/Config.h"
 #include "iostream"
 #include "fstream"
 
 int mobotNumber = 3; //Anzahl der Mobots
 std::string savePath = ""; //used to change the default save path
-const std::string naming = "%s%i/id%i-%i.%s"; // /home/john/1/id1-12.jpeg
+std::string naming = "%s%i/id%i-%i.%s"; // /home/john/1/id1-12.jpeg
 
 int *imageCounter;
 int session = 0;
@@ -16,6 +17,7 @@ std::ofstream toroFile;
  * Image naming convention: mobotID-imageNo.jpeg
  * TODO add session IDs and folders
  * TODO add jpeg checker. Save as "*.jpg"
+ * TODO check if a session is already has images
  */
 void imageHandler(const mobots_msgs::ImageWithPose::ConstPtr& msg){
 	ROS_INFO("MobotID: %i / Pose: %f,%f,%f", msg->mobotID, msg->pose.pose.pose.position.x, msg->pose.pose.pose.position.y, msg->pose.pose.pose.position.z);
@@ -37,16 +39,16 @@ void imageHandler(const mobots_msgs::ImageWithPose::ConstPtr& msg){
  * TODO setter for session and imageCounter
  */
 void configHandler(const mobots_msgs::Config::ConstPtr& msg){
-	string key;
+	std::string key;
 	if(msg->node.compare("toro_client")){
 		if(msg->key.compare("savePath")){
-			ROS_INFO("Change option: savePath from %s to %s", savePath, msg->value);
+			ROS_INFO("Change option: savePath from %s to %s", savePath.c_str(), msg->value.c_str());
 			savePath = msg->value;
 		} else if(msg->key.compare("mobotNumber")){
-			ROS_INFO("Change option: mobotNumber from %s to %s", mobotNumber, msg->value);
-			mobotNumber = atoi(msg->value);
+			ROS_INFO("Change option: mobotNumber from %i to %s", mobotNumber, msg->value.c_str());
+			mobotNumber = atoi(msg->value.c_str());
 		} else if(msg->key.compare("naming")){
-			ROS_INFO("Change option: naming from %s to %s", naming, msg->value);
+			ROS_INFO("Change option: naming from %s to %s", naming.c_str(), msg->value.c_str());
 			naming = msg->value;
 		} else {
 			ROS_INFO("No matching options");
