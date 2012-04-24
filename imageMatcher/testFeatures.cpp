@@ -47,12 +47,12 @@ int main(int argc, char** argv){
   cout << "theta " << delta.theta << " rad = " << toDegree(delta.theta) << "°" << endl;
   Mat result;
   result.create(Size(image1.cols+image2.cols, image1.rows+image2.rows), image2.type());
-  Mat outImg2 = result(Rect(0, 0, image2.cols, image2.rows));
-  image2.copyTo(outImg2);
+  Mat outImg1 = result(Rect(0, 0, image1.cols, image1.rows));
+  image1.copyTo(outImg1);
   /*Mat aff = getRotationMatrix2D(Point2f(0,0), -99.9, 1.0);
   aff.at<double>(0,2) = delta.x;
   aff.at<double>(1,2) = delta.y;*/
-  warpAffine(image1, result, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  warpAffine(image2, result, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
   cout << "time in s: " << ((double)getTickCount() - time)/getTickFrequency() << endl;
   imshow("result", result);
   //imwrite("out.png", result);
