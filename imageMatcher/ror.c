@@ -127,46 +127,72 @@ float rorAlternative(vector<Point2f>& points1, vector<Point2f>& points2){
     sums[i] /= counts[i];
     cout << i*threshold << " = " << toDegree(i*threshold) << " => " << counts[i] << " times" << endl;
   }*/
-  const int N = int(M_PI/rotationStep) +1;
+  const int N = 2*int(M_PI/rotationStep) +1;
   unsigned int counts[N];
+  Point2f pointsa[N];
+  Point2f pointsb[N];
   float sums[N];
+  int ptrs[N];
+  memset(&pointsa, 0, N*sizeof(Point2f));
+  memset(&pointsb, 0, N*sizeof(Point2f));
   memset(&counts, 0, N*sizeof(int));
   memset(&sums, 0.0, N*sizeof(float));
-  int ptrs[N];
+  unsigned int* const countsMid = &counts[N/2];
+  float* const sumsMid = &sums[N/2];
+  int* const ptrsMid = &ptrs[N/2];
+  Point2f* const aMid = &pointsa[N/2];
+  Point2f* const bMid = &pointsb[N/2];
   const int p1Size = points1.size();
   vector<int> indices(p1Size);
   for(int i = 0; i < p1Size; i++){
     indices[i] = i;
   }
   while(boost::next_combination(indices.begin(), indices.begin()+2, indices.end())){
-    float rot = abs(calcRotation(&points1[indices[0]], &points2[indices[0]]));
+    float rot = calcRotation(&points1[indices[0]], &points2[indices[0]]);
     if(rot > M_PI)
       rot = 2*M_PI - rot;
+    else if(rot < -M_PI)
+      rot = -2*M_PI - rot;
     int index = rot/rotationStep;
-    counts[index]++;
-    sums[index] += rot;
-    ptrs[index] = indices[0];
+    countsMid[index]++;
+    sumsMid[index] += rot;
+    ptrsMid[index] = indices[0];
+    aMid[index].x += points1[indices[0]].x;
+    aMid[index].y += points1[indices[0]].y;
+    Point2f b;
+    rotate(points2[indices[0]], b, rot);
+    bMid[index].x += b.x - points1[indices[0]].x;
+    bMid[index].y += b.y - points1[indices[0]].y;
   }
   float bestAvg;
   int bestAvgCount = 0;
   int bestIndex;
-  for(int i = 0; i < N; i++){
-    int count = counts[i];
+  for(int i = -N/2; i < N/2; i++){
+    int count = countsMid[i];
     if(count > bestAvgCount){
       bestIndex = i;
       bestAvgCount = count;
     }
     //cout << i*rotationStep << " = " << toDegree(i*rotationStep) << " => " << count << " times" << endl;
   }
-  bestAvg = sums[bestIndex]/bestAvgCount;
+  bestAvg = sumsMid[bestIndex]/bestAvgCount;
+  float ax = aMid[bestIndex].x/bestAvgCount;
+  float ay = aMid[bestIndex].y/bestAvgCount;
+  float bx = points2[ptrsMid[bestIndex]].x;//bMid[bestIndex].x/bestAvgCount;
+  float by = points2[ptrsMid[bestIndex]].y;//bMid[bestIndex].y/bestAvgCount;
   cout << "most likely rotation is: " << bestAvg  << " = " << toDegree(bestAvg) << "°" << endl;
+  Point2f p1Trans;
   Point2f p2Trans;
-  rotate(points2[ptrs[bestIndex]], p2Trans, bestAvg);
-  cout << "xdiff " << p2Trans.x - points1[ptrs[bestIndex]].x << endl;
-  cout << "ydiff " << p2Trans.y - points1[ptrs[bestIndex]].y << endl;
-  aff = getRotationMatrix2D(Point2f(0,0), -toDegree(bestAvg), 1.0);
-  aff.at<double>(0,2) = -(p2Trans.x - points1[ptrs[bestIndex]].x);
-  aff.at<double>(1,2) = -(p2Trans.y - points1[ptrs[bestIndex]].y);
+  rotate(Point2f(bx, by), p2Trans, -bestAvg);
+  rotate(Point2f(ax, ay), p1Trans, bestAvg);
+  float xDiff =  p2Trans.x- ax;
+  float yDiff =  p2Trans.y- ay; 
+  cout << "xdiff " <<  xDiff << endl;
+  cout << "ydiff " <<  yDiff  << endl;
+  aff = getRotationMatrix2D(Point2f(0,0), toDegree(bestAvg), 1.0);
+  aff.at<double>(0,2) = -xDiff;
+  aff.at<double>(1,2) = -yDiff;
+  cout << "alternativ aff " << endl << aff << endl;
   return bestAvg;
 }
 

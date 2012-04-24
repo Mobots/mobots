@@ -13,6 +13,7 @@ using namespace cv;
 
 extern Mat image1; //DEBUG
 extern Mat image2;
+extern Mat aff;
 
 const char CpuFeaturesMatcher::SURF_DEFAULT[] = "FlannBased";
 const char CpuFeaturesMatcher::ORB_DEFAULT[] = "BruteForce-Hamming";
@@ -131,9 +132,10 @@ bool CpuFeaturesMatcher::match(const ImageFeatures& img1, const ImageFeatures& i
     points2.push_back(img2.keypoints[good_matches[i].trainIdx].pt);
   }
   moduleEnded();
+    moduleStarted("get transform");
   rorAlternative(points1, points2);
-  moduleStarted("get transform");
-  Mat H = getAffineTransform(&points1[0], &points2[0]);
+  Mat H = getAffineTransform(&points2[0], &points1[0]);
+  //aff = H;
   //Mat H = findHomography(points1, points2, CV_RANSAC);
   /* Matrix form:
    * cos(theta)  -sin(theta) deltaX
