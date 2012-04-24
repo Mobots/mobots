@@ -1,6 +1,6 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
-#include "mobots_msgs/MobotImagePose.h"
+#include "mobots_msgs/ImageWithPose.h"
 #include "image_transport/image_transport.h"
 #include "opencv/cvwimage.h"
 #include "opencv/highgui.h"
@@ -11,7 +11,7 @@
 
 /**
  * This server is used to check if the toro_client.cpp works.
- * The MobotImagePose msg is tested.
+ * The ImageWithPose msg is tested.
  */
 
 int main(int argc, char **argv)

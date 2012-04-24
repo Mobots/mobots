@@ -1,0 +1,14 @@
+<package>
+  <description brief="mobots_srvs">
+
+     mobots_srvs
+
+  </description>
+  <author>Moritz Ulmer</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/mobots_srvs</url>
+
+  <depend package="sensor_msgs"/> <!-- for CompressedImage.msg -->
+
+</package>
