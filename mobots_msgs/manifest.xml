@@ -10,7 +10,7 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/mobots_msgs</url>
 
-  <depend package="sensor_msgs"/> <!-- for Image.msg -->
+  <depend package="sensor_msgs"/> <!-- for CompressedImage.msg -->
   <depend package="geometry_msgs"/> <!-- for Pose.msg -->
   <!-- Or is the frame in the Image Header maybe enough (instead of Pose)? -->
 
