@@ -27,7 +27,7 @@ OPENCV_LIBS = -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_ml -lopen
 -lopencv_features2d -lopencv_calib3d -lopencv_objdetect -lopencv_contrib -lopencv_legacy \
 -lopencv_flann -lopencv_gpu
 # define the C source files
-SRCS = testFeatures.cpp FeaturesFinder.cpp FeaturesMatcher.cpp
+SRCS = testFeatures.cpp FeaturesFinder.cpp FeaturesMatcher.cpp ror.c
 
 # define the C object files 
 #
@@ -144,7 +144,7 @@ FeaturesFinder.o: /usr/include/opencv2/imgproc/imgproc.hpp
 FeaturesFinder.o: /usr/include/opencv2/imgproc/types_c.h
 FeaturesFinder.o: /usr/include/opencv2/core/core_c.h
 FeaturesFinder.o: /usr/include/opencv2/objdetect/objdetect.hpp
-FeaturesFinder.o: /usr/include/opencv2/gpu/matrix_operations.hpp
+FeaturesFinder.o: /usr/include/opencv2/gpu/matrix_operations.hpp profile.h
 FeaturesMatcher.o: /usr/include/opencv2/highgui/highgui.hpp
 FeaturesMatcher.o: /usr/include/opencv2/core/core.hpp
 FeaturesMatcher.o: /usr/include/opencv2/core/types_c.h /usr/include/assert.h
@@ -175,13 +175,14 @@ FeaturesMatcher.o: /usr/include/bits/posix2_lim.h
 FeaturesMatcher.o: /usr/include/opencv2/core/mat.hpp
 FeaturesMatcher.o: /usr/include/opencv2/highgui/highgui_c.h
 FeaturesMatcher.o: /usr/include/opencv2/core/core_c.h
-FeaturesMatcher.o: /usr/include/opencv2/calib3d/calib3d.hpp
 FeaturesMatcher.o: /usr/include/opencv2/features2d/features2d.hpp
-FeaturesMatcher.o: /usr/include/opencv2/flann/miniflann.hpp FeaturesMatcher.h
+FeaturesMatcher.o: /usr/include/opencv2/flann/miniflann.hpp
+FeaturesMatcher.o: /usr/include/opencv2/calib3d/calib3d.hpp FeaturesMatcher.h
 FeaturesMatcher.o: FeaturesFinder.h /usr/include/opencv2/gpu/gpu.hpp
 FeaturesMatcher.o: /usr/include/opencv2/imgproc/imgproc.hpp
 FeaturesMatcher.o: /usr/include/opencv2/imgproc/types_c.h
 FeaturesMatcher.o: /usr/include/opencv2/objdetect/objdetect.hpp
 FeaturesMatcher.o: /usr/include/opencv2/gpu/gpumat.hpp
 FeaturesMatcher.o: /usr/include/opencv2/gpu/devmem2d.hpp
-FeaturesMatcher.o: /usr/include/opencv2/gpu/matrix_operations.hpp
+FeaturesMatcher.o: /usr/include/opencv2/gpu/matrix_operations.hpp ror.h
+FeaturesMatcher.o: profile.h
