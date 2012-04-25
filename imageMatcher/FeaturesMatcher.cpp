@@ -13,7 +13,6 @@ using namespace cv;
 
 extern Mat image1; //DEBUG
 extern Mat image2;
-extern Mat aff;
 
 const char CpuFeaturesMatcher::SURF_DEFAULT[] = "FlannBased";
 const char CpuFeaturesMatcher::ORB_DEFAULT[] = "BruteForce-Hamming";
@@ -132,17 +131,18 @@ bool CpuFeaturesMatcher::match(const ImageFeatures& img1, const ImageFeatures& i
     points2.push_back(img2.keypoints[good_matches[i].trainIdx].pt);
   }
   moduleEnded();
-    moduleStarted("get transform");
-  rorAlternative(points1, points2);
-  Mat H = getAffineTransform(&points2[0], &points1[0]);
+  moduleStarted("get transform");
+  bool ok = rorAlternative(points1, points2, delta);
+  //Mat H = getAffineTransform(&points2[0], &points1[0]);
   //aff = H;
-  //Mat H = findHomography(points1, points2, CV_RANSAC);
+  //Mat H = findHomography(points2, points1, CV_RANSAC);
+  //aff = H;
   /* Matrix form:
    * cos(theta)  -sin(theta) deltaX
    * sin(theta)   cos(theta) deltaY
    *    0             0        1
    */
-  printHMat(H);
+  /*printHMat(H);
   printHMatRaw(H, "raw");
   double mainDiag = avg(  H.at<double>(0,0), H.at<double>(1,1));
   double minorDiag = avg(-H.at<double>(0,1), H.at<double>(1,0));
@@ -155,12 +155,12 @@ bool CpuFeaturesMatcher::match(const ImageFeatures& img1, const ImageFeatures& i
   double theta = avg(mainDiag, minorDiag);
   delta.theta = theta;
   delta.x = H.at<double>(0,2);
-  delta.y = H.at<double>(1,2);
+  delta.y = H.at<double>(1,2);*/
   moduleEnded();
   Mat img_matches;
   drawMatches(image1, img1.keypoints, image2, img2.keypoints,
                good_matches, img_matches, Scalar::all(-1), Scalar::all(-1),
                vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
   imshow("method2 good Matches", img_matches);
-  return true;
+  return ok;
 }
