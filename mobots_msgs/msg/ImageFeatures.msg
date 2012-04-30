@@ -1,2 +1,2 @@
-mobots_msgs/FeaturePoint[] featurePoints
+mobots_msgs/CvKeyPoint[] keyPoints
 mobots_msgs/CvMat descriptors
