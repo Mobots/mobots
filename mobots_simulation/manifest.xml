@@ -10,7 +10,6 @@
 
   <depend package="roscpp" />
   <depend package="gazebo" />
-  <depend package="erratic_teleop" />
   <depend package="image_view" />
   <depend package="gazebo_msgs" />
 	<depend package="cv_bridge" />

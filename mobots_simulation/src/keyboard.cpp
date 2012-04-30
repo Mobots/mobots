@@ -38,6 +38,9 @@
 #include <boost/thread/thread.hpp>
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
+#include <gazebo_msgs/ModelState.h>
+#include <gazebo_msgs/SetModelState.h>
+#include <gazebo_msgs/GetModelState.h>
 
 #define KEYCODE_W 0x77
 #define KEYCODE_A 0x61
@@ -51,205 +54,180 @@
 #define KEYCODE_S_CAP 0x53
 #define KEYCODE_W_CAP 0x57
 
-class ErraticKeyboardTeleopNode
-{
-    private:
-        double walk_vel_;
-        double run_vel_;
-        double yaw_rate_;
-        //double yaw_rate_run_;
-        
-        geometry_msgs::Twist cmdvel_;
-        ros::NodeHandle n_;
-        ros::Publisher pub_;
+class MobotKeyboardController{
+private:
+  double linear_vel;
+  double angular_vel;
+  double linear_vel_fast;
+  double angular_vel_fast;
 
-    public:
-        ErraticKeyboardTeleopNode()
-        {
-            pub_ = n_.advertise<geometry_msgs::Twist>("cmd_vel", 1);
-            
-            ros::NodeHandle n_private("~");
-            n_private.param("walk_vel", walk_vel_, 0.5);
-            n_private.param("run_vel", run_vel_, 1.0);
-            n_private.param("yaw_rate", yaw_rate_, 0.5);
-            //n_private.param("yaw_rate_run", yaw_rate_run_, 1.5);
-        }
+  gazebo_msgs::GetModelState getStateRequest;
+  gazebo_msgs::ModelState modelState;
+  gazebo_msgs::SetModelState setModelStateRequest;
+  ros::NodeHandle nodeHandle;
+  ros::ServiceClient setClient;
+  ros::ServiceClient getClient;
+	
+public:
+  MobotKeyboardController(){
+    //true für persistente Verbindung <> GEHT NICHT IN DIESEM FALL >_<
+    setClient = nodeHandle.serviceClient<gazebo_msgs::SetModelState>("/gazebo/set_model_state");
+    setClient.waitForExistence();
+    getClient = nodeHandle.serviceClient<gazebo_msgs::GetModelState>("/gazebo/get_model_state", true);
+    getClient.waitForExistence();
+    nodeHandle.param("linear_vel", linear_vel, 0.5);
+    nodeHandle.param("linear_vel_fast", linear_vel_fast, 1.0);
+    nodeHandle.param("angular_vel", angular_vel, 0.5);
+    nodeHandle.param("angular_vel_fast", angular_vel_fast, 1.5);
+    getStateRequest.request.model_name = std::string("mobot");
+    getStateRequest.request.relative_entity_name = std::string("world");
+    modelState.model_name = std::string("mobot");
+    modelState.reference_frame = std::string("world"); 
+  }
         
-        ~ErraticKeyboardTeleopNode() { }
-        void keyboardLoop();
-        
-        void stopRobot()
-        {
-            cmdvel_.linear.x = 0.0;
-            cmdvel_.linear.y = 0.0;
-				cmdvel_.angular.z = 0.0;
-            pub_.publish(cmdvel_);
-        }
+  ~MobotKeyboardController(){}
+  void keyboardLoop();
+
+  void stopRobot(){
+    getClient.call(getStateRequest);
+    modelState.pose = getStateRequest.response.pose;
+    modelState.twist.linear.x = 0;
+    modelState.twist.linear.y = 0;
+    modelState.twist.angular.z = 0;
+    setModelStateRequest.request.model_state = modelState;
+    setClient.call(setModelStateRequest);
+  }
 };
 
-ErraticKeyboardTeleopNode* tbk;
+MobotKeyboardController* tbk;
 int kfd = 0;
 struct termios cooked, raw;
 bool done;
 
-int main(int argc, char** argv)
-{
-    ros::init(argc,argv,"tbk", ros::init_options::AnonymousName | ros::init_options::NoSigintHandler);
-    ErraticKeyboardTeleopNode tbk;
-    
-    boost::thread t = boost::thread(boost::bind(&ErraticKeyboardTeleopNode::keyboardLoop, &tbk));
-    
-    ros::spin();
-    
-    t.interrupt();
-    t.join();
-    tbk.stopRobot();
-    tcsetattr(kfd, TCSANOW, &cooked);
-    
-    return(0);
+int main(int argc, char** argv){
+  ros::init(argc,argv,"tbk", ros::init_options::AnonymousName | ros::init_options::NoSigintHandler);
+  MobotKeyboardController tbk;
+  
+  boost::thread t = boost::thread(boost::bind(&MobotKeyboardController::keyboardLoop, &tbk));
+  
+  ros::spin();
+  
+  t.interrupt(); //?
+  t.join();
+  tbk.stopRobot();
+  tcsetattr(kfd, TCSANOW, &cooked);
+  
+  return(0);
 }
 
-void ErraticKeyboardTeleopNode::keyboardLoop()
-{
-    char c;
-    double max_tv = walk_vel_;
-    double max_rv = walk_vel_;
-    bool dirty = false;
-    int speed = 0;
-    int turn = 0;
-	 int real_turn = 0; //lol
+void MobotKeyboardController::keyboardLoop(){
+  char c;
+  double max_tv = linear_vel;
+  double max_rv = angular_vel;
+  bool dirty = false;
+  int speed = 0;
+  int turn = 0;
+  int real_turn = 0; //lol
+  
+  // get the console in raw mode
+  tcgetattr(kfd, &cooked);
+  memcpy(&raw, &cooked, sizeof(struct termios));
+  raw.c_lflag &=~ (ICANON | ECHO);
+  raw.c_cc[VEOL] = 1;
+  raw.c_cc[VEOF] = 2;
+  tcsetattr(kfd, TCSANOW, &raw);
+  
+  puts("Reading from keyboard");
+  puts("Use W/S to drive forward/backward");
+  puts("Use A/D to turn around");
+  puts("Press Shift to move faster");
+  
+  struct pollfd ufd;
+  ufd.fd = kfd;
+  ufd.events = POLLIN;
+  
+  for(;;){
+    boost::this_thread::interruption_point();
     
-    // get the console in raw mode
-    tcgetattr(kfd, &cooked);
-    memcpy(&raw, &cooked, sizeof(struct termios));
-    raw.c_lflag &=~ (ICANON | ECHO);
-    raw.c_cc[VEOL] = 1;
-    raw.c_cc[VEOF] = 2;
-    tcsetattr(kfd, TCSANOW, &raw);
+    // get the next event from the keyboard
+    int num;
     
-    puts("Reading from keyboard");
-    puts("Use WASD keys to navigate along global x/y axis");
-    puts("Press Shift to move faster");
-	 puts("Use J/K to turn around");
-    
-    struct pollfd ufd;
-    ufd.fd = kfd;
-    ufd.events = POLLIN;
-    
-    for(;;)
-    {
-        boost::this_thread::interruption_point();
-        
-        // get the next event from the keyboard
-        int num;
-        
-        if ((num = poll(&ufd, 1, 250)) < 0)
-        {
-            perror("poll():");
-            return;
-        }
-        else if(num > 0)
-        {
-            if(read(kfd, &c, 1) < 0)
-            {
-                perror("read():");
-                return;
-            }
-        }
-        else
-        {
-            if (dirty == true)
-            {
-                stopRobot();
-                dirty = false;
-            }
-            
-            continue;
-        }
-        
-        switch(c)
-        {
-            case KEYCODE_W:
-                max_tv = walk_vel_;
-                speed = 1;
-                turn = 0;
-					 real_turn = 0;
-                dirty = true;
-                break;
-            case KEYCODE_S:
-                max_tv = walk_vel_;
-                speed = -1;
-                turn = 0;
-					 real_turn = 0;
-                dirty = true;
-                break;
-            case KEYCODE_A:
-                max_rv = walk_vel_;
-                speed = 0;
-                turn = 1;
-                dirty = true;
-					 real_turn = 0;
-                break;
-            case KEYCODE_D:
-                max_rv = walk_vel_;
-                speed = 0;
-                turn = -1;
-                dirty = true;
-					 real_turn = 0;
-                break;
-                
-            case KEYCODE_W_CAP:
-                max_tv = run_vel_;
-                speed = 1;
-                turn = 0;
-                dirty = true;
-					 real_turn = 0;
-                break;
-            case KEYCODE_S_CAP:
-                max_tv = run_vel_;
-                speed = -1;
-                turn = 0;
-                dirty = true;
-					 real_turn = 0;
-                break;
-            case KEYCODE_A_CAP:
-                max_rv = run_vel_;
-                speed = 0;
-                turn = 1;
-                dirty = true;
-					 real_turn = 0;
-                break;
-            case KEYCODE_D_CAP:
-                max_rv = run_vel_;
-                speed = 0;
-                turn = -1;
-                dirty = true;
-					 real_turn = 0;
-                break;
-            case KEYCODE_LEFT:
-					real_turn = 1;
-					speed = 0;
-					turn = 0;
-					dirty = true;					
-					break;
-            case KEYCODE_RIGHT:
-					real_turn = -1;
-					speed = 0;
-					turn = 0;
-					dirty = true;					
-					break;
-            default:
-                max_tv = walk_vel_;
-                max_rv = walk_vel_;
-                speed = 0;
-                turn = 0;
-					 real_turn = 0;
-                dirty = false;
-        }
-        cmdvel_.linear.x = speed * max_tv;
-        cmdvel_.linear.y = turn * max_rv;
-        cmdvel_.angular.z = real_turn * yaw_rate_;
-        pub_.publish(cmdvel_);
+    if((num = poll(&ufd, 1, 250)) < 0){
+      perror("poll():");
+      return;
     }
+    else if(num > 0){
+      if(read(kfd, &c, 1) < 0){
+	perror("read():");
+	return;
+      }
+    }
+    else{
+      if (dirty == true){
+	  stopRobot();
+	  dirty = false;
+      }
+      continue;
+    }
+    getClient.call(getStateRequest);
+    float heading = 2*acos(getStateRequest.response.pose.orientation.w);
+    switch(c){
+	case KEYCODE_W:
+	    max_tv = linear_vel;
+	    speed = 1;
+	    turn = 0;
+	    real_turn = 0;
+	    dirty = true;
+	    break;
+	case KEYCODE_S:
+	    max_tv = linear_vel;
+	    speed = -1;
+	    turn = 0;
+	    dirty = true;
+	    break;
+	case KEYCODE_A:
+	    max_rv = angular_vel;
+	    speed = 0;
+	    turn = 1;
+	    dirty = true;
+	    break;
+	case KEYCODE_D:
+	    max_rv = angular_vel;
+	    speed = 0;
+	    turn = -1;
+	    dirty = true;
+	    break;
+	    
+	case KEYCODE_W_CAP:
+	    max_tv = linear_vel_fast;
+	    speed = 1;
+	    turn = 0;
+	    dirty = true;
+	    break;
+	case KEYCODE_S_CAP:
+	    max_tv = linear_vel_fast;
+	    speed = -1;
+	    turn = 0;
+	    dirty = true;
+	    break;
+	case KEYCODE_A_CAP:
+	    max_rv = angular_vel_fast;
+	    speed = 0;
+	    turn = 1;
+	    dirty = true;
+	    break;
+	case KEYCODE_D_CAP:
+	    max_rv = angular_vel_fast;
+	    speed = 0;
+	    turn = -1;
+	    dirty = true;
+	    break;
+    }
+    modelState.twist.linear.x = sin(heading)*speed*max_tv;
+    modelState.twist.linear.y = cos(heading)*speed*max_tv;
+    modelState.twist.angular.z = turn*max_rv;
+    setModelStateRequest.request.model_state = modelState;
+    setClient.call(setModelStateRequest);
+  }
 }
 
