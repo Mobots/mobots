@@ -8,7 +8,7 @@ using namespace std;
 using namespace cv;
 
 typedef struct{
-  std::vector<KeyPoint> keypoints;
+  std::vector<KeyPoint> keyPoints;
   cv::Mat descriptors;
 } ImageFeatures;
 
@@ -75,11 +75,11 @@ public:
   virtual ~GpuFeaturesFinder(){}
 };
 
-class SurfGpuFeaturesFinder : public GpuFeaturesFinder{
+/*class SurfGpuFeaturesFinder : public GpuFeaturesFinder{
 private:
   gpu::SURF_GPU detector; 
 public:
   SurfGpuFeaturesFinder(){}
   void findFeatures(const Mat& image, ImageFeatures& features) const;
   ~SurfGpuFeaturesFinder(){}
-};
+};*/

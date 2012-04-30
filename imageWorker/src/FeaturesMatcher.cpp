@@ -127,8 +127,8 @@ bool CpuFeaturesMatcher::match(const ImageFeatures& img1, const ImageFeatures& i
   vector<Point2f> points1;
   vector<Point2f> points2;
   for(int i = 0; i < good_matches.size(); i++){
-    points1.push_back(img1.keypoints[good_matches[i].queryIdx].pt);
-    points2.push_back(img2.keypoints[good_matches[i].trainIdx].pt);
+    points1.push_back(img1.keyPoints[good_matches[i].queryIdx].pt);
+    points2.push_back(img2.keyPoints[good_matches[i].trainIdx].pt);
   }
   moduleEnded();
   moduleStarted("get transform");
@@ -158,7 +158,7 @@ bool CpuFeaturesMatcher::match(const ImageFeatures& img1, const ImageFeatures& i
   delta.y = H.at<double>(1,2);*/
   moduleEnded();
   Mat img_matches;
-  drawMatches(image1, img1.keypoints, image2, img2.keypoints,
+  drawMatches(image1, img1.keyPoints, image2, img2.keyPoints,
                good_matches, img_matches, Scalar::all(-1), Scalar::all(-1),
                vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
   imshow("method2 good Matches", img_matches);
