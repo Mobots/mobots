@@ -40,5 +40,7 @@ class GpuFeaturesMatcher : public FeaturesMatcher{
 public:
   virtual ~GpuFeaturesMatcher(){}
   GpuFeaturesMatcher(){}
-  virtual bool match(const ImageFeatures& img1, const ImageFeatures& img2, Delta& delta) const{}
+  virtual bool match(const ImageFeatures& img1, const ImageFeatures& img2, Delta& delta) const{
+    return false;
+  }
 };
