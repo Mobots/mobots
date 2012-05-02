@@ -41,18 +41,28 @@
 #include <gazebo_msgs/ModelState.h>
 #include <gazebo_msgs/SetModelState.h>
 #include <gazebo_msgs/GetModelState.h>
+#include "../../imageWorker/src/FeaturesMatcher.h"
+#include "../../imageWorker/src/FeaturesFinder.h"
+#include "mobots_msgs/FeatureSetWithDeltaPose.h"
+#include "mobots_msgs/ImageWithPoseDebug.h"
+#include "imageWorker/MessageBridge.h"
+#include "cv_bridge/cv_bridge.h"
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
 
 #define KEYCODE_W 0x77
 #define KEYCODE_A 0x61
 #define KEYCODE_S 0x73
 #define KEYCODE_D 0x64
-#define KEYCODE_LEFT 0x6a
-#define KEYCODE_RIGHT 0x6b
 
 #define KEYCODE_A_CAP 0x41
 #define KEYCODE_D_CAP 0x44
 #define KEYCODE_S_CAP 0x53
 #define KEYCODE_W_CAP 0x57
+
+#define KEYCODE_SPACE 0x20
+
+using namespace std;
 
 class MobotKeyboardController{
 private:
@@ -64,9 +74,10 @@ private:
   gazebo_msgs::GetModelState getStateRequest;
   gazebo_msgs::ModelState modelState;
   gazebo_msgs::SetModelState setModelStateRequest;
-  ros::NodeHandle nodeHandle;
   ros::ServiceClient setClient;
   ros::ServiceClient getClient;
+  ros::NodeHandle nodeHandle; //TODO wtf put this into constructor and gazebo goes fubar
+      
 	
 public:
   MobotKeyboardController(){
@@ -103,13 +114,110 @@ MobotKeyboardController* tbk;
 int kfd = 0;
 struct termios cooked, raw;
 bool done;
+char imagePos = 0;
+char shutterPos = 0;
+char featurePos = 0;
+ros::Publisher publisher;
+
+cv::Mat image1;
+cv::Mat image2;
+sensor_msgs::Image images[2];
+ImageFeatures features1;
+ImageFeatures features2;
+
+
+/**
+ * angle is in radian kk
+ */
+void findRotationMatrix2D(Point2f center, double angle, Mat& rotMat){
+    double alpha = cos(angle);
+    double beta = sin(angle);
+    rotMat.create(2, 3, CV_64F);
+    double* m = (double*)rotMat.data;
+
+    m[0] = alpha;
+    m[1] = beta;
+    m[2] = (1-alpha)*center.x - beta*center.y;
+    m[3] = -beta;
+    m[4] = alpha;
+    m[5] = beta*center.x + (1-alpha)*center.y;
+}
+
+inline double toDegree(double rad){
+  return rad * 180 / M_PI;
+}
+
+void imageCallback(const sensor_msgs::Image image){
+  images[shutterPos] = image;
+  imagePos++;
+  imagePos %= 2;
+}
+
+void shutterCallback(){
+  if(shutterPos == 0){
+    image1 = cv_bridge::toCvCopy(images[0])->image;
+  }else{
+    image2 = cv_bridge::toCvCopy(images[1])->image;
+  }
+  mobots_msgs::ImageWithPoseDebug msg;
+  msg.image = images[shutterPos];
+  publisher.publish(msg);
+  shutterPos++;
+  shutterPos %= 2;
+}
+
+void featuresCallback(const mobots_msgs::FeatureSetWithDeltaPose featuresMsg){
+  if(featurePos == 1){
+    MessageBridge::copyToCvStruct(featuresMsg, features2);
+    featurePos = 0;
+      //just ugly copy from testFeatures.cpp
+    Delta delta;
+    Ptr<FeaturesMatcher> matcher = new CpuFeaturesMatcher(CpuFeaturesMatcher::SURF_DEFAULT);
+    bool matchResult = matcher->match(features1, features2, delta);
+    if(!matchResult){
+      cout << "images do not overlap at all" << endl;
+      return;
+    }
+    cout << "deltaX " << delta.x << endl;
+    cout << "deltaY " << delta.y << endl;
+    cout << "theta " << delta.theta << " rad = " << toDegree(delta.theta) << "°" << endl;
+    Mat aff;
+    findRotationMatrix2D(Point2f(0,0), delta.theta, aff);
+    aff.at<double>(0,2) = delta.x;
+    aff.at<double>(1,2) = delta.y;
+    cout << "affen mat: " << endl << aff << endl;
+    Mat result;
+    Mat result2;
+    result2.create(Size(image1.cols+image2.cols, image1.rows+image2.rows), image2.type());
+    result.create(Size(image1.cols+image2.cols, image1.rows+image2.rows), image2.type());
+    Mat outImg1 = result(Rect(0, 0, image1.cols, image1.rows));
+    Mat outImg21 = result2(Rect(0, 0, image1.cols, image1.rows));
+
+    warpAffine(image2, result, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+    image1.copyTo(outImg1);
+
+    image1.copyTo(outImg21);
+    warpAffine(image2, result2, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+
+    imshow("result", result);
+    imshow("result2", result2);
+    waitKey(0);
+  }else{
+    MessageBridge::copyToCvStruct(featuresMsg, features1);
+    featurePos++;
+  }
+}
+
 
 int main(int argc, char** argv){
-  ros::init(argc,argv,"tbk", ros::init_options::AnonymousName | ros::init_options::NoSigintHandler);
+  ros::init(argc, argv, "MobotKeyboardController", ros::init_options::AnonymousName | ros::init_options::NoSigintHandler);
   MobotKeyboardController tbk;
   
   boost::thread t = boost::thread(boost::bind(&MobotKeyboardController::keyboardLoop, &tbk));
-  
+  ros::NodeHandle nodeHandle;
+  publisher = nodeHandle.advertise<mobots_msgs::ImageWithPoseDebug>("ImageWithPose", 2);
+  ros::Subscriber sub1 = nodeHandle.subscribe("FeatureSetWithDeltaPose", 2, featuresCallback);
+  ros::Subscriber sub2 = nodeHandle.subscribe("/my_cam/image", 2, imageCallback); 
   ros::spin();
   
   t.interrupt(); //?
@@ -127,7 +235,6 @@ void MobotKeyboardController::keyboardLoop(){
   bool dirty = false;
   int speed = 0;
   int turn = 0;
-  int real_turn = 0; //lol
   
   // get the console in raw mode
   tcgetattr(kfd, &cooked);
@@ -141,6 +248,7 @@ void MobotKeyboardController::keyboardLoop(){
   puts("Use W/S to drive forward/backward");
   puts("Use A/D to turn around");
   puts("Press Shift to move faster");
+  puts("Press space to shutter");
   
   struct pollfd ufd;
   ufd.fd = kfd;
@@ -176,7 +284,6 @@ void MobotKeyboardController::keyboardLoop(){
 	    max_tv = linear_vel;
 	    speed = 1;
 	    turn = 0;
-	    real_turn = 0;
 	    dirty = true;
 	    break;
 	case KEYCODE_S:
@@ -222,7 +329,14 @@ void MobotKeyboardController::keyboardLoop(){
 	    turn = -1;
 	    dirty = true;
 	    break;
+	case KEYCODE_SPACE:
+	  puts("shutter");
+	  shutterCallback();
+	  speed = 0;
+	  turn = 0;
+	  break;
     }
+    modelState.pose = getStateRequest.response.pose;
     modelState.twist.linear.x = sin(heading)*speed*max_tv;
     modelState.twist.linear.y = cos(heading)*speed*max_tv;
     modelState.twist.angular.z = turn*max_rv;
