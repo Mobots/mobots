@@ -1,17 +1,17 @@
 <package>
-  <description brief="imageWorker">
+  <description brief="feature_detector">
 
-     imageWorker
+     feature_detector
 
   </description>
-  <author>jonas</author>
+  <author>Jonas Rahlf</author>
   <license>BSD</license>
   <depend package="roscpp" />
   <depend package="mobots_msgs" />
   <depend package="opencv2" />
   <depend package="cv_bridge" />
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/imageWorker</url>
+  <url>http://ros.org/wiki/feature_detector</url>
   <export>
     <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -Wl,-rpath,${prefix}/lib -lmessageBridge"/>
   </export>
