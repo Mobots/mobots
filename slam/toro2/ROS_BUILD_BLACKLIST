@@ -1,0 +1,2 @@
+  svn --non-interactive co -r 23 https://svn.openslam.org/data/svn/toro toro_svn
+  svn: OPTIONS of 'https://svn.openslam.org/data/svn/toro': could not connect to server (https://svn.openslam.org)
