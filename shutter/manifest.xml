@@ -1,0 +1,14 @@
+<package>
+  <description brief="shutter">
+
+     shutter
+
+  </description>
+  <author>Florian Krämer, Hauke Hansen</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/shutter</url>
+
+</package>
+
+
