@@ -3,11 +3,11 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
 
-#include "FeaturesFinder.h"
+#include "feature_detector/FeaturesFinder.h"
+#include "feature_detector/MessageBridge.h"
 #include "FeaturesMatcher.h"
 #include "mobots_msgs/FeatureSetWithDeltaPose.h"
 #include "mobots_msgs/ImageWithPoseDebug.h"
-#include "imageWorker/MessageBridge.h"
 #include "std_msgs/String.h"
 
 

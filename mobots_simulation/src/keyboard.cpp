@@ -41,11 +41,11 @@
 #include <gazebo_msgs/ModelState.h>
 #include <gazebo_msgs/SetModelState.h>
 #include <gazebo_msgs/GetModelState.h>
-#include "../../imageWorker/src/FeaturesMatcher.h"
-#include "../../imageWorker/src/FeaturesFinder.h"
+#include "../../feature_detector/src/FeaturesMatcher.h" //debug and shit
+#include "feature_detector/FeaturesFinder.h"
+#include "feature_detector/MessageBridge.h"
 #include "mobots_msgs/FeatureSetWithDeltaPose.h"
 #include "mobots_msgs/ImageWithPoseDebug.h"
-#include "imageWorker/MessageBridge.h"
 #include "cv_bridge/cv_bridge.h"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
@@ -63,6 +63,7 @@
 #define KEYCODE_SPACE 0x20
 
 using namespace std;
+using namespace cv;
 
 class MobotKeyboardController{
 private:

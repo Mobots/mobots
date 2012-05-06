@@ -7,18 +7,18 @@
   #include <opencv2/core/core.hpp>
 
   static double startTime;
-  static string currentModule;
+  static std::string currentModule;
 
-  inline void moduleStarted(const string moduleName){
-    startTime = (double)getTickCount();
+  inline void moduleStarted(const std::string moduleName){
+    startTime = (double)cv::getTickCount();
     currentModule = moduleName;
   }
   inline void moduleEnded(){
-    double execTime = ((double)getTickCount() - startTime)/getTickFrequency();
-    cout << "[Profile] " << currentModule << ": " << execTime << "s" << endl;
+    double execTime = ((double)cv::getTickCount() - startTime)/cv::getTickFrequency();
+    std::cout << "[Profile] " << currentModule << ": " << execTime << "s" << std::endl;
   }
 #else
-  inline void moduleStarted(const string moduleName){}
+  inline void moduleStarted(const std::string moduleName){}
   inline void moduleEnded(){}
 #endif
 

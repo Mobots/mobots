@@ -1,14 +1,18 @@
+#include <opencv2/core/core.hpp>
 #include "ros/ros.h"
 #include "cv_bridge/cv_bridge.h"
 #include <iostream>
 
-#include "FeaturesFinder.h"
+#include "feature_detector/MessageBridge.h"
+#include "feature_detector/FeaturesFinder.h"
 #include "mobots_msgs/FeatureSetWithDeltaPose.h"
 #include "mobots_msgs/ImageWithPoseDebug.h"
-#include "imageWorker/MessageBridge.h"
 
-Ptr<FeaturesFinder> detector;
+using namespace std;
+
+cv::Ptr<FeaturesFinder> detector;
 ros::Publisher publisher;
+
 
 void processImage(const mobots_msgs::ImageWithPoseDebug& image){
   cout << "processImage" << endl;
