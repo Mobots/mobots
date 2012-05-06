@@ -1,9 +1,6 @@
-#include "FeaturesFinder.h"
 #include "mobots_msgs/CvMat.h"
 #include "mobots_msgs/CvKeyPoint.h"
-#include "mobots_msgs/FeatureSetWithDeltaPose.h"
-#include "sensor_msgs/Image.h"
-#include "imageWorker/MessageBridge.h"
+#include "feature_detector/MessageBridge.h"
 
 using namespace std;
 using namespace cv;

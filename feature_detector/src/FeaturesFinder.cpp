@@ -1,10 +1,11 @@
 #include <opencv2/gpu/gpumat.hpp>
 #include <iostream>
 
-#include "FeaturesFinder.h"
+#include "feature_detector/FeaturesFinder.h"
 #include "profile.h"
 
 using namespace std;
+using namespace cv;
 using namespace cv::gpu;
 
 /*void assertGpu(){

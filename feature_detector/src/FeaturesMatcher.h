@@ -1,8 +1,9 @@
-#include "FeaturesFinder.h"
+#include <opencv2/core/core.hpp>
+#include <opencv2/features2d/features2d.hpp>
+
+#include "feature_detector/FeaturesFinder.h"
 
 #pragma once
-
-using namespace std;
 
 typedef struct{
   double x;
@@ -26,10 +27,10 @@ public:
 
 class CpuFeaturesMatcher : public FeaturesMatcher{
 private:
-  Ptr<DescriptorMatcher> matcher;
+  cv::Ptr<cv::DescriptorMatcher> matcher;
 public:
   virtual ~CpuFeaturesMatcher(){}
-  CpuFeaturesMatcher(const string& type);
+  CpuFeaturesMatcher(const std::string& type);
   virtual bool match(const ImageFeatures& img1, const ImageFeatures& img2, Delta& delta) const;
   
   static const char SURF_DEFAULT[];
