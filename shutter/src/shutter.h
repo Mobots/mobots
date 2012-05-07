@@ -1,6 +1,6 @@
 #include <cstdio>
 #include <../../opt/ros/electric/stacks/ros_comm/clients/cpp/roscpp/include/ros/ros.h>
-#include <../../home/hugebird/ros_workspace/shutter/msg_gen/cpp/include/shutter/ImagePoseID.h>
+#include <shutter/ImagePoseID.h>
 #include <math.h>
 
 class Shutter {

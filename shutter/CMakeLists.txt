@@ -26,7 +26,7 @@ rosbuild_genmsg()
 #target_link_libraries(${PROJECT_NAME} another_library)
 #rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
-#rosbuild_add_executable(shutter bin/rect)
+rosbuild_add_executable(shutter src/shutter.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 rosbuild_find_ros_package(image_transport)
 
