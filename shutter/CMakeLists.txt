@@ -32,7 +32,7 @@ rosbuild_find_ros_package(image_transport)
 
 
 rosbuild_add_boost_directories()
-rosbuild_add_executable(shutter_node src/shutter.cpp)
+#rosbuild_add_executable(shutter_node src/shutter.cpp)
 
 rosbuild_find_ros_package(dynamic_reconfigure)
 include(${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
