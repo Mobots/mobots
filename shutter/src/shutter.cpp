@@ -2,7 +2,10 @@
 
 Shutter::Shutter(int mobot_ID):id(mobot_ID)
 {
-    ros::init(argv, argc, "shutter_" << mobot_ID);
+    argc = 0;
+    std::stringstream s;
+    s << "shutter_" << mobot_ID;
+    ros::init(argc, (char**)argv, s.str());
     ros::NodeHandle nh;
     Shutter::startShutter();
 }
@@ -12,11 +15,13 @@ Shutter::~Shutter() {
 
 void Shutter::startShutter()
 {
-    poseImage_pub = nh.advertise("/mobot_pose/ImagePoseID", 2);
+    poseImage_pub = nh.advertise<shutter::ImagePoseID>("/mobot_pose/ImagePoseID", 2);
 
     image_sub = nh.subscribe("/usb_cam/image_raw", 5, &Shutter::imageCallback, this);
     pose_sub = nh.subscribe("/mouse/pose", 100, &Shutter::mouseCallback, this);
 
+    
+    overlap = 0.2;
     dX = 0;
     dY = 0;
     dTheta = 0;
@@ -28,7 +33,7 @@ void Shutter::startShutter()
 
 }
 
-void Shutter::publishMessage(double &x, double &y, double &theta, sensor::Image &image) {
+void Shutter::publishMessage(double &x, double &y, double &theta, const sensor_msgs::Image &image) {
     ipid.Mobot_ID = id;
     ipid.image = image;
 
