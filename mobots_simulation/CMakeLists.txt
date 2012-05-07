@@ -29,4 +29,4 @@ rosbuild_add_boost_directories()
 rosbuild_add_executable(keyboard src/keyboard.cpp ../feature_detector/src/FeaturesMatcher.cpp ../feature_detector/src/ror.cpp) ##ugly for now
 #rosbuild_add_executable(mobots_teleop_bridge src/mobots_teleop_bridge.cpp)
 #rosbuild_add_executable(image_worker src/image_worker.cpp)
-#target_link_libraries(example ${PROJECT_NAME})
+target_link_libraries(keyboard pthread)
