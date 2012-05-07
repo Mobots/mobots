@@ -28,7 +28,7 @@ void Shutter::startShutter()
 
 }
 
-void Shutter::publishMessage(double &x, double &y, double &theta, sensor_msgs::Image &image) {
+void Shutter::publishMessage(double &x, double &y, double &theta, sensor::Image &image) {
     ipid.Mobot_ID = id;
     ipid.image = image;
 
