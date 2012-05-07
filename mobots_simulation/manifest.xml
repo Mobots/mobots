@@ -15,6 +15,7 @@
 	<depend package="cv_bridge" />
 	<depend package="mobots_msgs" />
 	<depend package="feature_detector" />
+	<depend package="geometry_msgs" />
 
   <export>
     <gazebo gazebo_media_path="${prefix}/worlds" />
