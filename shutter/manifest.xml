@@ -4,10 +4,15 @@
      shutter
 
   </description>
-  <author>Florian Krämer, Hauke Hansen</author>
+  <author>HugeBird</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/shutter</url>
+  
+  <depend package="roscpp"/>
+  <depend package="geometry_msgs"/>
+  <depend package="std_msgs"/>
+  <depend package="sensor_msgs"/>
 
 </package>
 
