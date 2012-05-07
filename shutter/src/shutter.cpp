@@ -1,5 +1,12 @@
 #include "shutter.h"
+#include <iostream>
 
+
+int main(int argc, char** argv){
+ros::init(argc, argv, "shutter");
+Shutter shutter(0);
+shutter.startShutter();
+}
 Shutter::Shutter(int mobot_ID):id(mobot_ID)
 {
     argc = 0;
@@ -17,7 +24,7 @@ void Shutter::startShutter()
 {
     poseImage_pub = nh.advertise<shutter::ImagePoseID>("/mobot_pose/ImagePoseID", 2);
 
-    image_sub = nh.subscribe("/usb_cam/image_raw", 5, &Shutter::imageCallback, this);
+    image_sub = nh.subscribe("/my_cam/image", 5, &Shutter::imageCallback, this);
     pose_sub = nh.subscribe("/mouse/pose", 100, &Shutter::mouseCallback, this);
 
     
@@ -49,11 +56,13 @@ void Shutter::publishMessage(double &x, double &y, double &theta, const sensor_m
 
 double Shutter::checkPicture(double x, double y, double theta) {
     double r = sqrt((x*x/4) + (y*y/4));
-    return 1 - (r/y);
+	std::cout << 1-r/0.15 << "x " << x << std::endl;
+    return 1 - (r/0.15);
 }
 
 
 void Shutter::imageCallback(const sensor_msgs::Image &mobot_image) {
+
     if (checkPicture(dX, dY, dTheta) < overlap) {
         publishMessage(dX, dY, dTheta, mobot_image);
         dX = 0;
