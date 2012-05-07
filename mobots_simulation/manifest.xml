@@ -16,6 +16,7 @@
 	<depend package="mobots_msgs" />
 	<depend package="feature_detector" />
 	<depend package="geometry_msgs" />
+	<depend package="shutter" />
 
   <export>
     <gazebo gazebo_media_path="${prefix}/worlds" />

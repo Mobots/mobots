@@ -38,6 +38,7 @@
 
 #include <boost/thread/thread.hpp>
 #include <ros/ros.h>
+#include "shutter/ImagePoseID.h"
 #include "geometry_msgs/Pose2D.h"
 #include <gazebo_msgs/ModelState.h>
 #include <gazebo_msgs/SetModelState.h>
@@ -133,17 +134,24 @@ geometry_msgs::Pose2D lastPose;
 geometry_msgs::Pose2D deltaPose;
 ros::Publisher posePublisher;
 
+//forward declarations
+void shutterCallback();
+
+void shutter2(const shutter::ImagePoseID i){
+  shutterCallback();
+}
+
 void* deltaPoseThread(void* data){
   ros::Rate rate(50); //50Hz
   while(ros::ok()){
     getClient.call(getStateRequest);
     double theta  = 2*acos(getStateRequest.response.pose.orientation.w);
-    deltaPose.x = 5 - getStateRequest.response.pose.x;
-    deltaPose.y = 5 - getStateRequest.response.pose.y;
-    deltaPose.theta = 5 - theta;
+    deltaPose.x = lastPose.x - getStateRequest.response.pose.position.x;
+    deltaPose.y = lastPose.y - getStateRequest.response.pose.position.y;
+    deltaPose.theta = lastPose.theta - theta;
     posePublisher.publish(deltaPose);
-    lastPose.x = getStateRequest.response.pose.x;
-    lastPose.y = getStateRequest.response.pose.y;
+    lastPose.x = getStateRequest.response.pose.position.x;
+    lastPose.y = getStateRequest.response.pose.position.y;
     lastPose.theta = theta;
     rate.sleep();
   }
@@ -178,6 +186,7 @@ void imageCallback(const sensor_msgs::Image image){
 }
 
 void shutterCallback(){
+  puts("shutter");
   if(shutterPos == 0){
     image1 = cv_bridge::toCvCopy(images[0])->image;
   }else{
@@ -240,12 +249,13 @@ int main(int argc, char** argv){
   boost::thread t = boost::thread(boost::bind(&MobotKeyboardController::keyboardLoop, &tbk));
   ros::NodeHandle nodeHandle;
   publisher = nodeHandle.advertise<mobots_msgs::ImageWithPoseDebug>("ImageWithPose", 2);
-  ros::Subscriber sub1 = nodeHandle.subscribe("FeatureSetWithDeltaPose", 2, featuresCallback);
-  ros::Subscriber sub2 = nodeHandle.subscribe("/my_cam/image", 2, imageCallback); 
-  posePublisher = nodeHandle.advertise<geometry_msgs::Pose2D>("DeltaPose", 10);
-  ros::spin();
+  ros::Subscriber sub1 = nodeHandle.subscribe("/FeatureSetWithDeltaPose", 2, featuresCallback);
+  ros::Subscriber sub2 = nodeHandle.subscribe("/my_cam/image", 2, imageCallback);
+  ros::Subscriber sub3 = nodeHandle.subscribe("/mobot_pose/ImagePoseID", 2, shutter2);
+  posePublisher = nodeHandle.advertise<geometry_msgs::Pose2D>("/mouse/pose", 10);
   pthread_t t2;
   pthread_create(&t2, 0, deltaPoseThread, 0);
+  ros::spin();
   
   t.interrupt(); //?
   t.join();
@@ -357,7 +367,6 @@ void MobotKeyboardController::keyboardLoop(){
 	    dirty = true;
 	    break;
 	case KEYCODE_SPACE:
-	  puts("shutter");
 	  shutterCallback();
 	  speed = 0;
 	  turn = 0;
