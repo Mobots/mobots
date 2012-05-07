@@ -5,7 +5,6 @@
 int main(int argc, char** argv){
 ros::init(argc, argv, "shutter");
 Shutter shutter(0);
-shutter.startShutter();
 }
 Shutter::Shutter(int mobot_ID):id(mobot_ID)
 {
@@ -14,7 +13,7 @@ Shutter::Shutter(int mobot_ID):id(mobot_ID)
     s << "shutter_" << mobot_ID;
     ros::init(argc, (char**)argv, s.str());
     ros::NodeHandle nh;
-    Shutter::startShutter();
+    Shutter::startShutter();    
 }
 
 Shutter::~Shutter() {
@@ -22,6 +21,7 @@ Shutter::~Shutter() {
 
 void Shutter::startShutter()
 {
+    ROS_INFO("Shutterfunktion gestartet.");
     poseImage_pub = nh.advertise<shutter::ImagePoseID>("/mobot_pose/ImagePoseID", 2);
 
     image_sub = nh.subscribe("/my_cam/image", 5, &Shutter::imageCallback, this);
