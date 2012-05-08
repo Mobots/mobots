@@ -34,7 +34,7 @@ material MobotsSimulation/Tehran
     {
       texture_unit
       {
-         texture pocket_map_of_tehran.jpg
+         texture teheran.jpg
       }
     }
   }
