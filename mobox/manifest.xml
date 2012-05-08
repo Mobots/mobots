@@ -10,9 +10,7 @@
   <url>http://ros.org/wiki/mobox</url>
 
   <depend package="roscpp" />
-  <depend package="image_view" />
-  <depend package="dynamic_reconfigure" />
-  <depend package="gazebo_msgs" />
+  <depend package="geometry_msgs" />
 
 </package>
 
