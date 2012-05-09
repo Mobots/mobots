@@ -1,0 +1,9 @@
+<library path="lib/image_map_display">
+  <class name="map_visualization/image_map_display"
+         type="map_visualization::ImageMapDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays an image of a map tile
+    </description>
+  </class>
+</library>
