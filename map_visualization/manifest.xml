@@ -1,0 +1,18 @@
+<package>
+  <description brief="Map Visualization">
+
+     visualization
+
+  </description>
+  <author>Moritz Ulmer</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/visualization</url>
+  <depend package="rviz"/>
+  <depend package="mobots_msgs"/>
+  <depend package="nav_msgs"/>
+  <export>
+    <rosdoc config="${prefix}/rosdoc.yaml"/>
+    <rviz plugin="${prefix}/plugin_description.xml"/>
+  </export>
+</package>
