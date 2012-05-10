@@ -29,6 +29,7 @@
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreLight.h>
 
 #include <tf/transform_listener.h>
 
@@ -63,7 +64,6 @@ void ImageMapDisplay::onInitialize()
 {
   // Make an Ogre::SceneNode to contain all our visuals.
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-  scene_manager_->setAmbientLight(Ogre::ColourValue(0, 0, 0));
   
   // Set the default history length and resize the ``visuals_`` array.
   setHistoryLength( 1 );
@@ -346,5 +346,5 @@ void ImageMapDisplay::createProperties()
 // Tell pluginlib about this class.  It is important to do this in
 // global scope, outside our package's namespace.
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS( map_visualization, Imu, map_visualization::ImageMapDisplay, rviz::Display )
+PLUGINLIB_DECLARE_CLASS( map_visualization, ImageMap, map_visualization::ImageMapDisplay, rviz::Display )
 // END_TUTORIAL

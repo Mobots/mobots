@@ -65,7 +65,7 @@ ImageMapVisual::ImageMapVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNo
   plane_ = new Ogre::Plane(Ogre::Vector3::UNIT_Y, 0);
   
   Ogre::MeshManager::getSingleton().createPlane("ground", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-      *plane_, 150, 150, 20, 20, true, 1, 5, 5, Ogre::Vector3::UNIT_Z);
+      *plane_, 5, 5, 1, 1, true, 1, 1, 1, Ogre::Vector3::UNIT_Z);
   
   entity_ground_ = scene_manager_->createEntity("GroundEntity", "ground");
   frame_node2_->attachObject(entity_ground_);
@@ -102,8 +102,8 @@ void ImageMapVisual::setMessage( const sensor_msgs::Imu::ConstPtr& msg )
   acceleration_arrow_->setDirection( acc );
   
   // Color in the plane with the image from the msg
-  //entity_ground_->setMaterialName("Examples/Rockwall");
-  //entity_ground_->setCastShadows(false);
+  entity_ground_->setMaterialName("Examples/Rockwall");
+  entity_ground_->setCastShadows(false);
 }
 
 // Position and orientation are passed through to the SceneNode.
