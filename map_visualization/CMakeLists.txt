@@ -28,6 +28,16 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 ## collected above in ``${SOURCE_FILES}``.
 rosbuild_add_library(${PROJECT_NAME} ${SOURCE_FILES})
 
+## Link the library with whatever Qt libraries have been defined by
+## the ``find_package(Qt4 ...)`` line above.
+##
+## Although this puts "rviz_plugin_tutorials" (or whatever you have
+## called the project) as the name of the library, cmake knows it is a
+## library and names the actual file something like
+## "librviz_plugin_tutorials.so", or whatever is appropriate for your
+## particular OS.
+target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES})
+
 #uncomment if you have defined messages
 #rosbuild_genmsg()
 #uncomment if you have defined services

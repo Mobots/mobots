@@ -35,6 +35,12 @@
 #include <sensor_msgs/Imu.h>
 #include <rviz/display.h>
 
+#include <OGRE/OgreLight.h>
+#include <OGRE/OgrePlane.h>
+#include <OGRE/OgreEntity.h>
+#include <OGRE/OgreMeshManager.h>
+#include <OGRE/OgreMaterialManager.h>
+
 namespace Ogre
 {
 class SceneNode;
@@ -99,6 +105,10 @@ public:
 protected:
   virtual void onEnable();
   virtual void onDisable();
+  
+  Ogre::MovablePlane* mPlane;
+  Ogre::Entity*       mPlaneEnt;
+  Ogre::SceneNode*    mPlaneNode;
 
   // Function to handle an incoming ROS message.
 private:

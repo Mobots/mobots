@@ -1,5 +1,5 @@
-<library path="lib/image_map_display">
-  <class name="map_visualization/image_map_display"
+<library path="lib/libmap_visualization">
+  <class name="map_visualization/ImageMap"
          type="map_visualization::ImageMapDisplay"
          base_class_type="rviz::Display">
     <description>
