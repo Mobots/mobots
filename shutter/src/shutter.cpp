@@ -1,6 +1,4 @@
 #include "shutter.h"
-#include <iostream>
-
 
 int main(int argc, char** argv){
 ros::init(argc, argv, "shutter");
@@ -29,6 +27,7 @@ void Shutter::startShutter()
 
     
     overlap = 0.2;
+    g(4,3);		//Instanzierung von Geometry
     dX = 0;
     dY = 0;
     dTheta = 0;
@@ -54,16 +53,11 @@ void Shutter::publishMessage(double &x, double &y, double &theta, const sensor_m
 
 }
 
-double Shutter::checkPicture(double x, double y, double theta) {
-    double r = sqrt((x*x/4) + (y*y/4));
-	std::cout << 1-r/0.15 << "x " << x << std::endl;
-    return 1 - (r/0.15);
-}
 
 
 void Shutter::imageCallback(const sensor_msgs::Image &mobot_image) {
 
-    if (checkPicture(dX, dY, dTheta) < overlap) {
+    if (g.checkPicture(dX, dY, dTheta) < overlap) {
         publishMessage(dX, dY, dTheta, mobot_image);
         dX = 0;
         dY = 0;
