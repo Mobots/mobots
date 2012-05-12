@@ -78,7 +78,7 @@ void checkResult(){
   cout << "deltaY " << delta.y << endl;
   cout << "theta " << delta.theta << " rad = " << toDegree(delta.theta) << "°" << endl;
   Mat aff;
-  findRotationMatrix2D(Point2f(0,0), delta.theta, aff);
+  findRotationMatrix2D(Point2f(image2.cols/2, image2.rows/2), delta.theta, aff);
   aff.at<double>(0,2) = delta.x;
   aff.at<double>(1,2) = delta.y;
   cout << "affen mat: " << endl << aff << endl;
