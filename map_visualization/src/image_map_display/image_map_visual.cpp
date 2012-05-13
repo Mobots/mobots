@@ -1,38 +1,19 @@
-/*
- * Copyright (c) 2012, Willow Garage, Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the Willow Garage, Inc. nor the names of its
- *       contributors may be used to endorse or promote products derived from
- *       this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- */
-
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgrePlane.h>
 #include <OGRE/OgreEntity.h>
 #include <OGRE/OgreMeshManager.h>
+#include <OGRE/OgreManualObject.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreDataStream.h>
+
+#include <iostream>
+#include <fstream>
+
+#include <opencv/cv.h>
+#include <opencv/cvaux.h>
+#include <opencv/highgui.h>
 
 #include <rviz/ogre_helpers/arrow.h>
 
@@ -59,24 +40,132 @@ ImageMapVisual::ImageMapVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNo
   // We create the arrow object within the frame node so that we can
   // set its position and direction relative to its header frame.
   acceleration_arrow_ = new rviz::Arrow( scene_manager_, frame_node_ );
+   
+  ROS_INFO("Check1");
+  static int count = 0;
+  std::stringstream ss;
+  ss << "MapObjectMaterial" << count++;
+  material_ = Ogre::MaterialManager::getSingleton().create( ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
+  material_->setReceiveShadows(false);
+  material_->getTechnique(0)->setLightingEnabled(false);
+  material_->setDepthBias( -16.0f, 0.0f );
+  material_->setCullingMode( Ogre::CULL_NONE );
+  material_->setDepthWriteEnabled(false);
   
+  ROS_INFO("Check2");
+  filename_ = "TillEvil.jpg";
+  static int tex_count = 0;
+  std::stringstream ss2;
+  ss2 << "MapTexture" << tex_count++;
+  size_t pos = filename_.find_last_of('.');
+  Ogre::String ext = filename_.substr(pos+1);
+  
+  ROS_INFO("Check3.0| %s", filename_.c_str());
+  cv::Mat img = cv::imread( "TillEvil.jpg", 0 );
+  cv::Size size = img.size();
+  ROS_INFO("Check3.0| %i", sizeof(img.data));
+  Ogre::DataStreamPtr imgStrm(new Ogre::MemoryDataStream(img.data, img.elemSize()));
+  ROS_INFO("Check3.2");
+  
+  /*ROS_INFO("Check3");
+  std::ifstream i;
+  ROS_INFO("Check3.1");
+  //Ogre::FileStreamDataStream* pFS = 0;
+  ROS_INFO("Check3.2");
+  i.open(filename_.c_str(), std::ios::binary | std::ios::in);
+  if(i.is_open())
+    ROS_INFO("Check3.2.1");
+  ROS_INFO("Check3.3");
+  Ogre::DataStreamPtr strm(new Ogre::FileStreamDataStream(filename_, &i, false));
+  //pFS = new Ogre::FileStreamDataStream(&i, false);
+  ROS_INFO("Check3.4");
+  //Ogre::DataStreamPtr strm(pFS);*/
+  ROS_INFO("Check3.5");
+  image_->loadRawData(imgStrm, size.width, size.height, Ogre::PF_BYTE_RGB);
+  ROS_INFO("Check3.6");
+  //i.close();
+  
+  ROS_INFO("Check4");
+  texture_ = Ogre::TextureManager::getSingleton().loadImage(ss2.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, *image_, Ogre::TEX_TYPE_2D, Ogre::MIP_DEFAULT, 1.0f, false, Ogre::PF_UNKNOWN, false);
+  // Material + Texture = TextureUnit
+  Ogre::Pass* pass = material_->getTechnique(0)->getPass(0);
+  if (pass->getNumTextureUnitStates() > 0)
+  {
+    tex_unit_ = pass->getTextureUnitState(0);
+  }
+  else
+  {
+    tex_unit_ = pass->createTextureUnitState();
+  }
+  tex_unit_->setTextureName(texture_->getName());
+  tex_unit_->setTextureFiltering( Ogre::TFO_NONE );
+  
+  ROS_INFO("Check5");
+  static int map_count = 0;
+  std::stringstream ss3;
+  ss3 << "MapObject" << map_count++;
+  manual_object_ = scene_manager_->createManualObject( ss3.str() );
+  frame_node2_->attachObject( manual_object_ );
+  
+  width_ = 5;
+  height_ = 5;
+  
+  ROS_INFO("Check6");
+  manual_object_->begin(material_->getName(), Ogre::RenderOperation::OT_TRIANGLE_LIST);
+  {
+    // First triangle
+    {
+      // Bottom left
+      manual_object_->position( 0.0f, 0.0f, 0.0f );
+      manual_object_->textureCoord(0.0f, 0.0f);
+      manual_object_->normal( 0.0f, 0.0f, 1.0f );
+      
+      // Top right
+      manual_object_->position( width_, height_, 0.0f );
+      manual_object_->textureCoord(1.0f, 1.0f);
+      manual_object_->normal( 0.0f, 0.0f, 1.0f );
+      
+      // Top left
+      manual_object_->position( 0.0f, height_, 0.0f );
+      manual_object_->textureCoord(0.0f, 1.0f);
+      manual_object_->normal( 0.0f, 0.0f, 1.0f );
+    }
+    
+    // Second triangle
+    {
+      // Bottom left
+      manual_object_->position( 0.0f, 0.0f, 0.0f );
+      manual_object_->textureCoord(0.0f, 0.0f);
+      manual_object_->normal( 0.0f, 0.0f, 1.0f );
+      
+      // Bottom right
+      manual_object_->position( width_, 0.0f, 0.0f );
+      manual_object_->textureCoord(1.0f, 0.0f);
+      manual_object_->normal( 0.0f, 0.0f, 1.0f );
+      
+      // Top right
+      manual_object_->position( width_, height_, 0.0f );
+      manual_object_->textureCoord(1.0f, 1.0f);
+      manual_object_->normal( 0.0f, 0.0f, 1.0f );
+    }
+  }
+  manual_object_->end();
+  ROS_INFO("Check7");
   // Create the plane on which a texture is applied
-  ROS_INFO("Check plane_");
+  /*ROS_INFO("Check plane_");
   plane_ = new Ogre::Plane(Ogre::Vector3::UNIT_Y, 0);
   
   Ogre::MeshManager::getSingleton().createPlane("ground", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
       *plane_, 5, 5, 1, 1, true, 1, 1, 1, Ogre::Vector3::UNIT_Z);
   
   entity_ground_ = scene_manager_->createEntity("GroundEntity", "ground");
-  frame_node2_->attachObject(entity_ground_);
+  frame_node2_->attachObject(entity_ground_);*/
 }
 
 ImageMapVisual::~ImageMapVisual()
 {
   // Delete the arrow to make it disappear.
   delete acceleration_arrow_;
-  delete plane_;
-  delete entity_ground_;
 
   // Destroy the frame node since we don't need it anymore.
   scene_manager_->destroySceneNode( frame_node_ );
@@ -122,6 +211,26 @@ void ImageMapVisual::setColor( float r, float g, float b, float a )
 {
   acceleration_arrow_->setColor( r, g, b, a );
 }
+
+/*bool LoadImage(const Ogre::String& texture_name, const Ogre::String& texture_path){
+  bool image_loaded = false;
+  std::ifstream ifs(texture_path.c_str(), std::ios::binary|std::ios::in);
+  if (ifs.is_open()){
+    Ogre::String tex_ext;
+    Ogre::String::size_type index_of_extension = texture_path.find_last_of('.');
+    if (index_of_extension != Ogre::String::npos)
+    {
+      tex_ext = texture_path.substr(index_of_extension+1);
+      Ogre::DataStreamPtr data_stream(new Ogre::FileStreamDataStream(texture_path, &ifs, false));
+      Ogre::Image img;
+      img.load(data_stream, tex_ext);
+      Ogre::TextureManager::getSingleton().loadImage(texture_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, img, Ogre::TEX_TYPE_2D, 0, 1.0f);
+      image_loaded = true;
+    }
+    ifs.close();
+  }
+  return image_loaded;
+}*/
 // END_TUTORIAL
 
 } // end namespace rviz_plugin_tutorials
