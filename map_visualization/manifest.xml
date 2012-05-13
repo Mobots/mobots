@@ -11,6 +11,7 @@
   <depend package="rviz"/>
   <depend package="mobots_msgs"/>
   <depend package="nav_msgs"/>
+  <depend package="opencv2"/>
   <export>
     <rosdoc config="${prefix}/rosdoc.yaml"/>
     <rviz plugin="${prefix}/plugin_description.xml"/>
