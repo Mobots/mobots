@@ -1,7 +1,9 @@
 #include <cstdio>
+#include <iostream>
 #include <../../opt/ros/electric/stacks/ros_comm/clients/cpp/roscpp/include/ros/ros.h>
 #include <shutter/ImagePoseID.h>
 #include <math.h>
+#include "geometry.h"
 
 class Shutter {
 
@@ -19,7 +21,11 @@ public:
     ros::Subscriber image_sub;
     ros::Publisher poseImage_pub;
     shutter::ImagePoseID ipid;
+    
+    
+private:
     int id;
+    Geometry g;
     double overlap;
     double dX, dY, dTheta, globalX, globalY, globalTheta;
     int argc;
