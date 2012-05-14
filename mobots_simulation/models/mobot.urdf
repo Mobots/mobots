@@ -56,6 +56,7 @@
     <child link="camera"/>
   </joint>
 
+<!--
   <gazebo reference="camera">
     <sensor:camera name="camera_sensor">
       <imageSize>640 480</imageSize>
@@ -75,5 +76,6 @@
     <turnGravityOff>true</turnGravityOff>
     <material>PR2/Blue</material>
   </gazebo>
+-->
 
 </robot>
