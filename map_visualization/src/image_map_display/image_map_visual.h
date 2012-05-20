@@ -86,7 +86,15 @@ private:
   rviz::Arrow* acceleration_arrow_;
   Ogre::Plane* plane_;
   Ogre::Entity* entity_ground_;
-
+  Ogre::MaterialPtr material_;
+  Ogre::TexturePtr texture_;
+  Ogre::TextureUnitState* tex_unit_;
+  Ogre::ManualObject* manual_object_;
+  Ogre::Image* image_;
+  
+  int width_;
+  int height_;
+  std::string filename_;
   // A SceneNode whose pose is set to match the coordinate frame of
   // the Imu message header.
   Ogre::SceneNode* frame_node_;
@@ -94,6 +102,9 @@ private:
   // The SceneManager, kept here only so the destructor can ask it to
   // destroy the ``frame_node_``.
   Ogre::SceneManager* scene_manager_;
+  
+  //bool LoadImage(const Ogre::String& texture_name, const Ogre::String& texture_path);
+  //bool LoadImage(const Ogre::String& texture_name, const Ogre::String& texture_path);
 };
 // END_TUTORIAL
 
