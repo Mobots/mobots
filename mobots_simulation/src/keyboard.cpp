@@ -19,7 +19,7 @@
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTA	L, SPECIAL, EXEMPLARY, OR
  * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
  * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
@@ -73,6 +73,8 @@ gazebo_msgs::SetModelState setModelStateRequest;
 ros::ServiceClient setClient;
 ros::ServiceClient getClient;
 
+const bool simulation = false;
+
 class MobotKeyboardController{
 private:
   double linear_vel;
@@ -87,9 +89,11 @@ public:
   MobotKeyboardController(){
     //true für persistente Verbindung <> GEHT NICHT IN DIESEM FALL >_<
     setClient = nodeHandle.serviceClient<gazebo_msgs::SetModelState>("/gazebo/set_model_state");
-    setClient.waitForExistence();
+    if(simulation)
+      setClient.waitForExistence();
     getClient = nodeHandle.serviceClient<gazebo_msgs::GetModelState>("/gazebo/get_model_state", true);
-    getClient.waitForExistence();
+    if(simulation)
+      getClient.waitForExistence();
     nodeHandle.param("linear_vel", linear_vel, 0.5);
     nodeHandle.param("linear_vel_fast", linear_vel_fast, 1.0);
     nodeHandle.param("angular_vel", angular_vel, 0.5);
@@ -137,9 +141,6 @@ ros::Publisher posePublisher;
 //forward declarations
 void shutterCallback();
 
-void shutter2(const shutter::ImagePoseID i){
-  shutterCallback();
-}
 
 void* deltaPoseThread(void* data){
   ros::Rate rate(50); //50Hz
@@ -183,6 +184,10 @@ void imageCallback(const sensor_msgs::Image image){
   images[shutterPos] = image;
   imagePos++;
   imagePos %= 2;
+}
+
+void shutter2(const shutter::ImagePoseID i){
+  shutterCallback();
 }
 
 void shutterCallback(){
@@ -250,11 +255,12 @@ int main(int argc, char** argv){
   ros::NodeHandle nodeHandle;
   publisher = nodeHandle.advertise<mobots_msgs::ImageWithPoseDebug>("ImageWithPose", 2);
   ros::Subscriber sub1 = nodeHandle.subscribe("/FeatureSetWithDeltaPose", 2, featuresCallback);
-  ros::Subscriber sub2 = nodeHandle.subscribe("/my_cam/image", 2, imageCallback);
+  ros::Subscriber sub2 = nodeHandle.subscribe("/usb_cam/image_raw", 2, imageCallback);
   ros::Subscriber sub3 = nodeHandle.subscribe("/mobot_pose/ImagePoseID", 2, shutter2);
   posePublisher = nodeHandle.advertise<geometry_msgs::Pose2D>("/mouse/pose", 10);
   pthread_t t2;
-  pthread_create(&t2, 0, deltaPoseThread, 0);
+  if(simulation)
+    pthread_create(&t2, 0, deltaPoseThread, 0);
   ros::spin();
   
   t.interrupt(); //?

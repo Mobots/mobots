@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.4.6)
 include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
-set(ROS_BUILD_TYPE RelWithDebInfo)
+##set(ROS_BUILD_TYPE RelWithDebInfo)
 rosbuild_init()
 
 ## This plugin includes Qt widgets, so we must include Qt like so:
@@ -10,6 +10,9 @@ include(${QT_USE_FILE})
 ## I prefer the Qt signals and slots to avoid defining "emit", "slots",
 ## etc because they can conflict with boost signals, so define QT_NO_KEYWORDS here.
 add_definitions(-DQT_NO_KEYWORDS)
+
+find_package(OpenCV REQUIRED)
+
 
 ## Here we specify the list of source files
 set(SOURCE_FILES
@@ -36,7 +39,7 @@ rosbuild_add_library(${PROJECT_NAME} ${SOURCE_FILES})
 ## library and names the actual file something like
 ## "librviz_plugin_tutorials.so", or whatever is appropriate for your
 ## particular OS.
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${OpenCV_LIBS})
 
 #uncomment if you have defined messages
 #rosbuild_genmsg()
