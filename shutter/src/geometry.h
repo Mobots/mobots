@@ -1,11 +1,6 @@
 #include<iostream>
 #include<stdio.h>
 #define _USE_MATH_DEFINES
-#include<math.h>
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/polygon.hpp>
-#include <boost/geometry/geometries/point_xy.hpp>
-#include <boost/geometry/geometries/adapted/c_array.hpp>
 
 typedef boost::geometry::model::d2::point_xy<double> point;
 typedef boost::geometry::model::polygon<point> polygon;
