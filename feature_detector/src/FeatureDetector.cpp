@@ -29,7 +29,9 @@ int main(int argc, char** argv){
   ros::NodeHandle nodeHandle;
   ros::Subscriber subscriber = nodeHandle.subscribe("ImageWithPose", 100, processImage);
   publisher = nodeHandle.advertise<mobots_msgs::FeatureSetWithDeltaPose>("FeatureSetWithDeltaPose", 10); 
-  detector = new SurfFeaturesFinder(400, 3, 4, 4, 2, false);
+  //detector = new SurfFeaturesFinder(400, 3, 4, 4, 2, false);
+  //detector = new OrbFeaturesFinder(1400);
+  detector = new FastFeaturesFinder;
   cout << "now spinning" << endl;
   ros::spin();
   return 0;

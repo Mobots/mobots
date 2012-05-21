@@ -11,6 +11,7 @@ using namespace cv;
 
 extern Mat image1; //DEBUG
 extern Mat image2;
+Mat H;
 
 const char CpuFeaturesMatcher::SURF_DEFAULT[] = "FlannBased";
 const char CpuFeaturesMatcher::ORB_DEFAULT[] = "BruteForce-Hamming";
@@ -105,8 +106,6 @@ void normalize(double& value){
     value = -1;
 }
 
-#define sgn(x) (( x > 0 ) - ( x < 0 ))
-
 bool CpuFeaturesMatcher::match(const ImageFeatures& img1, const ImageFeatures& img2, Delta& delta) const{
   moduleStarted("cpu matcher");
   vector<vector<DMatch> > matches1;
@@ -118,6 +117,10 @@ bool CpuFeaturesMatcher::match(const ImageFeatures& img1, const ImageFeatures& i
   ratioTest(matches2, ratioThreshold);
   vector<DMatch> good_matches;
   symmetryTest(matches1, matches2, good_matches);
+  /*for(int i = 0; i < matches1.size(); i++){
+    if(matches1[i].size() > 0)
+      good_matches.push_back(matches1[i][0]);
+  }*/
   cout << "symmetric matches: " << good_matches.size() << endl;
   if(good_matches.size() < 5){
     return false;
@@ -133,7 +136,7 @@ bool CpuFeaturesMatcher::match(const ImageFeatures& img1, const ImageFeatures& i
   bool ok = rorAlternative(points1, points2, delta);
   //Mat H = getAffineTransform(&points2[0], &points1[0]);
   //aff = H;
-  //Mat H = findHomography(points2, points1, CV_RANSAC);
+  H = findHomography(points2, points1, CV_RANSAC);
   //aff = H;
   /* Matrix form:
    * cos(theta)  -sin(theta) deltaX

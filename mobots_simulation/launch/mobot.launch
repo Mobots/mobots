@@ -1,9 +1,13 @@
 <launch>
 
-  <!-- as in /opt/ros/fuerte/stacks/pr2_simulator/pr2_gazebo/pr2_no_controllers.launch -->
+  <!-- As in /opt/ros/fuerte/stacks/pr2_simulator/pr2_gazebo/pr2_no_controllers.launch -->
 
-  <!-- push robot_description to factory and spawn robot in gazebo -->
-  <node name="spawn_mobot_model" pkg="gazebo" type="spawn_model" args="$(optenv ROBOT_INITIAL_POSE) -unpause -urdf -file $(find mobots_simulation)/models/mobot.urdf robot_description -model mobot" respawn="false" output="screen" />
+  <!-- Send mobot urdf to param server -->
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find mobots_simulation)/models/mobot.urdf.xacro'" />
+
+  <!-- Push robot_description to factory and spawn robot in gazebo -->
+  <node name="spawn_mobot_model" pkg="gazebo" type="spawn_model" args="$(optenv ROBOT_INITIAL_POSE) -unpause -urdf -param robot_description -model mobot" respawn="false" output="screen" />
+  <!-- Alternative: -file $(find mobots_simulation)/models/mobot.urdf -->
 
 </launch>
 

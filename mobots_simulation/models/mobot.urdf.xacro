@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+  <!-- as in /opt/ros/fuerte/stacks/pr2_common/pr2_description/robots/pr2_no_kinect.urdf.xacro -->
+
+  <robot xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+       xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+       xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+       xmlns:xacro="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+       name="mobot" >
+
+  <!-- misc common stuff? -->
+  <include filename="$(find pr2_description)/urdf/common.xacro" />
+
+  <!-- Include Camera sensor xacro definiton -->
+  <include filename="$(find pr2_description)/urdf/sensors/wge100_camera.urdf.xacro" />
+
+
+  <!-- base_link (Mobot) -->
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="1" radius="1"/>
+      </geometry>
+    </visual>
+
+    <!-- <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="1" radius="1"/>
+      </geometry>
+    </collision> -->
+
+    <inertial>
+      <origin xyz="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0"
+                         iyy="1.0" iyz="0.0"
+                                   izz="1.0" />
+    </inertial>
+  </link>
+
+
+  <!-- Camera -->
+  <xacro:wge100_camera_v0 name="main_cam" image_format="R8G8B8" camera_name="main_cam" image_topic_name="image_raw"
+                          camera_info_topic_name="camera_info"
+                          parent="base_link" hfov="90" focal_length="320"
+                          frame_id="main_cam_optical_frame" hack_baseline="0"
+                          image_width="640" image_height="480">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:wge100_camera_v0>
+
+</robot>

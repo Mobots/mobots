@@ -17,6 +17,7 @@ using namespace std;
 
 Mat image1; //for debug
 Mat image2;
+extern Mat H;
 
 char pos = 0;
 ImageFeatures features1;
@@ -97,6 +98,28 @@ void checkResult(){
   
   imshow("result", result);
   imshow("result2", result2);
+  
+  cout << "H mat " << endl << H << endl;
+  
+  Mat result3;
+  Mat result4;
+  result3.create(Size(image1.cols+image2.cols, image1.rows+image2.rows), image2.type());
+  result4.create(Size(image1.cols+image2.cols, image1.rows+image2.rows), image2.type());
+  Mat outImg3 = result3(Rect(0, 0, image1.cols, image1.rows));
+  Mat outImg41 = result4(Rect(0, 0, image1.cols, image1.rows));
+
+  warpPerspective(image2, result3, H, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  image1.copyTo(outImg3);
+  
+  image1.copyTo(outImg41);
+  warpPerspective(image2, result4, H, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  
+  imshow("result", result);
+  imshow("result2", result2);
+  
+  //imshow("result H", result3);
+  //imshow("result H2", result4);
+  
   //imwrite("out.png", result);
   waitKey(0);
 }
