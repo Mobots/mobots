@@ -1,9 +1,9 @@
 #include <cstdio>
 #include <iostream>
-#include <../../opt/ros/electric/stacks/ros_comm/clients/cpp/roscpp/include/ros/ros.h>
+#include <ros/ros.h>
 #include <mobots_msgs/ImagePoseID.h>
 #include <math.h>
-#include "shutter/geometry.h"
+#include "geometry.h"
 
 
 

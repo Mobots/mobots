@@ -17,7 +17,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 
 ADD_LIBRARY(geometry STATIC IMPORTED)
-SET_TARGET_PROPERTIES(geometry PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/lib/libgeometry.a)
+SET_TARGET_PROPERTIES(geometry PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/lib/libgeometry32.a)
 
 rosbuild_add_executable(shutter src/shutter.cpp)
 target_link_libraries(shutter geometry)
