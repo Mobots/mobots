@@ -2,9 +2,9 @@
 
 int main(int argc, char** argv){
 ros::init(argc, argv, "shutter");
-Shutter shutter(0);
+Shutter shutter(0,4,3);
 }
-Shutter::Shutter(int mobot_ID):id(mobot_ID)
+Shutter::Shutter(int mobot_ID,int l, int b):id(mobot_ID),g(l,b) //Instanzierung von Geometry
 {
     argc = 0;
     std::stringstream s;
@@ -20,14 +20,13 @@ Shutter::~Shutter() {
 void Shutter::startShutter()
 {
     ROS_INFO("Shutterfunktion gestartet.");
-    poseImage_pub = nh.advertise<shutter::ImagePoseID>("/mobot_pose/ImagePoseID", 2);
+    poseImage_pub = nh.advertise<mobots_msgs::ImagePoseID>("/mobot_pose/ImagePoseID", 2);
 
     image_sub = nh.subscribe("/my_cam/image", 5, &Shutter::imageCallback, this);
     pose_sub = nh.subscribe("/mouse/pose", 100, &Shutter::mouseCallback, this);
 
     
     overlap = 0.2;
-    g(4,3);		//Instanzierung von Geometry
     dX = 0;
     dY = 0;
     dTheta = 0;

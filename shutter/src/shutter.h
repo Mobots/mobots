@@ -1,15 +1,17 @@
 #include <cstdio>
 #include <iostream>
 #include <../../opt/ros/electric/stacks/ros_comm/clients/cpp/roscpp/include/ros/ros.h>
-#include <shutter/ImagePoseID.h>
+#include <mobots_msgs/ImagePoseID.h>
 #include <math.h>
-#include "geometry.h"
+#include "shutter/geometry.h"
+
+
 
 class Shutter {
 
 
 public:
-    Shutter(int mobot_ID);
+    Shutter(int mobot_ID, int l,int b);
     ~Shutter();
     void imageCallback(const sensor_msgs::Image &mobot_image);
     void mouseCallback(const geometry_msgs::Pose2D &mouse_data);
@@ -20,7 +22,7 @@ public:
     ros::Subscriber pose_sub;
     ros::Subscriber image_sub;
     ros::Publisher poseImage_pub;
-    shutter::ImagePoseID ipid;
+    mobots_msgs::ImagePoseID ipid;
     
     
 private:

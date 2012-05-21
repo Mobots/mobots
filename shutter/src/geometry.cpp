@@ -5,6 +5,16 @@
 #include <boost/geometry/geometries/point_xy.hpp>
 #include <boost/geometry/geometries/adapted/c_array.hpp>
 
+typedef boost::geometry::model::d2::point_xy<double> point;
+typedef boost::geometry::model::polygon<point> polygon;
+
+using namespace boost::geometry;
+
+
+polygon calcPol(double x, double y,double alpha, double tb, double rb); 
+
+
+
 /*
 int main()
 {
@@ -43,8 +53,8 @@ Geometry::Geometry(double l, double b)
 
 double Geometry::checkPicture(double x, double y, double theta)
 {
-    polygon pol1 = calcPol(0,0,0);
-    polygon pol2 = calcPol(x,y,theta);
+    polygon pol1 = calcPol(0,0,0,t,r);
+    polygon pol2 = calcPol(x,y,theta,t,r);
     std::deque<polygon> pol_list;
     intersection(pol1 , pol2, pol_list);
     double a1 =0;
@@ -57,8 +67,10 @@ double Geometry::checkPicture(double x, double y, double theta)
 
 
 
-polygon Geometry::calcPol(double x, double y, double alpha)
+polygon calcPol(double x, double y, double alpha, double tb, double rb)
 {
+    double t=tb;
+    double r=rb;
     double a = alpha / 180 * M_PI;
     double d;
     int i;
