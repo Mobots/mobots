@@ -7,28 +7,32 @@
        xmlns:xacro="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
        name="mobot" >
 
-  <!-- misc common stuff? -->
+  <!-- misc common stuff?, needed for camera -->
   <include filename="$(find pr2_description)/urdf/common.xacro" />
 
   <!-- Include Camera sensor xacro definiton -->
   <include filename="$(find pr2_description)/urdf/sensors/wge100_camera.urdf.xacro" />
 
+  <!-- materials for visualization -->
+  <include filename="$(find pr2_description)/urdf/materials.urdf.xacro" />
+
 
   <!-- base_link (Mobot) -->
   <link name="base_link">
     <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin xyz="0 0 1" rpy="0 0 0"/>
       <geometry>
         <cylinder length="1" radius="1"/>
       </geometry>
+      <material name="Blue"/>
     </visual>
 
-    <!-- <collision>
+    <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <cylinder length="1" radius="1"/>
       </geometry>
-    </collision> -->
+    </collision>
 
     <inertial>
       <origin xyz="0 0 0" />
