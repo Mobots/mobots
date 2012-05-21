@@ -4,15 +4,15 @@
      shutter
 
   </description>
-  <author>HugeBird</author>
+  <author>HugeBirdFlo</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/shutter</url>
-  
   <depend package="roscpp"/>
   <depend package="geometry_msgs"/>
   <depend package="std_msgs"/>
   <depend package="sensor_msgs"/>
+  <depend package="mobots_msgs"/>
 
 </package>
 
