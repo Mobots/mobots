@@ -1,4 +1,9 @@
 #include "geometry.h"
+#include<math.h>
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/polygon.hpp>
+#include <boost/geometry/geometries/point_xy.hpp>
+#include <boost/geometry/geometries/adapted/c_array.hpp>
 
 /*
 int main()
