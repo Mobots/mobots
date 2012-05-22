@@ -17,7 +17,11 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 
 ADD_LIBRARY(geometry STATIC IMPORTED)
-SET_TARGET_PROPERTIES(geometry PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/lib/libgeometry32.a)
+if (CMAKE_SIZEOF_VOID_P EQUAL 8)  # 64-bit project
+SET_TARGET_PROPERTIES(geometry PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/lib/libgeometry64.a) 
+else()  # 32-bit project
+SET_TARGET_PROPERTIES(geometry PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/lib/libgeometry32.a)  
+endif()
 
 rosbuild_add_executable(shutter src/shutter.cpp)
 target_link_libraries(shutter geometry)
