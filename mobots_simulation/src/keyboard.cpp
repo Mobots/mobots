@@ -38,7 +38,6 @@
 
 #include <boost/thread/thread.hpp>
 #include <ros/ros.h>
-#include "shutter/ImagePoseID.h"
 #include "geometry_msgs/Pose2D.h"
 #include <gazebo_msgs/ModelState.h>
 #include <gazebo_msgs/SetModelState.h>
@@ -48,6 +47,7 @@
 #include "feature_detector/MessageBridge.h"
 #include "mobots_msgs/FeatureSetWithDeltaPose.h"
 #include "mobots_msgs/ImageWithPoseDebug.h"
+#include "mobots_msgs/ImagePoseID.h"
 #include "cv_bridge/cv_bridge.h"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
@@ -67,13 +67,15 @@
 using namespace std;
 using namespace cv;
 
+#define SIMULATION
+//#define ENABLE_MANUAL_SHUTTER
+
+#ifdef SIMULATION
 gazebo_msgs::GetModelState getStateRequest;
 gazebo_msgs::ModelState modelState;
 gazebo_msgs::SetModelState setModelStateRequest;
 ros::ServiceClient setClient;
 ros::ServiceClient getClient;
-
-const bool simulation = false;
 
 class MobotKeyboardController{
 private:
@@ -81,30 +83,25 @@ private:
   double angular_vel;
   double linear_vel_fast;
   double angular_vel_fast;
-
-  ros::NodeHandle nodeHandle; //TODO wtf put this into constructor and gazebo goes fubar
-      
+  ros::NodeHandle nodeHandle; //TODO wtf put this into constructor and gazebo goes fubar   
 	
 public:
   MobotKeyboardController(){
-    //true für persistente Verbindung <> GEHT NICHT IN DIESEM FALL >_<
-    setClient = nodeHandle.serviceClient<gazebo_msgs::SetModelState>("/gazebo/set_model_state");
-    if(simulation)
-      setClient.waitForExistence();
-    getClient = nodeHandle.serviceClient<gazebo_msgs::GetModelState>("/gazebo/get_model_state", true);
-    if(simulation)
-      getClient.waitForExistence();
-    nodeHandle.param("linear_vel", linear_vel, 0.5);
-    nodeHandle.param("linear_vel_fast", linear_vel_fast, 1.0);
-    nodeHandle.param("angular_vel", angular_vel, 0.5);
-    nodeHandle.param("angular_vel_fast", angular_vel_fast, 1.5);
+    ros::NodeHandle handle("~");
+    handle.param("linear_vel", linear_vel, 0.5);
+    handle.param("linear_vel_fast", linear_vel_fast, 1.0);
+    handle.param("angular_vel", angular_vel, 0.5);
+    handle.param("angular_vel_fast", angular_vel_fast, 1.5);
+    setClient = handle.serviceClient<gazebo_msgs::SetModelState>("/gazebo/set_model_state");
+    setClient.waitForExistence();
+    getClient = handle.serviceClient<gazebo_msgs::GetModelState>("/gazebo/get_model_state", true);
+    getClient.waitForExistence();
     getStateRequest.request.model_name = std::string("mobot");
     getStateRequest.request.relative_entity_name = std::string("world");
     modelState.model_name = std::string("mobot");
-    modelState.reference_frame = std::string("world"); 
+    modelState.reference_frame = std::string("world");
   }
         
-  ~MobotKeyboardController(){}
   void keyboardLoop();
 
   void stopRobot(){
@@ -117,8 +114,8 @@ public:
     setClient.call(setModelStateRequest);
   }
 };
+#endif
 
-MobotKeyboardController* tbk;
 int kfd = 0;
 struct termios cooked, raw;
 bool done;
@@ -133,14 +130,12 @@ sensor_msgs::Image images[2];
 ImageFeatures features1;
 ImageFeatures features2;
 
+
+#ifdef SIMULATION
 // --- DeltaPose Node --- 
 geometry_msgs::Pose2D lastPose;
 geometry_msgs::Pose2D deltaPose;
 ros::Publisher posePublisher;
-
-//forward declarations
-void shutterCallback();
-
 
 void* deltaPoseThread(void* data){
   ros::Rate rate(50); //50Hz
@@ -157,6 +152,7 @@ void* deltaPoseThread(void* data){
     rate.sleep();
   }
 }
+#endif
 
 
 /**
@@ -186,10 +182,6 @@ void imageCallback(const sensor_msgs::Image image){
   imagePos %= 2;
 }
 
-void shutter2(const shutter::ImagePoseID i){
-  shutterCallback();
-}
-
 void shutterCallback(){
   puts("shutter");
   if(shutterPos == 0){
@@ -202,6 +194,11 @@ void shutterCallback(){
   publisher.publish(msg);
   shutterPos++;
   shutterPos %= 2;
+}
+
+void shutter2(const mobots_msgs::ImagePoseID imageWithPoseAndId){
+  imageCallback(imageWithPoseAndId.image);
+  shutterCallback();
 }
 
 void featuresCallback(const mobots_msgs::FeatureSetWithDeltaPose featuresMsg){
@@ -249,28 +246,34 @@ void featuresCallback(const mobots_msgs::FeatureSetWithDeltaPose featuresMsg){
 
 int main(int argc, char** argv){
   ros::init(argc, argv, "MobotKeyboardController", ros::init_options::AnonymousName | ros::init_options::NoSigintHandler);
-  MobotKeyboardController tbk;
-  
-  boost::thread t = boost::thread(boost::bind(&MobotKeyboardController::keyboardLoop, &tbk));
   ros::NodeHandle nodeHandle;
   publisher = nodeHandle.advertise<mobots_msgs::ImageWithPoseDebug>("ImageWithPose", 2);
   ros::Subscriber sub1 = nodeHandle.subscribe("/FeatureSetWithDeltaPose", 2, featuresCallback);
-  ros::Subscriber sub2 = nodeHandle.subscribe("/usb_cam/image_raw", 2, imageCallback);
   ros::Subscriber sub3 = nodeHandle.subscribe("/mobot_pose/ImagePoseID", 2, shutter2);
+#ifdef SIMULATION
+  #ifdef ENABLE_MANUAL_SHUTTER
+    ros::Subscriber sub2 = nodeHandle.subscribe("/my_cam/image", 2, imageCallback);
+  #endif
   posePublisher = nodeHandle.advertise<geometry_msgs::Pose2D>("/mouse/pose", 10);
+  MobotKeyboardController tbk;
+  boost::thread t = boost::thread(boost::bind(&MobotKeyboardController::keyboardLoop, &tbk));
   pthread_t t2;
-  if(simulation)
-    pthread_create(&t2, 0, deltaPoseThread, 0);
+  pthread_create(&t2, 0, deltaPoseThread, 0);
+#else
+  ros::Subscriber sub2 = nodeHandle.subscribe("/usb_cam/image_raw", 2, imageCallback);
+#endif
   ros::spin();
-  
+#ifdef SIMULATION
   t.interrupt(); //?
   t.join();
   tbk.stopRobot();
   tcsetattr(kfd, TCSANOW, &cooked);
+#endif
   
   return(0);
 }
 
+#ifdef SIMULATION
 void MobotKeyboardController::keyboardLoop(){
   char c;
   double max_tv = linear_vel;
@@ -291,7 +294,9 @@ void MobotKeyboardController::keyboardLoop(){
   puts("Use W/S to drive forward/backward");
   puts("Use A/D to turn around");
   puts("Press Shift to move faster");
+#ifdef ENABLE_MANUAL_SHUTTER
   puts("Press space to shutter");
+#endif
   
   struct pollfd ufd;
   ufd.fd = kfd;
@@ -373,7 +378,9 @@ void MobotKeyboardController::keyboardLoop(){
 	    dirty = true;
 	    break;
 	case KEYCODE_SPACE:
+#ifdef ENABLE_MANUAL_SHUTTER
 	  shutterCallback();
+#endif
 	  speed = 0;
 	  turn = 0;
 	  break;
@@ -386,4 +393,4 @@ void MobotKeyboardController::keyboardLoop(){
     setClient.call(setModelStateRequest);
   }
 }
-
+#endif
