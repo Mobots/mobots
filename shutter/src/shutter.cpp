@@ -7,7 +7,7 @@ ros::init(argc, argv, "shutter");
 //Maussensor-Werte einsetzen. Sprich: Mit dem Sim einmal eine Bildbreite abfahren 
 //und schauen, wo der Maussensor-Wert liegt. Diesen als l eintragen.
 //b ist dann im Bildverhältnis umzurechnen.
-Shutter shutter(0,4,3);
+Shutter shutter(0,1.06805,0.80104);
 }
 Shutter::Shutter(int mobot_ID,int l, int b):id(mobot_ID),g(l,b) //Instanzierung von Geometry
 {
@@ -61,21 +61,18 @@ void Shutter::publishMessage(double &x, double &y, double &theta, const sensor_m
 
 void Shutter::imageCallback(const sensor_msgs::Image &mobot_image) {
   
-  /*  if (g.checkPicture(dX, dY, dTheta) < overlap) {
+    if (g.checkPicture(dX, dY, dTheta) < overlap) {
         publishMessage(dX, dY, dTheta, mobot_image);
         dX = 0;
         dY = 0;
         dTheta = 0; // evtl. lock machen
-    } */
+    } 
 }
 
 void Shutter::mouseCallback(const geometry_msgs::Pose2D &mouse_data) {
     dX += mouse_data.x;
     globalX += mouse_data.x;
     dY += mouse_data.y;
-	
-	std::cout << "Xwert: " << dX << "  -  Ywert: " << dY << std::endl;
-
     globalY += mouse_data.y;
     dTheta += mouse_data.theta;
     globalTheta += mouse_data.theta;
