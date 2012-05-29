@@ -2,14 +2,9 @@
 
 int main(int argc, char** argv){
 ros::init(argc, argv, "shutter");
-//Die letzten beiden Parameter von Shutter entsprechen Höhe und Breite.
-//Bis wir uns auf einen endgültigen Maßstab geeinigt haben, können wir hier die
-//Maussensor-Werte einsetzen. Sprich: Mit dem Sim einmal eine Bildbreite abfahren 
-//und schauen, wo der Maussensor-Wert liegt. Diesen als l eintragen.
-//b ist dann im Bildverhältnis umzurechnen.
-Shutter shutter(0,1.06805,0.80104);
+Shutter shutter(0,1.06805,0.80104); //l/b für Simulator: 1.06805,0.80104
 }
-Shutter::Shutter(int mobot_ID,int l, int b):id(mobot_ID),g(l,b) //Instanzierung von Geometry
+Shutter::Shutter(int mobot_ID,double l, double b):id(mobot_ID),g(l,b) //Instanzierung von Geometry
 {
     argc = 0;
     std::stringstream s;
@@ -17,7 +12,6 @@ Shutter::Shutter(int mobot_ID,int l, int b):id(mobot_ID),g(l,b) //Instanzierung 
     ros::init(argc, (char**)argv, s.str());
     ros::NodeHandle nh;
     Shutter::startShutter(); 
-std::cout << g.checkPicture(0.75, 0, 0)<< " haaaaallo" << std::endl;   
 }
 
 Shutter::~Shutter() {

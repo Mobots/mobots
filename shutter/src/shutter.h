@@ -11,7 +11,7 @@ class Shutter {
 
 
 public:
-    Shutter(int mobot_ID, int l,int b);
+    Shutter(int mobot_ID, double l,double b);
     ~Shutter();
     void imageCallback(const sensor_msgs::Image &mobot_image);
     void mouseCallback(const geometry_msgs::Pose2D &mouse_data);
