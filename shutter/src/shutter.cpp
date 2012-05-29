@@ -74,7 +74,7 @@ void Shutter::mouseCallback(const geometry_msgs::Pose2D &mouse_data) {
     globalX += mouse_data.x;
     dY += mouse_data.y;
 	
-	std.out << "Xwert: " << dX << "  -  Ywert: " << dY << std.endl;
+	std::cout << "Xwert: " << dX << "  -  Ywert: " << dY << std::endl;
 
     globalY += mouse_data.y;
     dTheta += mouse_data.theta;
