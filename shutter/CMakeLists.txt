@@ -1,30 +1,28 @@
 cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+#include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 
-rosbuild_init()
+#rosbuild_init()
 
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+#set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
+#set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
+set(Boost_DEBUG ON)
+SET(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} "/usr/include/boost_1_49_0")
+SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} "/usr/include/boost_1_49_0/libs")
+set(BOOST_ROOT /usr/include/boost_1_49_0)
+set(Boost_INCLUDE_DIR /usr/include/boost_1_49_0)
+set(BOOST_LIBRARYDIR /usr/include/boost_1_49_0/libs)
+    set(Boost_USE_STATIC_LIBS   ON)
+    set(Boost_USE_MULTITHREADED ON)
+    find_package(Boost 1.49.0 )
 
+   if(Boost_FOUND)
+      include_directories(${Boost_INCLUDE_DIRS})
+	add_library(geometry src/geometry.cpp)
+	#add_executable(geo src/geometry.cpp)
+	target_link_libraries(geometry ${Boost_LIBRARIES})
+   endif()
 
-#common commands for building c++ executables and libraries
-#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
-#rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
-#rosbuild_add_boost_directories(/usr/local/boost_1_49_0)
-
-
-ADD_LIBRARY(geometry STATIC IMPORTED)
-if (CMAKE_SIZEOF_VOID_P EQUAL 8)  # 64-bit project
-SET_TARGET_PROPERTIES(geometry PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/lib/libgeometry64.a) 
-else()  # 32-bit project
-SET_TARGET_PROPERTIES(geometry PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/lib/libgeometry32.a)  
-endif()
-
-rosbuild_add_executable(shutter src/shutter.cpp)
-target_link_libraries(shutter geometry)
 #target_link_libraries(example ${PROJECT_NAME})
 #rosbuild_find_ros_package(image_transport)
 

@@ -16,7 +16,8 @@ Shutter::Shutter(int mobot_ID,int l, int b):id(mobot_ID),g(l,b) //Instanzierung 
     s << "shutter_" << mobot_ID;
     ros::init(argc, (char**)argv, s.str());
     ros::NodeHandle nh;
-    Shutter::startShutter();    
+    Shutter::startShutter(); 
+std::cout << g.checkPicture(0.75, 0, 0)<< " haaaaallo" << std::endl;   
 }
 
 Shutter::~Shutter() {
@@ -60,7 +61,7 @@ void Shutter::publishMessage(double &x, double &y, double &theta, const sensor_m
 
 
 void Shutter::imageCallback(const sensor_msgs::Image &mobot_image) {
-  
+    
     if (g.checkPicture(dX, dY, dTheta) < overlap) {
         publishMessage(dX, dY, dTheta, mobot_image);
         dX = 0;
