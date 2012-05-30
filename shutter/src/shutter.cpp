@@ -2,16 +2,16 @@
 
 int main(int argc, char** argv){
 ros::init(argc, argv, "shutter");
-Shutter shutter(0,4,3);
+Shutter shutter(0,1.06805,0.80104); //l/b für Simulator: 1.06805,0.80104
 }
-Shutter::Shutter(int mobot_ID,int l, int b):id(mobot_ID),g(l,b) //Instanzierung von Geometry
+Shutter::Shutter(int mobot_ID,double l, double b):id(mobot_ID),g(l,b) //Instanzierung von Geometry
 {
     argc = 0;
     std::stringstream s;
     s << "shutter_" << mobot_ID;
     ros::init(argc, (char**)argv, s.str());
     ros::NodeHandle nh;
-    Shutter::startShutter();    
+    Shutter::startShutter(); 
 }
 
 Shutter::~Shutter() {
@@ -55,13 +55,13 @@ void Shutter::publishMessage(double &x, double &y, double &theta, const sensor_m
 
 
 void Shutter::imageCallback(const sensor_msgs::Image &mobot_image) {
-
+    
     if (g.checkPicture(dX, dY, dTheta) < overlap) {
         publishMessage(dX, dY, dTheta, mobot_image);
         dX = 0;
         dY = 0;
         dTheta = 0; // evtl. lock machen
-    }
+    } 
 }
 
 void Shutter::mouseCallback(const geometry_msgs::Pose2D &mouse_data) {
