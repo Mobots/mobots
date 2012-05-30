@@ -53,7 +53,6 @@ ImageMapVisual::ImageMapVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNo
   material_->setDepthWriteEnabled(false);
   
   ROS_INFO("Check2");
-  filename_ = "TillEvil.jpg";
   static int tex_count = 0;
   std::stringstream ss2;
   ss2 << "MapTexture" << tex_count++;
@@ -61,10 +60,9 @@ ImageMapVisual::ImageMapVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNo
   Ogre::String ext = filename_.substr(pos+1);
   
   ROS_INFO("Check3.0| %s", filename_.c_str());
-  cv::Mat img = cv::imread( "TillEvil.jpg", 0 );
-  cv::Size size = img.size();
-  ROS_INFO("Check3.0| %i", sizeof(img.data));
-  Ogre::DataStreamPtr imgStrm(new Ogre::MemoryDataStream(img.data, img.elemSize()));
+  IplImage* img = cvLoadImage( "/home/moritz/TillEvil.bmp", 1);
+  ROS_INFO("Check3.0| %i,%i;%i;%i-%i", img->width, img->height, img->imageSize, sizeof(img->imageData), img->depth);
+  //Ogre::DataStreamPtr imgStrm(new Ogre::MemoryDataStream(img->imageData, img->imageSize));
   ROS_INFO("Check3.2");
   
   /*ROS_INFO("Check3");
@@ -81,12 +79,12 @@ ImageMapVisual::ImageMapVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNo
   ROS_INFO("Check3.4");
   //Ogre::DataStreamPtr strm(pFS);*/
   ROS_INFO("Check3.5");
-  image_->loadRawData(imgStrm, size.width, size.height, Ogre::PF_BYTE_RGB);
+  //image_->loadRawData(imgStrm, img->width, img->height, Ogre::PF_A8R8G8B8);
   ROS_INFO("Check3.6");
   //i.close();
   
   ROS_INFO("Check4");
-  texture_ = Ogre::TextureManager::getSingleton().loadImage(ss2.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, *image_, Ogre::TEX_TYPE_2D, Ogre::MIP_DEFAULT, 1.0f, false, Ogre::PF_UNKNOWN, false);
+  texture_ = Ogre::TextureManager::getSingleton().createManual(ss2.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, img->width, img->height, 1, 1, Ogre::PF_A8R8G8B8);
   // Material + Texture = TextureUnit
   Ogre::Pass* pass = material_->getTechnique(0)->getPass(0);
   if (pass->getNumTextureUnitStates() > 0)

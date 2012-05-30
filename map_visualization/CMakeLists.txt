@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.4.6)
 include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
-##set(ROS_BUILD_TYPE RelWithDebInfo)
+set(ROS_BUILD_TYPE RelWithDebInfo)
 rosbuild_init()
 
 ## This plugin includes Qt widgets, so we must include Qt like so:
@@ -11,14 +11,12 @@ include(${QT_USE_FILE})
 ## etc because they can conflict with boost signals, so define QT_NO_KEYWORDS here.
 add_definitions(-DQT_NO_KEYWORDS)
 
-find_package(OpenCV REQUIRED)
 
-
-## Here we specify the list of source files
 set(SOURCE_FILES
   src/image_map_display/image_map_display.cpp
   src/image_map_display/image_map_visual.cpp
 )
+set(CMAKE_MODULE_PATH "/usr/share/OGRE/cmake/modules/;${CMAKE_MODULE_PATH}")
 
 #set the default path for built executables to the "bin" directory
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
@@ -30,20 +28,16 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 ## "map_visualization", and specify the list of source files we
 ## collected above in ``${SOURCE_FILES}``.
 rosbuild_add_library(${PROJECT_NAME} ${SOURCE_FILES})
+#rosbuild_add_boost_directories()
 
-## Link the library with whatever Qt libraries have been defined by
-## the ``find_package(Qt4 ...)`` line above.
-##
-## Although this puts "rviz_plugin_tutorials" (or whatever you have
-## called the project) as the name of the library, cmake knows it is a
-## library and names the actual file something like
-## "librviz_plugin_tutorials.so", or whatever is appropriate for your
-## particular OS.
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${OpenCV_LIBS})
+find_package(OGRE REQUIRED)#rosbuild_add_boost_directories()
+#rosbuild_link_boost(${PROJECT_NAME} thread)
+target_link_libraries(${PROJECT_NAME} ${OGRE_LIBRARIES})
+#rosbuild_link_boost(${PROJECT_NAME})
 
-#uncomment if you have defined messages
-#rosbuild_genmsg()
-#uncomment if you have defined services
+#find_package(OpenCV REQUIRED)
+#target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${OpenCV_LIBS})
+
 rosbuild_gensrv()
 
 #common commands for building c++ executables and libraries
