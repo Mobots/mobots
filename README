@@ -1,1 +1,7 @@
 All mobot specific msgs should be placed in mobots_msgs
+
+#####################
+# map_visualization #
+#####################
+
+Required: libogre-dev (Development Files)
