@@ -7,6 +7,7 @@
 #include <OGRE/OgreManualObject.h>
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreDataStream.h>
+#include <OGRE/OgreHardwarePixelBuffer.h>
 
 #include <iostream>
 #include <fstream>
@@ -51,12 +52,50 @@ ImageMapVisual::ImageMapVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNo
   Ogre::String ext = filename_.substr(pos+1);
   
   ROS_INFO("Check3.0| %s", filename_.c_str());
-  IplImage* img = cvLoadImage( "/home/moritz/TillEvil.jpg", 1);
+  IplImage* img = cvLoadImage( "/home/moritz/TillEvil.bmp", 1);
   ROS_INFO("Check3.1| %i,%i;%i;%i-%i", img->width, img->height, img->imageSize, sizeof(img->imageData), img->depth);  
+  //cvShowImage("mainWin", img );
   
   ROS_INFO("Check4");
-  texture_ = Ogre::TextureManager::getSingleton().createManual(ss2.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, img->width, img->height, 1, 1, Ogre::PF_A8R8G8B8);
-  // Material + Texture = TextureUnit
+  // Create the texture
+  texture_ = Ogre::TextureManager::getSingleton().createManual(
+    ss2.str(),			// name
+    Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+    Ogre::TEX_TYPE_2D, 		// type
+    img->width, img->height, 	// width & height
+    0,				// No. of mipmaps
+    Ogre::PF_BYTE_BGRA,		// PixelFormat
+    Ogre::TU_DEFAULT);
+  //---------------------------------------------------------
+  // Get the pixel buffer
+  Ogre::HardwarePixelBufferSharedPtr pixelBuffer = texture_
+    ->getBuffer();
+ 
+  // Lock the pixel buffer and get a pixel box
+  pixelBuffer->lock(Ogre::HardwareBuffer::HBL_NORMAL); // for best performance use HBL_DISCARD!
+  const Ogre::PixelBox& pixelBox = pixelBuffer->getCurrentLock();
+  
+  Ogre::uint8* pDest = static_cast<Ogre::uint8*>(pixelBox.data);
+  
+  // Fill in some pixel data. This will give a semi-transparent blue,
+  // but this is of course dependent on the chosen pixel format.
+  for (size_t j = 0; j < img->width; j++)
+      for(size_t i = 0; i < img->height; i++)
+      {
+	  *pDest++ = 255; // B
+	  *pDest++ =   0; // G
+	  *pDest++ =   0; // R
+	  *pDest++ = 127; // A
+      }
+  
+  // Unlock the pixel buffer
+  pixelBuffer->unlock();
+  
+  // Create a material using the texture
+  material_ = Ogre::MaterialManager::getSingleton().create(
+      "DynamicTextureMaterial", // name
+      Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+//---------------------------------------------------------
   Ogre::Pass* pass = material_->getTechnique(0)->getPass(0);
   if (pass->getNumTextureUnitStates() > 0)
   {
