@@ -43,11 +43,10 @@ void ImageMapDisplay::onInitialize()
   // callback with them when they can be matched up with valid tf
   // transform data.
   tf_filter_ =
-    new tf::MessageFilter<sensor_msgs::Imu>( *vis_manager_->getTFClient(),
-                                             "", 100, update_nh_ );
+    new tf::MessageFilter<sensor_msgs::Imu>( *vis_manager_
+      ->getTFClient(), "", 100, update_nh_ );
   tf_filter_->connectInput( sub_ );
-  tf_filter_->registerCallback( boost::bind( &ImageMapDisplay::incomingMessage,
-                                             this, _1 ));
+  tf_filter_->registerCallback( boost::bind( &ImageMapDisplay::incomingMessage, this, _1 ));
 
   // FrameManager has some built-in functions to set the status of a
   // Display based on callbacks from a tf::MessageFilter.  These work
@@ -145,7 +144,6 @@ void ImageMapDisplay::setHistoryLength( int length )
   
   // Create a new array of visual pointers, all NULL.
   std::vector<ImageMapVisual*> new_visuals( history_length_, (ImageMapVisual*)0 );
-
   // Copy the contents from the old array to the new.
   // (Number to copy is the minimum of the 2 vector lengths).
   size_t copy_len =
@@ -158,12 +156,10 @@ void ImageMapDisplay::setHistoryLength( int length )
     new_visuals[ new_index ] = visuals_[ old_index ];
     visuals_[ old_index ] = NULL;
   }
-
   // Delete any remaining old visuals
   for( size_t i = 0; i < visuals_.size(); i++ ) {
     delete visuals_[ i ];
   }
-
   // We don't need to create any new visuals here, they are created as
   // needed when messages are received.
 
@@ -222,6 +218,7 @@ void ImageMapDisplay::fixedFrameChanged()
 // This is our callback to handle an incoming message.
 void ImageMapDisplay::incomingMessage( const sensor_msgs::Imu::ConstPtr& msg )
 {
+  ROS_INFO("Dis: Incoming Msg");
   ++messages_received_;
   
   // Each display can have multiple status lines.  This one is called
@@ -229,6 +226,7 @@ void ImageMapDisplay::incomingMessage( const sensor_msgs::Imu::ConstPtr& msg )
   std::stringstream ss;
   ss << messages_received_ << " messages received";
   setStatus( rviz::status_levels::Ok, "Topic", ss.str() );
+  ROS_INFO("Dis: Incoming Msg 1");
 
   // Here we call the rviz::FrameManager to get the transform from the
   // fixed frame to the frame in the header of this Imu message.  If
@@ -243,6 +241,7 @@ void ImageMapDisplay::incomingMessage( const sensor_msgs::Imu::ConstPtr& msg )
                msg->header.frame_id.c_str(), fixed_frame_.c_str() );
     return;
   }
+  ROS_INFO("Dis: Incoming Msg 2");
 
   // We are keeping a circular buffer of visual pointers.  This gets
   // the next one, or creates and stores it if it was missing.
@@ -252,12 +251,14 @@ void ImageMapDisplay::incomingMessage( const sensor_msgs::Imu::ConstPtr& msg )
     visual = new ImageMapVisual( vis_manager_->getSceneManager(), scene_node_ );
     visuals_[ messages_received_ % history_length_ ] = visual;
   }
+  ROS_INFO("Dis: Incoming Msg 3");
 
   // Now set or update the contents of the chosen visual.
-  visual->setMessage( msg );
+  /*visual->setMessage( msg );
   visual->setFramePosition( position );
   visual->setFrameOrientation( orientation );
-  visual->setColor( color_.r_, color_.g_, color_.b_, alpha_ );
+  visual->setColor( color_.r_, color_.g_, color_.b_, alpha_ );*/
+    ROS_INFO("Dis: Incoming Msg 4");
 }
 
 // Override rviz::Display's reset() function to add a call to clear().
