@@ -71,8 +71,8 @@ polygon calcPol(double x, double y, double alpha, double tb, double rb)
 {
     double t=tb;
     double r=rb;
-    double a = alpha / 180 * M_PI;
-    double d;
+    double a = alpha;  //bogenmass !
+   double d;
     int i;
     double c[5][2];
     for (i=0; i<4;i++)
