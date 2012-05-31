@@ -52,19 +52,19 @@ ImageMapVisual::ImageMapVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNo
   Ogre::String ext = filename_.substr(pos+1);
   
   ROS_INFO("Check3.0| %s", filename_.c_str());
-  IplImage* img = cvLoadImage( "/home/moritz/TillEvil.bmp", 1);
+  IplImage* img = cvLoadImage( "/home/moritz/TillEvil.jpg", 0);
   ROS_INFO("Check3.1| %i,%i;%i;%i-%i", img->width, img->height, img->imageSize, sizeof(img->imageData), img->depth);  
   //cvShowImage("mainWin", img );
   
   ROS_INFO("Check4");
   // Create the texture
   texture_ = Ogre::TextureManager::getSingleton().createManual(
-    ss2.str(),			// name
+    ss2.str(),				// name
     Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
     Ogre::TEX_TYPE_2D, 		// type
-    img->width, img->height, 	// width & height
-    0,				// No. of mipmaps
-    Ogre::PF_BYTE_BGRA,		// PixelFormat
+    img->width, img->height,// width & height
+    0,						// No. of mipmaps
+    Ogre::PF_L8,		// PixelFormat
     Ogre::TU_DEFAULT);
   //---------------------------------------------------------
   // Get the pixel buffer
@@ -79,22 +79,30 @@ ImageMapVisual::ImageMapVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNo
   
   // Fill in some pixel data. This will give a semi-transparent blue,
   // but this is of course dependent on the chosen pixel format.
-  for (size_t j = 0; j < img->width; j++)
-      for(size_t i = 0; i < img->height; i++)
-      {
-	  *pDest++ = 255; // B
-	  *pDest++ =   0; // G
-	  *pDest++ =   0; // R
-	  *pDest++ = 127; // A
-      }
+  {
+	int k = 0;
+	for (size_t j = 0; j < img->width; j++){
+	  for(size_t i = 0; i < img->height; i++)
+	  {
+		// Black n White TV
+		*pDest++ = img->imageData[k++]; // L
+		// Color TV
+		/* *pDest++ = 127;					// A
+		*pDest++ = img->imageData[k+1]; // B
+		*pDest++ = img->imageData[k+2]; // G
+		*pDest++ = img->imageData[k+0]; // R
+		k+=3;*/
+	  }
+	}
+  }
   
   // Unlock the pixel buffer
   pixelBuffer->unlock();
   
   // Create a material using the texture
   material_ = Ogre::MaterialManager::getSingleton().create(
-      "DynamicTextureMaterial", // name
-      Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+    "DynamicTextureMaterial", // name
+    Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 //---------------------------------------------------------
   Ogre::Pass* pass = material_->getTechnique(0)->getPass(0);
   if (pass->getNumTextureUnitStates() > 0)
@@ -125,17 +133,17 @@ ImageMapVisual::ImageMapVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNo
     {
       // Bottom left
       manual_object_->position( 0.0f, 0.0f, 0.0f );
-      manual_object_->textureCoord(0.0f, 0.0f);
+      manual_object_->textureCoord(0.0f, 1.0f);
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
       
       // Top right
       manual_object_->position( width_, height_, 0.0f );
-      manual_object_->textureCoord(1.0f, 1.0f);
+      manual_object_->textureCoord(1.0f, 0.0f);
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
       
       // Top left
       manual_object_->position( 0.0f, height_, 0.0f );
-      manual_object_->textureCoord(0.0f, 1.0f);
+      manual_object_->textureCoord(0.0f, 0.0f);
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
     }
     
@@ -143,17 +151,17 @@ ImageMapVisual::ImageMapVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNo
     {
       // Bottom left
       manual_object_->position( 0.0f, 0.0f, 0.0f );
-      manual_object_->textureCoord(0.0f, 0.0f);
+      manual_object_->textureCoord(0.0f, 1.0f);
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
       
       // Bottom right
       manual_object_->position( width_, 0.0f, 0.0f );
-      manual_object_->textureCoord(1.0f, 0.0f);
+      manual_object_->textureCoord(1.0f, 1.0f);
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
       
       // Top right
       manual_object_->position( width_, height_, 0.0f );
-      manual_object_->textureCoord(1.0f, 1.0f);
+      manual_object_->textureCoord(1.0f, 0.0f);
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
     }
   }
