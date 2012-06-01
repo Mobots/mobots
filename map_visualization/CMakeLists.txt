@@ -11,11 +11,6 @@ include(${QT_USE_FILE})
 ## etc because they can conflict with boost signals, so define QT_NO_KEYWORDS here.
 add_definitions(-DQT_NO_KEYWORDS)
 
-
-set(SOURCE_FILES
-  src/image_map_display/image_map_display.cpp
-  src/image_map_display/image_map_visual.cpp
-)
 set(CMAKE_MODULE_PATH "/usr/share/OGRE/cmake/modules/;${CMAKE_MODULE_PATH}")
 
 #set the default path for built executables to the "bin" directory
@@ -23,27 +18,10 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
-## An rviz plugin is just a shared library, so here we declare the
-## library to be called ``${PROJECT_NAME}`` (which is
-## "map_visualization", and specify the list of source files we
-## collected above in ``${SOURCE_FILES}``.
-rosbuild_add_library(${PROJECT_NAME} ${SOURCE_FILES})
-#rosbuild_add_boost_directories()
-
-find_package(OGRE REQUIRED)#rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
-target_link_libraries(${PROJECT_NAME} ${OGRE_LIBRARIES})
-#rosbuild_link_boost(${PROJECT_NAME})
-
-#find_package(OpenCV REQUIRED)
-#target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${OpenCV_LIBS})
+find_package(OGRE REQUIRED)
 
 rosbuild_gensrv()
 
-#common commands for building c++ executables and libraries
-#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
-#rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
-#rosbuild_add_executable(example examples/example.cpp)
-#target_link_libraries(example ${PROJECT_NAME})
+include_directories(src)
+
+add_subdirectory(src)
