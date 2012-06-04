@@ -110,14 +110,24 @@ bool rorAlternative(const vector<Point2f>& points1, const vector<Point2f>& point
       rot = 2*M_PI - rot;
     else if(rot < -M_PI)
       rot = -2*M_PI - rot;
-    if(abs(euclideanDistance(points1[indices[0]], points1[indices[1]]) 
-      - euclideanDistance(points2[indices[0]], points2[indices[1]])) < 5){
-      cout << euclideanDistance(points1[indices[0]], points2[indices[0]]) << "  "
+    int i = indices[0];
+    int i2 = indices[1];
+    if(abs(
+      euclideanDistance(points1[indices[0]], points1[indices[1]]) 
+      - euclideanDistance(points2[indices[0]], points2[indices[1]])
+	  ) < 5){
+          cout << i << "+" << i2 << " " << points1[i].x << "x " << points1[i].y << "y <->" << points1[i2].x << "x " << points1[i2].y << "y" 
+	  << " :: dist " << euclideanDistance(points1[i], points1[i2]) << endl 
+	  
+	  << i << "+" << i2 << " "  << points2[i].x << "x " << points2[i].y << "y <->" << points2[i2].x << "x " << points2[i2].y << "y" 
+	  << " :: dist " << euclideanDistance(points1[i], points1[i2]) << endl
+	  << " ||| " << abs(euclideanDistance(points1[i], points1[i2]) - euclideanDistance(points1[i], points1[i2])) << endl; 
+      /*cout << euclideanDistance(points1[indices[0]], points2[indices[0]]) << "  "
     << euclideanDistance(points1[indices[0]], points1[indices[1]]) << "  "
     << euclideanDistance(points2[indices[0]], points2[indices[1]]) << "  "
-     << indices[0] << "|" << indices[1] << "-> " << rot << " = " << toDegree(rot) << "°" << endl;
+     << indices[0] << "|" << indices[1] << "-> " << rot << " = " << toDegree(rot) << "°" << endl;*/
     }else{
-      continue;
+      //continue;
     }
     int index = rot/rotationStep;
     countsMid[index]++;
