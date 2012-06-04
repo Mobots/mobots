@@ -117,8 +117,8 @@ void checkResult(){
   imshow("result", result);
   imshow("result2", result2);
   
-  //imshow("result H", result3);
-  //imshow("result H2", result4);
+  imshow("result H", result3);
+  imshow("result H2", result4);
   
   //imwrite("out.png", result);
   waitKey(0);

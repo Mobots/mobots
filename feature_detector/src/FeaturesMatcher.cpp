@@ -3,6 +3,7 @@
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 
+#include "draw.h"
 #include "ror.h"
 #include "profile.h"
 
@@ -159,7 +160,7 @@ bool CpuFeaturesMatcher::match(const ImageFeatures& img1, const ImageFeatures& i
   delta.y = H.at<double>(1,2);*/
   moduleEnded();
   Mat img_matches;
-  drawMatches(image1, img1.keyPoints, image2, img2.keyPoints,
+  drawing::drawMatches(image1, img1.keyPoints, image2, img2.keyPoints,
                good_matches, img_matches, Scalar::all(-1), Scalar::all(-1),
                vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
   imshow("method2 good Matches", img_matches);
