@@ -68,7 +68,7 @@
       <controller:gazebo_ros_camera name="camera_controller" plugin="libgazebo_ros_camera.so">
         <alwaysOn>true</alwaysOn>
         <updateRate>20</updateRate>
-        <imageTopicName>my_cam/image</imageTopicName>
+        <imageTopicName>/usb_cam/image_raw</imageTopicName>
         <frameName>deine mudda</frameName>
         <interface:camera name="camera_iface" />
       </controller:gazebo_ros_camera>

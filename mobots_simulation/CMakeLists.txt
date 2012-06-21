@@ -7,7 +7,7 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 #  Release        : w/o debug symbols, w/ optimization
 #  RelWithDebInfo : w/ debug symbols, w/ optimization
 #  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+set(ROS_BUILD_TYPE Debug)
 
 rosbuild_init()
 
@@ -26,7 +26,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #target_link_libraries(${PROJECT_NAME} another_library)
 rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
-rosbuild_add_executable(keyboard src/keyboard.cpp ../feature_detector/src/FeaturesMatcher.cpp ../feature_detector/src/ror.cpp) ##ugly for now
-#rosbuild_add_executable(mobots_teleop_bridge src/mobots_teleop_bridge.cpp)
-#rosbuild_add_executable(image_worker src/image_worker.cpp)
-target_link_libraries(keyboard pthread)
+rosbuild_add_executable(gazebo_simul src/gazebo_simul.cpp ../feature_detector/src/FeaturesMatcher.cpp ../feature_detector/src/ror.cpp ../feature_detector/src/draw.cpp src/ImageHandler.cpp) ##ugly for now
+rosbuild_add_executable(mobox_simul src/mobox_simul.cpp ../feature_detector/src/FeaturesMatcher.cpp ../feature_detector/src/ror.cpp ../feature_detector/src/draw.cpp src/ImageHandler.cpp)
+target_link_libraries(gazebo_simul pthread)
+target_link_libraries(mobox_simul pthread)

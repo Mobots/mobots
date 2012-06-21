@@ -15,8 +15,8 @@
 using namespace cv;
 using namespace std;
 
-Mat image1; //for debug
-Mat image2;
+Mat gimage1; //for debug
+Mat gimage2;
 extern Mat H;
 
 char pos = 0;
@@ -69,7 +69,7 @@ inline double toDegree(double rad){
 
 void checkResult(){
   Delta delta;
-  Ptr<FeaturesMatcher> matcher = new CpuFeaturesMatcher(CpuFeaturesMatcher::SURF_DEFAULT);
+  Ptr<FeaturesMatcher> matcher = new CpuFeaturesMatcher(CpuFeaturesMatcher::ORB_DEFAULT);
   bool matchResult = matcher->match(features1, features2, delta);
   if(!matchResult){
     cout << "images do not overlap at all" << endl;
@@ -79,22 +79,22 @@ void checkResult(){
   cout << "deltaY " << delta.y << endl;
   cout << "theta " << delta.theta << " rad = " << toDegree(delta.theta) << "°" << endl;
   Mat aff;
-  findRotationMatrix2D(Point2f(image2.cols/2, image2.rows/2), delta.theta, aff);
+  findRotationMatrix2D(Point2f(gimage2.cols/2, gimage2.rows/2), delta.theta, aff);
   aff.at<double>(0,2) = delta.x;
   aff.at<double>(1,2) = delta.y;
   cout << "affen mat: " << endl << aff << endl;
   Mat result;
   Mat result2;
-  result2.create(Size(image1.cols+image2.cols, image1.rows+image2.rows), image2.type());
-  result.create(Size(image1.cols+image2.cols, image1.rows+image2.rows), image2.type());
-  Mat outImg1 = result(Rect(0, 0, image1.cols, image1.rows));
-  Mat outImg21 = result2(Rect(0, 0, image1.cols, image1.rows));
+  result2.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
+  result.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
+  Mat outImg1 = result(Rect(0, 0, gimage1.cols, gimage1.rows));
+  Mat outImg21 = result2(Rect(0, 0, gimage1.cols, gimage1.rows));
 
-  warpAffine(image2, result, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
-  image1.copyTo(outImg1);
+  warpAffine(gimage2, result, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  gimage1.copyTo(outImg1);
   
-  image1.copyTo(outImg21);
-  warpAffine(image2, result2, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  gimage1.copyTo(outImg21);
+  warpAffine(gimage2, result2, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
   
   imshow("result", result);
   imshow("result2", result2);
@@ -103,16 +103,16 @@ void checkResult(){
   
   Mat result3;
   Mat result4;
-  result3.create(Size(image1.cols+image2.cols, image1.rows+image2.rows), image2.type());
-  result4.create(Size(image1.cols+image2.cols, image1.rows+image2.rows), image2.type());
-  Mat outImg3 = result3(Rect(0, 0, image1.cols, image1.rows));
-  Mat outImg41 = result4(Rect(0, 0, image1.cols, image1.rows));
+  result3.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
+  result4.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
+  Mat outImg3 = result3(Rect(0, 0, gimage1.cols, gimage1.rows));
+  Mat outImg41 = result4(Rect(0, 0, gimage1.cols, gimage1.rows));
 
-  warpPerspective(image2, result3, H, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
-  image1.copyTo(outImg3);
+  warpPerspective(gimage2, result3, H, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  gimage1.copyTo(outImg3);
   
-  image1.copyTo(outImg41);
-  warpPerspective(image2, result4, H, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  gimage1.copyTo(outImg41);
+  warpPerspective(gimage2, result4, H, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
   
   imshow("result", result);
   imshow("result2", result2);
@@ -145,12 +145,12 @@ int main(int argc, char** argv){
     cout << "not enough arguments" << endl;
     return 1;
   }
-  image1 = imread(argv[1], 1); //1 for colours
-  image2 = imread(argv[2], 1);
+  gimage1 = imread(argv[1], 1); //1 for colours
+  gimage2 = imread(argv[2], 1);
   Mat image1Gray;
   Mat image2Gray;
-  cvtColor(image1, image1Gray, CV_RGB2GRAY); //FeatureDetecter etc. arbeiten alle auf Graustufenbildern
-  cvtColor(image2, image2Gray, CV_RGB2GRAY);
+  cvtColor(gimage1, image1Gray, CV_RGB2GRAY); //FeatureDetecter etc. arbeiten alle auf Graustufenbildern
+  cvtColor(gimage2, image2Gray, CV_RGB2GRAY);
   mobots_msgs::ImageWithPoseDebug i1;
   mobots_msgs::ImageWithPoseDebug i2;
   copyMatToImageMSg(image1Gray, i1);
