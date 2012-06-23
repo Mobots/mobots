@@ -14,14 +14,14 @@
 
 class ImageHandler{
 private:
-  char imagePos;
   char shutterPos;
   char featurePos;
   ros::Publisher publisher;
   ros::Subscriber featureSetSubscriber;
   ros::Subscriber imageSubscriber;
 
-  sensor_msgs::Image images[2];
+  sensor_msgs::Image image1;
+  sensor_msgs::Image image2;
   ImageFeatures features1;
   ImageFeatures features2;
   
@@ -35,10 +35,6 @@ public:
   void shutterCallback2(const mobots_msgs::ImagePoseID imageWithPoseAndId);
   
 private:
-  void findRotationMatrix2D(cv::Point2f center, double angle, cv::Mat& rotMat);
-
-  inline double toDegree(double rad);
-
   void imageCallback(const sensor_msgs::Image image);
 
   void featuresCallback(const mobots_msgs::FeatureSetWithDeltaPose featuresMsg);

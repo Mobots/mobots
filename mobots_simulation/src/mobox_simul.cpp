@@ -73,7 +73,7 @@ int main(int argc, char **argv){
   char data2[3];
   ros::Rate rate(50);
   while(ros::ok()){
-    xAvg = 0;
+    /*xAvg = 0;
     yAvg = 0;
     theta = 0;
     read(mouse1, &data1, 3);
@@ -88,7 +88,7 @@ int main(int argc, char **argv){
       xAvg = data1[1];
       yAvg = data1[2];
       theta = 0;
-#endif
+#endif*/
     rate.sleep();
     ros::spinOnce();
     /*lb=(b[0]&1)>0;
