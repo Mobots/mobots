@@ -28,8 +28,6 @@ inline double toDegree(double rad){
 }
 
 float euclideanDistance(const Point2f& p1, const Point2f& p2){
-  if((p2.x - p1.x)*(p2.x - p1.x) + (p2.y - p1.y)*(p2.y - p1.y) < 0)
-    cout << "MEHEEHEHEHH" << endl;
   return sqrt((p2.x - p1.x)*(p2.x - p1.x) + (p2.y - p1.y)*(p2.y - p1.y));
 }
 
@@ -65,10 +63,15 @@ bool rorAlternative(const vector<Point2f>& points1, const vector<Point2f>& point
   // 		     and: p1[i],p1[i+2] <--> p2[i],p2[i+2]
   //if one rotation get's more than 60% it's ok.
   
- unsigned int counts[N] = {0};
+ /*unsigned int counts[N] = {0};
  float sumsTheta[N] = {0};
  float sumsX[N] = {0};
- float sumsY[N] = {0};
+ float sumsY[N] = {0};*/
+ unsigned int* counts = new unsigned int[N];
+ float* sumsTheta = new float[N];
+ float* sumsX = new float[N];
+ float* sumsY = new float[N];
+ 
  unsigned int* const countsMid = &counts[N/2];
  float* const sumsMid = &sumsTheta[N/2];
  float* const sumsMidX = &sumsX[N/2];
@@ -83,8 +86,8 @@ bool rorAlternative(const vector<Point2f>& points1, const vector<Point2f>& point
       else if(rot < -M_PI)
 	rot = -2*M_PI - rot;
       if(abs(
-	euclideanDistance(points1[i1], points1[i2]) 
-	- euclideanDistance(points2[i1], points2[i2])
+	euclideanDistance(points1.at(i1), points1.at(i2)) 
+	- euclideanDistance(points2.at(i1), points2.at(i2))
 	    ) > 3){
 	//cout << "sorted out " << i1 << "-" << i2 << endl;
 	continue;
@@ -120,6 +123,10 @@ bool rorAlternative(const vector<Point2f>& points1, const vector<Point2f>& point
   delta.y = yDiff;
   cout << "xdiff " <<  xDiff << endl;
   cout << "ydiff " <<  yDiff  << endl;
+  delete[] counts;
+  delete[] sumsX;
+  delete[] sumsY;
+  delete[] sumsTheta;
   return true;
 }
 
