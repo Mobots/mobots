@@ -76,7 +76,7 @@ cv_bridge::CvImagePtr a1;
 cv_bridge::CvImagePtr b1;
 
 void ImageHandler::shutterCallback(){
-  if(shutterPos == 1){
+  /*if(shutterPos == 1){
   Mat img1 = imread("/home/jonas/mobots/feature_detector/testImages/image001.png", 1);
   Mat img2 = imread("/home/jonas/mobots/feature_detector/testImages/image001.png", 1);
   gimage1 = img1;
@@ -90,16 +90,26 @@ void ImageHandler::shutterCallback(){
   //publisher.publish(i1);
   //publisher.publish(i2);
   cout << "both sent" << endl;
-  }
+  }*/
   pthread_mutex_lock(&mutex);
   sensor_msgs::Image i;
   if(shutterPos == 0){
-    i = image1;
+      Mat img1 = imread("/home/jonas/mobots/feature_detector/testImages/image001.png", 1);
+  gimage1 = img1;
+  mobots_msgs::ImageWithPoseDebug i1;
+  copyMatToImageMSg(img1, i1);
+    //i = image1;
+    i = i1.image;
     a1 =  cv_bridge::toCvCopy(i);
     gimage1 = a1->image;
   }
   else{
-    i = image2;
+  Mat img2 = imread("/home/jonas/mobots/feature_detector/testImages/image001.png", 1);
+  gimage2 = img2;
+  mobots_msgs::ImageWithPoseDebug i2;
+  copyMatToImageMSg(img2, i2);
+    //i = image2;
+    i = i2.image;
     b1 = cv_bridge::toCvCopy(i);
     gimage2 = b1->image;
   }
