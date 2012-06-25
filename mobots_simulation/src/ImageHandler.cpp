@@ -20,8 +20,10 @@ void copyMatToImageMSg(const cv::Mat& in, mobots_msgs::ImageWithPoseDebug& out2)
   out->step = in.cols * in.elemSize();
   out->data.resize(in.rows * out->step);
   if(in.isContinuous()){
+    cout << "copyMat is continous" << endl;
     memcpy(&out->data[0], in.data, in.rows * out->step);
   }else{
+    cout << "copyMat is not continous" << endl;
     // Copy row by row
     uchar* ros_data_ptr = (uchar*)(&out->data[0]);
     uchar* cv_data_ptr = in.data;
@@ -91,9 +93,11 @@ void ImageHandler::shutterCallback(){
   //publisher.publish(i2);
   cout << "both sent" << endl;
   }*/
+  std::cout << "shutter" << std::endl;
+  mobots_msgs::ImageWithPoseDebug msg;
   pthread_mutex_lock(&mutex);
   sensor_msgs::Image i;
-  if(shutterPos == 0){
+  /*if(shutterPos == 0){
       Mat img1 = imread("/home/jonas/mobots/feature_detector/testImages/image001.png", 1);
   gimage1 = img1;
   mobots_msgs::ImageWithPoseDebug i1;
@@ -102,6 +106,7 @@ void ImageHandler::shutterCallback(){
     i = i1.image;
     a1 =  cv_bridge::toCvCopy(i);
     gimage1 = a1->image;
+    copyMatToImageMSg(gimage1, msg);
   }
   else{
   Mat img2 = imread("/home/jonas/mobots/feature_detector/testImages/image001.png", 1);
@@ -112,19 +117,38 @@ void ImageHandler::shutterCallback(){
     i = i2.image;
     b1 = cv_bridge::toCvCopy(i);
     gimage2 = b1->image;
-  }
-  //sensor_msgs::Image i = shutterPos == 0 ? image1 : image2;
-  std::cout << "shutter" << std::endl;
-  /*if(shutterPos == 0){
-    gimage1 = cv_bridge::toCvCopy(i)->image;
-  }else{
-    gimage2 = cv_bridge::toCvCopy(i)->image;
-  }*/
-  mobots_msgs::ImageWithPoseDebug msg;
-  if(shutterPos == 0)
-    copyMatToImageMSg(gimage1, msg);
-  else
     copyMatToImageMSg(gimage2, msg);
+  }*/
+  //sensor_msgs::Image i = shutterPos == 0 ? image1 : image2;
+  if(shutterPos == 0){
+    msg.image.height = image1.height;
+    msg.image.width = image1.width;
+    msg.image.encoding = image1.encoding;
+    msg.image.is_bigendian = image1.is_bigendian;
+    msg.image.step = image1.step;
+    vector<uint8_t> data;
+    data.resize(image1.data.size());
+    memcpy(&data[0], &image1.data[0], image1.data.size());
+    msg.image.data = data;
+  }
+  else{
+    msg.image.height = image2.height;
+    msg.image.width = image2.width;
+    msg.image.encoding = image2.encoding;
+    msg.image.is_bigendian = image2.is_bigendian;
+    msg.image.step = image2.step;
+    vector<uint8_t> data;
+    data.resize(image2.data.size());
+    memcpy(&data[0], &image2.data[0], image2.data.size());
+    msg.image.data = data;
+  }
+  if(shutterPos == 0){
+    a1 =  cv_bridge::toCvCopy(image1);
+    gimage1 = a1->image;
+  }else{
+    b1 = cv_bridge::toCvCopy(image2);
+    gimage2 = b1->image;
+  }
   publisher.publish(msg);
   shutterPos++;
   shutterPos %= 2;
@@ -175,11 +199,11 @@ void ImageHandler::featuresCallback(const mobots_msgs::FeatureSetWithDeltaPose f
     warpAffine(gimage2, result, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
     gimage1.copyTo(outImg1);
 
-    gimage1.copyTo(outImg21);
-    warpAffine(gimage2, result2, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+    //gimage1.copyTo(outImg21);
+    //warpAffine(gimage2, result2, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
 
     imshow("result", result);
-    imshow("result2", result2);
+    //imshow("result2", result2);
     waitKey(0);
   }else{
     MessageBridge::copyToCvStruct(featuresMsg, features1);
