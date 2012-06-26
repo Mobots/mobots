@@ -1,5 +1,0 @@
-/opt/ros/electric/stacks/ros_comm/clients/cpp/roscpp/include
-/opt/ros/electric/stacks/vision_opencv/cv_bridge/include
-/opt/ros/electric/stacks/image_common/image_transport/include
-/opt/ros/electric/stacks/driver_common/dynamic_reconfigure/include
-../cfg/cpp
