@@ -10,8 +10,8 @@
 using namespace std;
 using namespace cv;
 
-extern Mat image1; //DEBUG
-extern Mat image2;
+extern Mat gimage1; //DEBUG
+extern Mat gimage2;
 Mat H;
 
 const char CpuFeaturesMatcher::SURF_DEFAULT[] = "FlannBased";
@@ -137,7 +137,7 @@ bool CpuFeaturesMatcher::match(const ImageFeatures& img1, const ImageFeatures& i
   bool ok = rorAlternative(points1, points2, delta);
   //Mat H = getAffineTransform(&points2[0], &points1[0]);
   //aff = H;
-  H = findHomography(points2, points1, CV_RANSAC);
+  //H = findHomography(points2, points1, CV_RANSAC);
   //aff = H;
   /* Matrix form:
    * cos(theta)  -sin(theta) deltaX
@@ -159,10 +159,10 @@ bool CpuFeaturesMatcher::match(const ImageFeatures& img1, const ImageFeatures& i
   delta.x = H.at<double>(0,2);
   delta.y = H.at<double>(1,2);*/
   moduleEnded();
-  Mat img_matches;
-  drawing::drawMatches(image1, img1.keyPoints, image2, img2.keyPoints,
+  /*Mat img_matches;
+  drawing::drawMatches(gimage1, img1.keyPoints, gimage2, img2.keyPoints,
                good_matches, img_matches, Scalar::all(-1), Scalar::all(-1),
                vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
-  imshow("method2 good Matches", img_matches);
+  imshow("method2 good Matches", img_matches);*/
   return ok;
 }

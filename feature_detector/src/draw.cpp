@@ -182,6 +182,8 @@ void drawMatches( const Mat& img1, const vector<KeyPoint>& keypoints1,
             const KeyPoint &kp1 = keypoints1[i1], &kp2 = keypoints2[i2];
             _drawMatch( outImg, outImg1, outImg2, kp1, kp2, matchColor, flags, pos);
 	    pos++;
+	    if(pos > 60)
+	      return;
         }
     }
 }
