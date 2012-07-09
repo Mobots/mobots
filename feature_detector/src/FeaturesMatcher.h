@@ -16,7 +16,7 @@ protected:
   float ratioThreshold;
 public:
   FeaturesMatcher(){
-    this->ratioThreshold = 0.65; //0.6 seems to be good..
+    this->ratioThreshold = 0.7; //0.6 seems to be good..
   }
   void setRatioThreshold(float ratioThreshold){
     this->ratioThreshold = ratioThreshold;
