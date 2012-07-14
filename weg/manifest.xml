@@ -1,0 +1,17 @@
+<package>
+  <description brief="weg">
+
+     weg
+
+  </description>
+  <author>flo</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/weg</url>
+  <depend package="mobots_msgs"/>
+  <depend package="roscpp"/>
+  <depend package="std_msgs"/>
+
+</package>
+
+
