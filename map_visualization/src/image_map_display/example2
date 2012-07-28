@@ -1,0 +1,251 @@
+// blah.cpp
+// another attempt at ogre + cv
+
+#include <iostream>
+#include <Ogre.h>
+#include <OIS.h>
+#include <cv.h>
+#include <highgui.h>
+
+using namespace Ogre;
+
+class ExitListener : public FrameListener
+{
+public:
+    ExitListener(OIS::Keyboard *keyboard)
+        : mKeyboard(keyboard)
+    {
+    }
+
+    bool frameStarted(const FrameEvent& evt)
+    {
+      //~ Application::updateTexture();
+      mKeyboard->capture();
+        return !mKeyboard->isKeyDown(OIS::KC_ESCAPE);
+    }
+
+private:
+    OIS::Keyboard *mKeyboard;
+};
+
+class Application
+{
+public:
+    void go()
+    {
+        createRoot();
+        defineResources();
+        setupRenderSystem();
+        createRenderWindow();
+        initializeResourceGroups();
+        setupScene();
+        setupInputSystem();
+        createFrameListener();
+        startRenderLoop();
+    }
+
+    ~Application()
+    {
+      mInputManager->destroyInputObject(mKeyboard);
+      OIS::InputManager::destroyInputSystem(mInputManager);
+      
+      delete mListener;
+      delete mRoot;
+    }
+
+private:
+    Root *mRoot;
+    OIS::Keyboard *mKeyboard;
+    OIS::Mouse *mMouse;
+    OIS::InputManager *mInputManager;
+    HardwarePixelBufferSharedPtr buffer;
+    TexturePtr CapTex;
+    MaterialPtr CapMat;
+    IplImage *mCvCopyImage, *mCvCaptureImage, *mCvResizedImage;
+    CvCapture *mCvCapture;
+    Image mOgreImage;
+    unsigned char *rawdata;
+
+    ExitListener *mListener;
+
+    void createRoot()
+    {
+      mRoot = new Root();
+    }
+    
+    void defineResources()
+    {
+      String secName, typeName, archName;
+      ConfigFile cf;
+      cf.load("resources.cfg");
+      ConfigFile::SectionIterator seci = cf.getSectionIterator();
+      while (seci.hasMoreElements())
+      {
+         secName = seci.peekNextKey();
+         ConfigFile::SettingsMultiMap *settings = seci.getNext();
+         ConfigFile::SettingsMultiMap::iterator i;
+         for (i = settings->begin();i != settings->end();++i)
+         {
+            typeName = i->first;
+            archName = i->second;
+            ResourceGroupManager::getSingleton().addResourceLocation(archName,typeName,secName);
+         }
+      }
+    }
+    
+    void setupRenderSystem()
+    {
+      if (!mRoot->restoreConfig() && !mRoot->showConfigDialog())
+         throw Exception(52,"User canceled the config dialog","Application::setupRenderSystem()");   
+    }
+    
+    void createRenderWindow()
+    {
+      mRoot->initialise(true,"Tutorial Render Window");
+   }
+
+    void initializeResourceGroups()
+    {
+      TextureManager::getSingleton().setDefaultNumMipmaps(5);
+      ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+    }
+
+   void createTexture()
+   {
+      mCvCaptureImage = cvQueryFrame(mCvCapture);
+            
+      CapTex = TextureManager::getSingleton().createManual("TextureName_EDIT THIS", "General", TEX_TYPE_2D, mCvCaptureImage->width, mCvCaptureImage->height, 1, 1, PF_A8R8G8B8);
+      HardwarePixelBufferSharedPtr pBuffer = CapTex->getBuffer();
+      unsigned char* buffer = static_cast<unsigned char*>(pBuffer->lock(0, mCvCaptureImage->width*mCvCaptureImage->height*4, HardwareBuffer::HBL_DISCARD));
+   
+      for(int y = 0;y<mCvCaptureImage->height;y++)
+      {
+         for(int x = 0;x<mCvCaptureImage->width;x++)
+         {
+            buffer[((y*mCvCaptureImage->width)+x)*4] = 255;
+            buffer[((y*mCvCaptureImage->width)+x)*4+1] = mCvCaptureImage->imageData[((y*mCvCaptureImage->width)+x)*3];
+            buffer[((y*mCvCaptureImage->width)+x)*4+2] = mCvCaptureImage->imageData[((y*mCvCaptureImage->width)+x)*3+1];
+            buffer[((y*mCvCaptureImage->width)+x)*4+3] = mCvCaptureImage->imageData[((y*mCvCaptureImage->width)+x)*3+2];
+         }
+      }
+      pBuffer->unlock();
+
+      CapMat = MaterialManager::getSingleton().create( "CapMat", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
+        CapMat->getTechnique(0)->getPass(0)->createTextureUnitState("CapTex");
+      CapMat->getTechnique(0)->getPass(0)->setDepthCheckEnabled(false);
+      CapMat->getTechnique(0)->getPass(0)->setDepthWriteEnabled(false);
+      CapMat->getTechnique(0)->getPass(0)->setLightingEnabled(false);
+   }
+
+   void updateTexture()
+    {
+      mCvCaptureImage = cvQueryFrame(mCvCapture);
+
+      HardwarePixelBufferSharedPtr pBuffer = CapTex->getBuffer();
+      unsigned char* buffer = static_cast<unsigned char*>(pBuffer->lock(0, mCvCaptureImage->width*mCvCaptureImage->height*4, HardwareBuffer::HBL_DISCARD));
+      for(int y = 0;y<mCvCaptureImage->height;y++)
+      {
+         for(int x = 0;x<mCvCaptureImage->width;x++)
+         {
+            buffer[((y*mCvCaptureImage->width)+x)*4] = 255;
+            buffer[((y*mCvCaptureImage->width)+x)*4+1] = mCvCaptureImage->imageData[((y*mCvCaptureImage->width)+x)*3];
+            buffer[((y*mCvCaptureImage->width)+x)*4+2] = mCvCaptureImage->imageData[((y*mCvCaptureImage->width)+x)*3+1];
+            buffer[((y*mCvCaptureImage->width)+x)*4+3] = mCvCaptureImage->imageData[((y*mCvCaptureImage->width)+x)*3+2];
+         }
+      }
+      pBuffer->unlock();
+
+   }
+   
+    void setupScene()
+    {
+      SceneManager *mgr = mRoot->createSceneManager(ST_GENERIC,"Default SceneManager");
+      Camera *cam = mgr->createCamera("Camera");
+      /*Viewport *vp =*/ mRoot->getAutoCreatedWindow()->addViewport(cam);
+      
+      mCvCapture = cvCaptureFromFile("vLeft.mpg");
+      createTexture();
+      
+      Rectangle2D* rect = new Rectangle2D(true);
+      rect->setCorners(-1.0, 1.0, 1.0, -1.0);
+      rect->setMaterial("CapMat");
+      
+      AxisAlignedBox aabInf;
+      aabInf.setInfinite();
+      rect->setBoundingBox(aabInf);
+
+      rect->setRenderQueueGroup(RENDER_QUEUE_BACKGROUND);
+      
+      SceneNode* node = mgr->getRootSceneNode()->createChildSceneNode("CapMat");
+      node->attachObject(rect);
+    }
+
+    void setupInputSystem()
+    {
+      size_t windowHnd = 0;
+      std::ostringstream windowHndStr;
+      OIS::ParamList pl;
+      RenderWindow *win = mRoot->getAutoCreatedWindow();
+      
+      win->getCustomAttribute("WINDOW",&windowHnd);
+      windowHndStr << windowHnd;
+      pl.insert(std::make_pair(std::string("WINDOW"),windowHndStr.str()));
+      mInputManager = OIS::InputManager::createInputSystem(pl);
+      
+      try
+      {
+         mKeyboard = static_cast<OIS::Keyboard*>(mInputManager->createInputObject(OIS::OISKeyboard,false));
+         mMouse = static_cast<OIS::Mouse*>(mInputManager->createInputObject(OIS::OISMouse,false));
+      }
+      catch (const OIS::Exception &e)
+      {
+         throw Exception(42,e.eText,"Application::setupInputSystem");
+      }
+    }
+
+    void createFrameListener()
+    {
+      mListener = new ExitListener(mKeyboard);
+      //~ ExitListener->showDebugOverlay(true);
+      mRoot->addFrameListener(mListener);
+    }
+
+    void startRenderLoop()
+    {
+      //~ mRoot->startRendering();
+      int i = 1;
+      while (mRoot->renderOneFrame())
+        {
+         updateTexture();
+            WindowEventUtilities::messagePump();
+            std::cout << i++ << '\n';
+        }
+    }
+};
+
+#if OGRE_PLATFORM == PLATFORM_WIN32 || OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+#define WIN32_LEAN_AND_MEAN
+#include "windows.h"
+
+INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR strCmdLine, INT)
+#else
+int main(int argc, char **argv)
+#endif
+{
+    try
+    {
+        Application app;
+        app.go();
+    }
+    catch(Exception& e)
+    {
+#if OGRE_PLATFORM == PLATFORM_WIN32 || OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+        MessageBoxA(NULL, e.getFullDescription().c_str(), "An exception has occurred!", MB_OK | MB_ICONERROR | MB_TASKMODAL);
+#else
+        fprintf(stderr, "An exception has occurred: %s\n",
+            e.getFullDescription().c_str());
+#endif
+    }
+
+    return 0;
+}

@@ -1,13 +1,19 @@
 # This srv request specifies an image, through the naming convention and a compressed image is returned.
-# Per default the imagePath is used. However, if it is empty, it is recreated from the given image properties.
-# If the 'sessionID' is empty, the current session is used.
-# If the 'path' is empty, the current working directory is used.
-# The naming convention is specified elsewhere. However, as a rule of thumb: "%sid%i-%i.%s" Ex. /home/john/id1-12.jpeg
+# 'imagePath' contains the filepath and filename. Otherwise it is created from
+# 	the data below.
+# If 'path' is empty, the default directory is used.
+# 'pose', if the pose of the image should be returned
+# The naming convention is specified elsewhere. However, as a rule of thumb:
+# 	"%ssession-%i/mobotID%i-%i.info" Ex. /home/john/session-1/mobotID2-12.info
+# Null is returned if image is not found.
 
 string imagePath
+
+string savePath
 uint8 sessionID
 uint8 mobotID
 uint8 imageID
-string path
+string encoding
 ---
-sensor_msgs/CompressedImage image
+mobots_msgs/ImageWithDeltaPoseAndID image
+string error
