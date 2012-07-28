@@ -1,0 +1,41 @@
+// Create the texture
+TexturePtr texture = TextureManager::getSingleton().createManual(
+    "DynamicTexture", // name
+    ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+    TEX_TYPE_2D,      // type
+    256, 256,         // width & height
+    0,                // number of mipmaps
+    PF_BYTE_BGRA,     // pixel format
+    TU_DEFAULT);      // usage; should be TU_DYNAMIC_WRITE_ONLY_DISCARDABLE for
+                      // textures updated very often (e.g. each frame)
+ 
+// Get the pixel buffer
+HardwarePixelBufferSharedPtr pixelBuffer = texture->getBuffer();
+ 
+// Lock the pixel buffer and get a pixel box
+pixelBuffer->lock(HardwareBuffer::HBL_NORMAL); // for best performance use HBL_DISCARD!
+const PixelBox& pixelBox = pixelBuffer->getCurrentLock();
+ 
+uint8* pDest = static_cast<uint8*>(pixelBox.data);
+ 
+// Fill in some pixel data. This will give a semi-transparent blue,
+// but this is of course dependent on the chosen pixel format.
+for (size_t j = 0; j < 256; j++)
+    for(size_t i = 0; i < 256; i++)
+    {
+        *pDest++ = 255; // B
+        *pDest++ =   0; // G
+        *pDest++ =   0; // R
+        *pDest++ = 127; // A
+    }
+ 
+// Unlock the pixel buffer
+pixelBuffer->unlock();
+ 
+// Create a material using the texture
+MaterialPtr material = MaterialManager::getSingleton().create(
+    "DynamicTextureMaterial", // name
+    ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+ 
+material->getTechnique(0)->getPass(0)->createTextureUnitState("DynamicTexture");
+material->getTechnique(0)->getPass(0)->setSceneBlending(SBT_TRANSPARENT_ALPHA);
