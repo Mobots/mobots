@@ -1,5 +1,6 @@
 #include "ImageHandler.h"
 #include <pthread.h>
+#include "../../feature_detector/include/feature_detector/FeaturesFinder.h"
 
 using namespace std;
 using namespace cv;
@@ -8,6 +9,8 @@ using namespace cv;
 
 cv::Mat gimage1;
 cv::Mat gimage2;
+extern Mat H;
+extern Delta delta2;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -59,100 +62,32 @@ ImageHandler::ImageHandler():
   publisher = nh.advertise<mobots_msgs::ImageWithPoseDebug>("ImageWithPose", 2);
   featureSetSubscriber = nh.subscribe("FeatureSetWithDeltaPose", 2, &ImageHandler::featuresCallback, this);
   imageSubscriber = nh.subscribe("/usb_cam/image_raw", 2, &ImageHandler::imageCallback, this);
-  /*Mat img1 = imread("/home/jonas/mobots/feature_detector/testImages/image001.png", 1);
-  Mat img2 = imread("/home/jonas/mobots/feature_detector/testImages/image001.png", 1);
-  gimage1 = img1;
-  gimage2 = img2;
-  mobots_msgs::ImageWithPoseDebug i1;
-  mobots_msgs::ImageWithPoseDebug i2;
-  copyMatToImageMSg(img1, i1);
-  copyMatToImageMSg(img2, i2);
-  cout << "now sending" << endl;
-  sleep(1);
-  publisher.publish(i1);
-  publisher.publish(i2);
-  cout << "both sent" << endl;*/
 }
 
 cv_bridge::CvImagePtr a1;
 cv_bridge::CvImagePtr b1;
+sensor_msgs::Image imsg;
+  sensor_msgs::Image image1;
+  sensor_msgs::Image image2;
 
 void ImageHandler::shutterCallback(){
-  /*if(shutterPos == 1){
-  Mat img1 = imread("/home/jonas/mobots/feature_detector/testImages/image001.png", 1);
-  Mat img2 = imread("/home/jonas/mobots/feature_detector/testImages/image001.png", 1);
-  gimage1 = img1;
-  gimage2 = img2;
-  mobots_msgs::ImageWithPoseDebug i1;
-  mobots_msgs::ImageWithPoseDebug i2;
-  copyMatToImageMSg(img1, i1);
-  copyMatToImageMSg(img2, i2);
-  cout << "now sending" << endl;
-  sleep(1);
-  //publisher.publish(i1);
-  //publisher.publish(i2);
-  cout << "both sent" << endl;
-  }*/
   std::cout << "shutter" << std::endl;
   mobots_msgs::ImageWithPoseDebug msg;
   pthread_mutex_lock(&mutex);
-  sensor_msgs::Image i;
-  /*if(shutterPos == 0){
-      Mat img1 = imread("/home/jonas/mobots/feature_detector/testImages/image001.png", 1);
-  gimage1 = img1;
-  mobots_msgs::ImageWithPoseDebug i1;
-  copyMatToImageMSg(img1, i1);
-    //i = image1;
-    i = i1.image;
-    a1 =  cv_bridge::toCvCopy(i);
-    gimage1 = a1->image;
-    copyMatToImageMSg(gimage1, msg);
-  }
-  else{
-  Mat img2 = imread("/home/jonas/mobots/feature_detector/testImages/image001.png", 1);
-  gimage2 = img2;
-  mobots_msgs::ImageWithPoseDebug i2;
-  copyMatToImageMSg(img2, i2);
-    //i = image2;
-    i = i2.image;
-    b1 = cv_bridge::toCvCopy(i);
-    gimage2 = b1->image;
-    copyMatToImageMSg(gimage2, msg);
-  }*/
-  //sensor_msgs::Image i = shutterPos == 0 ? image1 : image2;
-  if(shutterPos == 0){
-    msg.image.height = image1.height;
-    msg.image.width = image1.width;
-    msg.image.encoding = image1.encoding;
-    msg.image.is_bigendian = image1.is_bigendian;
-    msg.image.step = image1.step;
-    vector<uint8_t> data;
-    data.resize(image1.data.size());
-    memcpy(&data[0], &image1.data[0], image1.data.size());
-    msg.image.data = data;
-  }
-  else{
-    msg.image.height = image2.height;
-    msg.image.width = image2.width;
-    msg.image.encoding = image2.encoding;
-    msg.image.is_bigendian = image2.is_bigendian;
-    msg.image.step = image2.step;
-    vector<uint8_t> data;
-    data.resize(image2.data.size());
-    memcpy(&data[0], &image2.data[0], image2.data.size());
-    msg.image.data = data;
-  }
   if(shutterPos == 0){
     a1 =  cv_bridge::toCvCopy(image1);
     gimage1 = a1->image;
+    msg.image = image1;
   }else{
     b1 = cv_bridge::toCvCopy(image2);
     gimage2 = b1->image;
+    msg.image = image2;
   }
+  pthread_mutex_unlock(&mutex);
+  
   publisher.publish(msg);
   shutterPos++;
   shutterPos %= 2;
-  pthread_mutex_unlock(&mutex);
 }
 
 void ImageHandler::shutterCallback2(const mobots_msgs::ImagePoseID imageWithPoseAndId){
@@ -162,10 +97,12 @@ void ImageHandler::shutterCallback2(const mobots_msgs::ImagePoseID imageWithPose
 
 void ImageHandler::imageCallback(const sensor_msgs::Image image){
   pthread_mutex_lock(&mutex);
-  if(shutterPos == 0)
+  if(shutterPos == 0){
     image1 = image;
-  else
+  }
+  else{
     image2 = image;
+  }
   pthread_mutex_unlock(&mutex);
 }
 
@@ -175,15 +112,12 @@ void ImageHandler::featuresCallback(const mobots_msgs::FeatureSetWithDeltaPose f
     featurePos = 0;
       //just ugly copy from testFeatures.cpp
     Delta delta;
-    Ptr<FeaturesMatcher> matcher = new CpuFeaturesMatcher(CpuFeaturesMatcher::ORB_DEFAULT);
+    Ptr<FeaturesMatcher> matcher = new CpuFeaturesMatcher("BruteForce-Hamming");
     bool matchResult = matcher->match(features1, features2, delta);
     if(!matchResult){
       cout << "images do not overlap at all" << endl;
       return;
     }
-    cout << "deltaX " << delta.x << endl;
-    cout << "deltaY " << delta.y << endl;
-    cout << "theta " << delta.theta << " rad = " << toDegree(delta.theta) << "°" << endl;
     Mat aff;
     findRotationMatrix2D(Point2f(0,0), delta.theta, aff);
     aff.at<double>(0,2) = delta.x;
@@ -199,11 +133,53 @@ void ImageHandler::featuresCallback(const mobots_msgs::FeatureSetWithDeltaPose f
     warpAffine(gimage2, result, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
     gimage1.copyTo(outImg1);
 
-    //gimage1.copyTo(outImg21);
-    //warpAffine(gimage2, result2, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+    gimage1.copyTo(outImg21);
+    warpAffine(gimage2, result2, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
 
     imshow("result", result);
-    //imshow("result2", result2);
+    imshow("result2", result2);
+    
+    Mat aff2;
+    findRotationMatrix2D(Point2f(0,0), delta2.theta, aff2);
+    aff2.at<double>(0,2) = delta2.x;
+    aff2.at<double>(1,2) = delta2.y;
+    cout << "affen mat2: " << endl << aff2 << endl;
+    
+    Mat result3;
+    Mat result4;
+    result3.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
+    result4.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
+    Mat outImg3 = result3(Rect(0, 0, gimage1.cols, gimage1.rows));
+    Mat outImg41 = result4(Rect(0, 0, gimage1.cols, gimage1.rows));
+
+    warpAffine(gimage2, result3, aff2, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+    gimage1.copyTo(outImg3);
+
+    gimage1.copyTo(outImg41);
+    warpAffine(gimage2, result4, aff2, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+
+    imshow("result new method", result3);
+    imshow("result new method 2", result4);
+    
+    /*cout << "H mat " << endl << H << endl;
+    Mat result3;
+    Mat result4;
+    result3.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
+    result4.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
+    Mat outImg3 = result3(Rect(0, 0, gimage1.cols, gimage1.rows));
+    Mat outImg41 = result4(Rect(0, 0, gimage1.cols, gimage1.rows));
+
+    warpPerspective(gimage2, result3, H, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+    gimage1.copyTo(outImg3);
+
+    gimage1.copyTo(outImg41);
+    warpPerspective(gimage2, result4, H, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+
+    imshow("result", result);
+    imshow("result2", result2);
+
+    imshow("result H", result3);
+    imshow("result H2", result4);*/
     waitKey(0);
   }else{
     MessageBridge::copyToCvStruct(featuresMsg, features1);

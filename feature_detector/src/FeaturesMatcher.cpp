@@ -137,7 +137,24 @@ bool CpuFeaturesMatcher::match(const ImageFeatures& img1, const ImageFeatures& i
   bool ok = rorAlternative(points1, points2, delta);
   //Mat H = getAffineTransform(&points2[0], &points1[0]);
   //aff = H;
-  //H = findHomography(points2, points1, CV_RANSAC);
+  vector<uchar> inliers;
+  H = findHomography(points2, points1, CV_RANSAC, 3, inliers);
+  vector<Point2f> v1;
+  vector<Point2f> v2;
+  cout << "inlier " << inliers.size() << endl;
+  for(int i = 0; i < inliers.size(); i++){
+    if(v1.size() == 3)
+      break;
+    if(!inliers[i]){
+      v1.push_back(points1[i]);
+      v2.push_back(points2[i]);
+    }
+  }
+  cout << "v1 size " << v1.size() << endl;
+  cout << "H" << endl << H << endl;
+  Mat affine = getAffineTransform(v1, v2);
+  //correctMatches() ?
+  cout << "affine" << endl << affine << endl;
   //aff = H;
   /* Matrix form:
    * cos(theta)  -sin(theta) deltaX
@@ -159,10 +176,10 @@ bool CpuFeaturesMatcher::match(const ImageFeatures& img1, const ImageFeatures& i
   delta.x = H.at<double>(0,2);
   delta.y = H.at<double>(1,2);*/
   moduleEnded();
-  /*Mat img_matches;
+  Mat img_matches;
   drawing::drawMatches(gimage1, img1.keyPoints, gimage2, img2.keyPoints,
                good_matches, img_matches, Scalar::all(-1), Scalar::all(-1),
                vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
-  imshow("method2 good Matches", img_matches);*/
+  imshow("method2 good Matches", img_matches);
   return ok;
 }
