@@ -32,6 +32,7 @@ void MessageBridge::copyToRosMessage(const ImageFeatures& in, mobots_msgs::Featu
   descriptors.data.resize(in.descriptors.rows * step);
   if(in.descriptors.isContinuous()){
     memcpy(&descriptors.data[0], in.descriptors.data, in.descriptors.rows * step);
+    cout << "copyToRos continous" << endl;
   }else{
     // Copy row by row
     uchar* ros_data_ptr = (uchar*)(&descriptors.data[0]);
@@ -41,6 +42,7 @@ void MessageBridge::copyToRosMessage(const ImageFeatures& in, mobots_msgs::Featu
       ros_data_ptr += step;
       cv_data_ptr += in.descriptors.step;
     }
+    cout << "copyToRos not continous" << endl;
   }
 }
 
