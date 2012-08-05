@@ -1,0 +1,16 @@
+<stack>
+  <description brief="mobots">mobots</description>
+  <author>The Mobots Team</author>
+  <license>BSD,roflcopter</license>  
+  <review status="unreviewed" notes=""/>
+  <url></url>
+  <depend stack="common_msgs" /> <!-- nav_msgs, sensor_msgs, geometry_msgs -->
+  <depend stack="image_common" /> <!-- image_transport -->
+  <depend stack="image_pipeline" /> <!-- image_view -->
+  <depend stack="ros" />
+  <depend stack="ros_comm" /> <!-- std_msgs, roscpp -->
+  <depend stack="simulator_gazebo" /> <!-- gazebo_msgs, gazebo -->
+  <depend stack="vision_opencv" /> <!-- opencv2, cv_bridge -->
+  <depend stack="visualization" /> <!-- rviz -->
+
+</stack>
