@@ -19,14 +19,14 @@ Shutter::~Shutter() {
 
 void Shutter::startShutter()
 {
-    ROS_INFO("Shutterfunktion gestartet.");
+    ROS_INFO("Mobot %d: Shutterfunktion gestartet.", id);
     poseImage_pub = nh.advertise<mobots_msgs::ImagePoseID>("/mobot_pose/ImagePoseID", 2);
 
     image_sub = nh.subscribe("/my_cam/image", 5, &Shutter::imageCallback, this);
     pose_sub = nh.subscribe("/mouse/pose", 100, &Shutter::mouseCallback, this);
 
     
-    overlap = 0.2;
+    overlap = 0.3;
     dX = 0;
     dY = 0;
     dTheta = 0;

@@ -1,0 +1,2 @@
+add_subdirectory(image_map_display)
+add_subdirectory(image_store)

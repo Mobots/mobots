@@ -1,0 +1,3 @@
+mobots_msgs/ImageFeatures features
+geometry_msgs/Pose2D delta_pose
+int8 mobot_id
