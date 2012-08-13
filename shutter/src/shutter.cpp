@@ -60,8 +60,9 @@ void Shutter::publishMessage(double &x, double &y, double &theta, const sensor_m
 
 
 void Shutter::imageCallback(const sensor_msgs::Image &mobot_image) {
-    
-    if (g.checkPicture(dX, dY, dTheta) < overlap) {
+    double safe = g.checkPicture(dX, dY, dTheta);
+	std::out << "Überlappung: " << safe << std::endl;
+    if (safe < overlap) {
         publishMessage(dX, dY, dTheta, mobot_image);
         dX = 0;
         dY = 0;
