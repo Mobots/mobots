@@ -13,9 +13,17 @@ using namespace std;
 cv::Ptr<FeaturesFinder> detector;
 ros::Publisher publisher;
 
+static char TAG[] = "[FeatureDetector] ";
+
+string getPathForMobot(int mobotId, const string& topic){
+  stringstream ss;
+  ss << "/mobot" << mobotId << "/" << topic;
+  return ss.str();
+}
+
 
 void processImage(const mobots_msgs::ImageWithPoseDebug& image){
-  cout << "processImage" << endl;
+  ROS_INFO("%s processImage", TAG);
   ImageFeatures features;
   cv_bridge::CvImagePtr imagePtr = cv_bridge::toCvCopy(image.image);
   detector->findFeatures(imagePtr->image, features);
@@ -26,12 +34,21 @@ void processImage(const mobots_msgs::ImageWithPoseDebug& image){
 
 int main(int argc, char** argv){
   ros::init(argc, argv, "FeatureDetector");
-  ros::NodeHandle nodeHandle;
-  ros::Subscriber subscriber = nodeHandle.subscribe("ImageWithPose", 100, processImage);
-  publisher = nodeHandle.advertise<mobots_msgs::FeatureSetWithDeltaPose>("FeatureSetWithDeltaPose", 10); 
+  ros::NodeHandle nodeHandle("~");
+  int mobotId;
+  nodeHandle.param("mobotID", mobotId, 0);
+  if(mobotId == -1){
+    ROS_ERROR("%s no mobotID specified, exiting.", TAG);
+    exit(1);
+  }
+  string imagesPath = getPathForMobot(mobotId, "ImageWithDeltaPoseAndId");
+  ros::Subscriber subscriber = nodeHandle.subscribe(imagesPath, 100, processImage);
+  string featuresPath = getPathForMobot(mobotId, "FeatureSetWithDeltaPose");
+  publisher = nodeHandle.advertise<mobots_msgs::FeatureSetWithDeltaPose>(featuresPath, 10); 
+  
   //detector = new SurfFeaturesFinder(400, 3, 4, 4, 2, false);
   detector = new OrbFeaturesFinder(1000);
-  cout << "now spinning" << endl;
+  cout << TAG << "now spinning on id:" << mobotId << endl;
   ros::spin();
   return 0;
 }

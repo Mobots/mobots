@@ -26,7 +26,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #target_link_libraries(${PROJECT_NAME} another_library)
 rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
-rosbuild_add_executable(gazebo_simul src/gazebo_simul.cpp ../feature_detector/src/FeaturesMatcher.cpp ../feature_detector/src/ror.cpp ../feature_detector/src/draw.cpp src/ImageHandler.cpp) ##ugly for now
+#rosbuild_add_executable(gazebo_simul src/gazebo_simul.cpp ../feature_detector/src/FeaturesMatcher.cpp ../feature_detector/src/ror.cpp ../feature_detector/src/draw.cpp src/ImageHandler.cpp) ##ugly for now
 rosbuild_add_executable(mobox_simul src/mobox_simul.cpp ../feature_detector/src/FeaturesMatcher.cpp ../feature_detector/src/ror.cpp ../feature_detector/src/draw.cpp src/ImageHandler.cpp)
-target_link_libraries(gazebo_simul pthread)
+#target_link_libraries(gazebo_simul pthread)
 target_link_libraries(mobox_simul pthread)

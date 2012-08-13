@@ -72,6 +72,13 @@ bool rorAlternative(const vector<Point2f>& points1, const vector<Point2f>& point
  float* sumsX = new float[N];
  float* sumsY = new float[N];
  
+ for(int i = 0; i<N; i++){
+   counts[i] = 0;
+   sumsTheta[i] = 0;
+   sumsX[i] = 0;
+   sumsY[i] = 0;
+ }
+ 
  unsigned int* const countsMid = &counts[N/2];
  float* const sumsMid = &sumsTheta[N/2];
  float* const sumsMidX = &sumsX[N/2];

@@ -11,6 +11,14 @@ cv::Mat gimage2;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
+static char TAG[] = "[FeatureDetector] ";
+
+static string getPathForMobot(int mobotId, const string& topic){
+  stringstream ss;
+  ss << "/mobot" << mobotId << "/" << topic;
+  return ss.str();
+}
+
 void copyMatToImageMSg(const cv::Mat& in, mobots_msgs::ImageWithPoseDebug& out2){
   sensor_msgs::Image* out = &out2.image;
   out->height = in.rows;
@@ -56,7 +64,7 @@ inline double toDegree(double rad){
 ImageHandler::ImageHandler():
   shutterPos(0), featurePos(0){
   ros::NodeHandle nh;
-  publisher = nh.advertise<mobots_msgs::ImageWithPoseDebug>("ImageWithPose", 2);
+  imagePublisher = nh.advertise<mobots_msgs::ImageWithPoseDebug>("ImageWithPose", 2);
   featureSetSubscriber = nh.subscribe("FeatureSetWithDeltaPose", 2, &ImageHandler::featuresCallback, this);
   imageSubscriber = nh.subscribe("/usb_cam/image_raw", 2, &ImageHandler::imageCallback, this);
   /*Mat img1 = imread("/home/jonas/mobots/feature_detector/testImages/image001.png", 1);
@@ -149,7 +157,7 @@ void ImageHandler::shutterCallback(){
     b1 = cv_bridge::toCvCopy(image2);
     gimage2 = b1->image;
   }
-  publisher.publish(msg);
+  imagePublisher.publish(msg);
   shutterPos++;
   shutterPos %= 2;
   pthread_mutex_unlock(&mutex);
