@@ -1,0 +1,1170 @@
+   1              		.syntax unified
+   2              		.cpu cortex-m3
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.thumb
+  14              		.file	"printf.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.align	2
+  19              		.global	_print
+  20              		.thumb
+  21              		.thumb_func
+  23              	_print:
+  24              	.LFB29:
+  25              		.file 1 "../printf.c"
+   1:../printf.c   **** #include "usart.h"
+   2:../printf.c   **** #include <stdarg.h>
+   3:../printf.c   **** #include "stm32f10x.h"
+   4:../printf.c   **** #include "stm32f10x_conf.h"
+   5:../printf.c   **** 
+   6:../printf.c   **** #undef printf
+   7:../printf.c   **** 
+   8:../printf.c   **** typedef signed int (*send_func_t)(const unsigned char *, const unsigned int);
+   9:../printf.c   **** 
+  10:../printf.c   **** int _print(send_func_t sf, const unsigned char *format) {
+  26              		.loc 1 10 0
+  27              		.cfi_startproc
+  28              		@ args = 0, pretend = 0, frame = 24
+  29              		@ frame_needed = 1, uses_anonymous_args = 0
+  30 0000 80B5     		push	{r7, lr}
+  31              	.LCFI0:
+  32              		.cfi_def_cfa_offset 8
+  33              		.cfi_offset 14, -4
+  34              		.cfi_offset 7, -8
+  35 0002 86B0     		sub	sp, sp, #24
+  36              	.LCFI1:
+  37              		.cfi_def_cfa_offset 32
+  38 0004 00AF     		add	r7, sp, #0
+  39              	.LCFI2:
+  40              		.cfi_def_cfa_register 7
+  41 0006 7860     		str	r0, [r7, #4]
+  42 0008 3960     		str	r1, [r7, #0]
+  11:../printf.c   ****   const unsigned char *fmt = format;
+  43              		.loc 1 11 0
+  44 000a 3B68     		ldr	r3, [r7, #0]
+  45 000c 7B61     		str	r3, [r7, #20]
+  12:../printf.c   ****   unsigned int len = 0;
+  46              		.loc 1 12 0
+  47 000e 4FF00003 		mov	r3, #0
+  48 0012 3B61     		str	r3, [r7, #16]
+  13:../printf.c   ****   
+  14:../printf.c   ****   while(*fmt) {
+  49              		.loc 1 14 0
+  50 0014 07E0     		b	.L2
+  51              	.L3:
+  15:../printf.c   ****     fmt++;
+  52              		.loc 1 15 0
+  53 0016 7B69     		ldr	r3, [r7, #20]
+  54 0018 03F10103 		add	r3, r3, #1
+  55 001c 7B61     		str	r3, [r7, #20]
+  16:../printf.c   ****     len++;
+  56              		.loc 1 16 0
+  57 001e 3B69     		ldr	r3, [r7, #16]
+  58 0020 03F10103 		add	r3, r3, #1
+  59 0024 3B61     		str	r3, [r7, #16]
+  60              	.L2:
+  14:../printf.c   ****   while(*fmt) {
+  61              		.loc 1 14 0 discriminator 1
+  62 0026 7B69     		ldr	r3, [r7, #20]
+  63 0028 1B78     		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+  64 002a 002B     		cmp	r3, #0
+  65 002c F3D1     		bne	.L3
+  17:../printf.c   ****   }
+  18:../printf.c   **** 
+  19:../printf.c   ****   int sent = 0;
+  66              		.loc 1 19 0
+  67 002e 4FF00003 		mov	r3, #0
+  68 0032 FB60     		str	r3, [r7, #12]
+  20:../printf.c   ****   int ret = 0;
+  69              		.loc 1 20 0
+  70 0034 4FF00003 		mov	r3, #0
+  71 0038 BB60     		str	r3, [r7, #8]
+  21:../printf.c   ****   
+  22:../printf.c   ****   while(sent < len)
+  72              		.loc 1 22 0
+  73 003a 14E0     		b	.L4
+  74              	.L7:
+  23:../printf.c   ****   {
+  24:../printf.c   ****     ret = sf(format + sent, len - sent);
+  75              		.loc 1 24 0
+  76 003c FB68     		ldr	r3, [r7, #12]
+  77 003e 3A68     		ldr	r2, [r7, #0]
+  78 0040 D118     		adds	r1, r2, r3
+  79 0042 FB68     		ldr	r3, [r7, #12]
+  80 0044 3A69     		ldr	r2, [r7, #16]
+  81 0046 D21A     		subs	r2, r2, r3
+  82 0048 7B68     		ldr	r3, [r7, #4]
+  83 004a 0846     		mov	r0, r1
+  84 004c 1146     		mov	r1, r2
+  85 004e 9847     		blx	r3
+  86 0050 B860     		str	r0, [r7, #8]
+  25:../printf.c   ****     if(ret < 0)
+  87              		.loc 1 25 0
+  88 0052 BB68     		ldr	r3, [r7, #8]
+  89 0054 002B     		cmp	r3, #0
+  90 0056 02DA     		bge	.L5
+  26:../printf.c   **** 	return -1;
+  91              		.loc 1 26 0
+  92 0058 4FF0FF33 		mov	r3, #-1
+  93 005c 08E0     		b	.L6
+  94              	.L5:
+  27:../printf.c   ****     sent += ret;
+  95              		.loc 1 27 0
+  96 005e FA68     		ldr	r2, [r7, #12]
+  97 0060 BB68     		ldr	r3, [r7, #8]
+  98 0062 D318     		adds	r3, r2, r3
+  99 0064 FB60     		str	r3, [r7, #12]
+ 100              	.L4:
+  22:../printf.c   ****   while(sent < len)
+ 101              		.loc 1 22 0 discriminator 1
+ 102 0066 FA68     		ldr	r2, [r7, #12]
+ 103 0068 3B69     		ldr	r3, [r7, #16]
+ 104 006a 9A42     		cmp	r2, r3
+ 105 006c E6D3     		bcc	.L7
+  28:../printf.c   ****   }
+  29:../printf.c   ****   return len;
+ 106              		.loc 1 29 0
+ 107 006e 3B69     		ldr	r3, [r7, #16]
+ 108              	.L6:
+  30:../printf.c   **** }
+ 109              		.loc 1 30 0
+ 110 0070 1846     		mov	r0, r3
+ 111 0072 07F11807 		add	r7, r7, #24
+ 112 0076 BD46     		mov	sp, r7
+ 113 0078 80BD     		pop	{r7, pc}
+ 114              		.cfi_endproc
+ 115              	.LFE29:
+ 117 007a 00BF     		.align	2
+ 118              		.global	print
+ 119              		.thumb
+ 120              		.thumb_func
+ 122              	print:
+ 123              	.LFB30:
+  31:../printf.c   **** 
+  32:../printf.c   **** int print(const unsigned char *format) 
+  33:../printf.c   **** {
+ 124              		.loc 1 33 0
+ 125              		.cfi_startproc
+ 126              		@ args = 0, pretend = 0, frame = 8
+ 127              		@ frame_needed = 1, uses_anonymous_args = 0
+ 128 007c 80B5     		push	{r7, lr}
+ 129              	.LCFI3:
+ 130              		.cfi_def_cfa_offset 8
+ 131              		.cfi_offset 14, -4
+ 132              		.cfi_offset 7, -8
+ 133 007e 82B0     		sub	sp, sp, #8
+ 134              	.LCFI4:
+ 135              		.cfi_def_cfa_offset 16
+ 136 0080 00AF     		add	r7, sp, #0
+ 137              	.LCFI5:
+ 138              		.cfi_def_cfa_register 7
+ 139 0082 7860     		str	r0, [r7, #4]
+  34:../printf.c   ****     return _print(USART1_SendData, format);    
+ 140              		.loc 1 34 0
+ 141 0084 40F20000 		movw	r0, #:lower16:USART1_SendData
+ 142 0088 C0F20000 		movt	r0, #:upper16:USART1_SendData
+ 143 008c 7968     		ldr	r1, [r7, #4]
+ 144 008e FFF7FEFF 		bl	_print
+ 145 0092 0346     		mov	r3, r0
+  35:../printf.c   **** }
+ 146              		.loc 1 35 0
+ 147 0094 1846     		mov	r0, r3
+ 148 0096 07F10807 		add	r7, r7, #8
+ 149 009a BD46     		mov	sp, r7
+ 150 009c 80BD     		pop	{r7, pc}
+ 151              		.cfi_endproc
+ 152              	.LFE30:
+ 154 009e 00BF     		.align	2
+ 155              		.global	fillInUnsignedLongInt
+ 156              		.thumb
+ 157              		.thumb_func
+ 159              	fillInUnsignedLongInt:
+ 160              	.LFB31:
+  36:../printf.c   **** 
+  37:../printf.c   **** 
+  38:../printf.c   **** 
+  39:../printf.c   **** void fillInUnsignedLongInt(unsigned long int d, unsigned char *msg, int *pos) {
+ 161              		.loc 1 39 0
+ 162              		.cfi_startproc
+ 163              		@ args = 0, pretend = 0, frame = 24
+ 164              		@ frame_needed = 1, uses_anonymous_args = 0
+ 165              		@ link register save eliminated.
+ 166 00a0 80B4     		push	{r7}
+ 167              	.LCFI6:
+ 168              		.cfi_def_cfa_offset 4
+ 169              		.cfi_offset 7, -4
+ 170 00a2 87B0     		sub	sp, sp, #28
+ 171              	.LCFI7:
+ 172              		.cfi_def_cfa_offset 32
+ 173 00a4 00AF     		add	r7, sp, #0
+ 174              	.LCFI8:
+ 175              		.cfi_def_cfa_register 7
+ 176 00a6 F860     		str	r0, [r7, #12]
+ 177 00a8 B960     		str	r1, [r7, #8]
+ 178 00aa 7A60     		str	r2, [r7, #4]
+  40:../printf.c   ****   unsigned long int i, j;
+  41:../printf.c   ****   
+  42:../printf.c   ****   if(d == 0) {
+ 179              		.loc 1 42 0
+ 180 00ac FB68     		ldr	r3, [r7, #12]
+ 181 00ae 002B     		cmp	r3, #0
+ 182 00b0 0DD1     		bne	.L10
+  43:../printf.c   ****     msg[*pos] = '0';
+ 183              		.loc 1 43 0
+ 184 00b2 7B68     		ldr	r3, [r7, #4]
+ 185 00b4 1B68     		ldr	r3, [r3, #0]
+ 186 00b6 BA68     		ldr	r2, [r7, #8]
+ 187 00b8 D318     		adds	r3, r2, r3
+ 188 00ba 4FF03002 		mov	r2, #48
+ 189 00be 1A70     		strb	r2, [r3, #0]
+  44:../printf.c   ****     (*pos)++;
+ 190              		.loc 1 44 0
+ 191 00c0 7B68     		ldr	r3, [r7, #4]
+ 192 00c2 1B68     		ldr	r3, [r3, #0]
+ 193 00c4 03F10102 		add	r2, r3, #1
+ 194 00c8 7B68     		ldr	r3, [r7, #4]
+ 195 00ca 1A60     		str	r2, [r3, #0]
+  45:../printf.c   ****     return;
+ 196              		.loc 1 45 0
+ 197 00cc 50E0     		b	.L9
+ 198              	.L10:
+  46:../printf.c   ****   }
+  47:../printf.c   ****   
+  48:../printf.c   ****   i = 0;
+ 199              		.loc 1 48 0
+ 200 00ce 4FF00003 		mov	r3, #0
+ 201 00d2 7B61     		str	r3, [r7, #20]
+  49:../printf.c   ****   j = d;
+ 202              		.loc 1 49 0
+ 203 00d4 FB68     		ldr	r3, [r7, #12]
+ 204 00d6 3B61     		str	r3, [r7, #16]
+  50:../printf.c   ****   while(j) {
+ 205              		.loc 1 50 0
+ 206 00d8 0DE0     		b	.L12
+ 207              	.L13:
+  51:../printf.c   ****     j /= 10;
+ 208              		.loc 1 51 0
+ 209 00da 3A69     		ldr	r2, [r7, #16]
+ 210 00dc 4CF6CD43 		movw	r3, #52429
+ 211 00e0 CCF6CC43 		movt	r3, 52428
+ 212 00e4 A3FB0213 		umull	r1, r3, r3, r2
+ 213 00e8 4FEAD303 		lsr	r3, r3, #3
+ 214 00ec 3B61     		str	r3, [r7, #16]
+  52:../printf.c   ****     i++;
+ 215              		.loc 1 52 0
+ 216 00ee 7B69     		ldr	r3, [r7, #20]
+ 217 00f0 03F10103 		add	r3, r3, #1
+ 218 00f4 7B61     		str	r3, [r7, #20]
+ 219              	.L12:
+  50:../printf.c   ****   while(j) {
+ 220              		.loc 1 50 0 discriminator 1
+ 221 00f6 3B69     		ldr	r3, [r7, #16]
+ 222 00f8 002B     		cmp	r3, #0
+ 223 00fa EED1     		bne	.L13
+  53:../printf.c   ****   }
+  54:../printf.c   ****   
+  55:../printf.c   ****   j = i;
+ 224              		.loc 1 55 0
+ 225 00fc 7B69     		ldr	r3, [r7, #20]
+ 226 00fe 3B61     		str	r3, [r7, #16]
+  56:../printf.c   ****   while(i) {
+ 227              		.loc 1 56 0
+ 228 0100 2BE0     		b	.L14
+ 229              	.L15:
+  57:../printf.c   ****     msg[*pos + i - 1] = (char) (d % 10) + '0';
+ 230              		.loc 1 57 0
+ 231 0102 7B68     		ldr	r3, [r7, #4]
+ 232 0104 1B68     		ldr	r3, [r3, #0]
+ 233 0106 1A46     		mov	r2, r3
+ 234 0108 7B69     		ldr	r3, [r7, #20]
+ 235 010a D318     		adds	r3, r2, r3
+ 236 010c 03F1FF33 		add	r3, r3, #-1
+ 237 0110 BA68     		ldr	r2, [r7, #8]
+ 238 0112 D018     		adds	r0, r2, r3
+ 239 0114 F968     		ldr	r1, [r7, #12]
+ 240 0116 4CF6CD43 		movw	r3, #52429
+ 241 011a CCF6CC43 		movt	r3, 52428
+ 242 011e A3FB0123 		umull	r2, r3, r3, r1
+ 243 0122 4FEAD302 		lsr	r2, r3, #3
+ 244 0126 1346     		mov	r3, r2
+ 245 0128 4FEA8303 		lsl	r3, r3, #2
+ 246 012c 9B18     		adds	r3, r3, r2
+ 247 012e 4FEA4303 		lsl	r3, r3, #1
+ 248 0132 CA1A     		subs	r2, r1, r3
+ 249 0134 D3B2     		uxtb	r3, r2
+ 250 0136 03F13003 		add	r3, r3, #48
+ 251 013a DBB2     		uxtb	r3, r3
+ 252 013c 0370     		strb	r3, [r0, #0]
+  58:../printf.c   ****     d /= 10;
+ 253              		.loc 1 58 0
+ 254 013e FA68     		ldr	r2, [r7, #12]
+ 255 0140 4CF6CD43 		movw	r3, #52429
+ 256 0144 CCF6CC43 		movt	r3, 52428
+ 257 0148 A3FB0213 		umull	r1, r3, r3, r2
+ 258 014c 4FEAD303 		lsr	r3, r3, #3
+ 259 0150 FB60     		str	r3, [r7, #12]
+  59:../printf.c   ****     i--;
+ 260              		.loc 1 59 0
+ 261 0152 7B69     		ldr	r3, [r7, #20]
+ 262 0154 03F1FF33 		add	r3, r3, #-1
+ 263 0158 7B61     		str	r3, [r7, #20]
+ 264              	.L14:
+  56:../printf.c   ****   while(i) {
+ 265              		.loc 1 56 0 discriminator 1
+ 266 015a 7B69     		ldr	r3, [r7, #20]
+ 267 015c 002B     		cmp	r3, #0
+ 268 015e D0D1     		bne	.L15
+  60:../printf.c   ****   }
+  61:../printf.c   ****   *pos += j;
+ 269              		.loc 1 61 0
+ 270 0160 7B68     		ldr	r3, [r7, #4]
+ 271 0162 1B68     		ldr	r3, [r3, #0]
+ 272 0164 1A46     		mov	r2, r3
+ 273 0166 3B69     		ldr	r3, [r7, #16]
+ 274 0168 D318     		adds	r3, r2, r3
+ 275 016a 1A46     		mov	r2, r3
+ 276 016c 7B68     		ldr	r3, [r7, #4]
+ 277 016e 1A60     		str	r2, [r3, #0]
+ 278              	.L9:
+  62:../printf.c   **** }
+ 279              		.loc 1 62 0
+ 280 0170 07F11C07 		add	r7, r7, #28
+ 281 0174 BD46     		mov	sp, r7
+ 282 0176 80BC     		pop	{r7}
+ 283 0178 7047     		bx	lr
+ 284              		.cfi_endproc
+ 285              	.LFE31:
+ 287 017a 00BF     		.align	2
+ 288              		.global	_printf
+ 289              		.thumb
+ 290              		.thumb_func
+ 292              	_printf:
+ 293              	.LFB32:
+  63:../printf.c   **** 
+  64:../printf.c   **** 
+  65:../printf.c   **** int _printf(send_func_t sf, const char *format, va_list* ap) {
+ 294              		.loc 1 65 0
+ 295              		.cfi_startproc
+ 296              		@ args = 0, pretend = 0, frame = 184
+ 297              		@ frame_needed = 1, uses_anonymous_args = 0
+ 298 017c 80B5     		push	{r7, lr}
+ 299              	.LCFI9:
+ 300              		.cfi_def_cfa_offset 8
+ 301              		.cfi_offset 14, -4
+ 302              		.cfi_offset 7, -8
+ 303 017e AEB0     		sub	sp, sp, #184
+ 304              	.LCFI10:
+ 305              		.cfi_def_cfa_offset 192
+ 306 0180 00AF     		add	r7, sp, #0
+ 307              	.LCFI11:
+ 308              		.cfi_def_cfa_register 7
+ 309 0182 F860     		str	r0, [r7, #12]
+ 310 0184 B960     		str	r1, [r7, #8]
+ 311 0186 7A60     		str	r2, [r7, #4]
+  66:../printf.c   ****   unsigned char msg[128];
+  67:../printf.c   ****   const char *fmt = format;
+ 312              		.loc 1 67 0
+ 313 0188 BB68     		ldr	r3, [r7, #8]
+ 314 018a C7F8B430 		str	r3, [r7, #180]
+  68:../printf.c   ****   int pos = 0;
+ 315              		.loc 1 68 0
+ 316 018e 4FF00003 		mov	r3, #0
+ 317 0192 7B61     		str	r3, [r7, #20]
+  69:../printf.c   ****   long int ds;
+  70:../printf.c   ****   unsigned long int d = 0;
+ 318              		.loc 1 70 0
+ 319 0194 4FF00003 		mov	r3, #0
+ 320 0198 C7F8AC30 		str	r3, [r7, #172]
+  71:../printf.c   ****   unsigned short int h;
+  72:../printf.c   ****   short int hs;  
+  73:../printf.c   ****   char c, *s;
+  74:../printf.c   **** 
+  75:../printf.c   ****   while (*fmt) {
+ 321              		.loc 1 75 0
+ 322 019c 38E1     		b	.L17
+ 323              	.L33:
+  76:../printf.c   ****   
+  77:../printf.c   ****     if(*fmt != '%') {
+ 324              		.loc 1 77 0
+ 325 019e D7F8B430 		ldr	r3, [r7, #180]
+ 326 01a2 1B78     		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 327 01a4 252B     		cmp	r3, #37
+ 328 01a6 13D0     		beq	.L18
+  78:../printf.c   ****       msg[pos] = *fmt;
+ 329              		.loc 1 78 0
+ 330 01a8 7B69     		ldr	r3, [r7, #20]
+ 331 01aa D7F8B420 		ldr	r2, [r7, #180]
+ 332 01ae 1278     		ldrb	r2, [r2, #0]	@ zero_extendqisi2
+ 333 01b0 07F1B801 		add	r1, r7, #184
+ 334 01b4 CB18     		adds	r3, r1, r3
+ 335 01b6 03F8A02C 		strb	r2, [r3, #-160]
+  79:../printf.c   ****       pos++;
+ 336              		.loc 1 79 0
+ 337 01ba 7B69     		ldr	r3, [r7, #20]
+ 338 01bc 03F10103 		add	r3, r3, #1
+ 339 01c0 7B61     		str	r3, [r7, #20]
+  80:../printf.c   ****       fmt++;
+ 340              		.loc 1 80 0
+ 341 01c2 D7F8B430 		ldr	r3, [r7, #180]
+ 342 01c6 03F10103 		add	r3, r3, #1
+ 343 01ca C7F8B430 		str	r3, [r7, #180]
+  81:../printf.c   ****       continue;
+ 344              		.loc 1 81 0
+ 345 01ce 1FE1     		b	.L17
+ 346              	.L18:
+  82:../printf.c   ****     } else {
+  83:../printf.c   ****       fmt++;
+ 347              		.loc 1 83 0
+ 348 01d0 D7F8B430 		ldr	r3, [r7, #180]
+ 349 01d4 03F10103 		add	r3, r3, #1
+ 350 01d8 C7F8B430 		str	r3, [r7, #180]
+  84:../printf.c   ****       assert_param(*fmt);
+  85:../printf.c   ****     }
+  86:../printf.c   **** 
+  87:../printf.c   ****     switch (*fmt) {
+ 351              		.loc 1 87 0
+ 352 01dc D7F8B430 		ldr	r3, [r7, #180]
+ 353 01e0 1B78     		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 354 01e2 A3F16303 		sub	r3, r3, #99
+ 355 01e6 102B     		cmp	r3, #16
+ 356 01e8 00F21281 		bhi	.L17
+ 357 01ec 01A2     		adr	r2, .L24
+ 358 01ee 52F823F0 		ldr	pc, [r2, r3, lsl #2]
+ 359 01f2 00BF     		.align	2
+ 360              	.L24:
+ 361 01f4 E5030000 		.word	.L19+1
+ 362 01f8 97020000 		.word	.L20+1
+ 363 01fc 11040000 		.word	.L17+1
+ 364 0200 11040000 		.word	.L17+1
+ 365 0204 11040000 		.word	.L17+1
+ 366 0208 31030000 		.word	.L21+1
+ 367 020c 11040000 		.word	.L17+1
+ 368 0210 11040000 		.word	.L17+1
+ 369 0214 11040000 		.word	.L17+1
+ 370 0218 8B020000 		.word	.L22+1
+ 371 021c 11040000 		.word	.L17+1
+ 372 0220 11040000 		.word	.L17+1
+ 373 0224 11040000 		.word	.L17+1
+ 374 0228 11040000 		.word	.L17+1
+ 375 022c 11040000 		.word	.L17+1
+ 376 0230 11040000 		.word	.L17+1
+ 377 0234 39020000 		.word	.L23+1
+ 378              	.L23:
+  88:../printf.c   ****     case 's':              /* string */
+  89:../printf.c   ****       fmt++;
+ 379              		.loc 1 89 0
+ 380 0238 D7F8B430 		ldr	r3, [r7, #180]
+ 381 023c 03F10103 		add	r3, r3, #1
+ 382 0240 C7F8B430 		str	r3, [r7, #180]
+  90:../printf.c   ****       s = va_arg(*ap, char *);
+ 383              		.loc 1 90 0
+ 384 0244 7B68     		ldr	r3, [r7, #4]
+ 385 0246 1B68     		ldr	r3, [r3, #0]
+ 386 0248 03F10401 		add	r1, r3, #4
+ 387 024c 7A68     		ldr	r2, [r7, #4]
+ 388 024e 1160     		str	r1, [r2, #0]
+ 389 0250 1B68     		ldr	r3, [r3, #0]
+ 390 0252 C7F8A830 		str	r3, [r7, #168]
+  91:../printf.c   ****       while(*s) {
+ 391              		.loc 1 91 0
+ 392 0256 12E0     		b	.L25
+ 393              	.L26:
+  92:../printf.c   **** 	msg[pos] = *s;
+ 394              		.loc 1 92 0
+ 395 0258 7B69     		ldr	r3, [r7, #20]
+ 396 025a D7F8A820 		ldr	r2, [r7, #168]
+ 397 025e 1278     		ldrb	r2, [r2, #0]	@ zero_extendqisi2
+ 398 0260 07F1B801 		add	r1, r7, #184
+ 399 0264 CB18     		adds	r3, r1, r3
+ 400 0266 03F8A02C 		strb	r2, [r3, #-160]
+  93:../printf.c   **** 	pos++;
+ 401              		.loc 1 93 0
+ 402 026a 7B69     		ldr	r3, [r7, #20]
+ 403 026c 03F10103 		add	r3, r3, #1
+ 404 0270 7B61     		str	r3, [r7, #20]
+  94:../printf.c   **** 	s++;
+ 405              		.loc 1 94 0
+ 406 0272 D7F8A830 		ldr	r3, [r7, #168]
+ 407 0276 03F10103 		add	r3, r3, #1
+ 408 027a C7F8A830 		str	r3, [r7, #168]
+ 409              	.L25:
+  91:../printf.c   ****       while(*s) {
+ 410              		.loc 1 91 0 discriminator 1
+ 411 027e D7F8A830 		ldr	r3, [r7, #168]
+ 412 0282 1B78     		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 413 0284 002B     		cmp	r3, #0
+ 414 0286 E7D1     		bne	.L26
+  95:../printf.c   ****       }
+  96:../printf.c   ****       break;
+ 415              		.loc 1 96 0
+ 416 0288 C2E0     		b	.L17
+ 417              	.L22:
+  97:../printf.c   **** 
+  98:../printf.c   ****       
+  99:../printf.c   ****     case 'l':               /* unsigned long int */
+ 100:../printf.c   ****       fmt++;
+ 418              		.loc 1 100 0
+ 419 028a D7F8B430 		ldr	r3, [r7, #180]
+ 420 028e 03F10103 		add	r3, r3, #1
+ 421 0292 C7F8B430 		str	r3, [r7, #180]
+ 422              	.L20:
+ 101:../printf.c   ****     case 'd':              /* int */
+ 102:../printf.c   ****       if(*fmt == 'u') {
+ 423              		.loc 1 102 0
+ 424 0296 D7F8B430 		ldr	r3, [r7, #180]
+ 425 029a 1B78     		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 426 029c 752B     		cmp	r3, #117
+ 427 029e 09D1     		bne	.L27
+ 103:../printf.c   **** 	d = (unsigned long int) va_arg(*ap, long int);
+ 428              		.loc 1 103 0
+ 429 02a0 7B68     		ldr	r3, [r7, #4]
+ 430 02a2 1B68     		ldr	r3, [r3, #0]
+ 431 02a4 03F10401 		add	r1, r3, #4
+ 432 02a8 7A68     		ldr	r2, [r7, #4]
+ 433 02aa 1160     		str	r1, [r2, #0]
+ 434 02ac 1B68     		ldr	r3, [r3, #0]
+ 435 02ae C7F8AC30 		str	r3, [r7, #172]
+ 436 02b2 2CE0     		b	.L28
+ 437              	.L27:
+ 104:../printf.c   ****       } else {
+ 105:../printf.c   **** 	if(*fmt == 'i' || *fmt == 'd') {
+ 438              		.loc 1 105 0
+ 439 02b4 D7F8B430 		ldr	r3, [r7, #180]
+ 440 02b8 1B78     		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 441 02ba 692B     		cmp	r3, #105
+ 442 02bc 04D0     		beq	.L29
+ 443              		.loc 1 105 0 is_stmt 0 discriminator 1
+ 444 02be D7F8B430 		ldr	r3, [r7, #180]
+ 445 02c2 1B78     		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 446 02c4 642B     		cmp	r3, #100
+ 447 02c6 22D1     		bne	.L28
+ 448              	.L29:
+ 106:../printf.c   **** 	    ds = va_arg(*ap, long int);
+ 449              		.loc 1 106 0 is_stmt 1
+ 450 02c8 7B68     		ldr	r3, [r7, #4]
+ 451 02ca 1B68     		ldr	r3, [r3, #0]
+ 452 02cc 03F10401 		add	r1, r3, #4
+ 453 02d0 7A68     		ldr	r2, [r7, #4]
+ 454 02d2 1160     		str	r1, [r2, #0]
+ 455 02d4 1B68     		ldr	r3, [r3, #0]
+ 456 02d6 C7F8B030 		str	r3, [r7, #176]
+ 107:../printf.c   **** 
+ 108:../printf.c   **** 	    if(ds < 0) {
+ 457              		.loc 1 108 0
+ 458 02da D7F8B030 		ldr	r3, [r7, #176]
+ 459 02de 002B     		cmp	r3, #0
+ 460 02e0 11DA     		bge	.L30
+ 109:../printf.c   **** 	    msg[pos] = '-';
+ 461              		.loc 1 109 0
+ 462 02e2 7B69     		ldr	r3, [r7, #20]
+ 463 02e4 07F1B802 		add	r2, r7, #184
+ 464 02e8 D318     		adds	r3, r2, r3
+ 465 02ea 4FF02D02 		mov	r2, #45
+ 466 02ee 03F8A02C 		strb	r2, [r3, #-160]
+ 110:../printf.c   **** 	    pos++;
+ 467              		.loc 1 110 0
+ 468 02f2 7B69     		ldr	r3, [r7, #20]
+ 469 02f4 03F10103 		add	r3, r3, #1
+ 470 02f8 7B61     		str	r3, [r7, #20]
+ 111:../printf.c   **** 	    //set first bit to zero, so there is no 
+ 112:../printf.c   **** 	    //difference singend / unsigend now
+ 113:../printf.c   **** 	    //and we can use generic function for unsigend int
+ 114:../printf.c   **** 	    ds *=-1;
+ 471              		.loc 1 114 0
+ 472 02fa D7F8B030 		ldr	r3, [r7, #176]
+ 473 02fe C3F10003 		rsb	r3, r3, #0
+ 474 0302 C7F8B030 		str	r3, [r7, #176]
+ 475              	.L30:
+ 115:../printf.c   **** 	    }
+ 116:../printf.c   **** 	    d = ds;
+ 476              		.loc 1 116 0
+ 477 0306 D7F8B030 		ldr	r3, [r7, #176]
+ 478 030a C7F8AC30 		str	r3, [r7, #172]
+ 479              	.L28:
+ 117:../printf.c   **** 	}
+ 118:../printf.c   ****       }
+ 119:../printf.c   ****       fmt++;
+ 480              		.loc 1 119 0
+ 481 030e D7F8B430 		ldr	r3, [r7, #180]
+ 482 0312 03F10103 		add	r3, r3, #1
+ 483 0316 C7F8B430 		str	r3, [r7, #180]
+ 120:../printf.c   **** 
+ 121:../printf.c   ****       fillInUnsignedLongInt(d, msg, &pos);
+ 484              		.loc 1 121 0
+ 485 031a 07F11802 		add	r2, r7, #24
+ 486 031e 07F11403 		add	r3, r7, #20
+ 487 0322 D7F8AC00 		ldr	r0, [r7, #172]
+ 488 0326 1146     		mov	r1, r2
+ 489 0328 1A46     		mov	r2, r3
+ 490 032a FFF7FEFF 		bl	fillInUnsignedLongInt
+ 122:../printf.c   **** 
+ 123:../printf.c   ****       break;
+ 491              		.loc 1 123 0
+ 492 032e 6FE0     		b	.L17
+ 493              	.L21:
+ 124:../printf.c   **** 
+ 125:../printf.c   ****     case 'h':              /* short int */
+ 126:../printf.c   ****       fmt++;
+ 494              		.loc 1 126 0
+ 495 0330 D7F8B430 		ldr	r3, [r7, #180]
+ 496 0334 03F10103 		add	r3, r3, #1
+ 497 0338 C7F8B430 		str	r3, [r7, #180]
+ 127:../printf.c   ****       if(*fmt == 'u') {
+ 498              		.loc 1 127 0
+ 499 033c D7F8B430 		ldr	r3, [r7, #180]
+ 500 0340 1B78     		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 501 0342 752B     		cmp	r3, #117
+ 502 0344 0DD1     		bne	.L31
+ 128:../printf.c   **** 	h = (unsigned short int) va_arg(*ap, int);
+ 503              		.loc 1 128 0
+ 504 0346 7B68     		ldr	r3, [r7, #4]
+ 505 0348 1B68     		ldr	r3, [r3, #0]
+ 506 034a 03F10401 		add	r1, r3, #4
+ 507 034e 7A68     		ldr	r2, [r7, #4]
+ 508 0350 1160     		str	r1, [r2, #0]
+ 509 0352 1B68     		ldr	r3, [r3, #0]
+ 510 0354 A7F8A230 		strh	r3, [r7, #162]	@ movhi
+ 129:../printf.c   **** 	d = h;
+ 511              		.loc 1 129 0
+ 512 0358 B7F8A230 		ldrh	r3, [r7, #162]
+ 513 035c C7F8AC30 		str	r3, [r7, #172]
+ 514 0360 2FE0     		b	.L32
+ 515              	.L31:
+ 130:../printf.c   ****       } else {
+ 131:../printf.c   **** 	if(*fmt == 'i') {
+ 516              		.loc 1 131 0
+ 517 0362 D7F8B430 		ldr	r3, [r7, #180]
+ 518 0366 1B78     		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 519 0368 692B     		cmp	r3, #105
+ 520 036a 2AD1     		bne	.L32
+ 132:../printf.c   **** 	    hs = (short int) va_arg(*ap, int);
+ 521              		.loc 1 132 0
+ 522 036c 7B68     		ldr	r3, [r7, #4]
+ 523 036e 1B68     		ldr	r3, [r3, #0]
+ 524 0370 03F10401 		add	r1, r3, #4
+ 525 0374 7A68     		ldr	r2, [r7, #4]
+ 526 0376 1160     		str	r1, [r2, #0]
+ 527 0378 1B68     		ldr	r3, [r3, #0]
+ 528 037a A7F8A030 		strh	r3, [r7, #160]	@ movhi
+ 133:../printf.c   **** 	    d = hs;
+ 529              		.loc 1 133 0
+ 530 037e B7F9A030 		ldrsh	r3, [r7, #160]
+ 531 0382 C7F8AC30 		str	r3, [r7, #172]
+ 134:../printf.c   **** 	    if(hs < 0) {
+ 532              		.loc 1 134 0
+ 533 0386 B7F9A030 		ldrsh	r3, [r7, #160]
+ 534 038a 002B     		cmp	r3, #0
+ 535 038c 19DA     		bge	.L32
+ 135:../printf.c   **** 	    msg[pos] = '-';
+ 536              		.loc 1 135 0
+ 537 038e 7B69     		ldr	r3, [r7, #20]
+ 538 0390 07F1B801 		add	r1, r7, #184
+ 539 0394 CB18     		adds	r3, r1, r3
+ 540 0396 4FF02D02 		mov	r2, #45
+ 541 039a 03F8A02C 		strb	r2, [r3, #-160]
+ 136:../printf.c   **** 	    pos++;
+ 542              		.loc 1 136 0
+ 543 039e 7B69     		ldr	r3, [r7, #20]
+ 544 03a0 03F10103 		add	r3, r3, #1
+ 545 03a4 7B61     		str	r3, [r7, #20]
+ 137:../printf.c   **** 	    //set first bit to zero, so there is no 
+ 138:../printf.c   **** 	    //difference singend / unsigend now
+ 139:../printf.c   **** 	    //and we can use generic function for unsigend int
+ 140:../printf.c   **** 	    ds = hs;
+ 546              		.loc 1 140 0
+ 547 03a6 B7F9A030 		ldrsh	r3, [r7, #160]
+ 548 03aa C7F8B030 		str	r3, [r7, #176]
+ 141:../printf.c   **** 	    ds *=-1;
+ 549              		.loc 1 141 0
+ 550 03ae D7F8B030 		ldr	r3, [r7, #176]
+ 551 03b2 C3F10003 		rsb	r3, r3, #0
+ 552 03b6 C7F8B030 		str	r3, [r7, #176]
+ 142:../printf.c   **** 	    d = ds;
+ 553              		.loc 1 142 0
+ 554 03ba D7F8B030 		ldr	r3, [r7, #176]
+ 555 03be C7F8AC30 		str	r3, [r7, #172]
+ 556              	.L32:
+ 143:../printf.c   **** 	    }
+ 144:../printf.c   **** 	}
+ 145:../printf.c   ****       }
+ 146:../printf.c   ****       fmt++;	
+ 557              		.loc 1 146 0
+ 558 03c2 D7F8B430 		ldr	r3, [r7, #180]
+ 559 03c6 03F10103 		add	r3, r3, #1
+ 560 03ca C7F8B430 		str	r3, [r7, #180]
+ 147:../printf.c   ****       fillInUnsignedLongInt(d, msg, &pos);
+ 561              		.loc 1 147 0
+ 562 03ce 07F11802 		add	r2, r7, #24
+ 563 03d2 07F11403 		add	r3, r7, #20
+ 564 03d6 D7F8AC00 		ldr	r0, [r7, #172]
+ 565 03da 1146     		mov	r1, r2
+ 566 03dc 1A46     		mov	r2, r3
+ 567 03de FFF7FEFF 		bl	fillInUnsignedLongInt
+ 148:../printf.c   ****       break;
+ 568              		.loc 1 148 0
+ 569 03e2 15E0     		b	.L17
+ 570              	.L19:
+ 149:../printf.c   ****     case 'c':              /* char */
+ 150:../printf.c   ****       /* need a cast here since va_arg only
+ 151:../printf.c   **** 	 takes fully promoted types */
+ 152:../printf.c   ****       c = (char) va_arg(*ap, int);
+ 571              		.loc 1 152 0
+ 572 03e4 7B68     		ldr	r3, [r7, #4]
+ 573 03e6 1B68     		ldr	r3, [r3, #0]
+ 574 03e8 03F10401 		add	r1, r3, #4
+ 575 03ec 7A68     		ldr	r2, [r7, #4]
+ 576 03ee 1160     		str	r1, [r2, #0]
+ 577 03f0 1B68     		ldr	r3, [r3, #0]
+ 578 03f2 87F89F30 		strb	r3, [r7, #159]
+ 153:../printf.c   ****       msg[pos] = c;
+ 579              		.loc 1 153 0
+ 580 03f6 7B69     		ldr	r3, [r7, #20]
+ 581 03f8 07F1B802 		add	r2, r7, #184
+ 582 03fc D318     		adds	r3, r2, r3
+ 583 03fe 97F89F20 		ldrb	r2, [r7, #159]
+ 584 0402 03F8A02C 		strb	r2, [r3, #-160]
+ 154:../printf.c   ****       pos++;
+ 585              		.loc 1 154 0
+ 586 0406 7B69     		ldr	r3, [r7, #20]
+ 587 0408 03F10103 		add	r3, r3, #1
+ 588 040c 7B61     		str	r3, [r7, #20]
+ 155:../printf.c   ****       break;
+ 589              		.loc 1 155 0
+ 590 040e 00BF     		nop
+ 591              	.L17:
+  75:../printf.c   ****   while (*fmt) {
+ 592              		.loc 1 75 0 discriminator 1
+ 593 0410 D7F8B430 		ldr	r3, [r7, #180]
+ 594 0414 1B78     		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 595 0416 002B     		cmp	r3, #0
+ 596 0418 7FF4C1AE 		bne	.L33
+ 156:../printf.c   ****     }    
+ 157:../printf.c   ****   }
+ 158:../printf.c   ****   
+ 159:../printf.c   ****   assert_param(pos < 128);
+ 160:../printf.c   **** 
+ 161:../printf.c   ****   int sent = 0;
+ 597              		.loc 1 161 0
+ 598 041c 4FF00003 		mov	r3, #0
+ 599 0420 C7F8A430 		str	r3, [r7, #164]
+ 162:../printf.c   ****   int ret = 0;
+ 600              		.loc 1 162 0
+ 601 0424 4FF00003 		mov	r3, #0
+ 602 0428 C7F89830 		str	r3, [r7, #152]
+ 163:../printf.c   ****   
+ 164:../printf.c   ****   while(sent < pos)
+ 603              		.loc 1 164 0
+ 604 042c 1DE0     		b	.L34
+ 605              	.L37:
+ 165:../printf.c   ****   {
+ 166:../printf.c   ****     ret = sf(msg + sent, pos - sent);
+ 606              		.loc 1 166 0
+ 607 042e D7F8A430 		ldr	r3, [r7, #164]
+ 608 0432 07F11802 		add	r2, r7, #24
+ 609 0436 D118     		adds	r1, r2, r3
+ 610 0438 7A69     		ldr	r2, [r7, #20]
+ 611 043a D7F8A430 		ldr	r3, [r7, #164]
+ 612 043e D31A     		subs	r3, r2, r3
+ 613 0440 1A46     		mov	r2, r3
+ 614 0442 FB68     		ldr	r3, [r7, #12]
+ 615 0444 0846     		mov	r0, r1
+ 616 0446 1146     		mov	r1, r2
+ 617 0448 9847     		blx	r3
+ 618 044a C7F89800 		str	r0, [r7, #152]
+ 167:../printf.c   ****     if(ret < 0)
+ 619              		.loc 1 167 0
+ 620 044e D7F89830 		ldr	r3, [r7, #152]
+ 621 0452 002B     		cmp	r3, #0
+ 622 0454 02DA     		bge	.L35
+ 168:../printf.c   **** 	return -1;
+ 623              		.loc 1 168 0
+ 624 0456 4FF0FF33 		mov	r3, #-1
+ 625 045a 0CE0     		b	.L36
+ 626              	.L35:
+ 169:../printf.c   ****     sent += ret;
+ 627              		.loc 1 169 0
+ 628 045c D7F8A420 		ldr	r2, [r7, #164]
+ 629 0460 D7F89830 		ldr	r3, [r7, #152]
+ 630 0464 D318     		adds	r3, r2, r3
+ 631 0466 C7F8A430 		str	r3, [r7, #164]
+ 632              	.L34:
+ 164:../printf.c   ****   while(sent < pos)
+ 633              		.loc 1 164 0 discriminator 1
+ 634 046a 7B69     		ldr	r3, [r7, #20]
+ 635 046c D7F8A420 		ldr	r2, [r7, #164]
+ 636 0470 9A42     		cmp	r2, r3
+ 637 0472 DCDB     		blt	.L37
+ 170:../printf.c   ****   }
+ 171:../printf.c   ****   
+ 172:../printf.c   ****   return pos;
+ 638              		.loc 1 172 0
+ 639 0474 7B69     		ldr	r3, [r7, #20]
+ 640              	.L36:
+ 173:../printf.c   **** }
+ 641              		.loc 1 173 0
+ 642 0476 1846     		mov	r0, r3
+ 643 0478 07F1B807 		add	r7, r7, #184
+ 644 047c BD46     		mov	sp, r7
+ 645 047e 80BD     		pop	{r7, pc}
+ 646              		.cfi_endproc
+ 647              	.LFE32:
+ 649              		.align	2
+ 650              		.global	printf
+ 651              		.thumb
+ 652              		.thumb_func
+ 654              	printf:
+ 655              	.LFB33:
+ 174:../printf.c   **** 
+ 175:../printf.c   **** 
+ 176:../printf.c   **** int printf(const char *format, ...) 
+ 177:../printf.c   **** {
+ 656              		.loc 1 177 0
+ 657              		.cfi_startproc
+ 658              		@ args = 4, pretend = 16, frame = 8
+ 659              		@ frame_needed = 1, uses_anonymous_args = 1
+ 660 0480 0FB4     		push	{r0, r1, r2, r3}
+ 661              	.LCFI12:
+ 662              		.cfi_def_cfa_offset 16
+ 663              		.cfi_offset 3, -4
+ 664              		.cfi_offset 2, -8
+ 665              		.cfi_offset 1, -12
+ 666              		.cfi_offset 0, -16
+ 667 0482 80B5     		push	{r7, lr}
+ 668              	.LCFI13:
+ 669              		.cfi_def_cfa_offset 24
+ 670              		.cfi_offset 14, -20
+ 671              		.cfi_offset 7, -24
+ 672 0484 82B0     		sub	sp, sp, #8
+ 673              	.LCFI14:
+ 674              		.cfi_def_cfa_offset 32
+ 675 0486 00AF     		add	r7, sp, #0
+ 676              	.LCFI15:
+ 677              		.cfi_def_cfa_register 7
+ 178:../printf.c   ****     va_list ap;
+ 179:../printf.c   ****     va_start(ap, format);
+ 678              		.loc 1 179 0
+ 679 0488 07F11403 		add	r3, r7, #20
+ 680 048c 7B60     		str	r3, [r7, #4]
+ 180:../printf.c   ****     return  _printf(USART1_SendData, format, &ap);
+ 681              		.loc 1 180 0
+ 682 048e 07F10403 		add	r3, r7, #4
+ 683 0492 40F20000 		movw	r0, #:lower16:USART1_SendData
+ 684 0496 C0F20000 		movt	r0, #:upper16:USART1_SendData
+ 685 049a 3969     		ldr	r1, [r7, #16]
+ 686 049c 1A46     		mov	r2, r3
+ 687 049e FFF7FEFF 		bl	_printf
+ 688 04a2 0346     		mov	r3, r0
+ 181:../printf.c   ****     va_end(ap);
+ 182:../printf.c   **** }
+ 689              		.loc 1 182 0
+ 690 04a4 1846     		mov	r0, r3
+ 691 04a6 07F10807 		add	r7, r7, #8
+ 692 04aa BD46     		mov	sp, r7
+ 693 04ac BDE88040 		pop	{r7, lr}
+ 694 04b0 04B0     		add	sp, sp, #16
+ 695 04b2 7047     		bx	lr
+ 696              		.cfi_endproc
+ 697              	.LFE33:
+ 699              		.section	.rodata
+ 700              		.align	2
+ 701              	.LC0:
+ 702 0000 75313620 		.ascii	"u16 0 is %hu \012\000"
+ 702      30206973 
+ 702      20256875 
+ 702      200A00
+ 703 000f 00       		.align	2
+ 704              	.LC1:
+ 705 0010 75313620 		.ascii	"u16 12345 is %hu \012\000"
+ 705      31323334 
+ 705      35206973 
+ 705      20256875 
+ 705      200A00
+ 706 0023 00       		.align	2
+ 707              	.LC2:
+ 708 0024 75313620 		.ascii	"u16 65535 is %hu\012\000"
+ 708      36353533 
+ 708      35206973 
+ 708      20256875 
+ 708      0A00
+ 709 0036 0000     		.align	2
+ 710              	.LC3:
+ 711 0038 73313620 		.ascii	"s16 0 is %hi \012\000"
+ 711      30206973 
+ 711      20256869 
+ 711      200A00
+ 712 0047 00       		.align	2
+ 713              	.LC4:
+ 714 0048 73313620 		.ascii	"s16 32767 is %hi \012\000"
+ 714      33323736 
+ 714      37206973 
+ 714      20256869 
+ 714      200A00
+ 715 005b 00       		.align	2
+ 716              	.LC5:
+ 717 005c 73313620 		.ascii	"s16 -32768 is %hi \012\000"
+ 717      2D333237 
+ 717      36382069 
+ 717      73202568 
+ 717      69200A00 
+ 718              		.align	2
+ 719              	.LC6:
+ 720 0070 75333220 		.ascii	"u32 0 is %lu \012\000"
+ 720      30206973 
+ 720      20256C75 
+ 720      200A00
+ 721 007f 00       		.align	2
+ 722              	.LC7:
+ 723 0080 75333220 		.ascii	"u32 1234567 is %lu \012\000"
+ 723      31323334 
+ 723      35363720 
+ 723      69732025 
+ 723      6C75200A 
+ 724 0095 000000   		.align	2
+ 725              	.LC8:
+ 726 0098 75333220 		.ascii	"u32 4294967295 is %lu \012\000"
+ 726      34323934 
+ 726      39363732 
+ 726      39352069 
+ 726      7320256C 
+ 727              		.align	2
+ 728              	.LC9:
+ 729 00b0 73333220 		.ascii	"s32 0 is %li \012\000"
+ 729      30206973 
+ 729      20256C69 
+ 729      200A00
+ 730 00bf 00       		.align	2
+ 731              	.LC10:
+ 732 00c0 73333220 		.ascii	"s32 2147483647 is %li \012\000"
+ 732      32313437 
+ 732      34383336 
+ 732      34372069 
+ 732      7320256C 
+ 733              		.align	2
+ 734              	.LC11:
+ 735 00d8 73333220 		.ascii	"s32 -2147483648 is %li \012\000"
+ 735      2D323134 
+ 735      37343833 
+ 735      36343820 
+ 735      69732025 
+ 736 00f1 000000   		.text
+ 737              		.align	2
+ 738              		.global	testprintf
+ 739              		.thumb
+ 740              		.thumb_func
+ 742              	testprintf:
+ 743              	.LFB34:
+ 183:../printf.c   **** 
+ 184:../printf.c   **** void testprintf() {
+ 744              		.loc 1 184 0
+ 745              		.cfi_startproc
+ 746              		@ args = 0, pretend = 0, frame = 16
+ 747              		@ frame_needed = 1, uses_anonymous_args = 0
+ 748 04b4 80B5     		push	{r7, lr}
+ 749              	.LCFI16:
+ 750              		.cfi_def_cfa_offset 8
+ 751              		.cfi_offset 14, -4
+ 752              		.cfi_offset 7, -8
+ 753 04b6 84B0     		sub	sp, sp, #16
+ 754              	.LCFI17:
+ 755              		.cfi_def_cfa_offset 24
+ 756 04b8 00AF     		add	r7, sp, #0
+ 757              	.LCFI18:
+ 758              		.cfi_def_cfa_register 7
+ 185:../printf.c   ****   u16 unsignedShort;
+ 186:../printf.c   ****   s16 signedShort;
+ 187:../printf.c   ****   u32 unsignedLong;
+ 188:../printf.c   ****   s32 signedLong;
+ 189:../printf.c   **** 
+ 190:../printf.c   ****   //u16
+ 191:../printf.c   ****   unsignedShort = 0;
+ 759              		.loc 1 191 0
+ 760 04ba 4FF00003 		mov	r3, #0
+ 761 04be FB81     		strh	r3, [r7, #14]	@ movhi
+ 192:../printf.c   ****   printf("u16 0 is %hu \n", unsignedShort);
+ 762              		.loc 1 192 0
+ 763 04c0 FB89     		ldrh	r3, [r7, #14]
+ 764 04c2 40F20000 		movw	r0, #:lower16:.LC0
+ 765 04c6 C0F20000 		movt	r0, #:upper16:.LC0
+ 766 04ca 1946     		mov	r1, r3
+ 767 04cc FFF7FEFF 		bl	printf
+ 193:../printf.c   **** 
+ 194:../printf.c   ****   unsignedShort = 12345;
+ 768              		.loc 1 194 0
+ 769 04d0 43F23903 		movw	r3, #12345
+ 770 04d4 FB81     		strh	r3, [r7, #14]	@ movhi
+ 195:../printf.c   ****   printf("u16 12345 is %hu \n", unsignedShort);
+ 771              		.loc 1 195 0
+ 772 04d6 FB89     		ldrh	r3, [r7, #14]
+ 773 04d8 40F20000 		movw	r0, #:lower16:.LC1
+ 774 04dc C0F20000 		movt	r0, #:upper16:.LC1
+ 775 04e0 1946     		mov	r1, r3
+ 776 04e2 FFF7FEFF 		bl	printf
+ 196:../printf.c   ****   
+ 197:../printf.c   ****   unsignedShort = 65535;
+ 777              		.loc 1 197 0
+ 778 04e6 4FF6FF73 		movw	r3, #65535
+ 779 04ea FB81     		strh	r3, [r7, #14]	@ movhi
+ 198:../printf.c   ****   printf("u16 65535 is %hu\n", unsignedShort);
+ 780              		.loc 1 198 0
+ 781 04ec FB89     		ldrh	r3, [r7, #14]
+ 782 04ee 40F20000 		movw	r0, #:lower16:.LC2
+ 783 04f2 C0F20000 		movt	r0, #:upper16:.LC2
+ 784 04f6 1946     		mov	r1, r3
+ 785 04f8 FFF7FEFF 		bl	printf
+ 199:../printf.c   ****   
+ 200:../printf.c   ****   //s16
+ 201:../printf.c   ****   signedShort = 0;
+ 786              		.loc 1 201 0
+ 787 04fc 4FF00003 		mov	r3, #0
+ 788 0500 BB81     		strh	r3, [r7, #12]	@ movhi
+ 202:../printf.c   ****   printf("s16 0 is %hi \n", signedShort);
+ 789              		.loc 1 202 0
+ 790 0502 B7F90C30 		ldrsh	r3, [r7, #12]
+ 791 0506 40F20000 		movw	r0, #:lower16:.LC3
+ 792 050a C0F20000 		movt	r0, #:upper16:.LC3
+ 793 050e 1946     		mov	r1, r3
+ 794 0510 FFF7FEFF 		bl	printf
+ 203:../printf.c   **** 
+ 204:../printf.c   ****   signedShort = 32767;
+ 795              		.loc 1 204 0
+ 796 0514 47F6FF73 		movw	r3, #32767
+ 797 0518 BB81     		strh	r3, [r7, #12]	@ movhi
+ 205:../printf.c   ****   printf("s16 32767 is %hi \n", signedShort);
+ 798              		.loc 1 205 0
+ 799 051a B7F90C30 		ldrsh	r3, [r7, #12]
+ 800 051e 40F20000 		movw	r0, #:lower16:.LC4
+ 801 0522 C0F20000 		movt	r0, #:upper16:.LC4
+ 802 0526 1946     		mov	r1, r3
+ 803 0528 FFF7FEFF 		bl	printf
+ 206:../printf.c   **** 
+ 207:../printf.c   ****   signedShort = -32768;
+ 804              		.loc 1 207 0
+ 805 052c 4FF40043 		mov	r3, #32768
+ 806 0530 BB81     		strh	r3, [r7, #12]	@ movhi
+ 208:../printf.c   ****   printf("s16 -32768 is %hi \n", signedShort);
+ 807              		.loc 1 208 0
+ 808 0532 B7F90C30 		ldrsh	r3, [r7, #12]
+ 809 0536 40F20000 		movw	r0, #:lower16:.LC5
+ 810 053a C0F20000 		movt	r0, #:upper16:.LC5
+ 811 053e 1946     		mov	r1, r3
+ 812 0540 FFF7FEFF 		bl	printf
+ 209:../printf.c   **** 
+ 210:../printf.c   ****   //u32
+ 211:../printf.c   ****   unsignedLong = 0;
+ 813              		.loc 1 211 0
+ 814 0544 4FF00003 		mov	r3, #0
+ 815 0548 BB60     		str	r3, [r7, #8]
+ 212:../printf.c   ****   printf("u32 0 is %lu \n", unsignedLong);
+ 816              		.loc 1 212 0
+ 817 054a 40F20000 		movw	r0, #:lower16:.LC6
+ 818 054e C0F20000 		movt	r0, #:upper16:.LC6
+ 819 0552 B968     		ldr	r1, [r7, #8]
+ 820 0554 FFF7FEFF 		bl	printf
+ 213:../printf.c   **** 
+ 214:../printf.c   ****   unsignedLong = 1234567;
+ 821              		.loc 1 214 0
+ 822 0558 4DF28763 		movw	r3, #54919
+ 823 055c C0F21203 		movt	r3, 18
+ 824 0560 BB60     		str	r3, [r7, #8]
+ 215:../printf.c   ****   printf("u32 1234567 is %lu \n", unsignedLong);
+ 825              		.loc 1 215 0
+ 826 0562 40F20000 		movw	r0, #:lower16:.LC7
+ 827 0566 C0F20000 		movt	r0, #:upper16:.LC7
+ 828 056a B968     		ldr	r1, [r7, #8]
+ 829 056c FFF7FEFF 		bl	printf
+ 216:../printf.c   **** 
+ 217:../printf.c   ****   unsignedLong = 4294967295;
+ 830              		.loc 1 217 0
+ 831 0570 4FF0FF33 		mov	r3, #-1
+ 832 0574 BB60     		str	r3, [r7, #8]
+ 218:../printf.c   ****   printf("u32 4294967295 is %lu \n", unsignedLong);
+ 833              		.loc 1 218 0
+ 834 0576 40F20000 		movw	r0, #:lower16:.LC8
+ 835 057a C0F20000 		movt	r0, #:upper16:.LC8
+ 836 057e B968     		ldr	r1, [r7, #8]
+ 837 0580 FFF7FEFF 		bl	printf
+ 219:../printf.c   **** 
+ 220:../printf.c   ****   //s32
+ 221:../printf.c   ****   signedLong = 0;
+ 838              		.loc 1 221 0
+ 839 0584 4FF00003 		mov	r3, #0
+ 840 0588 7B60     		str	r3, [r7, #4]
+ 222:../printf.c   ****   printf("s32 0 is %li \n", signedLong);
+ 841              		.loc 1 222 0
+ 842 058a 40F20000 		movw	r0, #:lower16:.LC9
+ 843 058e C0F20000 		movt	r0, #:upper16:.LC9
+ 844 0592 7968     		ldr	r1, [r7, #4]
+ 845 0594 FFF7FEFF 		bl	printf
+ 223:../printf.c   **** 
+ 224:../printf.c   ****   signedLong = 2147483647;
+ 846              		.loc 1 224 0
+ 847 0598 6FF00043 		mvn	r3, #-2147483648
+ 848 059c 7B60     		str	r3, [r7, #4]
+ 225:../printf.c   ****   printf("s32 2147483647 is %li \n", signedLong);
+ 849              		.loc 1 225 0
+ 850 059e 40F20000 		movw	r0, #:lower16:.LC10
+ 851 05a2 C0F20000 		movt	r0, #:upper16:.LC10
+ 852 05a6 7968     		ldr	r1, [r7, #4]
+ 853 05a8 FFF7FEFF 		bl	printf
+ 226:../printf.c   **** 
+ 227:../printf.c   ****   signedLong = -2147483648;
+ 854              		.loc 1 227 0
+ 855 05ac 4FF00043 		mov	r3, #-2147483648
+ 856 05b0 7B60     		str	r3, [r7, #4]
+ 228:../printf.c   ****   printf("s32 -2147483648 is %li \n", signedLong);
+ 857              		.loc 1 228 0
+ 858 05b2 40F20000 		movw	r0, #:lower16:.LC11
+ 859 05b6 C0F20000 		movt	r0, #:upper16:.LC11
+ 860 05ba 7968     		ldr	r1, [r7, #4]
+ 861 05bc FFF7FEFF 		bl	printf
+ 229:../printf.c   **** }
+ 862              		.loc 1 229 0
+ 863 05c0 07F11007 		add	r7, r7, #16
+ 864 05c4 BD46     		mov	sp, r7
+ 865 05c6 80BD     		pop	{r7, pc}
+ 866              		.cfi_endproc
+ 867              	.LFE34:
+ 869              	.Letext0:
+ 870              		.file 2 "/opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/include/stdarg.h"
+ 871              		.file 3 "/opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/../../../../arm-none-eab
+ 872              		.file 4 "/home/simon/Workspace/stm32vl/stm32_lib/inc/stm32f10x.h"
+ 873              		.file 5 "/home/simon/Workspace/stm32vl/stm32_lib/inc/core_cm3.h"
+ 874              		.file 6 "<built-in>"
+DEFINED SYMBOLS
+                            *ABS*:00000000 printf.c
+     /tmp/cctNWptk.s:18     .text:00000000 $t
+     /tmp/cctNWptk.s:23     .text:00000000 _print
+     /tmp/cctNWptk.s:122    .text:0000007c print
+     /tmp/cctNWptk.s:159    .text:000000a0 fillInUnsignedLongInt
+     /tmp/cctNWptk.s:292    .text:0000017c _printf
+     /tmp/cctNWptk.s:361    .text:000001f4 $d
+     /tmp/cctNWptk.s:380    .text:00000238 $t
+     /tmp/cctNWptk.s:654    .text:00000480 printf
+     /tmp/cctNWptk.s:700    .rodata:00000000 $d
+     /tmp/cctNWptk.s:701    .rodata:00000000 .LC0
+     /tmp/cctNWptk.s:704    .rodata:00000010 .LC1
+     /tmp/cctNWptk.s:707    .rodata:00000024 .LC2
+     /tmp/cctNWptk.s:710    .rodata:00000038 .LC3
+     /tmp/cctNWptk.s:713    .rodata:00000048 .LC4
+     /tmp/cctNWptk.s:716    .rodata:0000005c .LC5
+     /tmp/cctNWptk.s:719    .rodata:00000070 .LC6
+     /tmp/cctNWptk.s:722    .rodata:00000080 .LC7
+     /tmp/cctNWptk.s:725    .rodata:00000098 .LC8
+     /tmp/cctNWptk.s:728    .rodata:000000b0 .LC9
+     /tmp/cctNWptk.s:731    .rodata:000000c0 .LC10
+     /tmp/cctNWptk.s:734    .rodata:000000d8 .LC11
+     /tmp/cctNWptk.s:742    .text:000004b4 testprintf
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+USART1_SendData

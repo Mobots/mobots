@@ -1,0 +1,3411 @@
+   1              		.syntax unified
+   2              		.cpu cortex-m4
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.thumb
+  14              		.file	"stm32f10x_rcc.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.data
+  19              		.align	2
+  22              	APBAHBPrescTable:
+  23 0000 00       		.byte	0
+  24 0001 00       		.byte	0
+  25 0002 00       		.byte	0
+  26 0003 00       		.byte	0
+  27 0004 01       		.byte	1
+  28 0005 02       		.byte	2
+  29 0006 03       		.byte	3
+  30 0007 04       		.byte	4
+  31 0008 01       		.byte	1
+  32 0009 02       		.byte	2
+  33 000a 03       		.byte	3
+  34 000b 04       		.byte	4
+  35 000c 06       		.byte	6
+  36 000d 07       		.byte	7
+  37 000e 08       		.byte	8
+  38 000f 09       		.byte	9
+  39              		.align	2
+  42              	ADCPrescTable:
+  43 0010 02       		.byte	2
+  44 0011 04       		.byte	4
+  45 0012 06       		.byte	6
+  46 0013 08       		.byte	8
+  47              		.text
+  48              		.align	2
+  49              		.global	RCC_DeInit
+  50              		.thumb
+  51              		.thumb_func
+  53              	RCC_DeInit:
+  54              	.LFB29:
+  55              		.file 1 "../stm32_lib/src/stm32f10x_rcc.c"
+   1:../stm32_lib/src/stm32f10x_rcc.c **** /**
+   2:../stm32_lib/src/stm32f10x_rcc.c ****   ******************************************************************************
+   3:../stm32_lib/src/stm32f10x_rcc.c ****   * @file    stm32f10x_rcc.c
+   4:../stm32_lib/src/stm32f10x_rcc.c ****   * @author  MCD Application Team
+   5:../stm32_lib/src/stm32f10x_rcc.c ****   * @version V3.3.0
+   6:../stm32_lib/src/stm32f10x_rcc.c ****   * @date    04/16/2010
+   7:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief   This file provides all the RCC firmware functions.
+   8:../stm32_lib/src/stm32f10x_rcc.c ****   ******************************************************************************
+   9:../stm32_lib/src/stm32f10x_rcc.c ****   * @copy
+  10:../stm32_lib/src/stm32f10x_rcc.c ****   *
+  11:../stm32_lib/src/stm32f10x_rcc.c ****   * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
+  12:../stm32_lib/src/stm32f10x_rcc.c ****   * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
+  13:../stm32_lib/src/stm32f10x_rcc.c ****   * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
+  14:../stm32_lib/src/stm32f10x_rcc.c ****   * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
+  15:../stm32_lib/src/stm32f10x_rcc.c ****   * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
+  16:../stm32_lib/src/stm32f10x_rcc.c ****   * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+  17:../stm32_lib/src/stm32f10x_rcc.c ****   *
+  18:../stm32_lib/src/stm32f10x_rcc.c ****   * <h2><center>&copy; COPYRIGHT 2010 STMicroelectronics</center></h2>
+  19:../stm32_lib/src/stm32f10x_rcc.c ****   */ 
+  20:../stm32_lib/src/stm32f10x_rcc.c **** 
+  21:../stm32_lib/src/stm32f10x_rcc.c **** /* Includes ------------------------------------------------------------------*/
+  22:../stm32_lib/src/stm32f10x_rcc.c **** #include "stm32f10x_rcc.h"
+  23:../stm32_lib/src/stm32f10x_rcc.c **** 
+  24:../stm32_lib/src/stm32f10x_rcc.c **** /** @addtogroup STM32F10x_StdPeriph_Driver
+  25:../stm32_lib/src/stm32f10x_rcc.c ****   * @{
+  26:../stm32_lib/src/stm32f10x_rcc.c ****   */
+  27:../stm32_lib/src/stm32f10x_rcc.c **** 
+  28:../stm32_lib/src/stm32f10x_rcc.c **** /** @defgroup RCC 
+  29:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief RCC driver modules
+  30:../stm32_lib/src/stm32f10x_rcc.c ****   * @{
+  31:../stm32_lib/src/stm32f10x_rcc.c ****   */ 
+  32:../stm32_lib/src/stm32f10x_rcc.c **** 
+  33:../stm32_lib/src/stm32f10x_rcc.c **** /** @defgroup RCC_Private_TypesDefinitions
+  34:../stm32_lib/src/stm32f10x_rcc.c ****   * @{
+  35:../stm32_lib/src/stm32f10x_rcc.c ****   */
+  36:../stm32_lib/src/stm32f10x_rcc.c **** 
+  37:../stm32_lib/src/stm32f10x_rcc.c **** /**
+  38:../stm32_lib/src/stm32f10x_rcc.c ****   * @}
+  39:../stm32_lib/src/stm32f10x_rcc.c ****   */
+  40:../stm32_lib/src/stm32f10x_rcc.c **** 
+  41:../stm32_lib/src/stm32f10x_rcc.c **** /** @defgroup RCC_Private_Defines
+  42:../stm32_lib/src/stm32f10x_rcc.c ****   * @{
+  43:../stm32_lib/src/stm32f10x_rcc.c ****   */
+  44:../stm32_lib/src/stm32f10x_rcc.c **** 
+  45:../stm32_lib/src/stm32f10x_rcc.c **** /* ------------ RCC registers bit address in the alias region ----------- */
+  46:../stm32_lib/src/stm32f10x_rcc.c **** #define RCC_OFFSET                (RCC_BASE - PERIPH_BASE)
+  47:../stm32_lib/src/stm32f10x_rcc.c **** 
+  48:../stm32_lib/src/stm32f10x_rcc.c **** /* --- CR Register ---*/
+  49:../stm32_lib/src/stm32f10x_rcc.c **** 
+  50:../stm32_lib/src/stm32f10x_rcc.c **** /* Alias word address of HSION bit */
+  51:../stm32_lib/src/stm32f10x_rcc.c **** #define CR_OFFSET                 (RCC_OFFSET + 0x00)
+  52:../stm32_lib/src/stm32f10x_rcc.c **** #define HSION_BitNumber           0x00
+  53:../stm32_lib/src/stm32f10x_rcc.c **** #define CR_HSION_BB               (PERIPH_BB_BASE + (CR_OFFSET * 32) + (HSION_BitNumber * 4))
+  54:../stm32_lib/src/stm32f10x_rcc.c **** 
+  55:../stm32_lib/src/stm32f10x_rcc.c **** /* Alias word address of PLLON bit */
+  56:../stm32_lib/src/stm32f10x_rcc.c **** #define PLLON_BitNumber           0x18
+  57:../stm32_lib/src/stm32f10x_rcc.c **** #define CR_PLLON_BB               (PERIPH_BB_BASE + (CR_OFFSET * 32) + (PLLON_BitNumber * 4))
+  58:../stm32_lib/src/stm32f10x_rcc.c **** 
+  59:../stm32_lib/src/stm32f10x_rcc.c **** #ifdef STM32F10X_CL
+  60:../stm32_lib/src/stm32f10x_rcc.c ****  /* Alias word address of PLL2ON bit */
+  61:../stm32_lib/src/stm32f10x_rcc.c ****  #define PLL2ON_BitNumber          0x1A
+  62:../stm32_lib/src/stm32f10x_rcc.c ****  #define CR_PLL2ON_BB              (PERIPH_BB_BASE + (CR_OFFSET * 32) + (PLL2ON_BitNumber * 4))
+  63:../stm32_lib/src/stm32f10x_rcc.c **** 
+  64:../stm32_lib/src/stm32f10x_rcc.c ****  /* Alias word address of PLL3ON bit */
+  65:../stm32_lib/src/stm32f10x_rcc.c ****  #define PLL3ON_BitNumber          0x1C
+  66:../stm32_lib/src/stm32f10x_rcc.c ****  #define CR_PLL3ON_BB              (PERIPH_BB_BASE + (CR_OFFSET * 32) + (PLL3ON_BitNumber * 4))
+  67:../stm32_lib/src/stm32f10x_rcc.c **** #endif /* STM32F10X_CL */ 
+  68:../stm32_lib/src/stm32f10x_rcc.c **** 
+  69:../stm32_lib/src/stm32f10x_rcc.c **** /* Alias word address of CSSON bit */
+  70:../stm32_lib/src/stm32f10x_rcc.c **** #define CSSON_BitNumber           0x13
+  71:../stm32_lib/src/stm32f10x_rcc.c **** #define CR_CSSON_BB               (PERIPH_BB_BASE + (CR_OFFSET * 32) + (CSSON_BitNumber * 4))
+  72:../stm32_lib/src/stm32f10x_rcc.c **** 
+  73:../stm32_lib/src/stm32f10x_rcc.c **** /* --- CFGR Register ---*/
+  74:../stm32_lib/src/stm32f10x_rcc.c **** 
+  75:../stm32_lib/src/stm32f10x_rcc.c **** /* Alias word address of USBPRE bit */
+  76:../stm32_lib/src/stm32f10x_rcc.c **** #define CFGR_OFFSET               (RCC_OFFSET + 0x04)
+  77:../stm32_lib/src/stm32f10x_rcc.c **** 
+  78:../stm32_lib/src/stm32f10x_rcc.c **** #ifndef STM32F10X_CL
+  79:../stm32_lib/src/stm32f10x_rcc.c ****  #define USBPRE_BitNumber          0x16
+  80:../stm32_lib/src/stm32f10x_rcc.c ****  #define CFGR_USBPRE_BB            (PERIPH_BB_BASE + (CFGR_OFFSET * 32) + (USBPRE_BitNumber * 4))
+  81:../stm32_lib/src/stm32f10x_rcc.c **** #else
+  82:../stm32_lib/src/stm32f10x_rcc.c ****  #define OTGFSPRE_BitNumber        0x16
+  83:../stm32_lib/src/stm32f10x_rcc.c ****  #define CFGR_OTGFSPRE_BB          (PERIPH_BB_BASE + (CFGR_OFFSET * 32) + (OTGFSPRE_BitNumber * 4))
+  84:../stm32_lib/src/stm32f10x_rcc.c **** #endif /* STM32F10X_CL */ 
+  85:../stm32_lib/src/stm32f10x_rcc.c **** 
+  86:../stm32_lib/src/stm32f10x_rcc.c **** /* --- BDCR Register ---*/
+  87:../stm32_lib/src/stm32f10x_rcc.c **** 
+  88:../stm32_lib/src/stm32f10x_rcc.c **** /* Alias word address of RTCEN bit */
+  89:../stm32_lib/src/stm32f10x_rcc.c **** #define BDCR_OFFSET               (RCC_OFFSET + 0x20)
+  90:../stm32_lib/src/stm32f10x_rcc.c **** #define RTCEN_BitNumber           0x0F
+  91:../stm32_lib/src/stm32f10x_rcc.c **** #define BDCR_RTCEN_BB             (PERIPH_BB_BASE + (BDCR_OFFSET * 32) + (RTCEN_BitNumber * 4))
+  92:../stm32_lib/src/stm32f10x_rcc.c **** 
+  93:../stm32_lib/src/stm32f10x_rcc.c **** /* Alias word address of BDRST bit */
+  94:../stm32_lib/src/stm32f10x_rcc.c **** #define BDRST_BitNumber           0x10
+  95:../stm32_lib/src/stm32f10x_rcc.c **** #define BDCR_BDRST_BB             (PERIPH_BB_BASE + (BDCR_OFFSET * 32) + (BDRST_BitNumber * 4))
+  96:../stm32_lib/src/stm32f10x_rcc.c **** 
+  97:../stm32_lib/src/stm32f10x_rcc.c **** /* --- CSR Register ---*/
+  98:../stm32_lib/src/stm32f10x_rcc.c **** 
+  99:../stm32_lib/src/stm32f10x_rcc.c **** /* Alias word address of LSION bit */
+ 100:../stm32_lib/src/stm32f10x_rcc.c **** #define CSR_OFFSET                (RCC_OFFSET + 0x24)
+ 101:../stm32_lib/src/stm32f10x_rcc.c **** #define LSION_BitNumber           0x00
+ 102:../stm32_lib/src/stm32f10x_rcc.c **** #define CSR_LSION_BB              (PERIPH_BB_BASE + (CSR_OFFSET * 32) + (LSION_BitNumber * 4))
+ 103:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 104:../stm32_lib/src/stm32f10x_rcc.c **** #ifdef STM32F10X_CL
+ 105:../stm32_lib/src/stm32f10x_rcc.c **** /* --- CFGR2 Register ---*/
+ 106:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 107:../stm32_lib/src/stm32f10x_rcc.c ****  /* Alias word address of I2S2SRC bit */
+ 108:../stm32_lib/src/stm32f10x_rcc.c ****  #define CFGR2_OFFSET              (RCC_OFFSET + 0x2C)
+ 109:../stm32_lib/src/stm32f10x_rcc.c ****  #define I2S2SRC_BitNumber         0x11
+ 110:../stm32_lib/src/stm32f10x_rcc.c ****  #define CFGR2_I2S2SRC_BB          (PERIPH_BB_BASE + (CFGR2_OFFSET * 32) + (I2S2SRC_BitNumber * 4))
+ 111:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 112:../stm32_lib/src/stm32f10x_rcc.c ****  /* Alias word address of I2S3SRC bit */
+ 113:../stm32_lib/src/stm32f10x_rcc.c ****  #define I2S3SRC_BitNumber         0x12
+ 114:../stm32_lib/src/stm32f10x_rcc.c ****  #define CFGR2_I2S3SRC_BB          (PERIPH_BB_BASE + (CFGR2_OFFSET * 32) + (I2S3SRC_BitNumber * 4))
+ 115:../stm32_lib/src/stm32f10x_rcc.c **** #endif /* STM32F10X_CL */
+ 116:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 117:../stm32_lib/src/stm32f10x_rcc.c **** /* ---------------------- RCC registers bit mask ------------------------ */
+ 118:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 119:../stm32_lib/src/stm32f10x_rcc.c **** /* CR register bit mask */
+ 120:../stm32_lib/src/stm32f10x_rcc.c **** #define CR_HSEBYP_Reset           ((uint32_t)0xFFFBFFFF)
+ 121:../stm32_lib/src/stm32f10x_rcc.c **** #define CR_HSEBYP_Set             ((uint32_t)0x00040000)
+ 122:../stm32_lib/src/stm32f10x_rcc.c **** #define CR_HSEON_Reset            ((uint32_t)0xFFFEFFFF)
+ 123:../stm32_lib/src/stm32f10x_rcc.c **** #define CR_HSEON_Set              ((uint32_t)0x00010000)
+ 124:../stm32_lib/src/stm32f10x_rcc.c **** #define CR_HSITRIM_Mask           ((uint32_t)0xFFFFFF07)
+ 125:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 126:../stm32_lib/src/stm32f10x_rcc.c **** /* CFGR register bit mask */
+ 127:../stm32_lib/src/stm32f10x_rcc.c **** #if defined (STM32F10X_LD_VL) || defined (STM32F10X_MD_VL) || defined (STM32F10X_CL) 
+ 128:../stm32_lib/src/stm32f10x_rcc.c ****  #define CFGR_PLL_Mask            ((uint32_t)0xFFC2FFFF)
+ 129:../stm32_lib/src/stm32f10x_rcc.c **** #else
+ 130:../stm32_lib/src/stm32f10x_rcc.c ****  #define CFGR_PLL_Mask            ((uint32_t)0xFFC0FFFF)
+ 131:../stm32_lib/src/stm32f10x_rcc.c **** #endif /* STM32F10X_CL */ 
+ 132:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 133:../stm32_lib/src/stm32f10x_rcc.c **** #define CFGR_PLLMull_Mask         ((uint32_t)0x003C0000)
+ 134:../stm32_lib/src/stm32f10x_rcc.c **** #define CFGR_PLLSRC_Mask          ((uint32_t)0x00010000)
+ 135:../stm32_lib/src/stm32f10x_rcc.c **** #define CFGR_PLLXTPRE_Mask        ((uint32_t)0x00020000)
+ 136:../stm32_lib/src/stm32f10x_rcc.c **** #define CFGR_SWS_Mask             ((uint32_t)0x0000000C)
+ 137:../stm32_lib/src/stm32f10x_rcc.c **** #define CFGR_SW_Mask              ((uint32_t)0xFFFFFFFC)
+ 138:../stm32_lib/src/stm32f10x_rcc.c **** #define CFGR_HPRE_Reset_Mask      ((uint32_t)0xFFFFFF0F)
+ 139:../stm32_lib/src/stm32f10x_rcc.c **** #define CFGR_HPRE_Set_Mask        ((uint32_t)0x000000F0)
+ 140:../stm32_lib/src/stm32f10x_rcc.c **** #define CFGR_PPRE1_Reset_Mask     ((uint32_t)0xFFFFF8FF)
+ 141:../stm32_lib/src/stm32f10x_rcc.c **** #define CFGR_PPRE1_Set_Mask       ((uint32_t)0x00000700)
+ 142:../stm32_lib/src/stm32f10x_rcc.c **** #define CFGR_PPRE2_Reset_Mask     ((uint32_t)0xFFFFC7FF)
+ 143:../stm32_lib/src/stm32f10x_rcc.c **** #define CFGR_PPRE2_Set_Mask       ((uint32_t)0x00003800)
+ 144:../stm32_lib/src/stm32f10x_rcc.c **** #define CFGR_ADCPRE_Reset_Mask    ((uint32_t)0xFFFF3FFF)
+ 145:../stm32_lib/src/stm32f10x_rcc.c **** #define CFGR_ADCPRE_Set_Mask      ((uint32_t)0x0000C000)
+ 146:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 147:../stm32_lib/src/stm32f10x_rcc.c **** /* CSR register bit mask */
+ 148:../stm32_lib/src/stm32f10x_rcc.c **** #define CSR_RMVF_Set              ((uint32_t)0x01000000)
+ 149:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 150:../stm32_lib/src/stm32f10x_rcc.c **** #if defined (STM32F10X_LD_VL) || defined (STM32F10X_MD_VL) || defined (STM32F10X_CL) 
+ 151:../stm32_lib/src/stm32f10x_rcc.c **** /* CFGR2 register bit mask */
+ 152:../stm32_lib/src/stm32f10x_rcc.c ****  #define CFGR2_PREDIV1SRC         ((uint32_t)0x00010000)
+ 153:../stm32_lib/src/stm32f10x_rcc.c ****  #define CFGR2_PREDIV1            ((uint32_t)0x0000000F)
+ 154:../stm32_lib/src/stm32f10x_rcc.c **** #endif
+ 155:../stm32_lib/src/stm32f10x_rcc.c **** #ifdef STM32F10X_CL
+ 156:../stm32_lib/src/stm32f10x_rcc.c ****  #define CFGR2_PREDIV2            ((uint32_t)0x000000F0)
+ 157:../stm32_lib/src/stm32f10x_rcc.c ****  #define CFGR2_PLL2MUL            ((uint32_t)0x00000F00)
+ 158:../stm32_lib/src/stm32f10x_rcc.c ****  #define CFGR2_PLL3MUL            ((uint32_t)0x0000F000)
+ 159:../stm32_lib/src/stm32f10x_rcc.c **** #endif /* STM32F10X_CL */ 
+ 160:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 161:../stm32_lib/src/stm32f10x_rcc.c **** /* RCC Flag Mask */
+ 162:../stm32_lib/src/stm32f10x_rcc.c **** #define FLAG_Mask                 ((uint8_t)0x1F)
+ 163:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 164:../stm32_lib/src/stm32f10x_rcc.c **** #ifndef HSI_Value
+ 165:../stm32_lib/src/stm32f10x_rcc.c **** /* Typical Value of the HSI in Hz */
+ 166:../stm32_lib/src/stm32f10x_rcc.c ****  #define HSI_Value                 ((uint32_t)8000000)
+ 167:../stm32_lib/src/stm32f10x_rcc.c **** #endif /* HSI_Value */
+ 168:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 169:../stm32_lib/src/stm32f10x_rcc.c **** /* CIR register byte 2 (Bits[15:8]) base address */
+ 170:../stm32_lib/src/stm32f10x_rcc.c **** #define CIR_BYTE2_ADDRESS         ((uint32_t)0x40021009)
+ 171:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 172:../stm32_lib/src/stm32f10x_rcc.c **** /* CIR register byte 3 (Bits[23:16]) base address */
+ 173:../stm32_lib/src/stm32f10x_rcc.c **** #define CIR_BYTE3_ADDRESS         ((uint32_t)0x4002100A)
+ 174:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 175:../stm32_lib/src/stm32f10x_rcc.c **** /* CFGR register byte 4 (Bits[31:24]) base address */
+ 176:../stm32_lib/src/stm32f10x_rcc.c **** #define CFGR_BYTE4_ADDRESS        ((uint32_t)0x40021007)
+ 177:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 178:../stm32_lib/src/stm32f10x_rcc.c **** /* BDCR register base address */
+ 179:../stm32_lib/src/stm32f10x_rcc.c **** #define BDCR_ADDRESS              (PERIPH_BASE + BDCR_OFFSET)
+ 180:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 181:../stm32_lib/src/stm32f10x_rcc.c **** #ifndef HSEStartUp_TimeOut
+ 182:../stm32_lib/src/stm32f10x_rcc.c **** /* Time out for HSE start up */
+ 183:../stm32_lib/src/stm32f10x_rcc.c ****  #define HSEStartUp_TimeOut        ((uint16_t)0x0500)
+ 184:../stm32_lib/src/stm32f10x_rcc.c **** #endif /* HSEStartUp_TimeOut */
+ 185:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 186:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 187:../stm32_lib/src/stm32f10x_rcc.c ****   * @}
+ 188:../stm32_lib/src/stm32f10x_rcc.c ****   */ 
+ 189:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 190:../stm32_lib/src/stm32f10x_rcc.c **** /** @defgroup RCC_Private_Macros
+ 191:../stm32_lib/src/stm32f10x_rcc.c ****   * @{
+ 192:../stm32_lib/src/stm32f10x_rcc.c ****   */ 
+ 193:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 194:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 195:../stm32_lib/src/stm32f10x_rcc.c ****   * @}
+ 196:../stm32_lib/src/stm32f10x_rcc.c ****   */ 
+ 197:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 198:../stm32_lib/src/stm32f10x_rcc.c **** /** @defgroup RCC_Private_Variables
+ 199:../stm32_lib/src/stm32f10x_rcc.c ****   * @{
+ 200:../stm32_lib/src/stm32f10x_rcc.c ****   */ 
+ 201:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 202:../stm32_lib/src/stm32f10x_rcc.c **** static __I uint8_t APBAHBPrescTable[16] = {0, 0, 0, 0, 1, 2, 3, 4, 1, 2, 3, 4, 6, 7, 8, 9};
+ 203:../stm32_lib/src/stm32f10x_rcc.c **** static __I uint8_t ADCPrescTable[4] = {2, 4, 6, 8};
+ 204:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 205:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 206:../stm32_lib/src/stm32f10x_rcc.c ****   * @}
+ 207:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 208:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 209:../stm32_lib/src/stm32f10x_rcc.c **** /** @defgroup RCC_Private_FunctionPrototypes
+ 210:../stm32_lib/src/stm32f10x_rcc.c ****   * @{
+ 211:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 212:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 213:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 214:../stm32_lib/src/stm32f10x_rcc.c ****   * @}
+ 215:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 216:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 217:../stm32_lib/src/stm32f10x_rcc.c **** /** @defgroup RCC_Private_Functions
+ 218:../stm32_lib/src/stm32f10x_rcc.c ****   * @{
+ 219:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 220:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 221:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 222:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Resets the RCC clock configuration to the default reset state.
+ 223:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  None
+ 224:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 225:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 226:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_DeInit(void)
+ 227:../stm32_lib/src/stm32f10x_rcc.c **** {
+  56              		.loc 1 227 0
+  57              		.cfi_startproc
+  58              		@ args = 0, pretend = 0, frame = 0
+  59              		@ frame_needed = 1, uses_anonymous_args = 0
+  60              		@ link register save eliminated.
+  61 0000 80B4     		push	{r7}
+  62              	.LCFI0:
+  63              		.cfi_def_cfa_offset 4
+  64              		.cfi_offset 7, -4
+  65 0002 00AF     		add	r7, sp, #0
+  66              	.LCFI1:
+  67              		.cfi_def_cfa_register 7
+ 228:../stm32_lib/src/stm32f10x_rcc.c ****   /* Set HSION bit */
+ 229:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CR |= (uint32_t)0x00000001;
+  68              		.loc 1 229 0
+  69 0004 4FF48053 		mov	r3, #4096
+  70 0008 C4F20203 		movt	r3, 16386
+  71 000c 4FF48052 		mov	r2, #4096
+  72 0010 C4F20202 		movt	r2, 16386
+  73 0014 1268     		ldr	r2, [r2, #0]
+  74 0016 42F00102 		orr	r2, r2, #1
+  75 001a 1A60     		str	r2, [r3, #0]
+ 230:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 231:../stm32_lib/src/stm32f10x_rcc.c ****   /* Reset SW, HPRE, PPRE1, PPRE2, ADCPRE and MCO bits */
+ 232:../stm32_lib/src/stm32f10x_rcc.c **** #ifndef STM32F10X_CL
+ 233:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CFGR &= (uint32_t)0xF8FF0000;
+  76              		.loc 1 233 0
+  77 001c 4FF48052 		mov	r2, #4096
+  78 0020 C4F20202 		movt	r2, 16386
+  79 0024 4FF48053 		mov	r3, #4096
+  80 0028 C4F20203 		movt	r3, 16386
+  81 002c 5968     		ldr	r1, [r3, #4]
+  82 002e 4FF00003 		mov	r3, #0
+  83 0032 CFF6FF03 		movt	r3, 63743
+  84 0036 0B40     		ands	r3, r3, r1
+  85 0038 5360     		str	r3, [r2, #4]
+ 234:../stm32_lib/src/stm32f10x_rcc.c **** #else
+ 235:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CFGR &= (uint32_t)0xF0FF0000;
+ 236:../stm32_lib/src/stm32f10x_rcc.c **** #endif /* STM32F10X_CL */   
+ 237:../stm32_lib/src/stm32f10x_rcc.c ****   
+ 238:../stm32_lib/src/stm32f10x_rcc.c ****   /* Reset HSEON, CSSON and PLLON bits */
+ 239:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CR &= (uint32_t)0xFEF6FFFF;
+  86              		.loc 1 239 0
+  87 003a 4FF48053 		mov	r3, #4096
+  88 003e C4F20203 		movt	r3, 16386
+  89 0042 4FF48052 		mov	r2, #4096
+  90 0046 C4F20202 		movt	r2, 16386
+  91 004a 1268     		ldr	r2, [r2, #0]
+  92 004c 22F08472 		bic	r2, r2, #17301504
+  93 0050 22F48032 		bic	r2, r2, #65536
+  94 0054 1A60     		str	r2, [r3, #0]
+ 240:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 241:../stm32_lib/src/stm32f10x_rcc.c ****   /* Reset HSEBYP bit */
+ 242:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CR &= (uint32_t)0xFFFBFFFF;
+  95              		.loc 1 242 0
+  96 0056 4FF48053 		mov	r3, #4096
+  97 005a C4F20203 		movt	r3, 16386
+  98 005e 4FF48052 		mov	r2, #4096
+  99 0062 C4F20202 		movt	r2, 16386
+ 100 0066 1268     		ldr	r2, [r2, #0]
+ 101 0068 22F48022 		bic	r2, r2, #262144
+ 102 006c 1A60     		str	r2, [r3, #0]
+ 243:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 244:../stm32_lib/src/stm32f10x_rcc.c ****   /* Reset PLLSRC, PLLXTPRE, PLLMUL and USBPRE/OTGFSPRE bits */
+ 245:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CFGR &= (uint32_t)0xFF80FFFF;
+ 103              		.loc 1 245 0
+ 104 006e 4FF48053 		mov	r3, #4096
+ 105 0072 C4F20203 		movt	r3, 16386
+ 106 0076 4FF48052 		mov	r2, #4096
+ 107 007a C4F20202 		movt	r2, 16386
+ 108 007e 5268     		ldr	r2, [r2, #4]
+ 109 0080 22F4FE02 		bic	r2, r2, #8323072
+ 110 0084 5A60     		str	r2, [r3, #4]
+ 246:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 247:../stm32_lib/src/stm32f10x_rcc.c **** #ifdef STM32F10X_CL
+ 248:../stm32_lib/src/stm32f10x_rcc.c ****   /* Reset PLL2ON and PLL3ON bits */
+ 249:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CR &= (uint32_t)0xEBFFFFFF;
+ 250:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 251:../stm32_lib/src/stm32f10x_rcc.c ****   /* Disable all interrupts and clear pending bits  */
+ 252:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CIR = 0x00FF0000;
+ 253:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 254:../stm32_lib/src/stm32f10x_rcc.c ****   /* Reset CFGR2 register */
+ 255:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CFGR2 = 0x00000000;
+ 256:../stm32_lib/src/stm32f10x_rcc.c **** #elif defined (STM32F10X_LD_VL) || defined (STM32F10X_MD_VL) 
+ 257:../stm32_lib/src/stm32f10x_rcc.c ****   /* Disable all interrupts and clear pending bits  */
+ 258:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CIR = 0x009F0000;
+ 111              		.loc 1 258 0
+ 112 0086 4FF48053 		mov	r3, #4096
+ 113 008a C4F20203 		movt	r3, 16386
+ 114 008e 4FF41F02 		mov	r2, #10420224
+ 115 0092 9A60     		str	r2, [r3, #8]
+ 259:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 260:../stm32_lib/src/stm32f10x_rcc.c ****   /* Reset CFGR2 register */
+ 261:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CFGR2 = 0x00000000;      
+ 116              		.loc 1 261 0
+ 117 0094 4FF48053 		mov	r3, #4096
+ 118 0098 C4F20203 		movt	r3, 16386
+ 119 009c 4FF00002 		mov	r2, #0
+ 120 00a0 DA62     		str	r2, [r3, #44]
+ 262:../stm32_lib/src/stm32f10x_rcc.c **** #else
+ 263:../stm32_lib/src/stm32f10x_rcc.c ****   /* Disable all interrupts and clear pending bits  */
+ 264:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CIR = 0x009F0000;
+ 265:../stm32_lib/src/stm32f10x_rcc.c **** #endif /* STM32F10X_CL */
+ 266:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 267:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 121              		.loc 1 267 0
+ 122 00a2 BD46     		mov	sp, r7
+ 123 00a4 80BC     		pop	{r7}
+ 124 00a6 7047     		bx	lr
+ 125              		.cfi_endproc
+ 126              	.LFE29:
+ 128              		.align	2
+ 129              		.global	RCC_HSEConfig
+ 130              		.thumb
+ 131              		.thumb_func
+ 133              	RCC_HSEConfig:
+ 134              	.LFB30:
+ 268:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 269:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 270:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Configures the External High Speed oscillator (HSE).
+ 271:../stm32_lib/src/stm32f10x_rcc.c ****   * @note   HSE can not be stopped if it is used directly or through the PLL as system clock.
+ 272:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_HSE: specifies the new state of the HSE.
+ 273:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be one of the following values:
+ 274:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_HSE_OFF: HSE oscillator OFF
+ 275:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_HSE_ON: HSE oscillator ON
+ 276:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_HSE_Bypass: HSE oscillator bypassed with external clock
+ 277:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 278:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 279:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_HSEConfig(uint32_t RCC_HSE)
+ 280:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 135              		.loc 1 280 0
+ 136              		.cfi_startproc
+ 137              		@ args = 0, pretend = 0, frame = 8
+ 138              		@ frame_needed = 1, uses_anonymous_args = 0
+ 139              		@ link register save eliminated.
+ 140 00a8 80B4     		push	{r7}
+ 141              	.LCFI2:
+ 142              		.cfi_def_cfa_offset 4
+ 143              		.cfi_offset 7, -4
+ 144 00aa 83B0     		sub	sp, sp, #12
+ 145              	.LCFI3:
+ 146              		.cfi_def_cfa_offset 16
+ 147 00ac 00AF     		add	r7, sp, #0
+ 148              	.LCFI4:
+ 149              		.cfi_def_cfa_register 7
+ 150 00ae 7860     		str	r0, [r7, #4]
+ 281:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 282:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_HSE(RCC_HSE));
+ 283:../stm32_lib/src/stm32f10x_rcc.c ****   /* Reset HSEON and HSEBYP bits before configuring the HSE ------------------*/
+ 284:../stm32_lib/src/stm32f10x_rcc.c ****   /* Reset HSEON bit */
+ 285:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CR &= CR_HSEON_Reset;
+ 151              		.loc 1 285 0
+ 152 00b0 4FF48053 		mov	r3, #4096
+ 153 00b4 C4F20203 		movt	r3, 16386
+ 154 00b8 4FF48052 		mov	r2, #4096
+ 155 00bc C4F20202 		movt	r2, 16386
+ 156 00c0 1268     		ldr	r2, [r2, #0]
+ 157 00c2 22F48032 		bic	r2, r2, #65536
+ 158 00c6 1A60     		str	r2, [r3, #0]
+ 286:../stm32_lib/src/stm32f10x_rcc.c ****   /* Reset HSEBYP bit */
+ 287:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CR &= CR_HSEBYP_Reset;
+ 159              		.loc 1 287 0
+ 160 00c8 4FF48053 		mov	r3, #4096
+ 161 00cc C4F20203 		movt	r3, 16386
+ 162 00d0 4FF48052 		mov	r2, #4096
+ 163 00d4 C4F20202 		movt	r2, 16386
+ 164 00d8 1268     		ldr	r2, [r2, #0]
+ 165 00da 22F48022 		bic	r2, r2, #262144
+ 166 00de 1A60     		str	r2, [r3, #0]
+ 288:../stm32_lib/src/stm32f10x_rcc.c ****   /* Configure HSE (RCC_HSE_OFF is already covered by the code section above) */
+ 289:../stm32_lib/src/stm32f10x_rcc.c ****   switch(RCC_HSE)
+ 167              		.loc 1 289 0
+ 168 00e0 7B68     		ldr	r3, [r7, #4]
+ 169 00e2 B3F5803F 		cmp	r3, #65536
+ 170 00e6 03D0     		beq	.L4
+ 171 00e8 B3F5802F 		cmp	r3, #262144
+ 172 00ec 0DD0     		beq	.L5
+ 173 00ee 19E0     		b	.L7
+ 174              	.L4:
+ 290:../stm32_lib/src/stm32f10x_rcc.c ****   {
+ 291:../stm32_lib/src/stm32f10x_rcc.c ****     case RCC_HSE_ON:
+ 292:../stm32_lib/src/stm32f10x_rcc.c ****       /* Set HSEON bit */
+ 293:../stm32_lib/src/stm32f10x_rcc.c ****       RCC->CR |= CR_HSEON_Set;
+ 175              		.loc 1 293 0
+ 176 00f0 4FF48053 		mov	r3, #4096
+ 177 00f4 C4F20203 		movt	r3, 16386
+ 178 00f8 4FF48052 		mov	r2, #4096
+ 179 00fc C4F20202 		movt	r2, 16386
+ 180 0100 1268     		ldr	r2, [r2, #0]
+ 181 0102 42F48032 		orr	r2, r2, #65536
+ 182 0106 1A60     		str	r2, [r3, #0]
+ 294:../stm32_lib/src/stm32f10x_rcc.c ****       break;
+ 183              		.loc 1 294 0
+ 184 0108 0DE0     		b	.L2
+ 185              	.L5:
+ 295:../stm32_lib/src/stm32f10x_rcc.c ****       
+ 296:../stm32_lib/src/stm32f10x_rcc.c ****     case RCC_HSE_Bypass:
+ 297:../stm32_lib/src/stm32f10x_rcc.c ****       /* Set HSEBYP and HSEON bits */
+ 298:../stm32_lib/src/stm32f10x_rcc.c ****       RCC->CR |= CR_HSEBYP_Set | CR_HSEON_Set;
+ 186              		.loc 1 298 0
+ 187 010a 4FF48053 		mov	r3, #4096
+ 188 010e C4F20203 		movt	r3, 16386
+ 189 0112 4FF48052 		mov	r2, #4096
+ 190 0116 C4F20202 		movt	r2, 16386
+ 191 011a 1268     		ldr	r2, [r2, #0]
+ 192 011c 42F4A022 		orr	r2, r2, #327680
+ 193 0120 1A60     		str	r2, [r3, #0]
+ 299:../stm32_lib/src/stm32f10x_rcc.c ****       break;
+ 194              		.loc 1 299 0
+ 195 0122 00E0     		b	.L2
+ 196              	.L7:
+ 300:../stm32_lib/src/stm32f10x_rcc.c ****       
+ 301:../stm32_lib/src/stm32f10x_rcc.c ****     default:
+ 302:../stm32_lib/src/stm32f10x_rcc.c ****       break;
+ 197              		.loc 1 302 0
+ 198 0124 00BF     		nop
+ 199              	.L2:
+ 303:../stm32_lib/src/stm32f10x_rcc.c ****   }
+ 304:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 200              		.loc 1 304 0
+ 201 0126 07F10C07 		add	r7, r7, #12
+ 202 012a BD46     		mov	sp, r7
+ 203 012c 80BC     		pop	{r7}
+ 204 012e 7047     		bx	lr
+ 205              		.cfi_endproc
+ 206              	.LFE30:
+ 208              		.align	2
+ 209              		.global	RCC_WaitForHSEStartUp
+ 210              		.thumb
+ 211              		.thumb_func
+ 213              	RCC_WaitForHSEStartUp:
+ 214              	.LFB31:
+ 305:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 306:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 307:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Waits for HSE start-up.
+ 308:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  None
+ 309:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval An ErrorStatus enumuration value:
+ 310:../stm32_lib/src/stm32f10x_rcc.c ****   * - SUCCESS: HSE oscillator is stable and ready to use
+ 311:../stm32_lib/src/stm32f10x_rcc.c ****   * - ERROR: HSE oscillator not yet ready
+ 312:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 313:../stm32_lib/src/stm32f10x_rcc.c **** ErrorStatus RCC_WaitForHSEStartUp(void)
+ 314:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 215              		.loc 1 314 0
+ 216              		.cfi_startproc
+ 217              		@ args = 0, pretend = 0, frame = 8
+ 218              		@ frame_needed = 1, uses_anonymous_args = 0
+ 219 0130 80B5     		push	{r7, lr}
+ 220              	.LCFI5:
+ 221              		.cfi_def_cfa_offset 8
+ 222              		.cfi_offset 14, -4
+ 223              		.cfi_offset 7, -8
+ 224 0132 82B0     		sub	sp, sp, #8
+ 225              	.LCFI6:
+ 226              		.cfi_def_cfa_offset 16
+ 227 0134 00AF     		add	r7, sp, #0
+ 228              	.LCFI7:
+ 229              		.cfi_def_cfa_register 7
+ 315:../stm32_lib/src/stm32f10x_rcc.c ****   __IO uint32_t StartUpCounter = 0;
+ 230              		.loc 1 315 0
+ 231 0136 4FF00003 		mov	r3, #0
+ 232 013a 3B60     		str	r3, [r7, #0]
+ 316:../stm32_lib/src/stm32f10x_rcc.c ****   ErrorStatus status = ERROR;
+ 233              		.loc 1 316 0
+ 234 013c 4FF00003 		mov	r3, #0
+ 235 0140 FB71     		strb	r3, [r7, #7]
+ 317:../stm32_lib/src/stm32f10x_rcc.c ****   FlagStatus HSEStatus = RESET;
+ 236              		.loc 1 317 0
+ 237 0142 4FF00003 		mov	r3, #0
+ 238 0146 BB71     		strb	r3, [r7, #6]
+ 239              	.L10:
+ 318:../stm32_lib/src/stm32f10x_rcc.c ****   
+ 319:../stm32_lib/src/stm32f10x_rcc.c ****   /* Wait till HSE is ready and if Time out is reached exit */
+ 320:../stm32_lib/src/stm32f10x_rcc.c ****   do
+ 321:../stm32_lib/src/stm32f10x_rcc.c ****   {
+ 322:../stm32_lib/src/stm32f10x_rcc.c ****     HSEStatus = RCC_GetFlagStatus(RCC_FLAG_HSERDY);
+ 240              		.loc 1 322 0 discriminator 1
+ 241 0148 4FF03100 		mov	r0, #49
+ 242 014c FFF7FEFF 		bl	RCC_GetFlagStatus
+ 243 0150 0346     		mov	r3, r0
+ 244 0152 BB71     		strb	r3, [r7, #6]
+ 323:../stm32_lib/src/stm32f10x_rcc.c ****     StartUpCounter++;  
+ 245              		.loc 1 323 0 discriminator 1
+ 246 0154 3B68     		ldr	r3, [r7, #0]
+ 247 0156 03F10103 		add	r3, r3, #1
+ 248 015a 3B60     		str	r3, [r7, #0]
+ 324:../stm32_lib/src/stm32f10x_rcc.c ****   } while((StartUpCounter != HSEStartUp_TimeOut) && (HSEStatus == RESET));
+ 249              		.loc 1 324 0 discriminator 1
+ 250 015c 3B68     		ldr	r3, [r7, #0]
+ 251 015e B3F5A06F 		cmp	r3, #1280
+ 252 0162 02D0     		beq	.L9
+ 253 0164 BB79     		ldrb	r3, [r7, #6]	@ zero_extendqisi2
+ 254 0166 002B     		cmp	r3, #0
+ 255 0168 EED0     		beq	.L10
+ 256              	.L9:
+ 325:../stm32_lib/src/stm32f10x_rcc.c ****   
+ 326:../stm32_lib/src/stm32f10x_rcc.c ****   if (RCC_GetFlagStatus(RCC_FLAG_HSERDY) != RESET)
+ 257              		.loc 1 326 0
+ 258 016a 4FF03100 		mov	r0, #49
+ 259 016e FFF7FEFF 		bl	RCC_GetFlagStatus
+ 260 0172 0346     		mov	r3, r0
+ 261 0174 002B     		cmp	r3, #0
+ 262 0176 03D0     		beq	.L11
+ 327:../stm32_lib/src/stm32f10x_rcc.c ****   {
+ 328:../stm32_lib/src/stm32f10x_rcc.c ****     status = SUCCESS;
+ 263              		.loc 1 328 0
+ 264 0178 4FF00103 		mov	r3, #1
+ 265 017c FB71     		strb	r3, [r7, #7]
+ 266 017e 02E0     		b	.L12
+ 267              	.L11:
+ 329:../stm32_lib/src/stm32f10x_rcc.c ****   }
+ 330:../stm32_lib/src/stm32f10x_rcc.c ****   else
+ 331:../stm32_lib/src/stm32f10x_rcc.c ****   {
+ 332:../stm32_lib/src/stm32f10x_rcc.c ****     status = ERROR;
+ 268              		.loc 1 332 0
+ 269 0180 4FF00003 		mov	r3, #0
+ 270 0184 FB71     		strb	r3, [r7, #7]
+ 271              	.L12:
+ 333:../stm32_lib/src/stm32f10x_rcc.c ****   }  
+ 334:../stm32_lib/src/stm32f10x_rcc.c ****   return (status);
+ 272              		.loc 1 334 0
+ 273 0186 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 335:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 274              		.loc 1 335 0
+ 275 0188 1846     		mov	r0, r3
+ 276 018a 07F10807 		add	r7, r7, #8
+ 277 018e BD46     		mov	sp, r7
+ 278 0190 80BD     		pop	{r7, pc}
+ 279              		.cfi_endproc
+ 280              	.LFE31:
+ 282 0192 00BF     		.align	2
+ 283              		.global	RCC_AdjustHSICalibrationValue
+ 284              		.thumb
+ 285              		.thumb_func
+ 287              	RCC_AdjustHSICalibrationValue:
+ 288              	.LFB32:
+ 336:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 337:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 338:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Adjusts the Internal High Speed oscillator (HSI) calibration value.
+ 339:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  HSICalibrationValue: specifies the calibration trimming value.
+ 340:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter must be a number between 0 and 0x1F.
+ 341:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 342:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 343:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_AdjustHSICalibrationValue(uint8_t HSICalibrationValue)
+ 344:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 289              		.loc 1 344 0
+ 290              		.cfi_startproc
+ 291              		@ args = 0, pretend = 0, frame = 16
+ 292              		@ frame_needed = 1, uses_anonymous_args = 0
+ 293              		@ link register save eliminated.
+ 294 0194 80B4     		push	{r7}
+ 295              	.LCFI8:
+ 296              		.cfi_def_cfa_offset 4
+ 297              		.cfi_offset 7, -4
+ 298 0196 85B0     		sub	sp, sp, #20
+ 299              	.LCFI9:
+ 300              		.cfi_def_cfa_offset 24
+ 301 0198 00AF     		add	r7, sp, #0
+ 302              	.LCFI10:
+ 303              		.cfi_def_cfa_register 7
+ 304 019a 0346     		mov	r3, r0
+ 305 019c FB71     		strb	r3, [r7, #7]
+ 345:../stm32_lib/src/stm32f10x_rcc.c ****   uint32_t tmpreg = 0;
+ 306              		.loc 1 345 0
+ 307 019e 4FF00003 		mov	r3, #0
+ 308 01a2 FB60     		str	r3, [r7, #12]
+ 346:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 347:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_CALIBRATION_VALUE(HSICalibrationValue));
+ 348:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg = RCC->CR;
+ 309              		.loc 1 348 0
+ 310 01a4 4FF48053 		mov	r3, #4096
+ 311 01a8 C4F20203 		movt	r3, 16386
+ 312 01ac 1B68     		ldr	r3, [r3, #0]
+ 313 01ae FB60     		str	r3, [r7, #12]
+ 349:../stm32_lib/src/stm32f10x_rcc.c ****   /* Clear HSITRIM[4:0] bits */
+ 350:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg &= CR_HSITRIM_Mask;
+ 314              		.loc 1 350 0
+ 315 01b0 FB68     		ldr	r3, [r7, #12]
+ 316 01b2 23F0F803 		bic	r3, r3, #248
+ 317 01b6 FB60     		str	r3, [r7, #12]
+ 351:../stm32_lib/src/stm32f10x_rcc.c ****   /* Set the HSITRIM[4:0] bits according to HSICalibrationValue value */
+ 352:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg |= (uint32_t)HSICalibrationValue << 3;
+ 318              		.loc 1 352 0
+ 319 01b8 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 320 01ba 4FEAC303 		lsl	r3, r3, #3
+ 321 01be FA68     		ldr	r2, [r7, #12]
+ 322 01c0 1343     		orrs	r3, r3, r2
+ 323 01c2 FB60     		str	r3, [r7, #12]
+ 353:../stm32_lib/src/stm32f10x_rcc.c ****   /* Store the new value */
+ 354:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CR = tmpreg;
+ 324              		.loc 1 354 0
+ 325 01c4 4FF48053 		mov	r3, #4096
+ 326 01c8 C4F20203 		movt	r3, 16386
+ 327 01cc FA68     		ldr	r2, [r7, #12]
+ 328 01ce 1A60     		str	r2, [r3, #0]
+ 355:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 329              		.loc 1 355 0
+ 330 01d0 07F11407 		add	r7, r7, #20
+ 331 01d4 BD46     		mov	sp, r7
+ 332 01d6 80BC     		pop	{r7}
+ 333 01d8 7047     		bx	lr
+ 334              		.cfi_endproc
+ 335              	.LFE32:
+ 337 01da 00BF     		.align	2
+ 338              		.global	RCC_HSICmd
+ 339              		.thumb
+ 340              		.thumb_func
+ 342              	RCC_HSICmd:
+ 343              	.LFB33:
+ 356:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 357:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 358:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Enables or disables the Internal High Speed oscillator (HSI).
+ 359:../stm32_lib/src/stm32f10x_rcc.c ****   * @note   HSI can not be stopped if it is used directly or through the PLL as system clock.
+ 360:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  NewState: new state of the HSI. This parameter can be: ENABLE or DISABLE.
+ 361:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 362:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 363:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_HSICmd(FunctionalState NewState)
+ 364:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 344              		.loc 1 364 0
+ 345              		.cfi_startproc
+ 346              		@ args = 0, pretend = 0, frame = 8
+ 347              		@ frame_needed = 1, uses_anonymous_args = 0
+ 348              		@ link register save eliminated.
+ 349 01dc 80B4     		push	{r7}
+ 350              	.LCFI11:
+ 351              		.cfi_def_cfa_offset 4
+ 352              		.cfi_offset 7, -4
+ 353 01de 83B0     		sub	sp, sp, #12
+ 354              	.LCFI12:
+ 355              		.cfi_def_cfa_offset 16
+ 356 01e0 00AF     		add	r7, sp, #0
+ 357              	.LCFI13:
+ 358              		.cfi_def_cfa_register 7
+ 359 01e2 0346     		mov	r3, r0
+ 360 01e4 FB71     		strb	r3, [r7, #7]
+ 365:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 366:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_FUNCTIONAL_STATE(NewState));
+ 367:../stm32_lib/src/stm32f10x_rcc.c ****   *(__IO uint32_t *) CR_HSION_BB = (uint32_t)NewState;
+ 361              		.loc 1 367 0
+ 362 01e6 4FF00003 		mov	r3, #0
+ 363 01ea C4F24223 		movt	r3, 16962
+ 364 01ee FA79     		ldrb	r2, [r7, #7]	@ zero_extendqisi2
+ 365 01f0 1A60     		str	r2, [r3, #0]
+ 368:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 366              		.loc 1 368 0
+ 367 01f2 07F10C07 		add	r7, r7, #12
+ 368 01f6 BD46     		mov	sp, r7
+ 369 01f8 80BC     		pop	{r7}
+ 370 01fa 7047     		bx	lr
+ 371              		.cfi_endproc
+ 372              	.LFE33:
+ 374              		.align	2
+ 375              		.global	RCC_PLLConfig
+ 376              		.thumb
+ 377              		.thumb_func
+ 379              	RCC_PLLConfig:
+ 380              	.LFB34:
+ 369:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 370:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 371:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Configures the PLL clock source and multiplication factor.
+ 372:../stm32_lib/src/stm32f10x_rcc.c ****   * @note   This function must be used only when the PLL is disabled.
+ 373:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_PLLSource: specifies the PLL entry clock source.
+ 374:../stm32_lib/src/stm32f10x_rcc.c ****   *   For @b STM32_Connectivity_line_devices or @b STM32_Value_line_devices, 
+ 375:../stm32_lib/src/stm32f10x_rcc.c ****   *   this parameter can be one of the following values:
+ 376:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_PLLSource_HSI_Div2: HSI oscillator clock divided by 2 selected as PLL clock entry
+ 377:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_PLLSource_PREDIV1: PREDIV1 clock selected as PLL clock entry
+ 378:../stm32_lib/src/stm32f10x_rcc.c ****   *   For @b other_STM32_devices, this parameter can be one of the following values:
+ 379:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_PLLSource_HSI_Div2: HSI oscillator clock divided by 2 selected as PLL clock entry
+ 380:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_PLLSource_HSE_Div1: HSE oscillator clock selected as PLL clock entry
+ 381:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_PLLSource_HSE_Div2: HSE oscillator clock divided by 2 selected as PLL clock entry 
+ 382:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_PLLMul: specifies the PLL multiplication factor.
+ 383:../stm32_lib/src/stm32f10x_rcc.c ****   *   For @b STM32_Connectivity_line_devices, this parameter can be RCC_PLLMul_x where x:{[4,9], 6_
+ 384:../stm32_lib/src/stm32f10x_rcc.c ****   *   For @b other_STM32_devices, this parameter can be RCC_PLLMul_x where x:[2,16]  
+ 385:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 386:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 387:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_PLLConfig(uint32_t RCC_PLLSource, uint32_t RCC_PLLMul)
+ 388:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 381              		.loc 1 388 0
+ 382              		.cfi_startproc
+ 383              		@ args = 0, pretend = 0, frame = 16
+ 384              		@ frame_needed = 1, uses_anonymous_args = 0
+ 385              		@ link register save eliminated.
+ 386 01fc 80B4     		push	{r7}
+ 387              	.LCFI14:
+ 388              		.cfi_def_cfa_offset 4
+ 389              		.cfi_offset 7, -4
+ 390 01fe 85B0     		sub	sp, sp, #20
+ 391              	.LCFI15:
+ 392              		.cfi_def_cfa_offset 24
+ 393 0200 00AF     		add	r7, sp, #0
+ 394              	.LCFI16:
+ 395              		.cfi_def_cfa_register 7
+ 396 0202 7860     		str	r0, [r7, #4]
+ 397 0204 3960     		str	r1, [r7, #0]
+ 389:../stm32_lib/src/stm32f10x_rcc.c ****   uint32_t tmpreg = 0;
+ 398              		.loc 1 389 0
+ 399 0206 4FF00003 		mov	r3, #0
+ 400 020a FB60     		str	r3, [r7, #12]
+ 390:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 391:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 392:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_PLL_SOURCE(RCC_PLLSource));
+ 393:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_PLL_MUL(RCC_PLLMul));
+ 394:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 395:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg = RCC->CFGR;
+ 401              		.loc 1 395 0
+ 402 020c 4FF48053 		mov	r3, #4096
+ 403 0210 C4F20203 		movt	r3, 16386
+ 404 0214 5B68     		ldr	r3, [r3, #4]
+ 405 0216 FB60     		str	r3, [r7, #12]
+ 396:../stm32_lib/src/stm32f10x_rcc.c ****   /* Clear PLLSRC, PLLXTPRE and PLLMUL[3:0] bits */
+ 397:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg &= CFGR_PLL_Mask;
+ 406              		.loc 1 397 0
+ 407 0218 FB68     		ldr	r3, [r7, #12]
+ 408 021a 23F47413 		bic	r3, r3, #3997696
+ 409 021e FB60     		str	r3, [r7, #12]
+ 398:../stm32_lib/src/stm32f10x_rcc.c ****   /* Set the PLL configuration bits */
+ 399:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg |= RCC_PLLSource | RCC_PLLMul;
+ 410              		.loc 1 399 0
+ 411 0220 7A68     		ldr	r2, [r7, #4]
+ 412 0222 3B68     		ldr	r3, [r7, #0]
+ 413 0224 1343     		orrs	r3, r3, r2
+ 414 0226 FA68     		ldr	r2, [r7, #12]
+ 415 0228 1343     		orrs	r3, r3, r2
+ 416 022a FB60     		str	r3, [r7, #12]
+ 400:../stm32_lib/src/stm32f10x_rcc.c ****   /* Store the new value */
+ 401:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CFGR = tmpreg;
+ 417              		.loc 1 401 0
+ 418 022c 4FF48053 		mov	r3, #4096
+ 419 0230 C4F20203 		movt	r3, 16386
+ 420 0234 FA68     		ldr	r2, [r7, #12]
+ 421 0236 5A60     		str	r2, [r3, #4]
+ 402:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 422              		.loc 1 402 0
+ 423 0238 07F11407 		add	r7, r7, #20
+ 424 023c BD46     		mov	sp, r7
+ 425 023e 80BC     		pop	{r7}
+ 426 0240 7047     		bx	lr
+ 427              		.cfi_endproc
+ 428              	.LFE34:
+ 430 0242 00BF     		.align	2
+ 431              		.global	RCC_PLLCmd
+ 432              		.thumb
+ 433              		.thumb_func
+ 435              	RCC_PLLCmd:
+ 436              	.LFB35:
+ 403:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 404:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 405:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Enables or disables the PLL.
+ 406:../stm32_lib/src/stm32f10x_rcc.c ****   * @note   The PLL can not be disabled if it is used as system clock.
+ 407:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  NewState: new state of the PLL. This parameter can be: ENABLE or DISABLE.
+ 408:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 409:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 410:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_PLLCmd(FunctionalState NewState)
+ 411:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 437              		.loc 1 411 0
+ 438              		.cfi_startproc
+ 439              		@ args = 0, pretend = 0, frame = 8
+ 440              		@ frame_needed = 1, uses_anonymous_args = 0
+ 441              		@ link register save eliminated.
+ 442 0244 80B4     		push	{r7}
+ 443              	.LCFI17:
+ 444              		.cfi_def_cfa_offset 4
+ 445              		.cfi_offset 7, -4
+ 446 0246 83B0     		sub	sp, sp, #12
+ 447              	.LCFI18:
+ 448              		.cfi_def_cfa_offset 16
+ 449 0248 00AF     		add	r7, sp, #0
+ 450              	.LCFI19:
+ 451              		.cfi_def_cfa_register 7
+ 452 024a 0346     		mov	r3, r0
+ 453 024c FB71     		strb	r3, [r7, #7]
+ 412:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 413:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_FUNCTIONAL_STATE(NewState));
+ 414:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 415:../stm32_lib/src/stm32f10x_rcc.c ****   *(__IO uint32_t *) CR_PLLON_BB = (uint32_t)NewState;
+ 454              		.loc 1 415 0
+ 455 024e 4FF06003 		mov	r3, #96
+ 456 0252 C4F24223 		movt	r3, 16962
+ 457 0256 FA79     		ldrb	r2, [r7, #7]	@ zero_extendqisi2
+ 458 0258 1A60     		str	r2, [r3, #0]
+ 416:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 459              		.loc 1 416 0
+ 460 025a 07F10C07 		add	r7, r7, #12
+ 461 025e BD46     		mov	sp, r7
+ 462 0260 80BC     		pop	{r7}
+ 463 0262 7047     		bx	lr
+ 464              		.cfi_endproc
+ 465              	.LFE35:
+ 467              		.align	2
+ 468              		.global	RCC_PREDIV1Config
+ 469              		.thumb
+ 470              		.thumb_func
+ 472              	RCC_PREDIV1Config:
+ 473              	.LFB36:
+ 417:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 418:../stm32_lib/src/stm32f10x_rcc.c **** #if defined (STM32F10X_LD_VL) || defined (STM32F10X_MD_VL) || defined (STM32F10X_CL)
+ 419:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 420:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Configures the PREDIV1 division factor.
+ 421:../stm32_lib/src/stm32f10x_rcc.c ****   * @note 
+ 422:../stm32_lib/src/stm32f10x_rcc.c ****   *   - This function must be used only when the PLL is disabled.
+ 423:../stm32_lib/src/stm32f10x_rcc.c ****   *   - This function applies only to STM32 Connectivity line and Value line 
+ 424:../stm32_lib/src/stm32f10x_rcc.c ****   *     devices.
+ 425:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_PREDIV1_Source: specifies the PREDIV1 clock source.
+ 426:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be one of the following values:
+ 427:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_PREDIV1_Source_HSE: HSE selected as PREDIV1 clock
+ 428:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_PREDIV1_Source_PLL2: PLL2 selected as PREDIV1 clock
+ 429:../stm32_lib/src/stm32f10x_rcc.c ****   * @note 
+ 430:../stm32_lib/src/stm32f10x_rcc.c ****   *   For @b STM32_Value_line_devices this parameter is always RCC_PREDIV1_Source_HSE  
+ 431:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_PREDIV1_Div: specifies the PREDIV1 clock division factor.
+ 432:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be RCC_PREDIV1_Divx where x:[1,16]
+ 433:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 434:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 435:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_PREDIV1Config(uint32_t RCC_PREDIV1_Source, uint32_t RCC_PREDIV1_Div)
+ 436:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 474              		.loc 1 436 0
+ 475              		.cfi_startproc
+ 476              		@ args = 0, pretend = 0, frame = 16
+ 477              		@ frame_needed = 1, uses_anonymous_args = 0
+ 478              		@ link register save eliminated.
+ 479 0264 80B4     		push	{r7}
+ 480              	.LCFI20:
+ 481              		.cfi_def_cfa_offset 4
+ 482              		.cfi_offset 7, -4
+ 483 0266 85B0     		sub	sp, sp, #20
+ 484              	.LCFI21:
+ 485              		.cfi_def_cfa_offset 24
+ 486 0268 00AF     		add	r7, sp, #0
+ 487              	.LCFI22:
+ 488              		.cfi_def_cfa_register 7
+ 489 026a 7860     		str	r0, [r7, #4]
+ 490 026c 3960     		str	r1, [r7, #0]
+ 437:../stm32_lib/src/stm32f10x_rcc.c ****   uint32_t tmpreg = 0;
+ 491              		.loc 1 437 0
+ 492 026e 4FF00003 		mov	r3, #0
+ 493 0272 FB60     		str	r3, [r7, #12]
+ 438:../stm32_lib/src/stm32f10x_rcc.c ****   
+ 439:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 440:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_PREDIV1_SOURCE(RCC_PREDIV1_Source));
+ 441:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_PREDIV1(RCC_PREDIV1_Div));
+ 442:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 443:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg = RCC->CFGR2;
+ 494              		.loc 1 443 0
+ 495 0274 4FF48053 		mov	r3, #4096
+ 496 0278 C4F20203 		movt	r3, 16386
+ 497 027c DB6A     		ldr	r3, [r3, #44]
+ 498 027e FB60     		str	r3, [r7, #12]
+ 444:../stm32_lib/src/stm32f10x_rcc.c ****   /* Clear PREDIV1[3:0] and PREDIV1SRC bits */
+ 445:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg &= ~(CFGR2_PREDIV1 | CFGR2_PREDIV1SRC);
+ 499              		.loc 1 445 0
+ 500 0280 FB68     		ldr	r3, [r7, #12]
+ 501 0282 23F48033 		bic	r3, r3, #65536
+ 502 0286 23F00F03 		bic	r3, r3, #15
+ 503 028a FB60     		str	r3, [r7, #12]
+ 446:../stm32_lib/src/stm32f10x_rcc.c ****   /* Set the PREDIV1 clock source and division factor */
+ 447:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg |= RCC_PREDIV1_Source | RCC_PREDIV1_Div ;
+ 504              		.loc 1 447 0
+ 505 028c 7A68     		ldr	r2, [r7, #4]
+ 506 028e 3B68     		ldr	r3, [r7, #0]
+ 507 0290 1343     		orrs	r3, r3, r2
+ 508 0292 FA68     		ldr	r2, [r7, #12]
+ 509 0294 1343     		orrs	r3, r3, r2
+ 510 0296 FB60     		str	r3, [r7, #12]
+ 448:../stm32_lib/src/stm32f10x_rcc.c ****   /* Store the new value */
+ 449:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CFGR2 = tmpreg;
+ 511              		.loc 1 449 0
+ 512 0298 4FF48053 		mov	r3, #4096
+ 513 029c C4F20203 		movt	r3, 16386
+ 514 02a0 FA68     		ldr	r2, [r7, #12]
+ 515 02a2 DA62     		str	r2, [r3, #44]
+ 450:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 516              		.loc 1 450 0
+ 517 02a4 07F11407 		add	r7, r7, #20
+ 518 02a8 BD46     		mov	sp, r7
+ 519 02aa 80BC     		pop	{r7}
+ 520 02ac 7047     		bx	lr
+ 521              		.cfi_endproc
+ 522              	.LFE36:
+ 524 02ae 00BF     		.align	2
+ 525              		.global	RCC_SYSCLKConfig
+ 526              		.thumb
+ 527              		.thumb_func
+ 529              	RCC_SYSCLKConfig:
+ 530              	.LFB37:
+ 451:../stm32_lib/src/stm32f10x_rcc.c **** #endif
+ 452:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 453:../stm32_lib/src/stm32f10x_rcc.c **** #ifdef STM32F10X_CL
+ 454:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 455:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Configures the PREDIV2 division factor.
+ 456:../stm32_lib/src/stm32f10x_rcc.c ****   * @note 
+ 457:../stm32_lib/src/stm32f10x_rcc.c ****   *   - This function must be used only when both PLL2 and PLL3 are disabled.
+ 458:../stm32_lib/src/stm32f10x_rcc.c ****   *   - This function applies only to STM32 Connectivity line devices.
+ 459:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_PREDIV2_Div: specifies the PREDIV2 clock division factor.
+ 460:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be RCC_PREDIV2_Divx where x:[1,16]
+ 461:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 462:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 463:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_PREDIV2Config(uint32_t RCC_PREDIV2_Div)
+ 464:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 465:../stm32_lib/src/stm32f10x_rcc.c ****   uint32_t tmpreg = 0;
+ 466:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 467:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 468:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_PREDIV2(RCC_PREDIV2_Div));
+ 469:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 470:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg = RCC->CFGR2;
+ 471:../stm32_lib/src/stm32f10x_rcc.c ****   /* Clear PREDIV2[3:0] bits */
+ 472:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg &= ~CFGR2_PREDIV2;
+ 473:../stm32_lib/src/stm32f10x_rcc.c ****   /* Set the PREDIV2 division factor */
+ 474:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg |= RCC_PREDIV2_Div;
+ 475:../stm32_lib/src/stm32f10x_rcc.c ****   /* Store the new value */
+ 476:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CFGR2 = tmpreg;
+ 477:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 478:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 479:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 480:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Configures the PLL2 multiplication factor.
+ 481:../stm32_lib/src/stm32f10x_rcc.c ****   * @note
+ 482:../stm32_lib/src/stm32f10x_rcc.c ****   *   - This function must be used only when the PLL2 is disabled.
+ 483:../stm32_lib/src/stm32f10x_rcc.c ****   *   - This function applies only to STM32 Connectivity line devices.
+ 484:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_PLL2Mul: specifies the PLL2 multiplication factor.
+ 485:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be RCC_PLL2Mul_x where x:{[8,14], 16, 20}
+ 486:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 487:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 488:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_PLL2Config(uint32_t RCC_PLL2Mul)
+ 489:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 490:../stm32_lib/src/stm32f10x_rcc.c ****   uint32_t tmpreg = 0;
+ 491:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 492:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 493:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_PLL2_MUL(RCC_PLL2Mul));
+ 494:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 495:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg = RCC->CFGR2;
+ 496:../stm32_lib/src/stm32f10x_rcc.c ****   /* Clear PLL2Mul[3:0] bits */
+ 497:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg &= ~CFGR2_PLL2MUL;
+ 498:../stm32_lib/src/stm32f10x_rcc.c ****   /* Set the PLL2 configuration bits */
+ 499:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg |= RCC_PLL2Mul;
+ 500:../stm32_lib/src/stm32f10x_rcc.c ****   /* Store the new value */
+ 501:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CFGR2 = tmpreg;
+ 502:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 503:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 504:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 505:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 506:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Enables or disables the PLL2.
+ 507:../stm32_lib/src/stm32f10x_rcc.c ****   * @note 
+ 508:../stm32_lib/src/stm32f10x_rcc.c ****   *   - The PLL2 can not be disabled if it is used indirectly as system clock
+ 509:../stm32_lib/src/stm32f10x_rcc.c ****   *     (i.e. it is used as PLL clock entry that is used as System clock).
+ 510:../stm32_lib/src/stm32f10x_rcc.c ****   *   - This function applies only to STM32 Connectivity line devices.
+ 511:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  NewState: new state of the PLL2. This parameter can be: ENABLE or DISABLE.
+ 512:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 513:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 514:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_PLL2Cmd(FunctionalState NewState)
+ 515:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 516:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 517:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_FUNCTIONAL_STATE(NewState));
+ 518:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 519:../stm32_lib/src/stm32f10x_rcc.c ****   *(__IO uint32_t *) CR_PLL2ON_BB = (uint32_t)NewState;
+ 520:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 521:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 522:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 523:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 524:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Configures the PLL3 multiplication factor.
+ 525:../stm32_lib/src/stm32f10x_rcc.c ****   * @note 
+ 526:../stm32_lib/src/stm32f10x_rcc.c ****   *   - This function must be used only when the PLL3 is disabled.
+ 527:../stm32_lib/src/stm32f10x_rcc.c ****   *   - This function applies only to STM32 Connectivity line devices.
+ 528:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_PLL3Mul: specifies the PLL3 multiplication factor.
+ 529:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be RCC_PLL3Mul_x where x:{[8,14], 16, 20}
+ 530:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 531:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 532:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_PLL3Config(uint32_t RCC_PLL3Mul)
+ 533:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 534:../stm32_lib/src/stm32f10x_rcc.c ****   uint32_t tmpreg = 0;
+ 535:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 536:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 537:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_PLL3_MUL(RCC_PLL3Mul));
+ 538:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 539:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg = RCC->CFGR2;
+ 540:../stm32_lib/src/stm32f10x_rcc.c ****   /* Clear PLL3Mul[3:0] bits */
+ 541:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg &= ~CFGR2_PLL3MUL;
+ 542:../stm32_lib/src/stm32f10x_rcc.c ****   /* Set the PLL3 configuration bits */
+ 543:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg |= RCC_PLL3Mul;
+ 544:../stm32_lib/src/stm32f10x_rcc.c ****   /* Store the new value */
+ 545:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CFGR2 = tmpreg;
+ 546:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 547:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 548:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 549:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 550:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Enables or disables the PLL3.
+ 551:../stm32_lib/src/stm32f10x_rcc.c ****   * @note   This function applies only to STM32 Connectivity line devices.
+ 552:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  NewState: new state of the PLL3. This parameter can be: ENABLE or DISABLE.
+ 553:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 554:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 555:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_PLL3Cmd(FunctionalState NewState)
+ 556:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 557:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 558:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 559:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_FUNCTIONAL_STATE(NewState));
+ 560:../stm32_lib/src/stm32f10x_rcc.c ****   *(__IO uint32_t *) CR_PLL3ON_BB = (uint32_t)NewState;
+ 561:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 562:../stm32_lib/src/stm32f10x_rcc.c **** #endif /* STM32F10X_CL */
+ 563:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 564:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 565:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Configures the system clock (SYSCLK).
+ 566:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_SYSCLKSource: specifies the clock source used as system clock.
+ 567:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be one of the following values:
+ 568:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_SYSCLKSource_HSI: HSI selected as system clock
+ 569:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_SYSCLKSource_HSE: HSE selected as system clock
+ 570:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_SYSCLKSource_PLLCLK: PLL selected as system clock
+ 571:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 572:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 573:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_SYSCLKConfig(uint32_t RCC_SYSCLKSource)
+ 574:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 531              		.loc 1 574 0
+ 532              		.cfi_startproc
+ 533              		@ args = 0, pretend = 0, frame = 16
+ 534              		@ frame_needed = 1, uses_anonymous_args = 0
+ 535              		@ link register save eliminated.
+ 536 02b0 80B4     		push	{r7}
+ 537              	.LCFI23:
+ 538              		.cfi_def_cfa_offset 4
+ 539              		.cfi_offset 7, -4
+ 540 02b2 85B0     		sub	sp, sp, #20
+ 541              	.LCFI24:
+ 542              		.cfi_def_cfa_offset 24
+ 543 02b4 00AF     		add	r7, sp, #0
+ 544              	.LCFI25:
+ 545              		.cfi_def_cfa_register 7
+ 546 02b6 7860     		str	r0, [r7, #4]
+ 575:../stm32_lib/src/stm32f10x_rcc.c ****   uint32_t tmpreg = 0;
+ 547              		.loc 1 575 0
+ 548 02b8 4FF00003 		mov	r3, #0
+ 549 02bc FB60     		str	r3, [r7, #12]
+ 576:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 577:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_SYSCLK_SOURCE(RCC_SYSCLKSource));
+ 578:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg = RCC->CFGR;
+ 550              		.loc 1 578 0
+ 551 02be 4FF48053 		mov	r3, #4096
+ 552 02c2 C4F20203 		movt	r3, 16386
+ 553 02c6 5B68     		ldr	r3, [r3, #4]
+ 554 02c8 FB60     		str	r3, [r7, #12]
+ 579:../stm32_lib/src/stm32f10x_rcc.c ****   /* Clear SW[1:0] bits */
+ 580:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg &= CFGR_SW_Mask;
+ 555              		.loc 1 580 0
+ 556 02ca FB68     		ldr	r3, [r7, #12]
+ 557 02cc 23F00303 		bic	r3, r3, #3
+ 558 02d0 FB60     		str	r3, [r7, #12]
+ 581:../stm32_lib/src/stm32f10x_rcc.c ****   /* Set SW[1:0] bits according to RCC_SYSCLKSource value */
+ 582:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg |= RCC_SYSCLKSource;
+ 559              		.loc 1 582 0
+ 560 02d2 FA68     		ldr	r2, [r7, #12]
+ 561 02d4 7B68     		ldr	r3, [r7, #4]
+ 562 02d6 1343     		orrs	r3, r3, r2
+ 563 02d8 FB60     		str	r3, [r7, #12]
+ 583:../stm32_lib/src/stm32f10x_rcc.c ****   /* Store the new value */
+ 584:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CFGR = tmpreg;
+ 564              		.loc 1 584 0
+ 565 02da 4FF48053 		mov	r3, #4096
+ 566 02de C4F20203 		movt	r3, 16386
+ 567 02e2 FA68     		ldr	r2, [r7, #12]
+ 568 02e4 5A60     		str	r2, [r3, #4]
+ 585:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 569              		.loc 1 585 0
+ 570 02e6 07F11407 		add	r7, r7, #20
+ 571 02ea BD46     		mov	sp, r7
+ 572 02ec 80BC     		pop	{r7}
+ 573 02ee 7047     		bx	lr
+ 574              		.cfi_endproc
+ 575              	.LFE37:
+ 577              		.align	2
+ 578              		.global	RCC_GetSYSCLKSource
+ 579              		.thumb
+ 580              		.thumb_func
+ 582              	RCC_GetSYSCLKSource:
+ 583              	.LFB38:
+ 586:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 587:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 588:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Returns the clock source used as system clock.
+ 589:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  None
+ 590:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval The clock source used as system clock. The returned value can
+ 591:../stm32_lib/src/stm32f10x_rcc.c ****   *   be one of the following:
+ 592:../stm32_lib/src/stm32f10x_rcc.c ****   *     - 0x00: HSI used as system clock
+ 593:../stm32_lib/src/stm32f10x_rcc.c ****   *     - 0x04: HSE used as system clock
+ 594:../stm32_lib/src/stm32f10x_rcc.c ****   *     - 0x08: PLL used as system clock
+ 595:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 596:../stm32_lib/src/stm32f10x_rcc.c **** uint8_t RCC_GetSYSCLKSource(void)
+ 597:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 584              		.loc 1 597 0
+ 585              		.cfi_startproc
+ 586              		@ args = 0, pretend = 0, frame = 0
+ 587              		@ frame_needed = 1, uses_anonymous_args = 0
+ 588              		@ link register save eliminated.
+ 589 02f0 80B4     		push	{r7}
+ 590              	.LCFI26:
+ 591              		.cfi_def_cfa_offset 4
+ 592              		.cfi_offset 7, -4
+ 593 02f2 00AF     		add	r7, sp, #0
+ 594              	.LCFI27:
+ 595              		.cfi_def_cfa_register 7
+ 598:../stm32_lib/src/stm32f10x_rcc.c ****   return ((uint8_t)(RCC->CFGR & CFGR_SWS_Mask));
+ 596              		.loc 1 598 0
+ 597 02f4 4FF48053 		mov	r3, #4096
+ 598 02f8 C4F20203 		movt	r3, 16386
+ 599 02fc 5B68     		ldr	r3, [r3, #4]
+ 600 02fe DBB2     		uxtb	r3, r3
+ 601 0300 03F00C03 		and	r3, r3, #12
+ 602 0304 DBB2     		uxtb	r3, r3
+ 599:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 603              		.loc 1 599 0
+ 604 0306 1846     		mov	r0, r3
+ 605 0308 BD46     		mov	sp, r7
+ 606 030a 80BC     		pop	{r7}
+ 607 030c 7047     		bx	lr
+ 608              		.cfi_endproc
+ 609              	.LFE38:
+ 611 030e 00BF     		.align	2
+ 612              		.global	RCC_HCLKConfig
+ 613              		.thumb
+ 614              		.thumb_func
+ 616              	RCC_HCLKConfig:
+ 617              	.LFB39:
+ 600:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 601:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 602:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Configures the AHB clock (HCLK).
+ 603:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_SYSCLK: defines the AHB clock divider. This clock is derived from 
+ 604:../stm32_lib/src/stm32f10x_rcc.c ****   *   the system clock (SYSCLK).
+ 605:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be one of the following values:
+ 606:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_SYSCLK_Div1: AHB clock = SYSCLK
+ 607:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_SYSCLK_Div2: AHB clock = SYSCLK/2
+ 608:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_SYSCLK_Div4: AHB clock = SYSCLK/4
+ 609:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_SYSCLK_Div8: AHB clock = SYSCLK/8
+ 610:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_SYSCLK_Div16: AHB clock = SYSCLK/16
+ 611:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_SYSCLK_Div64: AHB clock = SYSCLK/64
+ 612:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_SYSCLK_Div128: AHB clock = SYSCLK/128
+ 613:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_SYSCLK_Div256: AHB clock = SYSCLK/256
+ 614:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_SYSCLK_Div512: AHB clock = SYSCLK/512
+ 615:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 616:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 617:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_HCLKConfig(uint32_t RCC_SYSCLK)
+ 618:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 618              		.loc 1 618 0
+ 619              		.cfi_startproc
+ 620              		@ args = 0, pretend = 0, frame = 16
+ 621              		@ frame_needed = 1, uses_anonymous_args = 0
+ 622              		@ link register save eliminated.
+ 623 0310 80B4     		push	{r7}
+ 624              	.LCFI28:
+ 625              		.cfi_def_cfa_offset 4
+ 626              		.cfi_offset 7, -4
+ 627 0312 85B0     		sub	sp, sp, #20
+ 628              	.LCFI29:
+ 629              		.cfi_def_cfa_offset 24
+ 630 0314 00AF     		add	r7, sp, #0
+ 631              	.LCFI30:
+ 632              		.cfi_def_cfa_register 7
+ 633 0316 7860     		str	r0, [r7, #4]
+ 619:../stm32_lib/src/stm32f10x_rcc.c ****   uint32_t tmpreg = 0;
+ 634              		.loc 1 619 0
+ 635 0318 4FF00003 		mov	r3, #0
+ 636 031c FB60     		str	r3, [r7, #12]
+ 620:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 621:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_HCLK(RCC_SYSCLK));
+ 622:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg = RCC->CFGR;
+ 637              		.loc 1 622 0
+ 638 031e 4FF48053 		mov	r3, #4096
+ 639 0322 C4F20203 		movt	r3, 16386
+ 640 0326 5B68     		ldr	r3, [r3, #4]
+ 641 0328 FB60     		str	r3, [r7, #12]
+ 623:../stm32_lib/src/stm32f10x_rcc.c ****   /* Clear HPRE[3:0] bits */
+ 624:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg &= CFGR_HPRE_Reset_Mask;
+ 642              		.loc 1 624 0
+ 643 032a FB68     		ldr	r3, [r7, #12]
+ 644 032c 23F0F003 		bic	r3, r3, #240
+ 645 0330 FB60     		str	r3, [r7, #12]
+ 625:../stm32_lib/src/stm32f10x_rcc.c ****   /* Set HPRE[3:0] bits according to RCC_SYSCLK value */
+ 626:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg |= RCC_SYSCLK;
+ 646              		.loc 1 626 0
+ 647 0332 FA68     		ldr	r2, [r7, #12]
+ 648 0334 7B68     		ldr	r3, [r7, #4]
+ 649 0336 1343     		orrs	r3, r3, r2
+ 650 0338 FB60     		str	r3, [r7, #12]
+ 627:../stm32_lib/src/stm32f10x_rcc.c ****   /* Store the new value */
+ 628:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CFGR = tmpreg;
+ 651              		.loc 1 628 0
+ 652 033a 4FF48053 		mov	r3, #4096
+ 653 033e C4F20203 		movt	r3, 16386
+ 654 0342 FA68     		ldr	r2, [r7, #12]
+ 655 0344 5A60     		str	r2, [r3, #4]
+ 629:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 656              		.loc 1 629 0
+ 657 0346 07F11407 		add	r7, r7, #20
+ 658 034a BD46     		mov	sp, r7
+ 659 034c 80BC     		pop	{r7}
+ 660 034e 7047     		bx	lr
+ 661              		.cfi_endproc
+ 662              	.LFE39:
+ 664              		.align	2
+ 665              		.global	RCC_PCLK1Config
+ 666              		.thumb
+ 667              		.thumb_func
+ 669              	RCC_PCLK1Config:
+ 670              	.LFB40:
+ 630:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 631:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 632:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Configures the Low Speed APB clock (PCLK1).
+ 633:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_HCLK: defines the APB1 clock divider. This clock is derived from 
+ 634:../stm32_lib/src/stm32f10x_rcc.c ****   *   the AHB clock (HCLK).
+ 635:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be one of the following values:
+ 636:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_HCLK_Div1: APB1 clock = HCLK
+ 637:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_HCLK_Div2: APB1 clock = HCLK/2
+ 638:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_HCLK_Div4: APB1 clock = HCLK/4
+ 639:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_HCLK_Div8: APB1 clock = HCLK/8
+ 640:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_HCLK_Div16: APB1 clock = HCLK/16
+ 641:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 642:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 643:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_PCLK1Config(uint32_t RCC_HCLK)
+ 644:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 671              		.loc 1 644 0
+ 672              		.cfi_startproc
+ 673              		@ args = 0, pretend = 0, frame = 16
+ 674              		@ frame_needed = 1, uses_anonymous_args = 0
+ 675              		@ link register save eliminated.
+ 676 0350 80B4     		push	{r7}
+ 677              	.LCFI31:
+ 678              		.cfi_def_cfa_offset 4
+ 679              		.cfi_offset 7, -4
+ 680 0352 85B0     		sub	sp, sp, #20
+ 681              	.LCFI32:
+ 682              		.cfi_def_cfa_offset 24
+ 683 0354 00AF     		add	r7, sp, #0
+ 684              	.LCFI33:
+ 685              		.cfi_def_cfa_register 7
+ 686 0356 7860     		str	r0, [r7, #4]
+ 645:../stm32_lib/src/stm32f10x_rcc.c ****   uint32_t tmpreg = 0;
+ 687              		.loc 1 645 0
+ 688 0358 4FF00003 		mov	r3, #0
+ 689 035c FB60     		str	r3, [r7, #12]
+ 646:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 647:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_PCLK(RCC_HCLK));
+ 648:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg = RCC->CFGR;
+ 690              		.loc 1 648 0
+ 691 035e 4FF48053 		mov	r3, #4096
+ 692 0362 C4F20203 		movt	r3, 16386
+ 693 0366 5B68     		ldr	r3, [r3, #4]
+ 694 0368 FB60     		str	r3, [r7, #12]
+ 649:../stm32_lib/src/stm32f10x_rcc.c ****   /* Clear PPRE1[2:0] bits */
+ 650:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg &= CFGR_PPRE1_Reset_Mask;
+ 695              		.loc 1 650 0
+ 696 036a FB68     		ldr	r3, [r7, #12]
+ 697 036c 23F4E063 		bic	r3, r3, #1792
+ 698 0370 FB60     		str	r3, [r7, #12]
+ 651:../stm32_lib/src/stm32f10x_rcc.c ****   /* Set PPRE1[2:0] bits according to RCC_HCLK value */
+ 652:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg |= RCC_HCLK;
+ 699              		.loc 1 652 0
+ 700 0372 FA68     		ldr	r2, [r7, #12]
+ 701 0374 7B68     		ldr	r3, [r7, #4]
+ 702 0376 1343     		orrs	r3, r3, r2
+ 703 0378 FB60     		str	r3, [r7, #12]
+ 653:../stm32_lib/src/stm32f10x_rcc.c ****   /* Store the new value */
+ 654:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CFGR = tmpreg;
+ 704              		.loc 1 654 0
+ 705 037a 4FF48053 		mov	r3, #4096
+ 706 037e C4F20203 		movt	r3, 16386
+ 707 0382 FA68     		ldr	r2, [r7, #12]
+ 708 0384 5A60     		str	r2, [r3, #4]
+ 655:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 709              		.loc 1 655 0
+ 710 0386 07F11407 		add	r7, r7, #20
+ 711 038a BD46     		mov	sp, r7
+ 712 038c 80BC     		pop	{r7}
+ 713 038e 7047     		bx	lr
+ 714              		.cfi_endproc
+ 715              	.LFE40:
+ 717              		.align	2
+ 718              		.global	RCC_PCLK2Config
+ 719              		.thumb
+ 720              		.thumb_func
+ 722              	RCC_PCLK2Config:
+ 723              	.LFB41:
+ 656:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 657:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 658:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Configures the High Speed APB clock (PCLK2).
+ 659:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_HCLK: defines the APB2 clock divider. This clock is derived from 
+ 660:../stm32_lib/src/stm32f10x_rcc.c ****   *   the AHB clock (HCLK).
+ 661:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be one of the following values:
+ 662:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_HCLK_Div1: APB2 clock = HCLK
+ 663:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_HCLK_Div2: APB2 clock = HCLK/2
+ 664:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_HCLK_Div4: APB2 clock = HCLK/4
+ 665:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_HCLK_Div8: APB2 clock = HCLK/8
+ 666:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_HCLK_Div16: APB2 clock = HCLK/16
+ 667:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 668:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 669:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_PCLK2Config(uint32_t RCC_HCLK)
+ 670:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 724              		.loc 1 670 0
+ 725              		.cfi_startproc
+ 726              		@ args = 0, pretend = 0, frame = 16
+ 727              		@ frame_needed = 1, uses_anonymous_args = 0
+ 728              		@ link register save eliminated.
+ 729 0390 80B4     		push	{r7}
+ 730              	.LCFI34:
+ 731              		.cfi_def_cfa_offset 4
+ 732              		.cfi_offset 7, -4
+ 733 0392 85B0     		sub	sp, sp, #20
+ 734              	.LCFI35:
+ 735              		.cfi_def_cfa_offset 24
+ 736 0394 00AF     		add	r7, sp, #0
+ 737              	.LCFI36:
+ 738              		.cfi_def_cfa_register 7
+ 739 0396 7860     		str	r0, [r7, #4]
+ 671:../stm32_lib/src/stm32f10x_rcc.c ****   uint32_t tmpreg = 0;
+ 740              		.loc 1 671 0
+ 741 0398 4FF00003 		mov	r3, #0
+ 742 039c FB60     		str	r3, [r7, #12]
+ 672:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 673:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_PCLK(RCC_HCLK));
+ 674:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg = RCC->CFGR;
+ 743              		.loc 1 674 0
+ 744 039e 4FF48053 		mov	r3, #4096
+ 745 03a2 C4F20203 		movt	r3, 16386
+ 746 03a6 5B68     		ldr	r3, [r3, #4]
+ 747 03a8 FB60     		str	r3, [r7, #12]
+ 675:../stm32_lib/src/stm32f10x_rcc.c ****   /* Clear PPRE2[2:0] bits */
+ 676:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg &= CFGR_PPRE2_Reset_Mask;
+ 748              		.loc 1 676 0
+ 749 03aa FB68     		ldr	r3, [r7, #12]
+ 750 03ac 23F46053 		bic	r3, r3, #14336
+ 751 03b0 FB60     		str	r3, [r7, #12]
+ 677:../stm32_lib/src/stm32f10x_rcc.c ****   /* Set PPRE2[2:0] bits according to RCC_HCLK value */
+ 678:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg |= RCC_HCLK << 3;
+ 752              		.loc 1 678 0
+ 753 03b2 7B68     		ldr	r3, [r7, #4]
+ 754 03b4 4FEAC303 		lsl	r3, r3, #3
+ 755 03b8 FA68     		ldr	r2, [r7, #12]
+ 756 03ba 1343     		orrs	r3, r3, r2
+ 757 03bc FB60     		str	r3, [r7, #12]
+ 679:../stm32_lib/src/stm32f10x_rcc.c ****   /* Store the new value */
+ 680:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CFGR = tmpreg;
+ 758              		.loc 1 680 0
+ 759 03be 4FF48053 		mov	r3, #4096
+ 760 03c2 C4F20203 		movt	r3, 16386
+ 761 03c6 FA68     		ldr	r2, [r7, #12]
+ 762 03c8 5A60     		str	r2, [r3, #4]
+ 681:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 763              		.loc 1 681 0
+ 764 03ca 07F11407 		add	r7, r7, #20
+ 765 03ce BD46     		mov	sp, r7
+ 766 03d0 80BC     		pop	{r7}
+ 767 03d2 7047     		bx	lr
+ 768              		.cfi_endproc
+ 769              	.LFE41:
+ 771              		.align	2
+ 772              		.global	RCC_ITConfig
+ 773              		.thumb
+ 774              		.thumb_func
+ 776              	RCC_ITConfig:
+ 777              	.LFB42:
+ 682:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 683:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 684:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Enables or disables the specified RCC interrupts.
+ 685:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_IT: specifies the RCC interrupt sources to be enabled or disabled.
+ 686:../stm32_lib/src/stm32f10x_rcc.c ****   * 
+ 687:../stm32_lib/src/stm32f10x_rcc.c ****   *   For @b STM32_Connectivity_line_devices, this parameter can be any combination
+ 688:../stm32_lib/src/stm32f10x_rcc.c ****   *   of the following values        
+ 689:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_LSIRDY: LSI ready interrupt
+ 690:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_LSERDY: LSE ready interrupt
+ 691:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_HSIRDY: HSI ready interrupt
+ 692:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_HSERDY: HSE ready interrupt
+ 693:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_PLLRDY: PLL ready interrupt
+ 694:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_PLL2RDY: PLL2 ready interrupt
+ 695:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_PLL3RDY: PLL3 ready interrupt
+ 696:../stm32_lib/src/stm32f10x_rcc.c ****   * 
+ 697:../stm32_lib/src/stm32f10x_rcc.c ****   *   For @b other_STM32_devices, this parameter can be any combination of the 
+ 698:../stm32_lib/src/stm32f10x_rcc.c ****   *   following values        
+ 699:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_LSIRDY: LSI ready interrupt
+ 700:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_LSERDY: LSE ready interrupt
+ 701:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_HSIRDY: HSI ready interrupt
+ 702:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_HSERDY: HSE ready interrupt
+ 703:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_PLLRDY: PLL ready interrupt
+ 704:../stm32_lib/src/stm32f10x_rcc.c ****   *       
+ 705:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  NewState: new state of the specified RCC interrupts.
+ 706:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be: ENABLE or DISABLE.
+ 707:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 708:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 709:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_ITConfig(uint8_t RCC_IT, FunctionalState NewState)
+ 710:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 778              		.loc 1 710 0
+ 779              		.cfi_startproc
+ 780              		@ args = 0, pretend = 0, frame = 8
+ 781              		@ frame_needed = 1, uses_anonymous_args = 0
+ 782              		@ link register save eliminated.
+ 783 03d4 80B4     		push	{r7}
+ 784              	.LCFI37:
+ 785              		.cfi_def_cfa_offset 4
+ 786              		.cfi_offset 7, -4
+ 787 03d6 83B0     		sub	sp, sp, #12
+ 788              	.LCFI38:
+ 789              		.cfi_def_cfa_offset 16
+ 790 03d8 00AF     		add	r7, sp, #0
+ 791              	.LCFI39:
+ 792              		.cfi_def_cfa_register 7
+ 793 03da 0246     		mov	r2, r0
+ 794 03dc 0B46     		mov	r3, r1
+ 795 03de FA71     		strb	r2, [r7, #7]
+ 796 03e0 BB71     		strb	r3, [r7, #6]
+ 711:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 712:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_IT(RCC_IT));
+ 713:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_FUNCTIONAL_STATE(NewState));
+ 714:../stm32_lib/src/stm32f10x_rcc.c ****   if (NewState != DISABLE)
+ 797              		.loc 1 714 0
+ 798 03e2 BB79     		ldrb	r3, [r7, #6]	@ zero_extendqisi2
+ 799 03e4 002B     		cmp	r3, #0
+ 800 03e6 0ED0     		beq	.L24
+ 715:../stm32_lib/src/stm32f10x_rcc.c ****   {
+ 716:../stm32_lib/src/stm32f10x_rcc.c ****     /* Perform Byte access to RCC_CIR bits to enable the selected interrupts */
+ 717:../stm32_lib/src/stm32f10x_rcc.c ****     *(__IO uint8_t *) CIR_BYTE2_ADDRESS |= RCC_IT;
+ 801              		.loc 1 717 0
+ 802 03e8 41F20903 		movw	r3, #4105
+ 803 03ec C4F20203 		movt	r3, 16386
+ 804 03f0 41F20902 		movw	r2, #4105
+ 805 03f4 C4F20202 		movt	r2, 16386
+ 806 03f8 1278     		ldrb	r2, [r2, #0]
+ 807 03fa D1B2     		uxtb	r1, r2
+ 808 03fc FA79     		ldrb	r2, [r7, #7]
+ 809 03fe 0A43     		orrs	r2, r2, r1
+ 810 0400 D2B2     		uxtb	r2, r2
+ 811 0402 1A70     		strb	r2, [r3, #0]
+ 812 0404 10E0     		b	.L23
+ 813              	.L24:
+ 718:../stm32_lib/src/stm32f10x_rcc.c ****   }
+ 719:../stm32_lib/src/stm32f10x_rcc.c ****   else
+ 720:../stm32_lib/src/stm32f10x_rcc.c ****   {
+ 721:../stm32_lib/src/stm32f10x_rcc.c ****     /* Perform Byte access to RCC_CIR bits to disable the selected interrupts */
+ 722:../stm32_lib/src/stm32f10x_rcc.c ****     *(__IO uint8_t *) CIR_BYTE2_ADDRESS &= (uint8_t)~RCC_IT;
+ 814              		.loc 1 722 0
+ 815 0406 41F20903 		movw	r3, #4105
+ 816 040a C4F20203 		movt	r3, 16386
+ 817 040e 41F20902 		movw	r2, #4105
+ 818 0412 C4F20202 		movt	r2, 16386
+ 819 0416 1278     		ldrb	r2, [r2, #0]
+ 820 0418 D1B2     		uxtb	r1, r2
+ 821 041a FA79     		ldrb	r2, [r7, #7]
+ 822 041c 6FEA0202 		mvn	r2, r2
+ 823 0420 D2B2     		uxtb	r2, r2
+ 824 0422 0A40     		ands	r2, r2, r1
+ 825 0424 D2B2     		uxtb	r2, r2
+ 826 0426 1A70     		strb	r2, [r3, #0]
+ 827              	.L23:
+ 723:../stm32_lib/src/stm32f10x_rcc.c ****   }
+ 724:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 828              		.loc 1 724 0
+ 829 0428 07F10C07 		add	r7, r7, #12
+ 830 042c BD46     		mov	sp, r7
+ 831 042e 80BC     		pop	{r7}
+ 832 0430 7047     		bx	lr
+ 833              		.cfi_endproc
+ 834              	.LFE42:
+ 836 0432 00BF     		.align	2
+ 837              		.global	RCC_USBCLKConfig
+ 838              		.thumb
+ 839              		.thumb_func
+ 841              	RCC_USBCLKConfig:
+ 842              	.LFB43:
+ 725:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 726:../stm32_lib/src/stm32f10x_rcc.c **** #ifndef STM32F10X_CL
+ 727:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 728:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Configures the USB clock (USBCLK).
+ 729:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_USBCLKSource: specifies the USB clock source. This clock is 
+ 730:../stm32_lib/src/stm32f10x_rcc.c ****   *   derived from the PLL output.
+ 731:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be one of the following values:
+ 732:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_USBCLKSource_PLLCLK_1Div5: PLL clock divided by 1,5 selected as USB 
+ 733:../stm32_lib/src/stm32f10x_rcc.c ****   *                                     clock source
+ 734:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_USBCLKSource_PLLCLK_Div1: PLL clock selected as USB clock source
+ 735:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 736:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 737:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_USBCLKConfig(uint32_t RCC_USBCLKSource)
+ 738:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 843              		.loc 1 738 0
+ 844              		.cfi_startproc
+ 845              		@ args = 0, pretend = 0, frame = 8
+ 846              		@ frame_needed = 1, uses_anonymous_args = 0
+ 847              		@ link register save eliminated.
+ 848 0434 80B4     		push	{r7}
+ 849              	.LCFI40:
+ 850              		.cfi_def_cfa_offset 4
+ 851              		.cfi_offset 7, -4
+ 852 0436 83B0     		sub	sp, sp, #12
+ 853              	.LCFI41:
+ 854              		.cfi_def_cfa_offset 16
+ 855 0438 00AF     		add	r7, sp, #0
+ 856              	.LCFI42:
+ 857              		.cfi_def_cfa_register 7
+ 858 043a 7860     		str	r0, [r7, #4]
+ 739:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 740:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_USBCLK_SOURCE(RCC_USBCLKSource));
+ 741:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 742:../stm32_lib/src/stm32f10x_rcc.c ****   *(__IO uint32_t *) CFGR_USBPRE_BB = RCC_USBCLKSource;
+ 859              		.loc 1 742 0
+ 860 043c 4FF0D803 		mov	r3, #216
+ 861 0440 C4F24223 		movt	r3, 16962
+ 862 0444 7A68     		ldr	r2, [r7, #4]
+ 863 0446 1A60     		str	r2, [r3, #0]
+ 743:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 864              		.loc 1 743 0
+ 865 0448 07F10C07 		add	r7, r7, #12
+ 866 044c BD46     		mov	sp, r7
+ 867 044e 80BC     		pop	{r7}
+ 868 0450 7047     		bx	lr
+ 869              		.cfi_endproc
+ 870              	.LFE43:
+ 872 0452 00BF     		.align	2
+ 873              		.global	RCC_ADCCLKConfig
+ 874              		.thumb
+ 875              		.thumb_func
+ 877              	RCC_ADCCLKConfig:
+ 878              	.LFB44:
+ 744:../stm32_lib/src/stm32f10x_rcc.c **** #else
+ 745:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 746:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Configures the USB OTG FS clock (OTGFSCLK).
+ 747:../stm32_lib/src/stm32f10x_rcc.c ****   *   This function applies only to STM32 Connectivity line devices.
+ 748:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_OTGFSCLKSource: specifies the USB OTG FS clock source.
+ 749:../stm32_lib/src/stm32f10x_rcc.c ****   *   This clock is derived from the PLL output.
+ 750:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be one of the following values:
+ 751:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg  RCC_OTGFSCLKSource_PLLVCO_Div3: PLL VCO clock divided by 2 selected as USB OTG FS clo
+ 752:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg  RCC_OTGFSCLKSource_PLLVCO_Div2: PLL VCO clock divided by 2 selected as USB OTG FS clo
+ 753:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 754:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 755:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_OTGFSCLKConfig(uint32_t RCC_OTGFSCLKSource)
+ 756:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 757:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 758:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_OTGFSCLK_SOURCE(RCC_OTGFSCLKSource));
+ 759:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 760:../stm32_lib/src/stm32f10x_rcc.c ****   *(__IO uint32_t *) CFGR_OTGFSPRE_BB = RCC_OTGFSCLKSource;
+ 761:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 762:../stm32_lib/src/stm32f10x_rcc.c **** #endif /* STM32F10X_CL */ 
+ 763:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 764:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 765:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Configures the ADC clock (ADCCLK).
+ 766:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_PCLK2: defines the ADC clock divider. This clock is derived from 
+ 767:../stm32_lib/src/stm32f10x_rcc.c ****   *   the APB2 clock (PCLK2).
+ 768:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be one of the following values:
+ 769:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_PCLK2_Div2: ADC clock = PCLK2/2
+ 770:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_PCLK2_Div4: ADC clock = PCLK2/4
+ 771:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_PCLK2_Div6: ADC clock = PCLK2/6
+ 772:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_PCLK2_Div8: ADC clock = PCLK2/8
+ 773:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 774:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 775:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_ADCCLKConfig(uint32_t RCC_PCLK2)
+ 776:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 879              		.loc 1 776 0
+ 880              		.cfi_startproc
+ 881              		@ args = 0, pretend = 0, frame = 16
+ 882              		@ frame_needed = 1, uses_anonymous_args = 0
+ 883              		@ link register save eliminated.
+ 884 0454 80B4     		push	{r7}
+ 885              	.LCFI43:
+ 886              		.cfi_def_cfa_offset 4
+ 887              		.cfi_offset 7, -4
+ 888 0456 85B0     		sub	sp, sp, #20
+ 889              	.LCFI44:
+ 890              		.cfi_def_cfa_offset 24
+ 891 0458 00AF     		add	r7, sp, #0
+ 892              	.LCFI45:
+ 893              		.cfi_def_cfa_register 7
+ 894 045a 7860     		str	r0, [r7, #4]
+ 777:../stm32_lib/src/stm32f10x_rcc.c ****   uint32_t tmpreg = 0;
+ 895              		.loc 1 777 0
+ 896 045c 4FF00003 		mov	r3, #0
+ 897 0460 FB60     		str	r3, [r7, #12]
+ 778:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 779:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_ADCCLK(RCC_PCLK2));
+ 780:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg = RCC->CFGR;
+ 898              		.loc 1 780 0
+ 899 0462 4FF48053 		mov	r3, #4096
+ 900 0466 C4F20203 		movt	r3, 16386
+ 901 046a 5B68     		ldr	r3, [r3, #4]
+ 902 046c FB60     		str	r3, [r7, #12]
+ 781:../stm32_lib/src/stm32f10x_rcc.c ****   /* Clear ADCPRE[1:0] bits */
+ 782:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg &= CFGR_ADCPRE_Reset_Mask;
+ 903              		.loc 1 782 0
+ 904 046e FB68     		ldr	r3, [r7, #12]
+ 905 0470 23F44043 		bic	r3, r3, #49152
+ 906 0474 FB60     		str	r3, [r7, #12]
+ 783:../stm32_lib/src/stm32f10x_rcc.c ****   /* Set ADCPRE[1:0] bits according to RCC_PCLK2 value */
+ 784:../stm32_lib/src/stm32f10x_rcc.c ****   tmpreg |= RCC_PCLK2;
+ 907              		.loc 1 784 0
+ 908 0476 FA68     		ldr	r2, [r7, #12]
+ 909 0478 7B68     		ldr	r3, [r7, #4]
+ 910 047a 1343     		orrs	r3, r3, r2
+ 911 047c FB60     		str	r3, [r7, #12]
+ 785:../stm32_lib/src/stm32f10x_rcc.c ****   /* Store the new value */
+ 786:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CFGR = tmpreg;
+ 912              		.loc 1 786 0
+ 913 047e 4FF48053 		mov	r3, #4096
+ 914 0482 C4F20203 		movt	r3, 16386
+ 915 0486 FA68     		ldr	r2, [r7, #12]
+ 916 0488 5A60     		str	r2, [r3, #4]
+ 787:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 917              		.loc 1 787 0
+ 918 048a 07F11407 		add	r7, r7, #20
+ 919 048e BD46     		mov	sp, r7
+ 920 0490 80BC     		pop	{r7}
+ 921 0492 7047     		bx	lr
+ 922              		.cfi_endproc
+ 923              	.LFE44:
+ 925              		.align	2
+ 926              		.global	RCC_LSEConfig
+ 927              		.thumb
+ 928              		.thumb_func
+ 930              	RCC_LSEConfig:
+ 931              	.LFB45:
+ 788:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 789:../stm32_lib/src/stm32f10x_rcc.c **** #ifdef STM32F10X_CL
+ 790:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 791:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Configures the I2S2 clock source(I2S2CLK).
+ 792:../stm32_lib/src/stm32f10x_rcc.c ****   * @note
+ 793:../stm32_lib/src/stm32f10x_rcc.c ****   *   - This function must be called before enabling I2S2 APB clock.
+ 794:../stm32_lib/src/stm32f10x_rcc.c ****   *   - This function applies only to STM32 Connectivity line devices.
+ 795:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_I2S2CLKSource: specifies the I2S2 clock source.
+ 796:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be one of the following values:
+ 797:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_I2S2CLKSource_SYSCLK: system clock selected as I2S2 clock entry
+ 798:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_I2S2CLKSource_PLL3_VCO: PLL3 VCO clock selected as I2S2 clock entry
+ 799:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 800:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 801:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_I2S2CLKConfig(uint32_t RCC_I2S2CLKSource)
+ 802:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 803:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 804:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_I2S2CLK_SOURCE(RCC_I2S2CLKSource));
+ 805:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 806:../stm32_lib/src/stm32f10x_rcc.c ****   *(__IO uint32_t *) CFGR2_I2S2SRC_BB = RCC_I2S2CLKSource;
+ 807:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 808:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 809:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 810:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Configures the I2S3 clock source(I2S2CLK).
+ 811:../stm32_lib/src/stm32f10x_rcc.c ****   * @note
+ 812:../stm32_lib/src/stm32f10x_rcc.c ****   *   - This function must be called before enabling I2S3 APB clock.
+ 813:../stm32_lib/src/stm32f10x_rcc.c ****   *   - This function applies only to STM32 Connectivity line devices.
+ 814:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_I2S3CLKSource: specifies the I2S3 clock source.
+ 815:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be one of the following values:
+ 816:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_I2S3CLKSource_SYSCLK: system clock selected as I2S3 clock entry
+ 817:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_I2S3CLKSource_PLL3_VCO: PLL3 VCO clock selected as I2S3 clock entry
+ 818:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 819:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 820:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_I2S3CLKConfig(uint32_t RCC_I2S3CLKSource)
+ 821:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 822:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 823:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_I2S3CLK_SOURCE(RCC_I2S3CLKSource));
+ 824:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 825:../stm32_lib/src/stm32f10x_rcc.c ****   *(__IO uint32_t *) CFGR2_I2S3SRC_BB = RCC_I2S3CLKSource;
+ 826:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 827:../stm32_lib/src/stm32f10x_rcc.c **** #endif /* STM32F10X_CL */
+ 828:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 829:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 830:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Configures the External Low Speed oscillator (LSE).
+ 831:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_LSE: specifies the new state of the LSE.
+ 832:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be one of the following values:
+ 833:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_LSE_OFF: LSE oscillator OFF
+ 834:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_LSE_ON: LSE oscillator ON
+ 835:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_LSE_Bypass: LSE oscillator bypassed with external clock
+ 836:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 837:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 838:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_LSEConfig(uint8_t RCC_LSE)
+ 839:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 932              		.loc 1 839 0
+ 933              		.cfi_startproc
+ 934              		@ args = 0, pretend = 0, frame = 8
+ 935              		@ frame_needed = 1, uses_anonymous_args = 0
+ 936              		@ link register save eliminated.
+ 937 0494 80B4     		push	{r7}
+ 938              	.LCFI46:
+ 939              		.cfi_def_cfa_offset 4
+ 940              		.cfi_offset 7, -4
+ 941 0496 83B0     		sub	sp, sp, #12
+ 942              	.LCFI47:
+ 943              		.cfi_def_cfa_offset 16
+ 944 0498 00AF     		add	r7, sp, #0
+ 945              	.LCFI48:
+ 946              		.cfi_def_cfa_register 7
+ 947 049a 0346     		mov	r3, r0
+ 948 049c FB71     		strb	r3, [r7, #7]
+ 840:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 841:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_LSE(RCC_LSE));
+ 842:../stm32_lib/src/stm32f10x_rcc.c ****   /* Reset LSEON and LSEBYP bits before configuring the LSE ------------------*/
+ 843:../stm32_lib/src/stm32f10x_rcc.c ****   /* Reset LSEON bit */
+ 844:../stm32_lib/src/stm32f10x_rcc.c ****   *(__IO uint8_t *) BDCR_ADDRESS = RCC_LSE_OFF;
+ 949              		.loc 1 844 0
+ 950 049e 4FF48153 		mov	r3, #4128
+ 951 04a2 C4F20203 		movt	r3, 16386
+ 952 04a6 4FF00002 		mov	r2, #0
+ 953 04aa 1A70     		strb	r2, [r3, #0]
+ 845:../stm32_lib/src/stm32f10x_rcc.c ****   /* Reset LSEBYP bit */
+ 846:../stm32_lib/src/stm32f10x_rcc.c ****   *(__IO uint8_t *) BDCR_ADDRESS = RCC_LSE_OFF;
+ 954              		.loc 1 846 0
+ 955 04ac 4FF48153 		mov	r3, #4128
+ 956 04b0 C4F20203 		movt	r3, 16386
+ 957 04b4 4FF00002 		mov	r2, #0
+ 958 04b8 1A70     		strb	r2, [r3, #0]
+ 847:../stm32_lib/src/stm32f10x_rcc.c ****   /* Configure LSE (RCC_LSE_OFF is already covered by the code section above) */
+ 848:../stm32_lib/src/stm32f10x_rcc.c ****   switch(RCC_LSE)
+ 959              		.loc 1 848 0
+ 960 04ba FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 961 04bc 012B     		cmp	r3, #1
+ 962 04be 02D0     		beq	.L30
+ 963 04c0 042B     		cmp	r3, #4
+ 964 04c2 08D0     		beq	.L31
+ 965 04c4 0FE0     		b	.L33
+ 966              	.L30:
+ 849:../stm32_lib/src/stm32f10x_rcc.c ****   {
+ 850:../stm32_lib/src/stm32f10x_rcc.c ****     case RCC_LSE_ON:
+ 851:../stm32_lib/src/stm32f10x_rcc.c ****       /* Set LSEON bit */
+ 852:../stm32_lib/src/stm32f10x_rcc.c ****       *(__IO uint8_t *) BDCR_ADDRESS = RCC_LSE_ON;
+ 967              		.loc 1 852 0
+ 968 04c6 4FF48153 		mov	r3, #4128
+ 969 04ca C4F20203 		movt	r3, 16386
+ 970 04ce 4FF00102 		mov	r2, #1
+ 971 04d2 1A70     		strb	r2, [r3, #0]
+ 853:../stm32_lib/src/stm32f10x_rcc.c ****       break;
+ 972              		.loc 1 853 0
+ 973 04d4 08E0     		b	.L28
+ 974              	.L31:
+ 854:../stm32_lib/src/stm32f10x_rcc.c ****       
+ 855:../stm32_lib/src/stm32f10x_rcc.c ****     case RCC_LSE_Bypass:
+ 856:../stm32_lib/src/stm32f10x_rcc.c ****       /* Set LSEBYP and LSEON bits */
+ 857:../stm32_lib/src/stm32f10x_rcc.c ****       *(__IO uint8_t *) BDCR_ADDRESS = RCC_LSE_Bypass | RCC_LSE_ON;
+ 975              		.loc 1 857 0
+ 976 04d6 4FF48153 		mov	r3, #4128
+ 977 04da C4F20203 		movt	r3, 16386
+ 978 04de 4FF00502 		mov	r2, #5
+ 979 04e2 1A70     		strb	r2, [r3, #0]
+ 858:../stm32_lib/src/stm32f10x_rcc.c ****       break;            
+ 980              		.loc 1 858 0
+ 981 04e4 00E0     		b	.L28
+ 982              	.L33:
+ 859:../stm32_lib/src/stm32f10x_rcc.c ****       
+ 860:../stm32_lib/src/stm32f10x_rcc.c ****     default:
+ 861:../stm32_lib/src/stm32f10x_rcc.c ****       break;      
+ 983              		.loc 1 861 0
+ 984 04e6 00BF     		nop
+ 985              	.L28:
+ 862:../stm32_lib/src/stm32f10x_rcc.c ****   }
+ 863:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 986              		.loc 1 863 0
+ 987 04e8 07F10C07 		add	r7, r7, #12
+ 988 04ec BD46     		mov	sp, r7
+ 989 04ee 80BC     		pop	{r7}
+ 990 04f0 7047     		bx	lr
+ 991              		.cfi_endproc
+ 992              	.LFE45:
+ 994 04f2 00BF     		.align	2
+ 995              		.global	RCC_LSICmd
+ 996              		.thumb
+ 997              		.thumb_func
+ 999              	RCC_LSICmd:
+ 1000              	.LFB46:
+ 864:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 865:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 866:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Enables or disables the Internal Low Speed oscillator (LSI).
+ 867:../stm32_lib/src/stm32f10x_rcc.c ****   * @note   LSI can not be disabled if the IWDG is running.
+ 868:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  NewState: new state of the LSI. This parameter can be: ENABLE or DISABLE.
+ 869:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 870:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 871:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_LSICmd(FunctionalState NewState)
+ 872:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 1001              		.loc 1 872 0
+ 1002              		.cfi_startproc
+ 1003              		@ args = 0, pretend = 0, frame = 8
+ 1004              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1005              		@ link register save eliminated.
+ 1006 04f4 80B4     		push	{r7}
+ 1007              	.LCFI49:
+ 1008              		.cfi_def_cfa_offset 4
+ 1009              		.cfi_offset 7, -4
+ 1010 04f6 83B0     		sub	sp, sp, #12
+ 1011              	.LCFI50:
+ 1012              		.cfi_def_cfa_offset 16
+ 1013 04f8 00AF     		add	r7, sp, #0
+ 1014              	.LCFI51:
+ 1015              		.cfi_def_cfa_register 7
+ 1016 04fa 0346     		mov	r3, r0
+ 1017 04fc FB71     		strb	r3, [r7, #7]
+ 873:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 874:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_FUNCTIONAL_STATE(NewState));
+ 875:../stm32_lib/src/stm32f10x_rcc.c ****   *(__IO uint32_t *) CSR_LSION_BB = (uint32_t)NewState;
+ 1018              		.loc 1 875 0
+ 1019 04fe 4FF49063 		mov	r3, #1152
+ 1020 0502 C4F24223 		movt	r3, 16962
+ 1021 0506 FA79     		ldrb	r2, [r7, #7]	@ zero_extendqisi2
+ 1022 0508 1A60     		str	r2, [r3, #0]
+ 876:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 1023              		.loc 1 876 0
+ 1024 050a 07F10C07 		add	r7, r7, #12
+ 1025 050e BD46     		mov	sp, r7
+ 1026 0510 80BC     		pop	{r7}
+ 1027 0512 7047     		bx	lr
+ 1028              		.cfi_endproc
+ 1029              	.LFE46:
+ 1031              		.align	2
+ 1032              		.global	RCC_RTCCLKConfig
+ 1033              		.thumb
+ 1034              		.thumb_func
+ 1036              	RCC_RTCCLKConfig:
+ 1037              	.LFB47:
+ 877:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 878:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 879:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Configures the RTC clock (RTCCLK).
+ 880:../stm32_lib/src/stm32f10x_rcc.c ****   * @note   Once the RTC clock is selected it can’t be changed unless the Backup domain is reset.
+ 881:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_RTCCLKSource: specifies the RTC clock source.
+ 882:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be one of the following values:
+ 883:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_RTCCLKSource_LSE: LSE selected as RTC clock
+ 884:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_RTCCLKSource_LSI: LSI selected as RTC clock
+ 885:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_RTCCLKSource_HSE_Div128: HSE clock divided by 128 selected as RTC clock
+ 886:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 887:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 888:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_RTCCLKConfig(uint32_t RCC_RTCCLKSource)
+ 889:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 1038              		.loc 1 889 0
+ 1039              		.cfi_startproc
+ 1040              		@ args = 0, pretend = 0, frame = 8
+ 1041              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1042              		@ link register save eliminated.
+ 1043 0514 80B4     		push	{r7}
+ 1044              	.LCFI52:
+ 1045              		.cfi_def_cfa_offset 4
+ 1046              		.cfi_offset 7, -4
+ 1047 0516 83B0     		sub	sp, sp, #12
+ 1048              	.LCFI53:
+ 1049              		.cfi_def_cfa_offset 16
+ 1050 0518 00AF     		add	r7, sp, #0
+ 1051              	.LCFI54:
+ 1052              		.cfi_def_cfa_register 7
+ 1053 051a 7860     		str	r0, [r7, #4]
+ 890:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 891:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_RTCCLK_SOURCE(RCC_RTCCLKSource));
+ 892:../stm32_lib/src/stm32f10x_rcc.c ****   /* Select the RTC clock source */
+ 893:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->BDCR |= RCC_RTCCLKSource;
+ 1054              		.loc 1 893 0
+ 1055 051c 4FF48053 		mov	r3, #4096
+ 1056 0520 C4F20203 		movt	r3, 16386
+ 1057 0524 4FF48052 		mov	r2, #4096
+ 1058 0528 C4F20202 		movt	r2, 16386
+ 1059 052c 116A     		ldr	r1, [r2, #32]
+ 1060 052e 7A68     		ldr	r2, [r7, #4]
+ 1061 0530 0A43     		orrs	r2, r2, r1
+ 1062 0532 1A62     		str	r2, [r3, #32]
+ 894:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 1063              		.loc 1 894 0
+ 1064 0534 07F10C07 		add	r7, r7, #12
+ 1065 0538 BD46     		mov	sp, r7
+ 1066 053a 80BC     		pop	{r7}
+ 1067 053c 7047     		bx	lr
+ 1068              		.cfi_endproc
+ 1069              	.LFE47:
+ 1071 053e 00BF     		.align	2
+ 1072              		.global	RCC_RTCCLKCmd
+ 1073              		.thumb
+ 1074              		.thumb_func
+ 1076              	RCC_RTCCLKCmd:
+ 1077              	.LFB48:
+ 895:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 896:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 897:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Enables or disables the RTC clock.
+ 898:../stm32_lib/src/stm32f10x_rcc.c ****   * @note   This function must be used only after the RTC clock was selected using the RCC_RTCCLKCo
+ 899:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  NewState: new state of the RTC clock. This parameter can be: ENABLE or DISABLE.
+ 900:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 901:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 902:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_RTCCLKCmd(FunctionalState NewState)
+ 903:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 1078              		.loc 1 903 0
+ 1079              		.cfi_startproc
+ 1080              		@ args = 0, pretend = 0, frame = 8
+ 1081              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1082              		@ link register save eliminated.
+ 1083 0540 80B4     		push	{r7}
+ 1084              	.LCFI55:
+ 1085              		.cfi_def_cfa_offset 4
+ 1086              		.cfi_offset 7, -4
+ 1087 0542 83B0     		sub	sp, sp, #12
+ 1088              	.LCFI56:
+ 1089              		.cfi_def_cfa_offset 16
+ 1090 0544 00AF     		add	r7, sp, #0
+ 1091              	.LCFI57:
+ 1092              		.cfi_def_cfa_register 7
+ 1093 0546 0346     		mov	r3, r0
+ 1094 0548 FB71     		strb	r3, [r7, #7]
+ 904:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+ 905:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_FUNCTIONAL_STATE(NewState));
+ 906:../stm32_lib/src/stm32f10x_rcc.c ****   *(__IO uint32_t *) BDCR_RTCEN_BB = (uint32_t)NewState;
+ 1095              		.loc 1 906 0
+ 1096 054a 40F23C43 		movw	r3, #1084
+ 1097 054e C4F24223 		movt	r3, 16962
+ 1098 0552 FA79     		ldrb	r2, [r7, #7]	@ zero_extendqisi2
+ 1099 0554 1A60     		str	r2, [r3, #0]
+ 907:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 1100              		.loc 1 907 0
+ 1101 0556 07F10C07 		add	r7, r7, #12
+ 1102 055a BD46     		mov	sp, r7
+ 1103 055c 80BC     		pop	{r7}
+ 1104 055e 7047     		bx	lr
+ 1105              		.cfi_endproc
+ 1106              	.LFE48:
+ 1108              		.align	2
+ 1109              		.global	RCC_GetClocksFreq
+ 1110              		.thumb
+ 1111              		.thumb_func
+ 1113              	RCC_GetClocksFreq:
+ 1114              	.LFB49:
+ 908:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 909:../stm32_lib/src/stm32f10x_rcc.c **** /**
+ 910:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Returns the frequencies of different on chip clocks.
+ 911:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_Clocks: pointer to a RCC_ClocksTypeDef structure which will hold
+ 912:../stm32_lib/src/stm32f10x_rcc.c ****   *   the clocks frequencies.
+ 913:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+ 914:../stm32_lib/src/stm32f10x_rcc.c ****   */
+ 915:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_GetClocksFreq(RCC_ClocksTypeDef* RCC_Clocks)
+ 916:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 1115              		.loc 1 916 0
+ 1116              		.cfi_startproc
+ 1117              		@ args = 0, pretend = 0, frame = 32
+ 1118              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1119              		@ link register save eliminated.
+ 1120 0560 80B4     		push	{r7}
+ 1121              	.LCFI58:
+ 1122              		.cfi_def_cfa_offset 4
+ 1123              		.cfi_offset 7, -4
+ 1124 0562 89B0     		sub	sp, sp, #36
+ 1125              	.LCFI59:
+ 1126              		.cfi_def_cfa_offset 40
+ 1127 0564 00AF     		add	r7, sp, #0
+ 1128              	.LCFI60:
+ 1129              		.cfi_def_cfa_register 7
+ 1130 0566 7860     		str	r0, [r7, #4]
+ 917:../stm32_lib/src/stm32f10x_rcc.c ****   uint32_t tmp = 0, pllmull = 0, pllsource = 0, presc = 0;
+ 1131              		.loc 1 917 0
+ 1132 0568 4FF00003 		mov	r3, #0
+ 1133 056c FB61     		str	r3, [r7, #28]
+ 1134 056e 4FF00003 		mov	r3, #0
+ 1135 0572 BB61     		str	r3, [r7, #24]
+ 1136 0574 4FF00003 		mov	r3, #0
+ 1137 0578 7B61     		str	r3, [r7, #20]
+ 1138 057a 4FF00003 		mov	r3, #0
+ 1139 057e 3B61     		str	r3, [r7, #16]
+ 918:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 919:../stm32_lib/src/stm32f10x_rcc.c **** #ifdef  STM32F10X_CL
+ 920:../stm32_lib/src/stm32f10x_rcc.c ****   uint32_t prediv1source = 0, prediv1factor = 0, prediv2factor = 0, pll2mull = 0;
+ 921:../stm32_lib/src/stm32f10x_rcc.c **** #endif /* STM32F10X_CL */
+ 922:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 923:../stm32_lib/src/stm32f10x_rcc.c **** #if defined (STM32F10X_LD_VL) || defined (STM32F10X_MD_VL)
+ 924:../stm32_lib/src/stm32f10x_rcc.c ****   uint32_t prediv1factor = 0;
+ 1140              		.loc 1 924 0
+ 1141 0580 4FF00003 		mov	r3, #0
+ 1142 0584 FB60     		str	r3, [r7, #12]
+ 925:../stm32_lib/src/stm32f10x_rcc.c **** #endif
+ 926:../stm32_lib/src/stm32f10x_rcc.c ****     
+ 927:../stm32_lib/src/stm32f10x_rcc.c ****   /* Get SYSCLK source -------------------------------------------------------*/
+ 928:../stm32_lib/src/stm32f10x_rcc.c ****   tmp = RCC->CFGR & CFGR_SWS_Mask;
+ 1143              		.loc 1 928 0
+ 1144 0586 4FF48053 		mov	r3, #4096
+ 1145 058a C4F20203 		movt	r3, 16386
+ 1146 058e 5B68     		ldr	r3, [r3, #4]
+ 1147 0590 03F00C03 		and	r3, r3, #12
+ 1148 0594 FB61     		str	r3, [r7, #28]
+ 929:../stm32_lib/src/stm32f10x_rcc.c ****   
+ 930:../stm32_lib/src/stm32f10x_rcc.c ****   switch (tmp)
+ 1149              		.loc 1 930 0
+ 1150 0596 FB69     		ldr	r3, [r7, #28]
+ 1151 0598 042B     		cmp	r3, #4
+ 1152 059a 0AD0     		beq	.L40
+ 1153 059c 082B     		cmp	r3, #8
+ 1154 059e 0FD0     		beq	.L41
+ 1155 05a0 002B     		cmp	r3, #0
+ 1156 05a2 47D1     		bne	.L45
+ 1157              	.L39:
+ 931:../stm32_lib/src/stm32f10x_rcc.c ****   {
+ 932:../stm32_lib/src/stm32f10x_rcc.c ****     case 0x00:  /* HSI used as system clock */
+ 933:../stm32_lib/src/stm32f10x_rcc.c ****       RCC_Clocks->SYSCLK_Frequency = HSI_Value;
+ 1158              		.loc 1 933 0
+ 1159 05a4 7A68     		ldr	r2, [r7, #4]
+ 1160 05a6 4FF49053 		mov	r3, #4608
+ 1161 05aa C0F27A03 		movt	r3, 122
+ 1162 05ae 1360     		str	r3, [r2, #0]
+ 934:../stm32_lib/src/stm32f10x_rcc.c ****       break;
+ 1163              		.loc 1 934 0
+ 1164 05b0 47E0     		b	.L42
+ 1165              	.L40:
+ 935:../stm32_lib/src/stm32f10x_rcc.c ****     case 0x04:  /* HSE used as system clock */
+ 936:../stm32_lib/src/stm32f10x_rcc.c ****       RCC_Clocks->SYSCLK_Frequency = HSE_Value;
+ 1166              		.loc 1 936 0
+ 1167 05b2 7A68     		ldr	r2, [r7, #4]
+ 1168 05b4 4FF49053 		mov	r3, #4608
+ 1169 05b8 C0F27A03 		movt	r3, 122
+ 1170 05bc 1360     		str	r3, [r2, #0]
+ 937:../stm32_lib/src/stm32f10x_rcc.c ****       break;
+ 1171              		.loc 1 937 0
+ 1172 05be 40E0     		b	.L42
+ 1173              	.L41:
+ 938:../stm32_lib/src/stm32f10x_rcc.c ****     case 0x08:  /* PLL used as system clock */
+ 939:../stm32_lib/src/stm32f10x_rcc.c **** 
+ 940:../stm32_lib/src/stm32f10x_rcc.c ****       /* Get PLL clock source and multiplication factor ----------------------*/
+ 941:../stm32_lib/src/stm32f10x_rcc.c ****       pllmull = RCC->CFGR & CFGR_PLLMull_Mask;
+ 1174              		.loc 1 941 0
+ 1175 05c0 4FF48053 		mov	r3, #4096
+ 1176 05c4 C4F20203 		movt	r3, 16386
+ 1177 05c8 5B68     		ldr	r3, [r3, #4]
+ 1178 05ca 03F47013 		and	r3, r3, #3932160
+ 1179 05ce BB61     		str	r3, [r7, #24]
+ 942:../stm32_lib/src/stm32f10x_rcc.c ****       pllsource = RCC->CFGR & CFGR_PLLSRC_Mask;
+ 1180              		.loc 1 942 0
+ 1181 05d0 4FF48053 		mov	r3, #4096
+ 1182 05d4 C4F20203 		movt	r3, 16386
+ 1183 05d8 5B68     		ldr	r3, [r3, #4]
+ 1184 05da 03F48033 		and	r3, r3, #65536
+ 1185 05de 7B61     		str	r3, [r7, #20]
+ 943:../stm32_lib/src/stm32f10x_rcc.c ****       
+ 944:../stm32_lib/src/stm32f10x_rcc.c **** #ifndef STM32F10X_CL      
+ 945:../stm32_lib/src/stm32f10x_rcc.c ****       pllmull = ( pllmull >> 18) + 2;
+ 1186              		.loc 1 945 0
+ 1187 05e0 BB69     		ldr	r3, [r7, #24]
+ 1188 05e2 4FEA9343 		lsr	r3, r3, #18
+ 1189 05e6 03F10203 		add	r3, r3, #2
+ 1190 05ea BB61     		str	r3, [r7, #24]
+ 946:../stm32_lib/src/stm32f10x_rcc.c ****       
+ 947:../stm32_lib/src/stm32f10x_rcc.c ****       if (pllsource == 0x00)
+ 1191              		.loc 1 947 0
+ 1192 05ec 7B69     		ldr	r3, [r7, #20]
+ 1193 05ee 002B     		cmp	r3, #0
+ 1194 05f0 09D1     		bne	.L43
+ 948:../stm32_lib/src/stm32f10x_rcc.c ****       {/* HSI oscillator clock divided by 2 selected as PLL clock entry */
+ 949:../stm32_lib/src/stm32f10x_rcc.c ****         RCC_Clocks->SYSCLK_Frequency = (HSI_Value >> 1) * pllmull;
+ 1195              		.loc 1 949 0
+ 1196 05f2 BA69     		ldr	r2, [r7, #24]
+ 1197 05f4 4FF41063 		mov	r3, #2304
+ 1198 05f8 C0F23D03 		movt	r3, 61
+ 1199 05fc 03FB02F2 		mul	r2, r3, r2
+ 1200 0600 7B68     		ldr	r3, [r7, #4]
+ 1201 0602 1A60     		str	r2, [r3, #0]
+ 950:../stm32_lib/src/stm32f10x_rcc.c ****       }
+ 951:../stm32_lib/src/stm32f10x_rcc.c ****       else
+ 952:../stm32_lib/src/stm32f10x_rcc.c ****       {
+ 953:../stm32_lib/src/stm32f10x_rcc.c ****  #if defined (STM32F10X_LD_VL) || defined (STM32F10X_MD_VL)
+ 954:../stm32_lib/src/stm32f10x_rcc.c ****        prediv1factor = (RCC->CFGR2 & CFGR2_PREDIV1) + 1;
+ 955:../stm32_lib/src/stm32f10x_rcc.c ****        /* HSE oscillator clock selected as PREDIV1 clock entry */
+ 956:../stm32_lib/src/stm32f10x_rcc.c ****        RCC_Clocks->SYSCLK_Frequency = (HSE_Value / prediv1factor) * pllmull; 
+ 957:../stm32_lib/src/stm32f10x_rcc.c ****  #else
+ 958:../stm32_lib/src/stm32f10x_rcc.c ****         /* HSE selected as PLL clock entry */
+ 959:../stm32_lib/src/stm32f10x_rcc.c ****         if ((RCC->CFGR & CFGR_PLLXTPRE_Mask) != (uint32_t)RESET)
+ 960:../stm32_lib/src/stm32f10x_rcc.c ****         {/* HSE oscillator clock divided by 2 */
+ 961:../stm32_lib/src/stm32f10x_rcc.c ****           RCC_Clocks->SYSCLK_Frequency = (HSE_Value >> 1) * pllmull;
+ 962:../stm32_lib/src/stm32f10x_rcc.c ****         }
+ 963:../stm32_lib/src/stm32f10x_rcc.c ****         else
+ 964:../stm32_lib/src/stm32f10x_rcc.c ****         {
+ 965:../stm32_lib/src/stm32f10x_rcc.c ****           RCC_Clocks->SYSCLK_Frequency = HSE_Value * pllmull;
+ 966:../stm32_lib/src/stm32f10x_rcc.c ****         }
+ 967:../stm32_lib/src/stm32f10x_rcc.c ****  #endif
+ 968:../stm32_lib/src/stm32f10x_rcc.c ****       }
+ 969:../stm32_lib/src/stm32f10x_rcc.c **** #else
+ 970:../stm32_lib/src/stm32f10x_rcc.c ****       pllmull = pllmull >> 18;
+ 971:../stm32_lib/src/stm32f10x_rcc.c ****       
+ 972:../stm32_lib/src/stm32f10x_rcc.c ****       if (pllmull != 0x0D)
+ 973:../stm32_lib/src/stm32f10x_rcc.c ****       {
+ 974:../stm32_lib/src/stm32f10x_rcc.c ****          pllmull += 2;
+ 975:../stm32_lib/src/stm32f10x_rcc.c ****       }
+ 976:../stm32_lib/src/stm32f10x_rcc.c ****       else
+ 977:../stm32_lib/src/stm32f10x_rcc.c ****       { /* PLL multiplication factor = PLL input clock * 6.5 */
+ 978:../stm32_lib/src/stm32f10x_rcc.c ****         pllmull = 13 / 2; 
+ 979:../stm32_lib/src/stm32f10x_rcc.c ****       }
+ 980:../stm32_lib/src/stm32f10x_rcc.c ****             
+ 981:../stm32_lib/src/stm32f10x_rcc.c ****       if (pllsource == 0x00)
+ 982:../stm32_lib/src/stm32f10x_rcc.c ****       {/* HSI oscillator clock divided by 2 selected as PLL clock entry */
+ 983:../stm32_lib/src/stm32f10x_rcc.c ****         RCC_Clocks->SYSCLK_Frequency = (HSI_Value >> 1) * pllmull;
+ 984:../stm32_lib/src/stm32f10x_rcc.c ****       }
+ 985:../stm32_lib/src/stm32f10x_rcc.c ****       else
+ 986:../stm32_lib/src/stm32f10x_rcc.c ****       {/* PREDIV1 selected as PLL clock entry */
+ 987:../stm32_lib/src/stm32f10x_rcc.c ****         
+ 988:../stm32_lib/src/stm32f10x_rcc.c ****         /* Get PREDIV1 clock source and division factor */
+ 989:../stm32_lib/src/stm32f10x_rcc.c ****         prediv1source = RCC->CFGR2 & CFGR2_PREDIV1SRC;
+ 990:../stm32_lib/src/stm32f10x_rcc.c ****         prediv1factor = (RCC->CFGR2 & CFGR2_PREDIV1) + 1;
+ 991:../stm32_lib/src/stm32f10x_rcc.c ****         
+ 992:../stm32_lib/src/stm32f10x_rcc.c ****         if (prediv1source == 0)
+ 993:../stm32_lib/src/stm32f10x_rcc.c ****         { /* HSE oscillator clock selected as PREDIV1 clock entry */
+ 994:../stm32_lib/src/stm32f10x_rcc.c ****           RCC_Clocks->SYSCLK_Frequency = (HSE_Value / prediv1factor) * pllmull;          
+ 995:../stm32_lib/src/stm32f10x_rcc.c ****         }
+ 996:../stm32_lib/src/stm32f10x_rcc.c ****         else
+ 997:../stm32_lib/src/stm32f10x_rcc.c ****         {/* PLL2 clock selected as PREDIV1 clock entry */
+ 998:../stm32_lib/src/stm32f10x_rcc.c ****           
+ 999:../stm32_lib/src/stm32f10x_rcc.c ****           /* Get PREDIV2 division factor and PLL2 multiplication factor */
+1000:../stm32_lib/src/stm32f10x_rcc.c ****           prediv2factor = ((RCC->CFGR2 & CFGR2_PREDIV2) >> 4) + 1;
+1001:../stm32_lib/src/stm32f10x_rcc.c ****           pll2mull = ((RCC->CFGR2 & CFGR2_PLL2MUL) >> 8 ) + 2; 
+1002:../stm32_lib/src/stm32f10x_rcc.c ****           RCC_Clocks->SYSCLK_Frequency = (((HSE_Value / prediv2factor) * pll2mull) / prediv1factor)
+1003:../stm32_lib/src/stm32f10x_rcc.c ****         }
+1004:../stm32_lib/src/stm32f10x_rcc.c ****       }
+1005:../stm32_lib/src/stm32f10x_rcc.c **** #endif /* STM32F10X_CL */ 
+1006:../stm32_lib/src/stm32f10x_rcc.c ****       break;
+ 1202              		.loc 1 1006 0
+ 1203 0604 1DE0     		b	.L42
+ 1204              	.L43:
+ 954:../stm32_lib/src/stm32f10x_rcc.c ****        prediv1factor = (RCC->CFGR2 & CFGR2_PREDIV1) + 1;
+ 1205              		.loc 1 954 0
+ 1206 0606 4FF48053 		mov	r3, #4096
+ 1207 060a C4F20203 		movt	r3, 16386
+ 1208 060e DB6A     		ldr	r3, [r3, #44]
+ 1209 0610 03F00F03 		and	r3, r3, #15
+ 1210 0614 03F10103 		add	r3, r3, #1
+ 1211 0618 FB60     		str	r3, [r7, #12]
+ 956:../stm32_lib/src/stm32f10x_rcc.c ****        RCC_Clocks->SYSCLK_Frequency = (HSE_Value / prediv1factor) * pllmull; 
+ 1212              		.loc 1 956 0
+ 1213 061a 4FF49053 		mov	r3, #4608
+ 1214 061e C0F27A03 		movt	r3, 122
+ 1215 0622 FA68     		ldr	r2, [r7, #12]
+ 1216 0624 B3FBF2F3 		udiv	r3, r3, r2
+ 1217 0628 BA69     		ldr	r2, [r7, #24]
+ 1218 062a 02FB03F2 		mul	r2, r2, r3
+ 1219 062e 7B68     		ldr	r3, [r7, #4]
+ 1220 0630 1A60     		str	r2, [r3, #0]
+ 1221              		.loc 1 1006 0
+ 1222 0632 06E0     		b	.L42
+ 1223              	.L45:
+1007:../stm32_lib/src/stm32f10x_rcc.c **** 
+1008:../stm32_lib/src/stm32f10x_rcc.c ****     default:
+1009:../stm32_lib/src/stm32f10x_rcc.c ****       RCC_Clocks->SYSCLK_Frequency = HSI_Value;
+ 1224              		.loc 1 1009 0
+ 1225 0634 7A68     		ldr	r2, [r7, #4]
+ 1226 0636 4FF49053 		mov	r3, #4608
+ 1227 063a C0F27A03 		movt	r3, 122
+ 1228 063e 1360     		str	r3, [r2, #0]
+1010:../stm32_lib/src/stm32f10x_rcc.c ****       break;
+ 1229              		.loc 1 1010 0
+ 1230 0640 00BF     		nop
+ 1231              	.L42:
+1011:../stm32_lib/src/stm32f10x_rcc.c ****   }
+1012:../stm32_lib/src/stm32f10x_rcc.c **** 
+1013:../stm32_lib/src/stm32f10x_rcc.c ****   /* Compute HCLK, PCLK1, PCLK2 and ADCCLK clocks frequencies ----------------*/
+1014:../stm32_lib/src/stm32f10x_rcc.c ****   /* Get HCLK prescaler */
+1015:../stm32_lib/src/stm32f10x_rcc.c ****   tmp = RCC->CFGR & CFGR_HPRE_Set_Mask;
+ 1232              		.loc 1 1015 0
+ 1233 0642 4FF48053 		mov	r3, #4096
+ 1234 0646 C4F20203 		movt	r3, 16386
+ 1235 064a 5B68     		ldr	r3, [r3, #4]
+ 1236 064c 03F0F003 		and	r3, r3, #240
+ 1237 0650 FB61     		str	r3, [r7, #28]
+1016:../stm32_lib/src/stm32f10x_rcc.c ****   tmp = tmp >> 4;
+ 1238              		.loc 1 1016 0
+ 1239 0652 FB69     		ldr	r3, [r7, #28]
+ 1240 0654 4FEA1313 		lsr	r3, r3, #4
+ 1241 0658 FB61     		str	r3, [r7, #28]
+1017:../stm32_lib/src/stm32f10x_rcc.c ****   presc = APBAHBPrescTable[tmp];
+ 1242              		.loc 1 1017 0
+ 1243 065a 40F20003 		movw	r3, #:lower16:APBAHBPrescTable
+ 1244 065e C0F20003 		movt	r3, #:upper16:APBAHBPrescTable
+ 1245 0662 FA69     		ldr	r2, [r7, #28]
+ 1246 0664 9B18     		adds	r3, r3, r2
+ 1247 0666 1B78     		ldrb	r3, [r3, #0]
+ 1248 0668 DBB2     		uxtb	r3, r3
+ 1249 066a 3B61     		str	r3, [r7, #16]
+1018:../stm32_lib/src/stm32f10x_rcc.c ****   /* HCLK clock frequency */
+1019:../stm32_lib/src/stm32f10x_rcc.c ****   RCC_Clocks->HCLK_Frequency = RCC_Clocks->SYSCLK_Frequency >> presc;
+ 1250              		.loc 1 1019 0
+ 1251 066c 7B68     		ldr	r3, [r7, #4]
+ 1252 066e 1A68     		ldr	r2, [r3, #0]
+ 1253 0670 3B69     		ldr	r3, [r7, #16]
+ 1254 0672 22FA03F2 		lsr	r2, r2, r3
+ 1255 0676 7B68     		ldr	r3, [r7, #4]
+ 1256 0678 5A60     		str	r2, [r3, #4]
+1020:../stm32_lib/src/stm32f10x_rcc.c ****   /* Get PCLK1 prescaler */
+1021:../stm32_lib/src/stm32f10x_rcc.c ****   tmp = RCC->CFGR & CFGR_PPRE1_Set_Mask;
+ 1257              		.loc 1 1021 0
+ 1258 067a 4FF48053 		mov	r3, #4096
+ 1259 067e C4F20203 		movt	r3, 16386
+ 1260 0682 5B68     		ldr	r3, [r3, #4]
+ 1261 0684 03F4E063 		and	r3, r3, #1792
+ 1262 0688 FB61     		str	r3, [r7, #28]
+1022:../stm32_lib/src/stm32f10x_rcc.c ****   tmp = tmp >> 8;
+ 1263              		.loc 1 1022 0
+ 1264 068a FB69     		ldr	r3, [r7, #28]
+ 1265 068c 4FEA1323 		lsr	r3, r3, #8
+ 1266 0690 FB61     		str	r3, [r7, #28]
+1023:../stm32_lib/src/stm32f10x_rcc.c ****   presc = APBAHBPrescTable[tmp];
+ 1267              		.loc 1 1023 0
+ 1268 0692 40F20003 		movw	r3, #:lower16:APBAHBPrescTable
+ 1269 0696 C0F20003 		movt	r3, #:upper16:APBAHBPrescTable
+ 1270 069a FA69     		ldr	r2, [r7, #28]
+ 1271 069c 9B18     		adds	r3, r3, r2
+ 1272 069e 1B78     		ldrb	r3, [r3, #0]
+ 1273 06a0 DBB2     		uxtb	r3, r3
+ 1274 06a2 3B61     		str	r3, [r7, #16]
+1024:../stm32_lib/src/stm32f10x_rcc.c ****   /* PCLK1 clock frequency */
+1025:../stm32_lib/src/stm32f10x_rcc.c ****   RCC_Clocks->PCLK1_Frequency = RCC_Clocks->HCLK_Frequency >> presc;
+ 1275              		.loc 1 1025 0
+ 1276 06a4 7B68     		ldr	r3, [r7, #4]
+ 1277 06a6 5A68     		ldr	r2, [r3, #4]
+ 1278 06a8 3B69     		ldr	r3, [r7, #16]
+ 1279 06aa 22FA03F2 		lsr	r2, r2, r3
+ 1280 06ae 7B68     		ldr	r3, [r7, #4]
+ 1281 06b0 9A60     		str	r2, [r3, #8]
+1026:../stm32_lib/src/stm32f10x_rcc.c ****   /* Get PCLK2 prescaler */
+1027:../stm32_lib/src/stm32f10x_rcc.c ****   tmp = RCC->CFGR & CFGR_PPRE2_Set_Mask;
+ 1282              		.loc 1 1027 0
+ 1283 06b2 4FF48053 		mov	r3, #4096
+ 1284 06b6 C4F20203 		movt	r3, 16386
+ 1285 06ba 5B68     		ldr	r3, [r3, #4]
+ 1286 06bc 03F46053 		and	r3, r3, #14336
+ 1287 06c0 FB61     		str	r3, [r7, #28]
+1028:../stm32_lib/src/stm32f10x_rcc.c ****   tmp = tmp >> 11;
+ 1288              		.loc 1 1028 0
+ 1289 06c2 FB69     		ldr	r3, [r7, #28]
+ 1290 06c4 4FEAD323 		lsr	r3, r3, #11
+ 1291 06c8 FB61     		str	r3, [r7, #28]
+1029:../stm32_lib/src/stm32f10x_rcc.c ****   presc = APBAHBPrescTable[tmp];
+ 1292              		.loc 1 1029 0
+ 1293 06ca 40F20003 		movw	r3, #:lower16:APBAHBPrescTable
+ 1294 06ce C0F20003 		movt	r3, #:upper16:APBAHBPrescTable
+ 1295 06d2 FA69     		ldr	r2, [r7, #28]
+ 1296 06d4 9B18     		adds	r3, r3, r2
+ 1297 06d6 1B78     		ldrb	r3, [r3, #0]
+ 1298 06d8 DBB2     		uxtb	r3, r3
+ 1299 06da 3B61     		str	r3, [r7, #16]
+1030:../stm32_lib/src/stm32f10x_rcc.c ****   /* PCLK2 clock frequency */
+1031:../stm32_lib/src/stm32f10x_rcc.c ****   RCC_Clocks->PCLK2_Frequency = RCC_Clocks->HCLK_Frequency >> presc;
+ 1300              		.loc 1 1031 0
+ 1301 06dc 7B68     		ldr	r3, [r7, #4]
+ 1302 06de 5A68     		ldr	r2, [r3, #4]
+ 1303 06e0 3B69     		ldr	r3, [r7, #16]
+ 1304 06e2 22FA03F2 		lsr	r2, r2, r3
+ 1305 06e6 7B68     		ldr	r3, [r7, #4]
+ 1306 06e8 DA60     		str	r2, [r3, #12]
+1032:../stm32_lib/src/stm32f10x_rcc.c ****   /* Get ADCCLK prescaler */
+1033:../stm32_lib/src/stm32f10x_rcc.c ****   tmp = RCC->CFGR & CFGR_ADCPRE_Set_Mask;
+ 1307              		.loc 1 1033 0
+ 1308 06ea 4FF48053 		mov	r3, #4096
+ 1309 06ee C4F20203 		movt	r3, 16386
+ 1310 06f2 5B68     		ldr	r3, [r3, #4]
+ 1311 06f4 03F44043 		and	r3, r3, #49152
+ 1312 06f8 FB61     		str	r3, [r7, #28]
+1034:../stm32_lib/src/stm32f10x_rcc.c ****   tmp = tmp >> 14;
+ 1313              		.loc 1 1034 0
+ 1314 06fa FB69     		ldr	r3, [r7, #28]
+ 1315 06fc 4FEA9333 		lsr	r3, r3, #14
+ 1316 0700 FB61     		str	r3, [r7, #28]
+1035:../stm32_lib/src/stm32f10x_rcc.c ****   presc = ADCPrescTable[tmp];
+ 1317              		.loc 1 1035 0
+ 1318 0702 40F20003 		movw	r3, #:lower16:ADCPrescTable
+ 1319 0706 C0F20003 		movt	r3, #:upper16:ADCPrescTable
+ 1320 070a FA69     		ldr	r2, [r7, #28]
+ 1321 070c 9B18     		adds	r3, r3, r2
+ 1322 070e 1B78     		ldrb	r3, [r3, #0]
+ 1323 0710 DBB2     		uxtb	r3, r3
+ 1324 0712 3B61     		str	r3, [r7, #16]
+1036:../stm32_lib/src/stm32f10x_rcc.c ****   /* ADCCLK clock frequency */
+1037:../stm32_lib/src/stm32f10x_rcc.c ****   RCC_Clocks->ADCCLK_Frequency = RCC_Clocks->PCLK2_Frequency / presc;
+ 1325              		.loc 1 1037 0
+ 1326 0714 7B68     		ldr	r3, [r7, #4]
+ 1327 0716 DA68     		ldr	r2, [r3, #12]
+ 1328 0718 3B69     		ldr	r3, [r7, #16]
+ 1329 071a B2FBF3F2 		udiv	r2, r2, r3
+ 1330 071e 7B68     		ldr	r3, [r7, #4]
+ 1331 0720 1A61     		str	r2, [r3, #16]
+1038:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 1332              		.loc 1 1038 0
+ 1333 0722 07F12407 		add	r7, r7, #36
+ 1334 0726 BD46     		mov	sp, r7
+ 1335 0728 80BC     		pop	{r7}
+ 1336 072a 7047     		bx	lr
+ 1337              		.cfi_endproc
+ 1338              	.LFE49:
+ 1340              		.align	2
+ 1341              		.global	RCC_AHBPeriphClockCmd
+ 1342              		.thumb
+ 1343              		.thumb_func
+ 1345              	RCC_AHBPeriphClockCmd:
+ 1346              	.LFB50:
+1039:../stm32_lib/src/stm32f10x_rcc.c **** 
+1040:../stm32_lib/src/stm32f10x_rcc.c **** /**
+1041:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Enables or disables the AHB peripheral clock.
+1042:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_AHBPeriph: specifies the AHB peripheral to gates its clock.
+1043:../stm32_lib/src/stm32f10x_rcc.c ****   *   
+1044:../stm32_lib/src/stm32f10x_rcc.c ****   *   For @b STM32_Connectivity_line_devices, this parameter can be any combination
+1045:../stm32_lib/src/stm32f10x_rcc.c ****   *   of the following values:        
+1046:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_AHBPeriph_DMA1
+1047:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_AHBPeriph_DMA2
+1048:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_AHBPeriph_SRAM
+1049:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_AHBPeriph_FLITF
+1050:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_AHBPeriph_CRC
+1051:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_AHBPeriph_OTG_FS    
+1052:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_AHBPeriph_ETH_MAC   
+1053:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_AHBPeriph_ETH_MAC_Tx
+1054:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_AHBPeriph_ETH_MAC_Rx
+1055:../stm32_lib/src/stm32f10x_rcc.c ****   * 
+1056:../stm32_lib/src/stm32f10x_rcc.c ****   *   For @b other_STM32_devices, this parameter can be any combination of the 
+1057:../stm32_lib/src/stm32f10x_rcc.c ****   *   following values:        
+1058:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_AHBPeriph_DMA1
+1059:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_AHBPeriph_DMA2
+1060:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_AHBPeriph_SRAM
+1061:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_AHBPeriph_FLITF
+1062:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_AHBPeriph_CRC
+1063:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_AHBPeriph_FSMC
+1064:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_AHBPeriph_SDIO
+1065:../stm32_lib/src/stm32f10x_rcc.c ****   *   
+1066:../stm32_lib/src/stm32f10x_rcc.c ****   * @note SRAM and FLITF clock can be disabled only during sleep mode.
+1067:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  NewState: new state of the specified peripheral clock.
+1068:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be: ENABLE or DISABLE.
+1069:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+1070:../stm32_lib/src/stm32f10x_rcc.c ****   */
+1071:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_AHBPeriphClockCmd(uint32_t RCC_AHBPeriph, FunctionalState NewState)
+1072:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 1347              		.loc 1 1072 0
+ 1348              		.cfi_startproc
+ 1349              		@ args = 0, pretend = 0, frame = 8
+ 1350              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1351              		@ link register save eliminated.
+ 1352 072c 80B4     		push	{r7}
+ 1353              	.LCFI61:
+ 1354              		.cfi_def_cfa_offset 4
+ 1355              		.cfi_offset 7, -4
+ 1356 072e 83B0     		sub	sp, sp, #12
+ 1357              	.LCFI62:
+ 1358              		.cfi_def_cfa_offset 16
+ 1359 0730 00AF     		add	r7, sp, #0
+ 1360              	.LCFI63:
+ 1361              		.cfi_def_cfa_register 7
+ 1362 0732 7860     		str	r0, [r7, #4]
+ 1363 0734 0B46     		mov	r3, r1
+ 1364 0736 FB70     		strb	r3, [r7, #3]
+1073:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+1074:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_AHB_PERIPH(RCC_AHBPeriph));
+1075:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_FUNCTIONAL_STATE(NewState));
+1076:../stm32_lib/src/stm32f10x_rcc.c **** 
+1077:../stm32_lib/src/stm32f10x_rcc.c ****   if (NewState != DISABLE)
+ 1365              		.loc 1 1077 0
+ 1366 0738 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1367 073a 002B     		cmp	r3, #0
+ 1368 073c 0CD0     		beq	.L47
+1078:../stm32_lib/src/stm32f10x_rcc.c ****   {
+1079:../stm32_lib/src/stm32f10x_rcc.c ****     RCC->AHBENR |= RCC_AHBPeriph;
+ 1369              		.loc 1 1079 0
+ 1370 073e 4FF48053 		mov	r3, #4096
+ 1371 0742 C4F20203 		movt	r3, 16386
+ 1372 0746 4FF48052 		mov	r2, #4096
+ 1373 074a C4F20202 		movt	r2, 16386
+ 1374 074e 5169     		ldr	r1, [r2, #20]
+ 1375 0750 7A68     		ldr	r2, [r7, #4]
+ 1376 0752 0A43     		orrs	r2, r2, r1
+ 1377 0754 5A61     		str	r2, [r3, #20]
+ 1378 0756 0DE0     		b	.L46
+ 1379              	.L47:
+1080:../stm32_lib/src/stm32f10x_rcc.c ****   }
+1081:../stm32_lib/src/stm32f10x_rcc.c ****   else
+1082:../stm32_lib/src/stm32f10x_rcc.c ****   {
+1083:../stm32_lib/src/stm32f10x_rcc.c ****     RCC->AHBENR &= ~RCC_AHBPeriph;
+ 1380              		.loc 1 1083 0
+ 1381 0758 4FF48053 		mov	r3, #4096
+ 1382 075c C4F20203 		movt	r3, 16386
+ 1383 0760 4FF48052 		mov	r2, #4096
+ 1384 0764 C4F20202 		movt	r2, 16386
+ 1385 0768 5169     		ldr	r1, [r2, #20]
+ 1386 076a 7A68     		ldr	r2, [r7, #4]
+ 1387 076c 6FEA0202 		mvn	r2, r2
+ 1388 0770 0A40     		ands	r2, r2, r1
+ 1389 0772 5A61     		str	r2, [r3, #20]
+ 1390              	.L46:
+1084:../stm32_lib/src/stm32f10x_rcc.c ****   }
+1085:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 1391              		.loc 1 1085 0
+ 1392 0774 07F10C07 		add	r7, r7, #12
+ 1393 0778 BD46     		mov	sp, r7
+ 1394 077a 80BC     		pop	{r7}
+ 1395 077c 7047     		bx	lr
+ 1396              		.cfi_endproc
+ 1397              	.LFE50:
+ 1399 077e 00BF     		.align	2
+ 1400              		.global	RCC_APB2PeriphClockCmd
+ 1401              		.thumb
+ 1402              		.thumb_func
+ 1404              	RCC_APB2PeriphClockCmd:
+ 1405              	.LFB51:
+1086:../stm32_lib/src/stm32f10x_rcc.c **** 
+1087:../stm32_lib/src/stm32f10x_rcc.c **** /**
+1088:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Enables or disables the High Speed APB (APB2) peripheral clock.
+1089:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_APB2Periph: specifies the APB2 peripheral to gates its clock.
+1090:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be any combination of the following values:
+1091:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_APB2Periph_AFIO, RCC_APB2Periph_GPIOA, RCC_APB2Periph_GPIOB,
+1092:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB2Periph_GPIOC, RCC_APB2Periph_GPIOD, RCC_APB2Periph_GPIOE,
+1093:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB2Periph_GPIOF, RCC_APB2Periph_GPIOG, RCC_APB2Periph_ADC1,
+1094:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB2Periph_ADC2, RCC_APB2Periph_TIM1, RCC_APB2Periph_SPI1,
+1095:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB2Periph_TIM8, RCC_APB2Periph_USART1, RCC_APB2Periph_ADC3,
+1096:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB2Periph_TIM15, RCC_APB2Periph_TIM16, RCC_APB2Periph_TIM17,
+1097:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB2Periph_TIM9, RCC_APB2Periph_TIM10, RCC_APB2Periph_TIM11     
+1098:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  NewState: new state of the specified peripheral clock.
+1099:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be: ENABLE or DISABLE.
+1100:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+1101:../stm32_lib/src/stm32f10x_rcc.c ****   */
+1102:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_APB2PeriphClockCmd(uint32_t RCC_APB2Periph, FunctionalState NewState)
+1103:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 1406              		.loc 1 1103 0
+ 1407              		.cfi_startproc
+ 1408              		@ args = 0, pretend = 0, frame = 8
+ 1409              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1410              		@ link register save eliminated.
+ 1411 0780 80B4     		push	{r7}
+ 1412              	.LCFI64:
+ 1413              		.cfi_def_cfa_offset 4
+ 1414              		.cfi_offset 7, -4
+ 1415 0782 83B0     		sub	sp, sp, #12
+ 1416              	.LCFI65:
+ 1417              		.cfi_def_cfa_offset 16
+ 1418 0784 00AF     		add	r7, sp, #0
+ 1419              	.LCFI66:
+ 1420              		.cfi_def_cfa_register 7
+ 1421 0786 7860     		str	r0, [r7, #4]
+ 1422 0788 0B46     		mov	r3, r1
+ 1423 078a FB70     		strb	r3, [r7, #3]
+1104:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+1105:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_APB2_PERIPH(RCC_APB2Periph));
+1106:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_FUNCTIONAL_STATE(NewState));
+1107:../stm32_lib/src/stm32f10x_rcc.c ****   if (NewState != DISABLE)
+ 1424              		.loc 1 1107 0
+ 1425 078c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1426 078e 002B     		cmp	r3, #0
+ 1427 0790 0CD0     		beq	.L50
+1108:../stm32_lib/src/stm32f10x_rcc.c ****   {
+1109:../stm32_lib/src/stm32f10x_rcc.c ****     RCC->APB2ENR |= RCC_APB2Periph;
+ 1428              		.loc 1 1109 0
+ 1429 0792 4FF48053 		mov	r3, #4096
+ 1430 0796 C4F20203 		movt	r3, 16386
+ 1431 079a 4FF48052 		mov	r2, #4096
+ 1432 079e C4F20202 		movt	r2, 16386
+ 1433 07a2 9169     		ldr	r1, [r2, #24]
+ 1434 07a4 7A68     		ldr	r2, [r7, #4]
+ 1435 07a6 0A43     		orrs	r2, r2, r1
+ 1436 07a8 9A61     		str	r2, [r3, #24]
+ 1437 07aa 0DE0     		b	.L49
+ 1438              	.L50:
+1110:../stm32_lib/src/stm32f10x_rcc.c ****   }
+1111:../stm32_lib/src/stm32f10x_rcc.c ****   else
+1112:../stm32_lib/src/stm32f10x_rcc.c ****   {
+1113:../stm32_lib/src/stm32f10x_rcc.c ****     RCC->APB2ENR &= ~RCC_APB2Periph;
+ 1439              		.loc 1 1113 0
+ 1440 07ac 4FF48053 		mov	r3, #4096
+ 1441 07b0 C4F20203 		movt	r3, 16386
+ 1442 07b4 4FF48052 		mov	r2, #4096
+ 1443 07b8 C4F20202 		movt	r2, 16386
+ 1444 07bc 9169     		ldr	r1, [r2, #24]
+ 1445 07be 7A68     		ldr	r2, [r7, #4]
+ 1446 07c0 6FEA0202 		mvn	r2, r2
+ 1447 07c4 0A40     		ands	r2, r2, r1
+ 1448 07c6 9A61     		str	r2, [r3, #24]
+ 1449              	.L49:
+1114:../stm32_lib/src/stm32f10x_rcc.c ****   }
+1115:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 1450              		.loc 1 1115 0
+ 1451 07c8 07F10C07 		add	r7, r7, #12
+ 1452 07cc BD46     		mov	sp, r7
+ 1453 07ce 80BC     		pop	{r7}
+ 1454 07d0 7047     		bx	lr
+ 1455              		.cfi_endproc
+ 1456              	.LFE51:
+ 1458 07d2 00BF     		.align	2
+ 1459              		.global	RCC_APB1PeriphClockCmd
+ 1460              		.thumb
+ 1461              		.thumb_func
+ 1463              	RCC_APB1PeriphClockCmd:
+ 1464              	.LFB52:
+1116:../stm32_lib/src/stm32f10x_rcc.c **** 
+1117:../stm32_lib/src/stm32f10x_rcc.c **** /**
+1118:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Enables or disables the Low Speed APB (APB1) peripheral clock.
+1119:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_APB1Periph: specifies the APB1 peripheral to gates its clock.
+1120:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be any combination of the following values:
+1121:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_APB1Periph_TIM2, RCC_APB1Periph_TIM3, RCC_APB1Periph_TIM4,
+1122:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB1Periph_TIM5, RCC_APB1Periph_TIM6, RCC_APB1Periph_TIM7,
+1123:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB1Periph_WWDG, RCC_APB1Periph_SPI2, RCC_APB1Periph_SPI3,
+1124:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB1Periph_USART2, RCC_APB1Periph_USART3, RCC_APB1Periph_USART4, 
+1125:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB1Periph_USART5, RCC_APB1Periph_I2C1, RCC_APB1Periph_I2C2,
+1126:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB1Periph_USB, RCC_APB1Periph_CAN1, RCC_APB1Periph_BKP,
+1127:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB1Periph_PWR, RCC_APB1Periph_DAC, RCC_APB1Periph_CEC,
+1128:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB1Periph_TIM12, RCC_APB1Periph_TIM13, RCC_APB1Periph_TIM14
+1129:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  NewState: new state of the specified peripheral clock.
+1130:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be: ENABLE or DISABLE.
+1131:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+1132:../stm32_lib/src/stm32f10x_rcc.c ****   */
+1133:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_APB1PeriphClockCmd(uint32_t RCC_APB1Periph, FunctionalState NewState)
+1134:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 1465              		.loc 1 1134 0
+ 1466              		.cfi_startproc
+ 1467              		@ args = 0, pretend = 0, frame = 8
+ 1468              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1469              		@ link register save eliminated.
+ 1470 07d4 80B4     		push	{r7}
+ 1471              	.LCFI67:
+ 1472              		.cfi_def_cfa_offset 4
+ 1473              		.cfi_offset 7, -4
+ 1474 07d6 83B0     		sub	sp, sp, #12
+ 1475              	.LCFI68:
+ 1476              		.cfi_def_cfa_offset 16
+ 1477 07d8 00AF     		add	r7, sp, #0
+ 1478              	.LCFI69:
+ 1479              		.cfi_def_cfa_register 7
+ 1480 07da 7860     		str	r0, [r7, #4]
+ 1481 07dc 0B46     		mov	r3, r1
+ 1482 07de FB70     		strb	r3, [r7, #3]
+1135:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+1136:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_APB1_PERIPH(RCC_APB1Periph));
+1137:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_FUNCTIONAL_STATE(NewState));
+1138:../stm32_lib/src/stm32f10x_rcc.c ****   if (NewState != DISABLE)
+ 1483              		.loc 1 1138 0
+ 1484 07e0 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1485 07e2 002B     		cmp	r3, #0
+ 1486 07e4 0CD0     		beq	.L53
+1139:../stm32_lib/src/stm32f10x_rcc.c ****   {
+1140:../stm32_lib/src/stm32f10x_rcc.c ****     RCC->APB1ENR |= RCC_APB1Periph;
+ 1487              		.loc 1 1140 0
+ 1488 07e6 4FF48053 		mov	r3, #4096
+ 1489 07ea C4F20203 		movt	r3, 16386
+ 1490 07ee 4FF48052 		mov	r2, #4096
+ 1491 07f2 C4F20202 		movt	r2, 16386
+ 1492 07f6 D169     		ldr	r1, [r2, #28]
+ 1493 07f8 7A68     		ldr	r2, [r7, #4]
+ 1494 07fa 0A43     		orrs	r2, r2, r1
+ 1495 07fc DA61     		str	r2, [r3, #28]
+ 1496 07fe 0DE0     		b	.L52
+ 1497              	.L53:
+1141:../stm32_lib/src/stm32f10x_rcc.c ****   }
+1142:../stm32_lib/src/stm32f10x_rcc.c ****   else
+1143:../stm32_lib/src/stm32f10x_rcc.c ****   {
+1144:../stm32_lib/src/stm32f10x_rcc.c ****     RCC->APB1ENR &= ~RCC_APB1Periph;
+ 1498              		.loc 1 1144 0
+ 1499 0800 4FF48053 		mov	r3, #4096
+ 1500 0804 C4F20203 		movt	r3, 16386
+ 1501 0808 4FF48052 		mov	r2, #4096
+ 1502 080c C4F20202 		movt	r2, 16386
+ 1503 0810 D169     		ldr	r1, [r2, #28]
+ 1504 0812 7A68     		ldr	r2, [r7, #4]
+ 1505 0814 6FEA0202 		mvn	r2, r2
+ 1506 0818 0A40     		ands	r2, r2, r1
+ 1507 081a DA61     		str	r2, [r3, #28]
+ 1508              	.L52:
+1145:../stm32_lib/src/stm32f10x_rcc.c ****   }
+1146:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 1509              		.loc 1 1146 0
+ 1510 081c 07F10C07 		add	r7, r7, #12
+ 1511 0820 BD46     		mov	sp, r7
+ 1512 0822 80BC     		pop	{r7}
+ 1513 0824 7047     		bx	lr
+ 1514              		.cfi_endproc
+ 1515              	.LFE52:
+ 1517 0826 00BF     		.align	2
+ 1518              		.global	RCC_APB2PeriphResetCmd
+ 1519              		.thumb
+ 1520              		.thumb_func
+ 1522              	RCC_APB2PeriphResetCmd:
+ 1523              	.LFB53:
+1147:../stm32_lib/src/stm32f10x_rcc.c **** 
+1148:../stm32_lib/src/stm32f10x_rcc.c **** #ifdef STM32F10X_CL
+1149:../stm32_lib/src/stm32f10x_rcc.c **** /**
+1150:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Forces or releases AHB peripheral reset.
+1151:../stm32_lib/src/stm32f10x_rcc.c ****   * @note   This function applies only to STM32 Connectivity line devices.
+1152:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_AHBPeriph: specifies the AHB peripheral to reset.
+1153:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be any combination of the following values:
+1154:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_AHBPeriph_OTG_FS 
+1155:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_AHBPeriph_ETH_MAC
+1156:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  NewState: new state of the specified peripheral reset.
+1157:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be: ENABLE or DISABLE.
+1158:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+1159:../stm32_lib/src/stm32f10x_rcc.c ****   */
+1160:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_AHBPeriphResetCmd(uint32_t RCC_AHBPeriph, FunctionalState NewState)
+1161:../stm32_lib/src/stm32f10x_rcc.c **** {
+1162:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+1163:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_AHB_PERIPH_RESET(RCC_AHBPeriph));
+1164:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_FUNCTIONAL_STATE(NewState));
+1165:../stm32_lib/src/stm32f10x_rcc.c **** 
+1166:../stm32_lib/src/stm32f10x_rcc.c ****   if (NewState != DISABLE)
+1167:../stm32_lib/src/stm32f10x_rcc.c ****   {
+1168:../stm32_lib/src/stm32f10x_rcc.c ****     RCC->AHBRSTR |= RCC_AHBPeriph;
+1169:../stm32_lib/src/stm32f10x_rcc.c ****   }
+1170:../stm32_lib/src/stm32f10x_rcc.c ****   else
+1171:../stm32_lib/src/stm32f10x_rcc.c ****   {
+1172:../stm32_lib/src/stm32f10x_rcc.c ****     RCC->AHBRSTR &= ~RCC_AHBPeriph;
+1173:../stm32_lib/src/stm32f10x_rcc.c ****   }
+1174:../stm32_lib/src/stm32f10x_rcc.c **** }
+1175:../stm32_lib/src/stm32f10x_rcc.c **** #endif /* STM32F10X_CL */ 
+1176:../stm32_lib/src/stm32f10x_rcc.c **** 
+1177:../stm32_lib/src/stm32f10x_rcc.c **** /**
+1178:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Forces or releases High Speed APB (APB2) peripheral reset.
+1179:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_APB2Periph: specifies the APB2 peripheral to reset.
+1180:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be any combination of the following values:
+1181:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_APB2Periph_AFIO, RCC_APB2Periph_GPIOA, RCC_APB2Periph_GPIOB,
+1182:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB2Periph_GPIOC, RCC_APB2Periph_GPIOD, RCC_APB2Periph_GPIOE,
+1183:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB2Periph_GPIOF, RCC_APB2Periph_GPIOG, RCC_APB2Periph_ADC1,
+1184:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB2Periph_ADC2, RCC_APB2Periph_TIM1, RCC_APB2Periph_SPI1,
+1185:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB2Periph_TIM8, RCC_APB2Periph_USART1, RCC_APB2Periph_ADC3,
+1186:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB2Periph_TIM15, RCC_APB2Periph_TIM16, RCC_APB2Periph_TIM17,
+1187:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB2Periph_TIM9, RCC_APB2Periph_TIM10, RCC_APB2Periph_TIM11  
+1188:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  NewState: new state of the specified peripheral reset.
+1189:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be: ENABLE or DISABLE.
+1190:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+1191:../stm32_lib/src/stm32f10x_rcc.c ****   */
+1192:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_APB2PeriphResetCmd(uint32_t RCC_APB2Periph, FunctionalState NewState)
+1193:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 1524              		.loc 1 1193 0
+ 1525              		.cfi_startproc
+ 1526              		@ args = 0, pretend = 0, frame = 8
+ 1527              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1528              		@ link register save eliminated.
+ 1529 0828 80B4     		push	{r7}
+ 1530              	.LCFI70:
+ 1531              		.cfi_def_cfa_offset 4
+ 1532              		.cfi_offset 7, -4
+ 1533 082a 83B0     		sub	sp, sp, #12
+ 1534              	.LCFI71:
+ 1535              		.cfi_def_cfa_offset 16
+ 1536 082c 00AF     		add	r7, sp, #0
+ 1537              	.LCFI72:
+ 1538              		.cfi_def_cfa_register 7
+ 1539 082e 7860     		str	r0, [r7, #4]
+ 1540 0830 0B46     		mov	r3, r1
+ 1541 0832 FB70     		strb	r3, [r7, #3]
+1194:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+1195:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_APB2_PERIPH(RCC_APB2Periph));
+1196:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_FUNCTIONAL_STATE(NewState));
+1197:../stm32_lib/src/stm32f10x_rcc.c ****   if (NewState != DISABLE)
+ 1542              		.loc 1 1197 0
+ 1543 0834 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1544 0836 002B     		cmp	r3, #0
+ 1545 0838 0CD0     		beq	.L56
+1198:../stm32_lib/src/stm32f10x_rcc.c ****   {
+1199:../stm32_lib/src/stm32f10x_rcc.c ****     RCC->APB2RSTR |= RCC_APB2Periph;
+ 1546              		.loc 1 1199 0
+ 1547 083a 4FF48053 		mov	r3, #4096
+ 1548 083e C4F20203 		movt	r3, 16386
+ 1549 0842 4FF48052 		mov	r2, #4096
+ 1550 0846 C4F20202 		movt	r2, 16386
+ 1551 084a D168     		ldr	r1, [r2, #12]
+ 1552 084c 7A68     		ldr	r2, [r7, #4]
+ 1553 084e 0A43     		orrs	r2, r2, r1
+ 1554 0850 DA60     		str	r2, [r3, #12]
+ 1555 0852 0DE0     		b	.L55
+ 1556              	.L56:
+1200:../stm32_lib/src/stm32f10x_rcc.c ****   }
+1201:../stm32_lib/src/stm32f10x_rcc.c ****   else
+1202:../stm32_lib/src/stm32f10x_rcc.c ****   {
+1203:../stm32_lib/src/stm32f10x_rcc.c ****     RCC->APB2RSTR &= ~RCC_APB2Periph;
+ 1557              		.loc 1 1203 0
+ 1558 0854 4FF48053 		mov	r3, #4096
+ 1559 0858 C4F20203 		movt	r3, 16386
+ 1560 085c 4FF48052 		mov	r2, #4096
+ 1561 0860 C4F20202 		movt	r2, 16386
+ 1562 0864 D168     		ldr	r1, [r2, #12]
+ 1563 0866 7A68     		ldr	r2, [r7, #4]
+ 1564 0868 6FEA0202 		mvn	r2, r2
+ 1565 086c 0A40     		ands	r2, r2, r1
+ 1566 086e DA60     		str	r2, [r3, #12]
+ 1567              	.L55:
+1204:../stm32_lib/src/stm32f10x_rcc.c ****   }
+1205:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 1568              		.loc 1 1205 0
+ 1569 0870 07F10C07 		add	r7, r7, #12
+ 1570 0874 BD46     		mov	sp, r7
+ 1571 0876 80BC     		pop	{r7}
+ 1572 0878 7047     		bx	lr
+ 1573              		.cfi_endproc
+ 1574              	.LFE53:
+ 1576 087a 00BF     		.align	2
+ 1577              		.global	RCC_APB1PeriphResetCmd
+ 1578              		.thumb
+ 1579              		.thumb_func
+ 1581              	RCC_APB1PeriphResetCmd:
+ 1582              	.LFB54:
+1206:../stm32_lib/src/stm32f10x_rcc.c **** 
+1207:../stm32_lib/src/stm32f10x_rcc.c **** /**
+1208:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Forces or releases Low Speed APB (APB1) peripheral reset.
+1209:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_APB1Periph: specifies the APB1 peripheral to reset.
+1210:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be any combination of the following values:
+1211:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_APB1Periph_TIM2, RCC_APB1Periph_TIM3, RCC_APB1Periph_TIM4,
+1212:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB1Periph_TIM5, RCC_APB1Periph_TIM6, RCC_APB1Periph_TIM7,
+1213:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB1Periph_WWDG, RCC_APB1Periph_SPI2, RCC_APB1Periph_SPI3,
+1214:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB1Periph_USART2, RCC_APB1Periph_USART3, RCC_APB1Periph_USART4, 
+1215:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB1Periph_USART5, RCC_APB1Periph_I2C1, RCC_APB1Periph_I2C2,
+1216:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB1Periph_USB, RCC_APB1Periph_CAN1, RCC_APB1Periph_BKP,
+1217:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB1Periph_PWR, RCC_APB1Periph_DAC, RCC_APB1Periph_CEC,
+1218:../stm32_lib/src/stm32f10x_rcc.c ****   *          RCC_APB1Periph_TIM12, RCC_APB1Periph_TIM13, RCC_APB1Periph_TIM14  
+1219:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  NewState: new state of the specified peripheral clock.
+1220:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be: ENABLE or DISABLE.
+1221:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+1222:../stm32_lib/src/stm32f10x_rcc.c ****   */
+1223:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_APB1PeriphResetCmd(uint32_t RCC_APB1Periph, FunctionalState NewState)
+1224:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 1583              		.loc 1 1224 0
+ 1584              		.cfi_startproc
+ 1585              		@ args = 0, pretend = 0, frame = 8
+ 1586              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1587              		@ link register save eliminated.
+ 1588 087c 80B4     		push	{r7}
+ 1589              	.LCFI73:
+ 1590              		.cfi_def_cfa_offset 4
+ 1591              		.cfi_offset 7, -4
+ 1592 087e 83B0     		sub	sp, sp, #12
+ 1593              	.LCFI74:
+ 1594              		.cfi_def_cfa_offset 16
+ 1595 0880 00AF     		add	r7, sp, #0
+ 1596              	.LCFI75:
+ 1597              		.cfi_def_cfa_register 7
+ 1598 0882 7860     		str	r0, [r7, #4]
+ 1599 0884 0B46     		mov	r3, r1
+ 1600 0886 FB70     		strb	r3, [r7, #3]
+1225:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+1226:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_APB1_PERIPH(RCC_APB1Periph));
+1227:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_FUNCTIONAL_STATE(NewState));
+1228:../stm32_lib/src/stm32f10x_rcc.c ****   if (NewState != DISABLE)
+ 1601              		.loc 1 1228 0
+ 1602 0888 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1603 088a 002B     		cmp	r3, #0
+ 1604 088c 0CD0     		beq	.L59
+1229:../stm32_lib/src/stm32f10x_rcc.c ****   {
+1230:../stm32_lib/src/stm32f10x_rcc.c ****     RCC->APB1RSTR |= RCC_APB1Periph;
+ 1605              		.loc 1 1230 0
+ 1606 088e 4FF48053 		mov	r3, #4096
+ 1607 0892 C4F20203 		movt	r3, 16386
+ 1608 0896 4FF48052 		mov	r2, #4096
+ 1609 089a C4F20202 		movt	r2, 16386
+ 1610 089e 1169     		ldr	r1, [r2, #16]
+ 1611 08a0 7A68     		ldr	r2, [r7, #4]
+ 1612 08a2 0A43     		orrs	r2, r2, r1
+ 1613 08a4 1A61     		str	r2, [r3, #16]
+ 1614 08a6 0DE0     		b	.L58
+ 1615              	.L59:
+1231:../stm32_lib/src/stm32f10x_rcc.c ****   }
+1232:../stm32_lib/src/stm32f10x_rcc.c ****   else
+1233:../stm32_lib/src/stm32f10x_rcc.c ****   {
+1234:../stm32_lib/src/stm32f10x_rcc.c ****     RCC->APB1RSTR &= ~RCC_APB1Periph;
+ 1616              		.loc 1 1234 0
+ 1617 08a8 4FF48053 		mov	r3, #4096
+ 1618 08ac C4F20203 		movt	r3, 16386
+ 1619 08b0 4FF48052 		mov	r2, #4096
+ 1620 08b4 C4F20202 		movt	r2, 16386
+ 1621 08b8 1169     		ldr	r1, [r2, #16]
+ 1622 08ba 7A68     		ldr	r2, [r7, #4]
+ 1623 08bc 6FEA0202 		mvn	r2, r2
+ 1624 08c0 0A40     		ands	r2, r2, r1
+ 1625 08c2 1A61     		str	r2, [r3, #16]
+ 1626              	.L58:
+1235:../stm32_lib/src/stm32f10x_rcc.c ****   }
+1236:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 1627              		.loc 1 1236 0
+ 1628 08c4 07F10C07 		add	r7, r7, #12
+ 1629 08c8 BD46     		mov	sp, r7
+ 1630 08ca 80BC     		pop	{r7}
+ 1631 08cc 7047     		bx	lr
+ 1632              		.cfi_endproc
+ 1633              	.LFE54:
+ 1635 08ce 00BF     		.align	2
+ 1636              		.global	RCC_BackupResetCmd
+ 1637              		.thumb
+ 1638              		.thumb_func
+ 1640              	RCC_BackupResetCmd:
+ 1641              	.LFB55:
+1237:../stm32_lib/src/stm32f10x_rcc.c **** 
+1238:../stm32_lib/src/stm32f10x_rcc.c **** /**
+1239:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Forces or releases the Backup domain reset.
+1240:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  NewState: new state of the Backup domain reset.
+1241:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be: ENABLE or DISABLE.
+1242:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+1243:../stm32_lib/src/stm32f10x_rcc.c ****   */
+1244:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_BackupResetCmd(FunctionalState NewState)
+1245:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 1642              		.loc 1 1245 0
+ 1643              		.cfi_startproc
+ 1644              		@ args = 0, pretend = 0, frame = 8
+ 1645              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1646              		@ link register save eliminated.
+ 1647 08d0 80B4     		push	{r7}
+ 1648              	.LCFI76:
+ 1649              		.cfi_def_cfa_offset 4
+ 1650              		.cfi_offset 7, -4
+ 1651 08d2 83B0     		sub	sp, sp, #12
+ 1652              	.LCFI77:
+ 1653              		.cfi_def_cfa_offset 16
+ 1654 08d4 00AF     		add	r7, sp, #0
+ 1655              	.LCFI78:
+ 1656              		.cfi_def_cfa_register 7
+ 1657 08d6 0346     		mov	r3, r0
+ 1658 08d8 FB71     		strb	r3, [r7, #7]
+1246:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+1247:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_FUNCTIONAL_STATE(NewState));
+1248:../stm32_lib/src/stm32f10x_rcc.c ****   *(__IO uint32_t *) BDCR_BDRST_BB = (uint32_t)NewState;
+ 1659              		.loc 1 1248 0
+ 1660 08da 4FF48863 		mov	r3, #1088
+ 1661 08de C4F24223 		movt	r3, 16962
+ 1662 08e2 FA79     		ldrb	r2, [r7, #7]	@ zero_extendqisi2
+ 1663 08e4 1A60     		str	r2, [r3, #0]
+1249:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 1664              		.loc 1 1249 0
+ 1665 08e6 07F10C07 		add	r7, r7, #12
+ 1666 08ea BD46     		mov	sp, r7
+ 1667 08ec 80BC     		pop	{r7}
+ 1668 08ee 7047     		bx	lr
+ 1669              		.cfi_endproc
+ 1670              	.LFE55:
+ 1672              		.align	2
+ 1673              		.global	RCC_ClockSecuritySystemCmd
+ 1674              		.thumb
+ 1675              		.thumb_func
+ 1677              	RCC_ClockSecuritySystemCmd:
+ 1678              	.LFB56:
+1250:../stm32_lib/src/stm32f10x_rcc.c **** 
+1251:../stm32_lib/src/stm32f10x_rcc.c **** /**
+1252:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Enables or disables the Clock Security System.
+1253:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  NewState: new state of the Clock Security System..
+1254:../stm32_lib/src/stm32f10x_rcc.c ****   *   This parameter can be: ENABLE or DISABLE.
+1255:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+1256:../stm32_lib/src/stm32f10x_rcc.c ****   */
+1257:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_ClockSecuritySystemCmd(FunctionalState NewState)
+1258:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 1679              		.loc 1 1258 0
+ 1680              		.cfi_startproc
+ 1681              		@ args = 0, pretend = 0, frame = 8
+ 1682              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1683              		@ link register save eliminated.
+ 1684 08f0 80B4     		push	{r7}
+ 1685              	.LCFI79:
+ 1686              		.cfi_def_cfa_offset 4
+ 1687              		.cfi_offset 7, -4
+ 1688 08f2 83B0     		sub	sp, sp, #12
+ 1689              	.LCFI80:
+ 1690              		.cfi_def_cfa_offset 16
+ 1691 08f4 00AF     		add	r7, sp, #0
+ 1692              	.LCFI81:
+ 1693              		.cfi_def_cfa_register 7
+ 1694 08f6 0346     		mov	r3, r0
+ 1695 08f8 FB71     		strb	r3, [r7, #7]
+1259:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+1260:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_FUNCTIONAL_STATE(NewState));
+1261:../stm32_lib/src/stm32f10x_rcc.c ****   *(__IO uint32_t *) CR_CSSON_BB = (uint32_t)NewState;
+ 1696              		.loc 1 1261 0
+ 1697 08fa 4FF04C03 		mov	r3, #76
+ 1698 08fe C4F24223 		movt	r3, 16962
+ 1699 0902 FA79     		ldrb	r2, [r7, #7]	@ zero_extendqisi2
+ 1700 0904 1A60     		str	r2, [r3, #0]
+1262:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 1701              		.loc 1 1262 0
+ 1702 0906 07F10C07 		add	r7, r7, #12
+ 1703 090a BD46     		mov	sp, r7
+ 1704 090c 80BC     		pop	{r7}
+ 1705 090e 7047     		bx	lr
+ 1706              		.cfi_endproc
+ 1707              	.LFE56:
+ 1709              		.align	2
+ 1710              		.global	RCC_MCOConfig
+ 1711              		.thumb
+ 1712              		.thumb_func
+ 1714              	RCC_MCOConfig:
+ 1715              	.LFB57:
+1263:../stm32_lib/src/stm32f10x_rcc.c **** 
+1264:../stm32_lib/src/stm32f10x_rcc.c **** /**
+1265:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Selects the clock source to output on MCO pin.
+1266:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_MCO: specifies the clock source to output.
+1267:../stm32_lib/src/stm32f10x_rcc.c ****   *   
+1268:../stm32_lib/src/stm32f10x_rcc.c ****   *   For @b STM32_Connectivity_line_devices, this parameter can be one of the
+1269:../stm32_lib/src/stm32f10x_rcc.c ****   *   following values:       
+1270:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_MCO_NoClock: No clock selected
+1271:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_MCO_SYSCLK: System clock selected
+1272:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_MCO_HSI: HSI oscillator clock selected
+1273:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_MCO_HSE: HSE oscillator clock selected
+1274:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_MCO_PLLCLK_Div2: PLL clock divided by 2 selected
+1275:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_MCO_PLL2CLK: PLL2 clock selected                     
+1276:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_MCO_PLL3CLK_Div2: PLL3 clock divided by 2 selected   
+1277:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_MCO_XT1: External 3-25 MHz oscillator clock selected  
+1278:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_MCO_PLL3CLK: PLL3 clock selected 
+1279:../stm32_lib/src/stm32f10x_rcc.c ****   * 
+1280:../stm32_lib/src/stm32f10x_rcc.c ****   *   For  @b other_STM32_devices, this parameter can be one of the following values:        
+1281:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_MCO_NoClock: No clock selected
+1282:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_MCO_SYSCLK: System clock selected
+1283:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_MCO_HSI: HSI oscillator clock selected
+1284:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_MCO_HSE: HSE oscillator clock selected
+1285:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_MCO_PLLCLK_Div2: PLL clock divided by 2 selected
+1286:../stm32_lib/src/stm32f10x_rcc.c ****   *   
+1287:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+1288:../stm32_lib/src/stm32f10x_rcc.c ****   */
+1289:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_MCOConfig(uint8_t RCC_MCO)
+1290:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 1716              		.loc 1 1290 0
+ 1717              		.cfi_startproc
+ 1718              		@ args = 0, pretend = 0, frame = 8
+ 1719              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1720              		@ link register save eliminated.
+ 1721 0910 80B4     		push	{r7}
+ 1722              	.LCFI82:
+ 1723              		.cfi_def_cfa_offset 4
+ 1724              		.cfi_offset 7, -4
+ 1725 0912 83B0     		sub	sp, sp, #12
+ 1726              	.LCFI83:
+ 1727              		.cfi_def_cfa_offset 16
+ 1728 0914 00AF     		add	r7, sp, #0
+ 1729              	.LCFI84:
+ 1730              		.cfi_def_cfa_register 7
+ 1731 0916 0346     		mov	r3, r0
+ 1732 0918 FB71     		strb	r3, [r7, #7]
+1291:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+1292:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_MCO(RCC_MCO));
+1293:../stm32_lib/src/stm32f10x_rcc.c **** 
+1294:../stm32_lib/src/stm32f10x_rcc.c ****   /* Perform Byte access to MCO bits to select the MCO source */
+1295:../stm32_lib/src/stm32f10x_rcc.c ****   *(__IO uint8_t *) CFGR_BYTE4_ADDRESS = RCC_MCO;
+ 1733              		.loc 1 1295 0
+ 1734 091a 41F20703 		movw	r3, #4103
+ 1735 091e C4F20203 		movt	r3, 16386
+ 1736 0922 FA79     		ldrb	r2, [r7, #7]
+ 1737 0924 1A70     		strb	r2, [r3, #0]
+1296:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 1738              		.loc 1 1296 0
+ 1739 0926 07F10C07 		add	r7, r7, #12
+ 1740 092a BD46     		mov	sp, r7
+ 1741 092c 80BC     		pop	{r7}
+ 1742 092e 7047     		bx	lr
+ 1743              		.cfi_endproc
+ 1744              	.LFE57:
+ 1746              		.align	2
+ 1747              		.global	RCC_GetFlagStatus
+ 1748              		.thumb
+ 1749              		.thumb_func
+ 1751              	RCC_GetFlagStatus:
+ 1752              	.LFB58:
+1297:../stm32_lib/src/stm32f10x_rcc.c **** 
+1298:../stm32_lib/src/stm32f10x_rcc.c **** /**
+1299:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Checks whether the specified RCC flag is set or not.
+1300:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_FLAG: specifies the flag to check.
+1301:../stm32_lib/src/stm32f10x_rcc.c ****   *   
+1302:../stm32_lib/src/stm32f10x_rcc.c ****   *   For @b STM32_Connectivity_line_devices, this parameter can be one of the
+1303:../stm32_lib/src/stm32f10x_rcc.c ****   *   following values:
+1304:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_HSIRDY: HSI oscillator clock ready
+1305:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_HSERDY: HSE oscillator clock ready
+1306:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_PLLRDY: PLL clock ready
+1307:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_PLL2RDY: PLL2 clock ready      
+1308:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_PLL3RDY: PLL3 clock ready                           
+1309:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_LSERDY: LSE oscillator clock ready
+1310:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_LSIRDY: LSI oscillator clock ready
+1311:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_PINRST: Pin reset
+1312:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_PORRST: POR/PDR reset
+1313:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_SFTRST: Software reset
+1314:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_IWDGRST: Independent Watchdog reset
+1315:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_WWDGRST: Window Watchdog reset
+1316:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_LPWRRST: Low Power reset
+1317:../stm32_lib/src/stm32f10x_rcc.c ****   * 
+1318:../stm32_lib/src/stm32f10x_rcc.c ****   *   For @b other_STM32_devices, this parameter can be one of the following values:        
+1319:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_HSIRDY: HSI oscillator clock ready
+1320:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_HSERDY: HSE oscillator clock ready
+1321:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_PLLRDY: PLL clock ready
+1322:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_LSERDY: LSE oscillator clock ready
+1323:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_LSIRDY: LSI oscillator clock ready
+1324:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_PINRST: Pin reset
+1325:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_PORRST: POR/PDR reset
+1326:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_SFTRST: Software reset
+1327:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_IWDGRST: Independent Watchdog reset
+1328:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_WWDGRST: Window Watchdog reset
+1329:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_FLAG_LPWRRST: Low Power reset
+1330:../stm32_lib/src/stm32f10x_rcc.c ****   *   
+1331:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval The new state of RCC_FLAG (SET or RESET).
+1332:../stm32_lib/src/stm32f10x_rcc.c ****   */
+1333:../stm32_lib/src/stm32f10x_rcc.c **** FlagStatus RCC_GetFlagStatus(uint8_t RCC_FLAG)
+1334:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 1753              		.loc 1 1334 0
+ 1754              		.cfi_startproc
+ 1755              		@ args = 0, pretend = 0, frame = 24
+ 1756              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1757              		@ link register save eliminated.
+ 1758 0930 80B4     		push	{r7}
+ 1759              	.LCFI85:
+ 1760              		.cfi_def_cfa_offset 4
+ 1761              		.cfi_offset 7, -4
+ 1762 0932 87B0     		sub	sp, sp, #28
+ 1763              	.LCFI86:
+ 1764              		.cfi_def_cfa_offset 32
+ 1765 0934 00AF     		add	r7, sp, #0
+ 1766              	.LCFI87:
+ 1767              		.cfi_def_cfa_register 7
+ 1768 0936 0346     		mov	r3, r0
+ 1769 0938 FB71     		strb	r3, [r7, #7]
+1335:../stm32_lib/src/stm32f10x_rcc.c ****   uint32_t tmp = 0;
+ 1770              		.loc 1 1335 0
+ 1771 093a 4FF00003 		mov	r3, #0
+ 1772 093e FB60     		str	r3, [r7, #12]
+1336:../stm32_lib/src/stm32f10x_rcc.c ****   uint32_t statusreg = 0;
+ 1773              		.loc 1 1336 0
+ 1774 0940 4FF00003 		mov	r3, #0
+ 1775 0944 7B61     		str	r3, [r7, #20]
+1337:../stm32_lib/src/stm32f10x_rcc.c ****   FlagStatus bitstatus = RESET;
+ 1776              		.loc 1 1337 0
+ 1777 0946 4FF00003 		mov	r3, #0
+ 1778 094a FB74     		strb	r3, [r7, #19]
+1338:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+1339:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_FLAG(RCC_FLAG));
+1340:../stm32_lib/src/stm32f10x_rcc.c **** 
+1341:../stm32_lib/src/stm32f10x_rcc.c ****   /* Get the RCC register index */
+1342:../stm32_lib/src/stm32f10x_rcc.c ****   tmp = RCC_FLAG >> 5;
+ 1779              		.loc 1 1342 0
+ 1780 094c FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1781 094e 4FEA5313 		lsr	r3, r3, #5
+ 1782 0952 DBB2     		uxtb	r3, r3
+ 1783 0954 FB60     		str	r3, [r7, #12]
+1343:../stm32_lib/src/stm32f10x_rcc.c ****   if (tmp == 1)               /* The flag to check is in CR register */
+ 1784              		.loc 1 1343 0
+ 1785 0956 FB68     		ldr	r3, [r7, #12]
+ 1786 0958 012B     		cmp	r3, #1
+ 1787 095a 06D1     		bne	.L65
+1344:../stm32_lib/src/stm32f10x_rcc.c ****   {
+1345:../stm32_lib/src/stm32f10x_rcc.c ****     statusreg = RCC->CR;
+ 1788              		.loc 1 1345 0
+ 1789 095c 4FF48053 		mov	r3, #4096
+ 1790 0960 C4F20203 		movt	r3, 16386
+ 1791 0964 1B68     		ldr	r3, [r3, #0]
+ 1792 0966 7B61     		str	r3, [r7, #20]
+ 1793 0968 0FE0     		b	.L66
+ 1794              	.L65:
+1346:../stm32_lib/src/stm32f10x_rcc.c ****   }
+1347:../stm32_lib/src/stm32f10x_rcc.c ****   else if (tmp == 2)          /* The flag to check is in BDCR register */
+ 1795              		.loc 1 1347 0
+ 1796 096a FB68     		ldr	r3, [r7, #12]
+ 1797 096c 022B     		cmp	r3, #2
+ 1798 096e 06D1     		bne	.L67
+1348:../stm32_lib/src/stm32f10x_rcc.c ****   {
+1349:../stm32_lib/src/stm32f10x_rcc.c ****     statusreg = RCC->BDCR;
+ 1799              		.loc 1 1349 0
+ 1800 0970 4FF48053 		mov	r3, #4096
+ 1801 0974 C4F20203 		movt	r3, 16386
+ 1802 0978 1B6A     		ldr	r3, [r3, #32]
+ 1803 097a 7B61     		str	r3, [r7, #20]
+ 1804 097c 05E0     		b	.L66
+ 1805              	.L67:
+1350:../stm32_lib/src/stm32f10x_rcc.c ****   }
+1351:../stm32_lib/src/stm32f10x_rcc.c ****   else                       /* The flag to check is in CSR register */
+1352:../stm32_lib/src/stm32f10x_rcc.c ****   {
+1353:../stm32_lib/src/stm32f10x_rcc.c ****     statusreg = RCC->CSR;
+ 1806              		.loc 1 1353 0
+ 1807 097e 4FF48053 		mov	r3, #4096
+ 1808 0982 C4F20203 		movt	r3, 16386
+ 1809 0986 5B6A     		ldr	r3, [r3, #36]
+ 1810 0988 7B61     		str	r3, [r7, #20]
+ 1811              	.L66:
+1354:../stm32_lib/src/stm32f10x_rcc.c ****   }
+1355:../stm32_lib/src/stm32f10x_rcc.c **** 
+1356:../stm32_lib/src/stm32f10x_rcc.c ****   /* Get the flag position */
+1357:../stm32_lib/src/stm32f10x_rcc.c ****   tmp = RCC_FLAG & FLAG_Mask;
+ 1812              		.loc 1 1357 0
+ 1813 098a FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1814 098c 03F01F03 		and	r3, r3, #31
+ 1815 0990 FB60     		str	r3, [r7, #12]
+1358:../stm32_lib/src/stm32f10x_rcc.c ****   if ((statusreg & ((uint32_t)1 << tmp)) != (uint32_t)RESET)
+ 1816              		.loc 1 1358 0
+ 1817 0992 FB68     		ldr	r3, [r7, #12]
+ 1818 0994 7A69     		ldr	r2, [r7, #20]
+ 1819 0996 22FA03F3 		lsr	r3, r2, r3
+ 1820 099a 03F00103 		and	r3, r3, #1
+ 1821 099e DBB2     		uxtb	r3, r3
+ 1822 09a0 002B     		cmp	r3, #0
+ 1823 09a2 03D0     		beq	.L68
+1359:../stm32_lib/src/stm32f10x_rcc.c ****   {
+1360:../stm32_lib/src/stm32f10x_rcc.c ****     bitstatus = SET;
+ 1824              		.loc 1 1360 0
+ 1825 09a4 4FF00103 		mov	r3, #1
+ 1826 09a8 FB74     		strb	r3, [r7, #19]
+ 1827 09aa 02E0     		b	.L69
+ 1828              	.L68:
+1361:../stm32_lib/src/stm32f10x_rcc.c ****   }
+1362:../stm32_lib/src/stm32f10x_rcc.c ****   else
+1363:../stm32_lib/src/stm32f10x_rcc.c ****   {
+1364:../stm32_lib/src/stm32f10x_rcc.c ****     bitstatus = RESET;
+ 1829              		.loc 1 1364 0
+ 1830 09ac 4FF00003 		mov	r3, #0
+ 1831 09b0 FB74     		strb	r3, [r7, #19]
+ 1832              	.L69:
+1365:../stm32_lib/src/stm32f10x_rcc.c ****   }
+1366:../stm32_lib/src/stm32f10x_rcc.c **** 
+1367:../stm32_lib/src/stm32f10x_rcc.c ****   /* Return the flag status */
+1368:../stm32_lib/src/stm32f10x_rcc.c ****   return bitstatus;
+ 1833              		.loc 1 1368 0
+ 1834 09b2 FB7C     		ldrb	r3, [r7, #19]	@ zero_extendqisi2
+1369:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 1835              		.loc 1 1369 0
+ 1836 09b4 1846     		mov	r0, r3
+ 1837 09b6 07F11C07 		add	r7, r7, #28
+ 1838 09ba BD46     		mov	sp, r7
+ 1839 09bc 80BC     		pop	{r7}
+ 1840 09be 7047     		bx	lr
+ 1841              		.cfi_endproc
+ 1842              	.LFE58:
+ 1844              		.align	2
+ 1845              		.global	RCC_ClearFlag
+ 1846              		.thumb
+ 1847              		.thumb_func
+ 1849              	RCC_ClearFlag:
+ 1850              	.LFB59:
+1370:../stm32_lib/src/stm32f10x_rcc.c **** 
+1371:../stm32_lib/src/stm32f10x_rcc.c **** /**
+1372:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Clears the RCC reset flags.
+1373:../stm32_lib/src/stm32f10x_rcc.c ****   * @note   The reset flags are: RCC_FLAG_PINRST, RCC_FLAG_PORRST, RCC_FLAG_SFTRST,
+1374:../stm32_lib/src/stm32f10x_rcc.c ****   *   RCC_FLAG_IWDGRST, RCC_FLAG_WWDGRST, RCC_FLAG_LPWRRST
+1375:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  None
+1376:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+1377:../stm32_lib/src/stm32f10x_rcc.c ****   */
+1378:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_ClearFlag(void)
+1379:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 1851              		.loc 1 1379 0
+ 1852              		.cfi_startproc
+ 1853              		@ args = 0, pretend = 0, frame = 0
+ 1854              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1855              		@ link register save eliminated.
+ 1856 09c0 80B4     		push	{r7}
+ 1857              	.LCFI88:
+ 1858              		.cfi_def_cfa_offset 4
+ 1859              		.cfi_offset 7, -4
+ 1860 09c2 00AF     		add	r7, sp, #0
+ 1861              	.LCFI89:
+ 1862              		.cfi_def_cfa_register 7
+1380:../stm32_lib/src/stm32f10x_rcc.c ****   /* Set RMVF bit to clear the reset flags */
+1381:../stm32_lib/src/stm32f10x_rcc.c ****   RCC->CSR |= CSR_RMVF_Set;
+ 1863              		.loc 1 1381 0
+ 1864 09c4 4FF48053 		mov	r3, #4096
+ 1865 09c8 C4F20203 		movt	r3, 16386
+ 1866 09cc 4FF48052 		mov	r2, #4096
+ 1867 09d0 C4F20202 		movt	r2, 16386
+ 1868 09d4 526A     		ldr	r2, [r2, #36]
+ 1869 09d6 42F08072 		orr	r2, r2, #16777216
+ 1870 09da 5A62     		str	r2, [r3, #36]
+1382:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 1871              		.loc 1 1382 0
+ 1872 09dc BD46     		mov	sp, r7
+ 1873 09de 80BC     		pop	{r7}
+ 1874 09e0 7047     		bx	lr
+ 1875              		.cfi_endproc
+ 1876              	.LFE59:
+ 1878 09e2 00BF     		.align	2
+ 1879              		.global	RCC_GetITStatus
+ 1880              		.thumb
+ 1881              		.thumb_func
+ 1883              	RCC_GetITStatus:
+ 1884              	.LFB60:
+1383:../stm32_lib/src/stm32f10x_rcc.c **** 
+1384:../stm32_lib/src/stm32f10x_rcc.c **** /**
+1385:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Checks whether the specified RCC interrupt has occurred or not.
+1386:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_IT: specifies the RCC interrupt source to check.
+1387:../stm32_lib/src/stm32f10x_rcc.c ****   *   
+1388:../stm32_lib/src/stm32f10x_rcc.c ****   *   For @b STM32_Connectivity_line_devices, this parameter can be one of the
+1389:../stm32_lib/src/stm32f10x_rcc.c ****   *   following values:
+1390:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_LSIRDY: LSI ready interrupt
+1391:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_LSERDY: LSE ready interrupt
+1392:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_HSIRDY: HSI ready interrupt
+1393:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_HSERDY: HSE ready interrupt
+1394:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_PLLRDY: PLL ready interrupt
+1395:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_PLL2RDY: PLL2 ready interrupt 
+1396:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_PLL3RDY: PLL3 ready interrupt                      
+1397:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_CSS: Clock Security System interrupt
+1398:../stm32_lib/src/stm32f10x_rcc.c ****   * 
+1399:../stm32_lib/src/stm32f10x_rcc.c ****   *   For @b other_STM32_devices, this parameter can be one of the following values:        
+1400:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_LSIRDY: LSI ready interrupt
+1401:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_LSERDY: LSE ready interrupt
+1402:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_HSIRDY: HSI ready interrupt
+1403:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_HSERDY: HSE ready interrupt
+1404:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_PLLRDY: PLL ready interrupt
+1405:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_CSS: Clock Security System interrupt
+1406:../stm32_lib/src/stm32f10x_rcc.c ****   *   
+1407:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval The new state of RCC_IT (SET or RESET).
+1408:../stm32_lib/src/stm32f10x_rcc.c ****   */
+1409:../stm32_lib/src/stm32f10x_rcc.c **** ITStatus RCC_GetITStatus(uint8_t RCC_IT)
+1410:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 1885              		.loc 1 1410 0
+ 1886              		.cfi_startproc
+ 1887              		@ args = 0, pretend = 0, frame = 16
+ 1888              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1889              		@ link register save eliminated.
+ 1890 09e4 80B4     		push	{r7}
+ 1891              	.LCFI90:
+ 1892              		.cfi_def_cfa_offset 4
+ 1893              		.cfi_offset 7, -4
+ 1894 09e6 85B0     		sub	sp, sp, #20
+ 1895              	.LCFI91:
+ 1896              		.cfi_def_cfa_offset 24
+ 1897 09e8 00AF     		add	r7, sp, #0
+ 1898              	.LCFI92:
+ 1899              		.cfi_def_cfa_register 7
+ 1900 09ea 0346     		mov	r3, r0
+ 1901 09ec FB71     		strb	r3, [r7, #7]
+1411:../stm32_lib/src/stm32f10x_rcc.c ****   ITStatus bitstatus = RESET;
+ 1902              		.loc 1 1411 0
+ 1903 09ee 4FF00003 		mov	r3, #0
+ 1904 09f2 FB73     		strb	r3, [r7, #15]
+1412:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+1413:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_GET_IT(RCC_IT));
+1414:../stm32_lib/src/stm32f10x_rcc.c **** 
+1415:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the status of the specified RCC interrupt */
+1416:../stm32_lib/src/stm32f10x_rcc.c ****   if ((RCC->CIR & RCC_IT) != (uint32_t)RESET)
+ 1905              		.loc 1 1416 0
+ 1906 09f4 4FF48053 		mov	r3, #4096
+ 1907 09f8 C4F20203 		movt	r3, 16386
+ 1908 09fc 9A68     		ldr	r2, [r3, #8]
+ 1909 09fe FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1910 0a00 1340     		ands	r3, r3, r2
+ 1911 0a02 002B     		cmp	r3, #0
+ 1912 0a04 03D0     		beq	.L72
+1417:../stm32_lib/src/stm32f10x_rcc.c ****   {
+1418:../stm32_lib/src/stm32f10x_rcc.c ****     bitstatus = SET;
+ 1913              		.loc 1 1418 0
+ 1914 0a06 4FF00103 		mov	r3, #1
+ 1915 0a0a FB73     		strb	r3, [r7, #15]
+ 1916 0a0c 02E0     		b	.L73
+ 1917              	.L72:
+1419:../stm32_lib/src/stm32f10x_rcc.c ****   }
+1420:../stm32_lib/src/stm32f10x_rcc.c ****   else
+1421:../stm32_lib/src/stm32f10x_rcc.c ****   {
+1422:../stm32_lib/src/stm32f10x_rcc.c ****     bitstatus = RESET;
+ 1918              		.loc 1 1422 0
+ 1919 0a0e 4FF00003 		mov	r3, #0
+ 1920 0a12 FB73     		strb	r3, [r7, #15]
+ 1921              	.L73:
+1423:../stm32_lib/src/stm32f10x_rcc.c ****   }
+1424:../stm32_lib/src/stm32f10x_rcc.c **** 
+1425:../stm32_lib/src/stm32f10x_rcc.c ****   /* Return the RCC_IT status */
+1426:../stm32_lib/src/stm32f10x_rcc.c ****   return  bitstatus;
+ 1922              		.loc 1 1426 0
+ 1923 0a14 FB7B     		ldrb	r3, [r7, #15]	@ zero_extendqisi2
+1427:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 1924              		.loc 1 1427 0
+ 1925 0a16 1846     		mov	r0, r3
+ 1926 0a18 07F11407 		add	r7, r7, #20
+ 1927 0a1c BD46     		mov	sp, r7
+ 1928 0a1e 80BC     		pop	{r7}
+ 1929 0a20 7047     		bx	lr
+ 1930              		.cfi_endproc
+ 1931              	.LFE60:
+ 1933 0a22 00BF     		.align	2
+ 1934              		.global	RCC_ClearITPendingBit
+ 1935              		.thumb
+ 1936              		.thumb_func
+ 1938              	RCC_ClearITPendingBit:
+ 1939              	.LFB61:
+1428:../stm32_lib/src/stm32f10x_rcc.c **** 
+1429:../stm32_lib/src/stm32f10x_rcc.c **** /**
+1430:../stm32_lib/src/stm32f10x_rcc.c ****   * @brief  Clears the RCC’s interrupt pending bits.
+1431:../stm32_lib/src/stm32f10x_rcc.c ****   * @param  RCC_IT: specifies the interrupt pending bit to clear.
+1432:../stm32_lib/src/stm32f10x_rcc.c ****   *   
+1433:../stm32_lib/src/stm32f10x_rcc.c ****   *   For @b STM32_Connectivity_line_devices, this parameter can be any combination
+1434:../stm32_lib/src/stm32f10x_rcc.c ****   *   of the following values:
+1435:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_LSIRDY: LSI ready interrupt
+1436:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_LSERDY: LSE ready interrupt
+1437:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_HSIRDY: HSI ready interrupt
+1438:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_HSERDY: HSE ready interrupt
+1439:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_PLLRDY: PLL ready interrupt
+1440:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_PLL2RDY: PLL2 ready interrupt 
+1441:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_PLL3RDY: PLL3 ready interrupt                      
+1442:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_CSS: Clock Security System interrupt
+1443:../stm32_lib/src/stm32f10x_rcc.c ****   * 
+1444:../stm32_lib/src/stm32f10x_rcc.c ****   *   For @b other_STM32_devices, this parameter can be any combination of the
+1445:../stm32_lib/src/stm32f10x_rcc.c ****   *   following values:        
+1446:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_LSIRDY: LSI ready interrupt
+1447:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_LSERDY: LSE ready interrupt
+1448:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_HSIRDY: HSI ready interrupt
+1449:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_HSERDY: HSE ready interrupt
+1450:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_PLLRDY: PLL ready interrupt
+1451:../stm32_lib/src/stm32f10x_rcc.c ****   *   
+1452:../stm32_lib/src/stm32f10x_rcc.c ****   *     @arg RCC_IT_CSS: Clock Security System interrupt
+1453:../stm32_lib/src/stm32f10x_rcc.c ****   * @retval None
+1454:../stm32_lib/src/stm32f10x_rcc.c ****   */
+1455:../stm32_lib/src/stm32f10x_rcc.c **** void RCC_ClearITPendingBit(uint8_t RCC_IT)
+1456:../stm32_lib/src/stm32f10x_rcc.c **** {
+ 1940              		.loc 1 1456 0
+ 1941              		.cfi_startproc
+ 1942              		@ args = 0, pretend = 0, frame = 8
+ 1943              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1944              		@ link register save eliminated.
+ 1945 0a24 80B4     		push	{r7}
+ 1946              	.LCFI93:
+ 1947              		.cfi_def_cfa_offset 4
+ 1948              		.cfi_offset 7, -4
+ 1949 0a26 83B0     		sub	sp, sp, #12
+ 1950              	.LCFI94:
+ 1951              		.cfi_def_cfa_offset 16
+ 1952 0a28 00AF     		add	r7, sp, #0
+ 1953              	.LCFI95:
+ 1954              		.cfi_def_cfa_register 7
+ 1955 0a2a 0346     		mov	r3, r0
+ 1956 0a2c FB71     		strb	r3, [r7, #7]
+1457:../stm32_lib/src/stm32f10x_rcc.c ****   /* Check the parameters */
+1458:../stm32_lib/src/stm32f10x_rcc.c ****   assert_param(IS_RCC_CLEAR_IT(RCC_IT));
+1459:../stm32_lib/src/stm32f10x_rcc.c **** 
+1460:../stm32_lib/src/stm32f10x_rcc.c ****   /* Perform Byte access to RCC_CIR[23:16] bits to clear the selected interrupt
+1461:../stm32_lib/src/stm32f10x_rcc.c ****      pending bits */
+1462:../stm32_lib/src/stm32f10x_rcc.c ****   *(__IO uint8_t *) CIR_BYTE3_ADDRESS = RCC_IT;
+ 1957              		.loc 1 1462 0
+ 1958 0a2e 41F20A03 		movw	r3, #4106
+ 1959 0a32 C4F20203 		movt	r3, 16386
+ 1960 0a36 FA79     		ldrb	r2, [r7, #7]
+ 1961 0a38 1A70     		strb	r2, [r3, #0]
+1463:../stm32_lib/src/stm32f10x_rcc.c **** }
+ 1962              		.loc 1 1463 0
+ 1963 0a3a 07F10C07 		add	r7, r7, #12
+ 1964 0a3e BD46     		mov	sp, r7
+ 1965 0a40 80BC     		pop	{r7}
+ 1966 0a42 7047     		bx	lr
+ 1967              		.cfi_endproc
+ 1968              	.LFE61:
+ 1970              	.Letext0:
+ 1971              		.file 2 "/opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/../../../../arm-none-eab
+ 1972              		.file 3 "/home/simon/Workspace/stm32vl/stm32_lib/inc/stm32f10x.h"
+ 1973              		.file 4 "/home/simon/Workspace/stm32vl/stm32_lib/inc/stm32f10x_rcc.h"
+ 1974              		.file 5 "/home/simon/Workspace/stm32vl/stm32_lib/inc/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 stm32f10x_rcc.c
+     /tmp/cc2ii8qW.s:19     .data:00000000 $d
+     /tmp/cc2ii8qW.s:22     .data:00000000 APBAHBPrescTable
+     /tmp/cc2ii8qW.s:42     .data:00000010 ADCPrescTable
+     /tmp/cc2ii8qW.s:48     .text:00000000 $t
+     /tmp/cc2ii8qW.s:53     .text:00000000 RCC_DeInit
+     /tmp/cc2ii8qW.s:133    .text:000000a8 RCC_HSEConfig
+     /tmp/cc2ii8qW.s:213    .text:00000130 RCC_WaitForHSEStartUp
+     /tmp/cc2ii8qW.s:1751   .text:00000930 RCC_GetFlagStatus
+     /tmp/cc2ii8qW.s:287    .text:00000194 RCC_AdjustHSICalibrationValue
+     /tmp/cc2ii8qW.s:342    .text:000001dc RCC_HSICmd
+     /tmp/cc2ii8qW.s:379    .text:000001fc RCC_PLLConfig
+     /tmp/cc2ii8qW.s:435    .text:00000244 RCC_PLLCmd
+     /tmp/cc2ii8qW.s:472    .text:00000264 RCC_PREDIV1Config
+     /tmp/cc2ii8qW.s:529    .text:000002b0 RCC_SYSCLKConfig
+     /tmp/cc2ii8qW.s:582    .text:000002f0 RCC_GetSYSCLKSource
+     /tmp/cc2ii8qW.s:616    .text:00000310 RCC_HCLKConfig
+     /tmp/cc2ii8qW.s:669    .text:00000350 RCC_PCLK1Config
+     /tmp/cc2ii8qW.s:722    .text:00000390 RCC_PCLK2Config
+     /tmp/cc2ii8qW.s:776    .text:000003d4 RCC_ITConfig
+     /tmp/cc2ii8qW.s:841    .text:00000434 RCC_USBCLKConfig
+     /tmp/cc2ii8qW.s:877    .text:00000454 RCC_ADCCLKConfig
+     /tmp/cc2ii8qW.s:930    .text:00000494 RCC_LSEConfig
+     /tmp/cc2ii8qW.s:999    .text:000004f4 RCC_LSICmd
+     /tmp/cc2ii8qW.s:1036   .text:00000514 RCC_RTCCLKConfig
+     /tmp/cc2ii8qW.s:1076   .text:00000540 RCC_RTCCLKCmd
+     /tmp/cc2ii8qW.s:1113   .text:00000560 RCC_GetClocksFreq
+     /tmp/cc2ii8qW.s:1345   .text:0000072c RCC_AHBPeriphClockCmd
+     /tmp/cc2ii8qW.s:1404   .text:00000780 RCC_APB2PeriphClockCmd
+     /tmp/cc2ii8qW.s:1463   .text:000007d4 RCC_APB1PeriphClockCmd
+     /tmp/cc2ii8qW.s:1522   .text:00000828 RCC_APB2PeriphResetCmd
+     /tmp/cc2ii8qW.s:1581   .text:0000087c RCC_APB1PeriphResetCmd
+     /tmp/cc2ii8qW.s:1640   .text:000008d0 RCC_BackupResetCmd
+     /tmp/cc2ii8qW.s:1677   .text:000008f0 RCC_ClockSecuritySystemCmd
+     /tmp/cc2ii8qW.s:1714   .text:00000910 RCC_MCOConfig
+     /tmp/cc2ii8qW.s:1849   .text:000009c0 RCC_ClearFlag
+     /tmp/cc2ii8qW.s:1883   .text:000009e4 RCC_GetITStatus
+     /tmp/cc2ii8qW.s:1938   .text:00000a24 RCC_ClearITPendingBit
+                     .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS
