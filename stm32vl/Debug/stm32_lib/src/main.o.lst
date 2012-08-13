@@ -1,0 +1,243 @@
+   1              		.syntax unified
+   2              		.cpu cortex-m4
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.thumb
+  14              		.file	"main.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.global	LSE_Delay
+  19              		.bss
+  20              		.align	2
+  23              	LSE_Delay:
+  24 0000 00000000 		.space	4
+  25              		.global	count
+  26              		.align	2
+  29              	count:
+  30 0004 00000000 		.space	4
+  31              		.global	BlinkSpeed
+  32              		.align	2
+  35              	BlinkSpeed:
+  36 0008 00000000 		.space	4
+  37              		.global	KeyState
+  38              		.align	2
+  41              	KeyState:
+  42 000c 00000000 		.space	4
+  43              		.align	2
+  44              	TimingDelay:
+  45 0010 00000000 		.space	4
+  46              		.text
+  47              		.align	2
+  48              		.global	main
+  49              		.thumb
+  50              		.thumb_func
+  52              	main:
+  53              	.LFB29:
+  54              		.file 1 "../stm32_lib/src/main.c"
+   1:../stm32_lib/src/main.c **** /**
+   2:../stm32_lib/src/main.c ****   ******************************************************************************
+   3:../stm32_lib/src/main.c ****   * @file    Demo/src/main.c 
+   4:../stm32_lib/src/main.c ****   * @author  MCD Application Team
+   5:../stm32_lib/src/main.c ****   * @version V1.0.0
+   6:../stm32_lib/src/main.c ****   * @date    09/13/2010
+   7:../stm32_lib/src/main.c ****   * @brief   Main program body
+   8:../stm32_lib/src/main.c ****   ******************************************************************************
+   9:../stm32_lib/src/main.c ****   * @copy
+  10:../stm32_lib/src/main.c ****   *
+  11:../stm32_lib/src/main.c ****   * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
+  12:../stm32_lib/src/main.c ****   * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
+  13:../stm32_lib/src/main.c ****   * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
+  14:../stm32_lib/src/main.c ****   * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
+  15:../stm32_lib/src/main.c ****   * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
+  16:../stm32_lib/src/main.c ****   * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+  17:../stm32_lib/src/main.c ****   *
+  18:../stm32_lib/src/main.c ****   * <h2><center>&copy; COPYRIGHT 2010 STMicroelectronics</center></h2>
+  19:../stm32_lib/src/main.c ****   */ 
+  20:../stm32_lib/src/main.c **** 
+  21:../stm32_lib/src/main.c **** /* Includes ------------------------------------------------------------------*/
+  22:../stm32_lib/src/main.c **** #include "stm32f10x.h"
+  23:../stm32_lib/src/main.c **** 
+  24:../stm32_lib/src/main.c **** /* Private typedef -----------------------------------------------------------*/
+  25:../stm32_lib/src/main.c **** /* Private define ------------------------------------------------------------*/
+  26:../stm32_lib/src/main.c **** #define  LSE_FAIL_FLAG  0x80
+  27:../stm32_lib/src/main.c **** #define  LSE_PASS_FLAG  0x100
+  28:../stm32_lib/src/main.c **** /* Private macro -------------------------------------------------------------*/
+  29:../stm32_lib/src/main.c **** /* Private consts ------------------------------------------------------------*/
+  30:../stm32_lib/src/main.c **** 
+  31:../stm32_lib/src/main.c **** /* Private variables ---------------------------------------------------------*/
+  32:../stm32_lib/src/main.c **** u32 LSE_Delay = 0;
+  33:../stm32_lib/src/main.c **** u32 count = 0;
+  34:../stm32_lib/src/main.c **** u32 BlinkSpeed = 0;
+  35:../stm32_lib/src/main.c **** u32 KeyState = 0;
+  36:../stm32_lib/src/main.c **** static __IO uint32_t TimingDelay;
+  37:../stm32_lib/src/main.c **** /* Private function prototypes -----------------------------------------------*/
+  38:../stm32_lib/src/main.c **** void Delay(uint32_t nTime);
+  39:../stm32_lib/src/main.c **** void TimingDelay_Decrement(void);
+  40:../stm32_lib/src/main.c **** 
+  41:../stm32_lib/src/main.c **** /* Private functions ---------------------------------------------------------*/
+  42:../stm32_lib/src/main.c **** 
+  43:../stm32_lib/src/main.c **** /**
+  44:../stm32_lib/src/main.c ****   * @brief  Main program.
+  45:../stm32_lib/src/main.c ****   * @param  None
+  46:../stm32_lib/src/main.c ****   * @retval None
+  47:../stm32_lib/src/main.c ****   */
+  48:../stm32_lib/src/main.c **** 
+  49:../stm32_lib/src/main.c **** int main(void)
+  50:../stm32_lib/src/main.c **** {
+  55              		.loc 1 50 0
+  56              		.cfi_startproc
+  57              		@ args = 0, pretend = 0, frame = 0
+  58              		@ frame_needed = 1, uses_anonymous_args = 0
+  59              		@ link register save eliminated.
+  60 0000 80B4     		push	{r7}
+  61              	.LCFI0:
+  62              		.cfi_def_cfa_offset 4
+  63              		.cfi_offset 7, -4
+  64 0002 00AF     		add	r7, sp, #0
+  65              	.LCFI1:
+  66              		.cfi_def_cfa_register 7
+  67              	.L2:
+  51:../stm32_lib/src/main.c **** 
+  52:../stm32_lib/src/main.c **** 	while(1);
+  68              		.loc 1 52 0 discriminator 1
+  69 0004 FEE7     		b	.L2
+  70              		.cfi_endproc
+  71              	.LFE29:
+  73 0006 00BF     		.align	2
+  74              		.global	Delay
+  75              		.thumb
+  76              		.thumb_func
+  78              	Delay:
+  79              	.LFB30:
+  53:../stm32_lib/src/main.c **** 
+  54:../stm32_lib/src/main.c **** 	return 0;
+  55:../stm32_lib/src/main.c **** }
+  56:../stm32_lib/src/main.c **** 
+  57:../stm32_lib/src/main.c **** /**
+  58:../stm32_lib/src/main.c ****   * @brief  Inserts a delay time.
+  59:../stm32_lib/src/main.c ****   * @param  nTime: specifies the delay time length, in milliseconds.
+  60:../stm32_lib/src/main.c ****   * @retval None
+  61:../stm32_lib/src/main.c ****   */
+  62:../stm32_lib/src/main.c **** void Delay(uint32_t nTime)
+  63:../stm32_lib/src/main.c **** { 
+  80              		.loc 1 63 0
+  81              		.cfi_startproc
+  82              		@ args = 0, pretend = 0, frame = 8
+  83              		@ frame_needed = 1, uses_anonymous_args = 0
+  84              		@ link register save eliminated.
+  85 0008 80B4     		push	{r7}
+  86              	.LCFI2:
+  87              		.cfi_def_cfa_offset 4
+  88              		.cfi_offset 7, -4
+  89 000a 83B0     		sub	sp, sp, #12
+  90              	.LCFI3:
+  91              		.cfi_def_cfa_offset 16
+  92 000c 00AF     		add	r7, sp, #0
+  93              	.LCFI4:
+  94              		.cfi_def_cfa_register 7
+  95 000e 7860     		str	r0, [r7, #4]
+  64:../stm32_lib/src/main.c ****   TimingDelay = nTime;
+  96              		.loc 1 64 0
+  97 0010 40F20003 		movw	r3, #:lower16:TimingDelay
+  98 0014 C0F20003 		movt	r3, #:upper16:TimingDelay
+  99 0018 7A68     		ldr	r2, [r7, #4]
+ 100 001a 1A60     		str	r2, [r3, #0]
+  65:../stm32_lib/src/main.c **** 
+  66:../stm32_lib/src/main.c ****   while(TimingDelay != 0);
+ 101              		.loc 1 66 0
+ 102 001c 00BF     		nop
+ 103              	.L4:
+ 104              		.loc 1 66 0 is_stmt 0 discriminator 1
+ 105 001e 40F20003 		movw	r3, #:lower16:TimingDelay
+ 106 0022 C0F20003 		movt	r3, #:upper16:TimingDelay
+ 107 0026 1B68     		ldr	r3, [r3, #0]
+ 108 0028 002B     		cmp	r3, #0
+ 109 002a F8D1     		bne	.L4
+  67:../stm32_lib/src/main.c **** }
+ 110              		.loc 1 67 0 is_stmt 1
+ 111 002c 07F10C07 		add	r7, r7, #12
+ 112 0030 BD46     		mov	sp, r7
+ 113 0032 80BC     		pop	{r7}
+ 114 0034 7047     		bx	lr
+ 115              		.cfi_endproc
+ 116              	.LFE30:
+ 118 0036 00BF     		.align	2
+ 119              		.global	TimingDelay_Decrement
+ 120              		.thumb
+ 121              		.thumb_func
+ 123              	TimingDelay_Decrement:
+ 124              	.LFB31:
+  68:../stm32_lib/src/main.c **** 
+  69:../stm32_lib/src/main.c **** /**
+  70:../stm32_lib/src/main.c ****   * @brief  Decrements the TimingDelay variable.
+  71:../stm32_lib/src/main.c ****   * @param  None
+  72:../stm32_lib/src/main.c ****   * @retval None
+  73:../stm32_lib/src/main.c ****   */
+  74:../stm32_lib/src/main.c **** void TimingDelay_Decrement(void)
+  75:../stm32_lib/src/main.c **** {
+ 125              		.loc 1 75 0
+ 126              		.cfi_startproc
+ 127              		@ args = 0, pretend = 0, frame = 0
+ 128              		@ frame_needed = 1, uses_anonymous_args = 0
+ 129              		@ link register save eliminated.
+ 130 0038 80B4     		push	{r7}
+ 131              	.LCFI5:
+ 132              		.cfi_def_cfa_offset 4
+ 133              		.cfi_offset 7, -4
+ 134 003a 00AF     		add	r7, sp, #0
+ 135              	.LCFI6:
+ 136              		.cfi_def_cfa_register 7
+  76:../stm32_lib/src/main.c ****   if (TimingDelay != 0x00)
+ 137              		.loc 1 76 0
+ 138 003c 40F20003 		movw	r3, #:lower16:TimingDelay
+ 139 0040 C0F20003 		movt	r3, #:upper16:TimingDelay
+ 140 0044 1B68     		ldr	r3, [r3, #0]
+ 141 0046 002B     		cmp	r3, #0
+ 142 0048 0BD0     		beq	.L5
+  77:../stm32_lib/src/main.c ****   { 
+  78:../stm32_lib/src/main.c ****     TimingDelay--;
+ 143              		.loc 1 78 0
+ 144 004a 40F20003 		movw	r3, #:lower16:TimingDelay
+ 145 004e C0F20003 		movt	r3, #:upper16:TimingDelay
+ 146 0052 1B68     		ldr	r3, [r3, #0]
+ 147 0054 03F1FF32 		add	r2, r3, #-1
+ 148 0058 40F20003 		movw	r3, #:lower16:TimingDelay
+ 149 005c C0F20003 		movt	r3, #:upper16:TimingDelay
+ 150 0060 1A60     		str	r2, [r3, #0]
+ 151              	.L5:
+  79:../stm32_lib/src/main.c ****   }
+  80:../stm32_lib/src/main.c **** }
+ 152              		.loc 1 80 0
+ 153 0062 BD46     		mov	sp, r7
+ 154 0064 80BC     		pop	{r7}
+ 155 0066 7047     		bx	lr
+ 156              		.cfi_endproc
+ 157              	.LFE31:
+ 159              	.Letext0:
+ 160              		.file 2 "/home/simon/workspace/stm32vl/stm32_lib/inc/core_cm3.h"
+ 161              		.file 3 "/opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/../../../../arm-none-eab
+ 162              		.file 4 "/home/simon/workspace/stm32vl/stm32_lib/inc/stm32f10x.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+     /tmp/ccgGZmLR.s:23     .bss:00000000 LSE_Delay
+     /tmp/ccgGZmLR.s:20     .bss:00000000 $d
+     /tmp/ccgGZmLR.s:29     .bss:00000004 count
+     /tmp/ccgGZmLR.s:35     .bss:00000008 BlinkSpeed
+     /tmp/ccgGZmLR.s:41     .bss:0000000c KeyState
+     /tmp/ccgGZmLR.s:44     .bss:00000010 TimingDelay
+     /tmp/ccgGZmLR.s:47     .text:00000000 $t
+     /tmp/ccgGZmLR.s:52     .text:00000000 main
+     /tmp/ccgGZmLR.s:78     .text:00000008 Delay
+     /tmp/ccgGZmLR.s:123    .text:00000038 TimingDelay_Decrement
+                     .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS

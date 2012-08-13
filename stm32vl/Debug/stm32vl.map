@@ -1,0 +1,1238 @@
+Archive member included because of file (symbol)
+
+/opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_arm_addsubsf3.o)
+                              ./movement.o (__aeabi_fadd)
+/opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_arm_muldivsf3.o)
+                              ./movement.o (__aeabi_fmul)
+/opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_arm_cmpsf2.o)
+                              ./movement.o (__aeabi_fcmpge)
+/opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_arm_fixsfsi.o)
+                              ./movement.o (__aeabi_f2iz)
+/opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_aeabi_ldivmod.o)
+                              ./libfixmath/fix16_exp.o (__aeabi_ldivmod)
+/opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(bpabi.o)
+                              /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_aeabi_ldivmod.o) (__gnu_ldivmod_helper)
+/opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_dvmd_tls.o)
+                              /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_aeabi_ldivmod.o) (__aeabi_ldiv0)
+/opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_divdi3.o)
+                              /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(bpabi.o) (__divdi3)
+/opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_udivdi3.o)
+                              /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(bpabi.o) (__udivdi3)
+/opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_udivsi3.o)
+                              /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_divdi3.o) (__aeabi_uidiv)
+/opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/../../../../arm-none-eabi/lib/thumb2/libc.a(lib_a-init.o)
+                              ./stm32_lib/startup_stm32f10x_md_vl.o (__libc_init_array)
+
+Allocating common symbols
+Common symbol       size              file
+
+mouse_data          0xe               ./main.o
+protocolHandlers    0x10              ./protocol.o
+headerInternal      0x8               ./protocol.o
+SPI1_Data           0x106             ./spi_1.o
+spi1_datastat       0x1               ./main.o
+spi2_datastat       0x1               ./main.o
+USART1_Data         0x20a             ./usart.o
+
+Discarded input sections
+
+ .text          0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crti.o
+ .data          0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crti.o
+ .bss           0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crti.o
+ .data          0x00000000        0x4 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtbegin.o
+ .text          0x00000000      0x28c ./stm32_lib/src/core_cm3.o
+ .data          0x00000000        0x0 ./stm32_lib/src/core_cm3.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/core_cm3.o
+ .debug_info    0x00000000      0x54c ./stm32_lib/src/core_cm3.o
+ .debug_abbrev  0x00000000       0xd7 ./stm32_lib/src/core_cm3.o
+ .debug_loc     0x00000000      0x3f0 ./stm32_lib/src/core_cm3.o
+ .debug_aranges
+                0x00000000       0x20 ./stm32_lib/src/core_cm3.o
+ .debug_line    0x00000000      0x19b ./stm32_lib/src/core_cm3.o
+ .debug_macinfo
+                0x00000000     0x2bb4 ./stm32_lib/src/core_cm3.o
+ .debug_str     0x00000000      0x233 ./stm32_lib/src/core_cm3.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/core_cm3.o
+ .ARM.attributes
+                0x00000000       0x33 ./stm32_lib/src/core_cm3.o
+ .debug_frame   0x00000000      0x280 ./stm32_lib/src/core_cm3.o
+ .data          0x00000000        0x0 ./stm32_lib/src/misc.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/misc.o
+ .text          0x00000000      0xb20 ./stm32_lib/src/stm32f10x_adc.o
+ .data          0x00000000        0x0 ./stm32_lib/src/stm32f10x_adc.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_adc.o
+ .debug_info    0x00000000      0xc12 ./stm32_lib/src/stm32f10x_adc.o
+ .debug_abbrev  0x00000000      0x176 ./stm32_lib/src/stm32f10x_adc.o
+ .debug_loc     0x00000000      0x7d4 ./stm32_lib/src/stm32f10x_adc.o
+ .debug_aranges
+                0x00000000       0x20 ./stm32_lib/src/stm32f10x_adc.o
+ .debug_line    0x00000000      0x358 ./stm32_lib/src/stm32f10x_adc.o
+ .debug_macinfo
+                0x00000000    0x3dd77 ./stm32_lib/src/stm32f10x_adc.o
+ .debug_str     0x00000000      0x65c ./stm32_lib/src/stm32f10x_adc.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_adc.o
+ .ARM.attributes
+                0x00000000       0x33 ./stm32_lib/src/stm32f10x_adc.o
+ .debug_frame   0x00000000      0x404 ./stm32_lib/src/stm32f10x_adc.o
+ .text          0x00000000      0x1ec ./stm32_lib/src/stm32f10x_bkp.o
+ .data          0x00000000        0x0 ./stm32_lib/src/stm32f10x_bkp.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_bkp.o
+ .debug_info    0x00000000      0x87d ./stm32_lib/src/stm32f10x_bkp.o
+ .debug_abbrev  0x00000000      0x158 ./stm32_lib/src/stm32f10x_bkp.o
+ .debug_loc     0x00000000      0x264 ./stm32_lib/src/stm32f10x_bkp.o
+ .debug_aranges
+                0x00000000       0x20 ./stm32_lib/src/stm32f10x_bkp.o
+ .debug_line    0x00000000      0x248 ./stm32_lib/src/stm32f10x_bkp.o
+ .debug_macinfo
+                0x00000000    0x3c369 ./stm32_lib/src/stm32f10x_bkp.o
+ .debug_str     0x00000000      0x516 ./stm32_lib/src/stm32f10x_bkp.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_bkp.o
+ .ARM.attributes
+                0x00000000       0x33 ./stm32_lib/src/stm32f10x_bkp.o
+ .debug_frame   0x00000000      0x160 ./stm32_lib/src/stm32f10x_bkp.o
+ .text          0x00000000      0xe70 ./stm32_lib/src/stm32f10x_can.o
+ .data          0x00000000        0x0 ./stm32_lib/src/stm32f10x_can.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_can.o
+ .debug_info    0x00000000      0xb01 ./stm32_lib/src/stm32f10x_can.o
+ .debug_abbrev  0x00000000      0x1ae ./stm32_lib/src/stm32f10x_can.o
+ .debug_loc     0x00000000      0x460 ./stm32_lib/src/stm32f10x_can.o
+ .debug_aranges
+                0x00000000       0x20 ./stm32_lib/src/stm32f10x_can.o
+ .debug_line    0x00000000      0x399 ./stm32_lib/src/stm32f10x_can.o
+ .debug_macinfo
+                0x00000000    0x3cd30 ./stm32_lib/src/stm32f10x_can.o
+ .debug_str     0x00000000      0x5d2 ./stm32_lib/src/stm32f10x_can.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_can.o
+ .ARM.attributes
+                0x00000000       0x33 ./stm32_lib/src/stm32f10x_can.o
+ .debug_frame   0x00000000      0x24c ./stm32_lib/src/stm32f10x_can.o
+ .text          0x00000000      0x2ec ./stm32_lib/src/stm32f10x_cec.o
+ .data          0x00000000        0x0 ./stm32_lib/src/stm32f10x_cec.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_cec.o
+ .debug_info    0x00000000      0x440 ./stm32_lib/src/stm32f10x_cec.o
+ .debug_abbrev  0x00000000      0x18b ./stm32_lib/src/stm32f10x_cec.o
+ .debug_loc     0x00000000      0x2ec ./stm32_lib/src/stm32f10x_cec.o
+ .debug_aranges
+                0x00000000       0x20 ./stm32_lib/src/stm32f10x_cec.o
+ .debug_line    0x00000000      0x270 ./stm32_lib/src/stm32f10x_cec.o
+ .debug_macinfo
+                0x00000000    0x3bebd ./stm32_lib/src/stm32f10x_cec.o
+ .debug_str     0x00000000      0x2d7 ./stm32_lib/src/stm32f10x_cec.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_cec.o
+ .ARM.attributes
+                0x00000000       0x33 ./stm32_lib/src/stm32f10x_cec.o
+ .debug_frame   0x00000000      0x198 ./stm32_lib/src/stm32f10x_cec.o
+ .text          0x00000000       0xe8 ./stm32_lib/src/stm32f10x_crc.o
+ .data          0x00000000        0x0 ./stm32_lib/src/stm32f10x_crc.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_crc.o
+ .debug_info    0x00000000      0x204 ./stm32_lib/src/stm32f10x_crc.o
+ .debug_abbrev  0x00000000      0x10c ./stm32_lib/src/stm32f10x_crc.o
+ .debug_loc     0x00000000      0x12c ./stm32_lib/src/stm32f10x_crc.o
+ .debug_aranges
+                0x00000000       0x20 ./stm32_lib/src/stm32f10x_crc.o
+ .debug_line    0x00000000      0x22f ./stm32_lib/src/stm32f10x_crc.o
+ .debug_macinfo
+                0x00000000    0x3b5b4 ./stm32_lib/src/stm32f10x_crc.o
+ .debug_str     0x00000000      0x19c ./stm32_lib/src/stm32f10x_crc.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_crc.o
+ .ARM.attributes
+                0x00000000       0x33 ./stm32_lib/src/stm32f10x_crc.o
+ .debug_frame   0x00000000       0xb8 ./stm32_lib/src/stm32f10x_crc.o
+ .text          0x00000000      0x514 ./stm32_lib/src/stm32f10x_dac.o
+ .data          0x00000000        0x0 ./stm32_lib/src/stm32f10x_dac.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_dac.o
+ .debug_info    0x00000000      0x675 ./stm32_lib/src/stm32f10x_dac.o
+ .debug_abbrev  0x00000000      0x174 ./stm32_lib/src/stm32f10x_dac.o
+ .debug_loc     0x00000000      0x3ac ./stm32_lib/src/stm32f10x_dac.o
+ .debug_aranges
+                0x00000000       0x20 ./stm32_lib/src/stm32f10x_dac.o
+ .debug_line    0x00000000      0x29b ./stm32_lib/src/stm32f10x_dac.o
+ .debug_macinfo
+                0x00000000    0x3c844 ./stm32_lib/src/stm32f10x_dac.o
+ .debug_str     0x00000000      0x3a4 ./stm32_lib/src/stm32f10x_dac.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_dac.o
+ .ARM.attributes
+                0x00000000       0x33 ./stm32_lib/src/stm32f10x_dac.o
+ .debug_frame   0x00000000      0x1ec ./stm32_lib/src/stm32f10x_dac.o
+ .text          0x00000000       0x90 ./stm32_lib/src/stm32f10x_dbgmcu.o
+ .data          0x00000000        0x0 ./stm32_lib/src/stm32f10x_dbgmcu.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_dbgmcu.o
+ .debug_info    0x00000000      0x15e ./stm32_lib/src/stm32f10x_dbgmcu.o
+ .debug_abbrev  0x00000000       0xdc ./stm32_lib/src/stm32f10x_dbgmcu.o
+ .debug_loc     0x00000000       0x90 ./stm32_lib/src/stm32f10x_dbgmcu.o
+ .debug_aranges
+                0x00000000       0x20 ./stm32_lib/src/stm32f10x_dbgmcu.o
+ .debug_line    0x00000000      0x21a ./stm32_lib/src/stm32f10x_dbgmcu.o
+ .debug_macinfo
+                0x00000000    0x3ba64 ./stm32_lib/src/stm32f10x_dbgmcu.o
+ .debug_str     0x00000000      0x168 ./stm32_lib/src/stm32f10x_dbgmcu.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_dbgmcu.o
+ .ARM.attributes
+                0x00000000       0x33 ./stm32_lib/src/stm32f10x_dbgmcu.o
+ .debug_frame   0x00000000       0x64 ./stm32_lib/src/stm32f10x_dbgmcu.o
+ .text          0x00000000      0x4c8 ./stm32_lib/src/stm32f10x_dma.o
+ .data          0x00000000        0x0 ./stm32_lib/src/stm32f10x_dma.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_dma.o
+ .debug_info    0x00000000      0x46d ./stm32_lib/src/stm32f10x_dma.o
+ .debug_abbrev  0x00000000      0x150 ./stm32_lib/src/stm32f10x_dma.o
+ .debug_loc     0x00000000      0x230 ./stm32_lib/src/stm32f10x_dma.o
+ .debug_aranges
+                0x00000000       0x20 ./stm32_lib/src/stm32f10x_dma.o
+ .debug_line    0x00000000      0x28a ./stm32_lib/src/stm32f10x_dma.o
+ .debug_macinfo
+                0x00000000    0x3dc5a ./stm32_lib/src/stm32f10x_dma.o
+ .debug_str     0x00000000      0x2f7 ./stm32_lib/src/stm32f10x_dma.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_dma.o
+ .ARM.attributes
+                0x00000000       0x33 ./stm32_lib/src/stm32f10x_dma.o
+ .debug_frame   0x00000000      0x128 ./stm32_lib/src/stm32f10x_dma.o
+ .data          0x00000000        0x0 ./stm32_lib/src/stm32f10x_exti.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_exti.o
+ .text          0x00000000      0xc80 ./stm32_lib/src/stm32f10x_flash.o
+ .data          0x00000000        0x0 ./stm32_lib/src/stm32f10x_flash.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_flash.o
+ .debug_info    0x00000000      0x81c ./stm32_lib/src/stm32f10x_flash.o
+ .debug_abbrev  0x00000000      0x173 ./stm32_lib/src/stm32f10x_flash.o
+ .debug_loc     0x00000000      0x5d8 ./stm32_lib/src/stm32f10x_flash.o
+ .debug_aranges
+                0x00000000       0x20 ./stm32_lib/src/stm32f10x_flash.o
+ .debug_line    0x00000000      0x37a ./stm32_lib/src/stm32f10x_flash.o
+ .debug_macinfo
+                0x00000000    0x3b995 ./stm32_lib/src/stm32f10x_flash.o
+ .debug_str     0x00000000      0x549 ./stm32_lib/src/stm32f10x_flash.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_flash.o
+ .ARM.attributes
+                0x00000000       0x33 ./stm32_lib/src/stm32f10x_flash.o
+ .debug_frame   0x00000000      0x350 ./stm32_lib/src/stm32f10x_flash.o
+ .text          0x00000000      0xba0 ./stm32_lib/src/stm32f10x_fsmc.o
+ .data          0x00000000        0x0 ./stm32_lib/src/stm32f10x_fsmc.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_fsmc.o
+ .debug_info    0x00000000      0x98f ./stm32_lib/src/stm32f10x_fsmc.o
+ .debug_abbrev  0x00000000      0x168 ./stm32_lib/src/stm32f10x_fsmc.o
+ .debug_loc     0x00000000      0x41c ./stm32_lib/src/stm32f10x_fsmc.o
+ .debug_aranges
+                0x00000000       0x20 ./stm32_lib/src/stm32f10x_fsmc.o
+ .debug_line    0x00000000      0x374 ./stm32_lib/src/stm32f10x_fsmc.o
+ .debug_macinfo
+                0x00000000    0x3ce3f ./stm32_lib/src/stm32f10x_fsmc.o
+ .debug_str     0x00000000      0x6cf ./stm32_lib/src/stm32f10x_fsmc.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_fsmc.o
+ .ARM.attributes
+                0x00000000       0x33 ./stm32_lib/src/stm32f10x_fsmc.o
+ .debug_frame   0x00000000      0x224 ./stm32_lib/src/stm32f10x_fsmc.o
+ .data          0x00000000        0x0 ./stm32_lib/src/stm32f10x_gpio.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_gpio.o
+ .text          0x00000000      0x998 ./stm32_lib/src/stm32f10x_i2c.o
+ .data          0x00000000        0x0 ./stm32_lib/src/stm32f10x_i2c.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_i2c.o
+ .debug_info    0x00000000      0xb5f ./stm32_lib/src/stm32f10x_i2c.o
+ .debug_abbrev  0x00000000      0x15f ./stm32_lib/src/stm32f10x_i2c.o
+ .debug_loc     0x00000000      0x700 ./stm32_lib/src/stm32f10x_i2c.o
+ .debug_aranges
+                0x00000000       0x20 ./stm32_lib/src/stm32f10x_i2c.o
+ .debug_line    0x00000000      0x326 ./stm32_lib/src/stm32f10x_i2c.o
+ .debug_macinfo
+                0x00000000    0x3d6c0 ./stm32_lib/src/stm32f10x_i2c.o
+ .debug_str     0x00000000      0x59f ./stm32_lib/src/stm32f10x_i2c.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_i2c.o
+ .ARM.attributes
+                0x00000000       0x33 ./stm32_lib/src/stm32f10x_i2c.o
+ .debug_frame   0x00000000      0x398 ./stm32_lib/src/stm32f10x_i2c.o
+ .data          0x00000000        0x0 ./stm32_lib/src/stm32f10x_it.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_it.o
+ .text          0x00000000       0xd0 ./stm32_lib/src/stm32f10x_iwdg.o
+ .data          0x00000000        0x0 ./stm32_lib/src/stm32f10x_iwdg.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_iwdg.o
+ .debug_info    0x00000000      0x204 ./stm32_lib/src/stm32f10x_iwdg.o
+ .debug_abbrev  0x00000000       0xfc ./stm32_lib/src/stm32f10x_iwdg.o
+ .debug_loc     0x00000000      0x138 ./stm32_lib/src/stm32f10x_iwdg.o
+ .debug_aranges
+                0x00000000       0x20 ./stm32_lib/src/stm32f10x_iwdg.o
+ .debug_line    0x00000000      0x227 ./stm32_lib/src/stm32f10x_iwdg.o
+ .debug_macinfo
+                0x00000000    0x3b985 ./stm32_lib/src/stm32f10x_iwdg.o
+ .debug_str     0x00000000      0x1bd ./stm32_lib/src/stm32f10x_iwdg.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_iwdg.o
+ .ARM.attributes
+                0x00000000       0x33 ./stm32_lib/src/stm32f10x_iwdg.o
+ .debug_frame   0x00000000       0xb8 ./stm32_lib/src/stm32f10x_iwdg.o
+ .text          0x00000000      0x21c ./stm32_lib/src/stm32f10x_pwr.o
+ .data          0x00000000        0x0 ./stm32_lib/src/stm32f10x_pwr.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_pwr.o
+ .debug_info    0x00000000      0x2ce ./stm32_lib/src/stm32f10x_pwr.o
+ .debug_abbrev  0x00000000      0x142 ./stm32_lib/src/stm32f10x_pwr.o
+ .debug_loc     0x00000000      0x238 ./stm32_lib/src/stm32f10x_pwr.o
+ .debug_aranges
+                0x00000000       0x20 ./stm32_lib/src/stm32f10x_pwr.o
+ .debug_line    0x00000000      0x23b ./stm32_lib/src/stm32f10x_pwr.o
+ .debug_macinfo
+                0x00000000    0x3b815 ./stm32_lib/src/stm32f10x_pwr.o
+ .debug_str     0x00000000      0x21c ./stm32_lib/src/stm32f10x_pwr.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_pwr.o
+ .ARM.attributes
+                0x00000000       0x33 ./stm32_lib/src/stm32f10x_pwr.o
+ .debug_frame   0x00000000      0x148 ./stm32_lib/src/stm32f10x_pwr.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_rcc.o
+ .text          0x00000000      0x348 ./stm32_lib/src/stm32f10x_rtc.o
+ .data          0x00000000        0x0 ./stm32_lib/src/stm32f10x_rtc.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_rtc.o
+ .debug_info    0x00000000      0x463 ./stm32_lib/src/stm32f10x_rtc.o
+ .debug_abbrev  0x00000000      0x168 ./stm32_lib/src/stm32f10x_rtc.o
+ .debug_loc     0x00000000      0x2e0 ./stm32_lib/src/stm32f10x_rtc.o
+ .debug_aranges
+                0x00000000       0x20 ./stm32_lib/src/stm32f10x_rtc.o
+ .debug_line    0x00000000      0x26f ./stm32_lib/src/stm32f10x_rtc.o
+ .debug_macinfo
+                0x00000000    0x3b8fc ./stm32_lib/src/stm32f10x_rtc.o
+ .debug_str     0x00000000      0x2fb ./stm32_lib/src/stm32f10x_rtc.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_rtc.o
+ .ARM.attributes
+                0x00000000       0x33 ./stm32_lib/src/stm32f10x_rtc.o
+ .debug_frame   0x00000000      0x1a4 ./stm32_lib/src/stm32f10x_rtc.o
+ .text          0x00000000      0x5f4 ./stm32_lib/src/stm32f10x_sdio.o
+ .data          0x00000000        0x0 ./stm32_lib/src/stm32f10x_sdio.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_sdio.o
+ .debug_info    0x00000000      0x893 ./stm32_lib/src/stm32f10x_sdio.o
+ .debug_abbrev  0x00000000      0x1a4 ./stm32_lib/src/stm32f10x_sdio.o
+ .debug_loc     0x00000000      0x648 ./stm32_lib/src/stm32f10x_sdio.o
+ .debug_aranges
+                0x00000000       0x20 ./stm32_lib/src/stm32f10x_sdio.o
+ .debug_line    0x00000000      0x2d0 ./stm32_lib/src/stm32f10x_sdio.o
+ .debug_macinfo
+                0x00000000    0x3dbf2 ./stm32_lib/src/stm32f10x_sdio.o
+ .debug_str     0x00000000      0x59c ./stm32_lib/src/stm32f10x_sdio.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_sdio.o
+ .ARM.attributes
+                0x00000000       0x33 ./stm32_lib/src/stm32f10x_sdio.o
+ .debug_frame   0x00000000      0x358 ./stm32_lib/src/stm32f10x_sdio.o
+ .data          0x00000000        0x0 ./stm32_lib/src/stm32f10x_spi.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_spi.o
+ .text          0x00000000     0x1e2c ./stm32_lib/src/stm32f10x_tim.o
+ .data          0x00000000        0x0 ./stm32_lib/src/stm32f10x_tim.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_tim.o
+ .debug_info    0x00000000     0x1e1c ./stm32_lib/src/stm32f10x_tim.o
+ .debug_abbrev  0x00000000      0x174 ./stm32_lib/src/stm32f10x_tim.o
+ .debug_loc     0x00000000     0x13e8 ./stm32_lib/src/stm32f10x_tim.o
+ .debug_aranges
+                0x00000000       0x20 ./stm32_lib/src/stm32f10x_tim.o
+ .debug_line    0x00000000      0x5d3 ./stm32_lib/src/stm32f10x_tim.o
+ .debug_macinfo
+                0x00000000    0x3fbe1 ./stm32_lib/src/stm32f10x_tim.o
+ .debug_str     0x00000000      0xd3e ./stm32_lib/src/stm32f10x_tim.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_tim.o
+ .ARM.attributes
+                0x00000000       0x33 ./stm32_lib/src/stm32f10x_tim.o
+ .debug_frame   0x00000000      0xa20 ./stm32_lib/src/stm32f10x_tim.o
+ .data          0x00000000        0x0 ./stm32_lib/src/stm32f10x_usart.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_usart.o
+ .text          0x00000000      0x134 ./stm32_lib/src/stm32f10x_wwdg.o
+ .data          0x00000000        0x0 ./stm32_lib/src/stm32f10x_wwdg.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/stm32f10x_wwdg.o
+ .debug_info    0x00000000      0x239 ./stm32_lib/src/stm32f10x_wwdg.o
+ .debug_abbrev  0x00000000       0xfa ./stm32_lib/src/stm32f10x_wwdg.o
+ .debug_loc     0x00000000      0x190 ./stm32_lib/src/stm32f10x_wwdg.o
+ .debug_aranges
+                0x00000000       0x20 ./stm32_lib/src/stm32f10x_wwdg.o
+ .debug_line    0x00000000      0x230 ./stm32_lib/src/stm32f10x_wwdg.o
+ .debug_macinfo
+                0x00000000    0x3b898 ./stm32_lib/src/stm32f10x_wwdg.o
+ .debug_str     0x00000000      0x1c9 ./stm32_lib/src/stm32f10x_wwdg.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_wwdg.o
+ .ARM.attributes
+                0x00000000       0x33 ./stm32_lib/src/stm32f10x_wwdg.o
+ .debug_frame   0x00000000       0xf0 ./stm32_lib/src/stm32f10x_wwdg.o
+ .bss           0x00000000        0x0 ./stm32_lib/src/system_stm32f10x.o
+ .text          0x00000000       0x14 ./stm32_lib/startup_stm32f10x_md_vl.o
+ .data          0x00000000        0x0 ./stm32_lib/startup_stm32f10x_md_vl.o
+ .bss           0x00000000        0x0 ./stm32_lib/startup_stm32f10x_md_vl.o
+ .text          0x00000000      0x6c0 ./libfixmath/fix16.o
+ .data          0x00000000        0x0 ./libfixmath/fix16.o
+ .bss           0x00000000        0x0 ./libfixmath/fix16.o
+ .rodata        0x00000000       0x2c ./libfixmath/fix16.o
+ .debug_info    0x00000000      0x663 ./libfixmath/fix16.o
+ .debug_abbrev  0x00000000      0x113 ./libfixmath/fix16.o
+ .debug_loc     0x00000000      0x34c ./libfixmath/fix16.o
+ .debug_aranges
+                0x00000000       0x20 ./libfixmath/fix16.o
+ .debug_line    0x00000000      0x1b6 ./libfixmath/fix16.o
+ .debug_str     0x00000000      0x2ac ./libfixmath/fix16.o
+ .comment       0x00000000       0x31 ./libfixmath/fix16.o
+ .ARM.attributes
+                0x00000000       0x33 ./libfixmath/fix16.o
+ .debug_frame   0x00000000      0x200 ./libfixmath/fix16.o
+ .text          0x00000000      0x2f4 ./libfixmath/fix16_exp.o
+ .data          0x00000000        0x0 ./libfixmath/fix16_exp.o
+ .bss           0x00000000     0x8000 ./libfixmath/fix16_exp.o
+ .rodata        0x00000000       0x2c ./libfixmath/fix16_exp.o
+ .debug_info    0x00000000      0x32a ./libfixmath/fix16_exp.o
+ .debug_abbrev  0x00000000       0xbc ./libfixmath/fix16_exp.o
+ .debug_loc     0x00000000      0x188 ./libfixmath/fix16_exp.o
+ .debug_aranges
+                0x00000000       0x20 ./libfixmath/fix16_exp.o
+ .debug_line    0x00000000      0x12b ./libfixmath/fix16_exp.o
+ .debug_str     0x00000000      0x22e ./libfixmath/fix16_exp.o
+ .comment       0x00000000       0x31 ./libfixmath/fix16_exp.o
+ .ARM.attributes
+                0x00000000       0x33 ./libfixmath/fix16_exp.o
+ .debug_frame   0x00000000       0xf0 ./libfixmath/fix16_exp.o
+ .text          0x00000000      0x11c ./libfixmath/fix16_sqrt.o
+ .data          0x00000000        0x0 ./libfixmath/fix16_sqrt.o
+ .bss           0x00000000        0x0 ./libfixmath/fix16_sqrt.o
+ .rodata        0x00000000       0x2c ./libfixmath/fix16_sqrt.o
+ .debug_info    0x00000000      0x1c8 ./libfixmath/fix16_sqrt.o
+ .debug_abbrev  0x00000000       0x84 ./libfixmath/fix16_sqrt.o
+ .debug_loc     0x00000000       0x38 ./libfixmath/fix16_sqrt.o
+ .debug_aranges
+                0x00000000       0x20 ./libfixmath/fix16_sqrt.o
+ .debug_line    0x00000000      0x128 ./libfixmath/fix16_sqrt.o
+ .debug_str     0x00000000      0x192 ./libfixmath/fix16_sqrt.o
+ .comment       0x00000000       0x31 ./libfixmath/fix16_sqrt.o
+ .ARM.attributes
+                0x00000000       0x33 ./libfixmath/fix16_sqrt.o
+ .debug_frame   0x00000000       0x2c ./libfixmath/fix16_sqrt.o
+ .text          0x00000000      0x4d4 ./libfixmath/fix16_trig.o
+ .data          0x00000000        0x0 ./libfixmath/fix16_trig.o
+ .bss           0x00000000    0x14000 ./libfixmath/fix16_trig.o
+ .rodata        0x00000000       0x2c ./libfixmath/fix16_trig.o
+ .debug_info    0x00000000      0x3f7 ./libfixmath/fix16_trig.o
+ .debug_abbrev  0x00000000       0xae ./libfixmath/fix16_trig.o
+ .debug_loc     0x00000000      0x1c0 ./libfixmath/fix16_trig.o
+ .debug_aranges
+                0x00000000       0x20 ./libfixmath/fix16_trig.o
+ .debug_line    0x00000000      0x127 ./libfixmath/fix16_trig.o
+ .debug_str     0x00000000      0x29b ./libfixmath/fix16_trig.o
+ .comment       0x00000000       0x31 ./libfixmath/fix16_trig.o
+ .ARM.attributes
+                0x00000000       0x33 ./libfixmath/fix16_trig.o
+ .debug_frame   0x00000000      0x124 ./libfixmath/fix16_trig.o
+ .text          0x00000000       0xec ./libfixmath/fract32.o
+ .data          0x00000000        0x0 ./libfixmath/fract32.o
+ .bss           0x00000000        0x0 ./libfixmath/fract32.o
+ .debug_info    0x00000000      0x18a ./libfixmath/fract32.o
+ .debug_abbrev  0x00000000       0x85 ./libfixmath/fract32.o
+ .debug_loc     0x00000000       0xe0 ./libfixmath/fract32.o
+ .debug_aranges
+                0x00000000       0x20 ./libfixmath/fract32.o
+ .debug_line    0x00000000       0xd3 ./libfixmath/fract32.o
+ .debug_str     0x00000000      0x161 ./libfixmath/fract32.o
+ .comment       0x00000000       0x31 ./libfixmath/fract32.o
+ .ARM.attributes
+                0x00000000       0x33 ./libfixmath/fract32.o
+ .debug_frame   0x00000000       0x90 ./libfixmath/fract32.o
+ .text          0x00000000       0x94 ./libfixmath/uint32.o
+ .data          0x00000000        0x0 ./libfixmath/uint32.o
+ .bss           0x00000000        0x0 ./libfixmath/uint32.o
+ .debug_info    0x00000000       0xad ./libfixmath/uint32.o
+ .debug_abbrev  0x00000000       0x6c ./libfixmath/uint32.o
+ .debug_loc     0x00000000       0x38 ./libfixmath/uint32.o
+ .debug_aranges
+                0x00000000       0x20 ./libfixmath/uint32.o
+ .debug_line    0x00000000       0xe0 ./libfixmath/uint32.o
+ .debug_str     0x00000000       0xee ./libfixmath/uint32.o
+ .comment       0x00000000       0x31 ./libfixmath/uint32.o
+ .ARM.attributes
+                0x00000000       0x33 ./libfixmath/uint32.o
+ .debug_frame   0x00000000       0x2c ./libfixmath/uint32.o
+ .text          0x00000000       0xec ./crc.o
+ .data          0x00000000        0x0 ./crc.o
+ .bss           0x00000000        0x0 ./crc.o
+ .debug_info    0x00000000      0x111 ./crc.o
+ .debug_abbrev  0x00000000       0xa4 ./crc.o
+ .debug_loc     0x00000000       0x70 ./crc.o
+ .debug_aranges
+                0x00000000       0x20 ./crc.o
+ .debug_line    0x00000000       0x76 ./crc.o
+ .debug_str     0x00000000       0xb0 ./crc.o
+ .comment       0x00000000       0x31 ./crc.o
+ .ARM.attributes
+                0x00000000       0x33 ./crc.o
+ .debug_frame   0x00000000       0x48 ./crc.o
+ .data          0x00000000        0x0 ./led.o
+ .bss           0x00000000        0x0 ./led.o
+ .data          0x00000000        0x0 ./main.o
+ .data          0x00000000        0x0 ./mousesensor.o
+ .bss           0x00000000        0x0 ./mousesensor.o
+ .text          0x00000000      0x310 ./movement.o
+ .data          0x00000000        0x0 ./movement.o
+ .bss           0x00000000        0x0 ./movement.o
+ .rodata        0x00000000       0x2c ./movement.o
+ .debug_info    0x00000000      0x228 ./movement.o
+ .debug_abbrev  0x00000000       0xa8 ./movement.o
+ .debug_loc     0x00000000       0x70 ./movement.o
+ .debug_aranges
+                0x00000000       0x20 ./movement.o
+ .debug_line    0x00000000      0x154 ./movement.o
+ .debug_str     0x00000000      0x18a ./movement.o
+ .comment       0x00000000       0x31 ./movement.o
+ .ARM.attributes
+                0x00000000       0x33 ./movement.o
+ .debug_frame   0x00000000       0x54 ./movement.o
+ .data          0x00000000        0x0 ./printf.o
+ .bss           0x00000000        0x0 ./printf.o
+ .text          0x00000000       0xbc ./printf_gdb.o
+ .data          0x00000000        0x0 ./printf_gdb.o
+ .bss           0x00000000        0x0 ./printf_gdb.o
+ .debug_info    0x00000000      0x3fa ./printf_gdb.o
+ .debug_abbrev  0x00000000      0x145 ./printf_gdb.o
+ .debug_loc     0x00000000       0x70 ./printf_gdb.o
+ .debug_aranges
+                0x00000000       0x20 ./printf_gdb.o
+ .debug_line    0x00000000      0x11b ./printf_gdb.o
+ .debug_str     0x00000000      0x1c1 ./printf_gdb.o
+ .comment       0x00000000       0x31 ./printf_gdb.o
+ .ARM.attributes
+                0x00000000       0x33 ./printf_gdb.o
+ .debug_frame   0x00000000       0x4c ./printf_gdb.o
+ .text          0x00000000      0x3e8 ./protocol.o
+ .data          0x00000000        0x0 ./protocol.o
+ .bss           0x00000000        0x4 ./protocol.o
+ .debug_info    0x00000000      0x3ba ./protocol.o
+ .debug_abbrev  0x00000000      0x17a ./protocol.o
+ .debug_loc     0x00000000      0x197 ./protocol.o
+ .debug_aranges
+                0x00000000       0x20 ./protocol.o
+ .debug_line    0x00000000       0xed ./protocol.o
+ .debug_str     0x00000000      0x1d7 ./protocol.o
+ .comment       0x00000000       0x31 ./protocol.o
+ .ARM.attributes
+                0x00000000       0x33 ./protocol.o
+ .debug_frame   0x00000000       0xf0 ./protocol.o
+ COMMON         0x00000000       0x18 ./protocol.o
+ .text          0x00000000      0x1c8 ./servo.o
+ .data          0x00000000        0x0 ./servo.o
+ .bss           0x00000000        0x0 ./servo.o
+ .debug_info    0x00000000      0x5e7 ./servo.o
+ .debug_abbrev  0x00000000      0x11f ./servo.o
+ .debug_loc     0x00000000       0x70 ./servo.o
+ .debug_aranges
+                0x00000000       0x20 ./servo.o
+ .debug_line    0x00000000      0x14d ./servo.o
+ .debug_str     0x00000000      0x486 ./servo.o
+ .comment       0x00000000       0x31 ./servo.o
+ .ARM.attributes
+                0x00000000       0x33 ./servo.o
+ .debug_frame   0x00000000       0x50 ./servo.o
+ .data          0x00000000        0x0 ./spi_1.o
+ .bss           0x00000000        0x0 ./spi_1.o
+ .data          0x00000000        0x0 ./usart.o
+ .bss           0x00000000        0x0 ./usart.o
+ .text          0x00000000      0x21c /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_arm_addsubsf3.o)
+ .data          0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_arm_addsubsf3.o)
+ .bss           0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_arm_addsubsf3.o)
+ .ARM.attributes
+                0x00000000       0x1b /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_arm_addsubsf3.o)
+ .text          0x00000000      0x2a0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_arm_muldivsf3.o)
+ .data          0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_arm_muldivsf3.o)
+ .bss           0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_arm_muldivsf3.o)
+ .ARM.attributes
+                0x00000000       0x1b /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_arm_muldivsf3.o)
+ .text          0x00000000       0xec /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_arm_cmpsf2.o)
+ .data          0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_arm_cmpsf2.o)
+ .bss           0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_arm_cmpsf2.o)
+ .ARM.attributes
+                0x00000000       0x1b /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_arm_cmpsf2.o)
+ .text          0x00000000       0x4c /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_arm_fixsfsi.o)
+ .data          0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_arm_fixsfsi.o)
+ .bss           0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_arm_fixsfsi.o)
+ .ARM.attributes
+                0x00000000       0x1b /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_arm_fixsfsi.o)
+ .text          0x00000000       0x38 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_aeabi_ldivmod.o)
+ .data          0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_aeabi_ldivmod.o)
+ .bss           0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_aeabi_ldivmod.o)
+ .ARM.attributes
+                0x00000000       0x1b /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_aeabi_ldivmod.o)
+ .text          0x00000000       0x5c /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(bpabi.o)
+ .data          0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(bpabi.o)
+ .bss           0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(bpabi.o)
+ .ARM.attributes
+                0x00000000       0x2b /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(bpabi.o)
+ .debug_frame   0x00000000       0x50 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(bpabi.o)
+ .text          0x00000000        0x4 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_dvmd_tls.o)
+ .data          0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_dvmd_tls.o)
+ .bss           0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_dvmd_tls.o)
+ .ARM.attributes
+                0x00000000       0x1b /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_dvmd_tls.o)
+ .text          0x00000000      0x364 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_divdi3.o)
+ .data          0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_divdi3.o)
+ .bss           0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_divdi3.o)
+ .ARM.extab     0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_divdi3.o)
+ .ARM.exidx     0x00000000        0x8 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_divdi3.o)
+ .ARM.attributes
+                0x00000000       0x2b /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_divdi3.o)
+ .debug_frame   0x00000000       0x38 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_divdi3.o)
+ .text          0x00000000      0x334 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_udivdi3.o)
+ .data          0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_udivdi3.o)
+ .bss           0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_udivdi3.o)
+ .ARM.extab     0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_udivdi3.o)
+ .ARM.exidx     0x00000000        0x8 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_udivdi3.o)
+ .ARM.attributes
+                0x00000000       0x2b /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_udivdi3.o)
+ .debug_frame   0x00000000       0x38 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_udivdi3.o)
+ .text          0x00000000      0x278 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_udivsi3.o)
+ .data          0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_udivsi3.o)
+ .bss           0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_udivsi3.o)
+ .debug_frame   0x00000000       0x20 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_udivsi3.o)
+ .ARM.attributes
+                0x00000000       0x1b /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a(_udivsi3.o)
+ .data          0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/../../../../arm-none-eabi/lib/thumb2/libc.a(lib_a-init.o)
+ .bss           0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/../../../../arm-none-eabi/lib/thumb2/libc.a(lib_a-init.o)
+ .text          0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtend.o
+ .data          0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtend.o
+ .bss           0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtend.o
+ .eh_frame      0x00000000        0x4 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtend.o
+ .jcr           0x00000000        0x4 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtend.o
+ .ARM.attributes
+                0x00000000       0x2b /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtend.o
+ .text          0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtn.o
+ .data          0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtn.o
+ .bss           0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtn.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+FLASH            0x08000000         0x00020000         xr
+RAM              0x20000000         0x00002000         xrw
+MEMORY_B1        0x60000000         0x00000000         xr
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+LOAD /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crti.o
+LOAD /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtbegin.o
+LOAD ./stm32_lib/src/core_cm3.o
+LOAD ./stm32_lib/src/misc.o
+LOAD ./stm32_lib/src/stm32f10x_adc.o
+LOAD ./stm32_lib/src/stm32f10x_bkp.o
+LOAD ./stm32_lib/src/stm32f10x_can.o
+LOAD ./stm32_lib/src/stm32f10x_cec.o
+LOAD ./stm32_lib/src/stm32f10x_crc.o
+LOAD ./stm32_lib/src/stm32f10x_dac.o
+LOAD ./stm32_lib/src/stm32f10x_dbgmcu.o
+LOAD ./stm32_lib/src/stm32f10x_dma.o
+LOAD ./stm32_lib/src/stm32f10x_exti.o
+LOAD ./stm32_lib/src/stm32f10x_flash.o
+LOAD ./stm32_lib/src/stm32f10x_fsmc.o
+LOAD ./stm32_lib/src/stm32f10x_gpio.o
+LOAD ./stm32_lib/src/stm32f10x_i2c.o
+LOAD ./stm32_lib/src/stm32f10x_it.o
+LOAD ./stm32_lib/src/stm32f10x_iwdg.o
+LOAD ./stm32_lib/src/stm32f10x_pwr.o
+LOAD ./stm32_lib/src/stm32f10x_rcc.o
+LOAD ./stm32_lib/src/stm32f10x_rtc.o
+LOAD ./stm32_lib/src/stm32f10x_sdio.o
+LOAD ./stm32_lib/src/stm32f10x_spi.o
+LOAD ./stm32_lib/src/stm32f10x_tim.o
+LOAD ./stm32_lib/src/stm32f10x_usart.o
+LOAD ./stm32_lib/src/stm32f10x_wwdg.o
+LOAD ./stm32_lib/src/system_stm32f10x.o
+LOAD ./stm32_lib/startup_stm32f10x_md_vl.o
+LOAD ./libfixmath/fix16.o
+LOAD ./libfixmath/fix16_exp.o
+LOAD ./libfixmath/fix16_sqrt.o
+LOAD ./libfixmath/fix16_trig.o
+LOAD ./libfixmath/fract32.o
+LOAD ./libfixmath/uint32.o
+LOAD ./crc.o
+LOAD ./led.o
+LOAD ./main.o
+LOAD ./mousesensor.o
+LOAD ./movement.o
+LOAD ./printf.o
+LOAD ./printf_gdb.o
+LOAD ./protocol.o
+LOAD ./servo.o
+LOAD ./spi_1.o
+LOAD ./usart.o
+START GROUP
+LOAD /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/libgcc.a
+LOAD /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/../../../../arm-none-eabi/lib/thumb2/libc.a
+END GROUP
+LOAD /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtend.o
+LOAD /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtn.o
+                0x20002000                _estack = 0x20002000
+                0x00000000                _Min_Heap_Size = 0x0
+                0x00000080                _Min_Stack_Size = 0x80
+
+.isr_vector     0x08000000      0x1d0
+                0x08000000                . = ALIGN (0x4)
+ *(.isr_vector)
+ .isr_vector    0x08000000      0x1d0 ./stm32_lib/startup_stm32f10x_md_vl.o
+                0x08000000                g_pfnVectors
+                0x080001d0                . = ALIGN (0x4)
+
+.text           0x080001d0     0x4bfc
+                0x080001d0                . = ALIGN (0x4)
+ *(.text)
+ .text          0x080001d0       0x68 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtbegin.o
+ .text          0x08000238      0x1dc ./stm32_lib/src/misc.o
+                0x08000238                NVIC_PriorityGroupConfig
+                0x08000260                NVIC_Init
+                0x08000348                NVIC_SetVectorTable
+                0x08000374                NVIC_SystemLPConfig
+                0x080003c8                SysTick_CLKSourceConfig
+ .text          0x08000414      0x2c0 ./stm32_lib/src/stm32f10x_exti.o
+                0x08000414                EXTI_DeInit
+                0x08000468                EXTI_Init
+                0x080005a0                EXTI_StructInit
+                0x080005d4                EXTI_GenerateSWInterrupt
+                0x08000600                EXTI_GetFlagStatus
+                0x0800063c                EXTI_ClearFlag
+                0x0800065c                EXTI_GetITStatus
+                0x080006b4                EXTI_ClearITPendingBit
+ .text          0x080006d4      0x700 ./stm32_lib/src/stm32f10x_gpio.o
+                0x080006d4                GPIO_DeInit
+                0x080007fc                GPIO_AFIODeInit
+                0x0800081c                GPIO_Init
+                0x080009cc                GPIO_StructInit
+                0x080009f8                GPIO_ReadInputDataBit
+                0x08000a34                GPIO_ReadInputData
+                0x08000a50                GPIO_ReadOutputDataBit
+                0x08000a8c                GPIO_ReadOutputData
+                0x08000aa8                GPIO_SetBits
+                0x08000ac4                GPIO_ResetBits
+                0x08000ae0                GPIO_WriteBit
+                0x08000b10                GPIO_Write
+                0x08000b2c                GPIO_PinLockConfig
+                0x08000b70                GPIO_EventOutputConfig
+                0x08000bc4                GPIO_EventOutputCmd
+                0x08000be4                GPIO_PinRemapConfig
+                0x08000d04                GPIO_EXTILineConfig
+                0x08000db4                GPIO_ETH_MediaInterfaceConfig
+ .text          0x08000dd4       0x50 ./stm32_lib/src/stm32f10x_it.o
+                0x08000dd4                NMI_Handler
+                0x08000de0                HardFault_Handler
+                0x08000de8                MemManage_Handler
+                0x08000df0                BusFault_Handler
+                0x08000df8                UsageFault_Handler
+                0x08000e00                SVC_Handler
+                0x08000e0c                DebugMon_Handler
+                0x08000e18                PendSV_Handler
+ .text          0x08000e24      0xa44 ./stm32_lib/src/stm32f10x_rcc.o
+                0x08000e24                RCC_DeInit
+                0x08000ecc                RCC_HSEConfig
+                0x08000f54                RCC_WaitForHSEStartUp
+                0x08000fb8                RCC_AdjustHSICalibrationValue
+                0x08001000                RCC_HSICmd
+                0x08001020                RCC_PLLConfig
+                0x08001068                RCC_PLLCmd
+                0x08001088                RCC_PREDIV1Config
+                0x080010d4                RCC_SYSCLKConfig
+                0x08001114                RCC_GetSYSCLKSource
+                0x08001134                RCC_HCLKConfig
+                0x08001174                RCC_PCLK1Config
+                0x080011b4                RCC_PCLK2Config
+                0x080011f8                RCC_ITConfig
+                0x08001258                RCC_USBCLKConfig
+                0x08001278                RCC_ADCCLKConfig
+                0x080012b8                RCC_LSEConfig
+                0x08001318                RCC_LSICmd
+                0x08001338                RCC_RTCCLKConfig
+                0x08001364                RCC_RTCCLKCmd
+                0x08001384                RCC_GetClocksFreq
+                0x08001550                RCC_AHBPeriphClockCmd
+                0x080015a4                RCC_APB2PeriphClockCmd
+                0x080015f8                RCC_APB1PeriphClockCmd
+                0x0800164c                RCC_APB2PeriphResetCmd
+                0x080016a0                RCC_APB1PeriphResetCmd
+                0x080016f4                RCC_BackupResetCmd
+                0x08001714                RCC_ClockSecuritySystemCmd
+                0x08001734                RCC_MCOConfig
+                0x08001754                RCC_GetFlagStatus
+                0x080017e4                RCC_ClearFlag
+                0x08001808                RCC_GetITStatus
+                0x08001848                RCC_ClearITPendingBit
+ .text          0x08001868      0x788 ./stm32_lib/src/stm32f10x_spi.o
+                0x08001868                SPI_I2S_DeInit
+                0x080018f0                SPI_Init
+                0x08001978                I2S_Init
+                0x08001b10                SPI_StructInit
+                0x08001b6c                I2S_StructInit
+                0x08001bb0                SPI_Cmd
+                0x08001bf0                I2S_Cmd
+                0x08001c30                SPI_I2S_ITConfig
+                0x08001c9c                SPI_I2S_DMACmd
+                0x08001ce4                SPI_I2S_SendData
+                0x08001d00                SPI_I2S_ReceiveData
+                0x08001d1c                SPI_NSSInternalSoftwareConfig
+                0x08001d60                SPI_SSOutputCmd
+                0x08001da0                SPI_DataSizeConfig
+                0x08001dd8                SPI_TransmitCRC
+                0x08001dfc                SPI_CalculateCRC
+                0x08001e3c                SPI_GetCRC
+                0x08001e70                SPI_GetCRCPolynomial
+                0x08001e8c                SPI_BiDirectionalLineConfig
+                0x08001ecc                SPI_I2S_GetFlagStatus
+                0x08001f0c                SPI_I2S_ClearFlag
+                0x08001f30                SPI_I2S_GetITStatus
+                0x08001fb8                SPI_I2S_ClearITPendingBit
+ .text          0x08001ff0      0x9b8 ./stm32_lib/src/stm32f10x_usart.o
+                0x08001ff0                USART_DeInit
+                0x080020c8                USART_Init
+                0x08002274                USART_StructInit
+                0x080022b8                USART_ClockInit
+                0x08002310                USART_ClockStructInit
+                0x08002344                USART_Cmd
+                0x08002384                USART_ITConfig
+                0x08002428                USART_DMACmd
+                0x08002470                USART_SetAddress
+                0x080024a8                USART_WakeUpConfig
+                0x080024e0                USART_ReceiverWakeUpCmd
+                0x08002520                USART_LINBreakDetectLengthConfig
+                0x08002558                USART_LINCmd
+                0x08002598                USART_SendData
+                0x080025c0                USART_ReceiveData
+                0x080025e4                USART_SendBreak
+                0x08002608                USART_SetGuardTime
+                0x08002644                USART_SetPrescaler
+                0x0800267c                USART_SmartCardCmd
+                0x080026bc                USART_SmartCardNACKCmd
+                0x080026fc                USART_HalfDuplexCmd
+                0x0800273c                USART_OverSampling8Cmd
+                0x08002784                USART_OneBitMethodCmd
+                0x080027c4                USART_IrDAConfig
+                0x080027fc                USART_IrDACmd
+                0x0800283c                USART_GetFlagStatus
+                0x0800287c                USART_ClearFlag
+                0x080028a0                USART_GetITStatus
+                0x08002964                USART_ClearITPendingBit
+ .text          0x080029a8      0x34c ./stm32_lib/src/system_stm32f10x.o
+                0x080029a8                SystemInit
+                0x08002a50                SystemCoreClockUpdate
+ .text          0x08002cf4       0x40 ./led.o
+                0x08002cf4                led_init
+ .text          0x08002d34       0xf8 ./main.o
+                0x08002d34                main
+                0x08002df0                SysTick_Handler
+                0x08002e14                getTime
+ .text          0x08002e2c      0x354 ./mousesensor.o
+                0x08002e2c                SPI_init
+                0x08002e54                delay_us
+                0x08002e90                FW_init
+                0x08002f70                EXIT_init
+                0x08003020                Sensor_init
+                0x080030a8                Sensor_ReadByBurst
+                0x08003120                EXTI15_10_IRQHandler
+                0x08003150                EXTI3_IRQHandler
+ .text          0x08003180      0x5c8 ./printf.o
+                0x08003180                _print
+                0x080031fc                print
+                0x08003220                fillInUnsignedLongInt
+                0x080032fc                _printf
+                0x08003600                printf
+                0x08003634                testprintf
+ .text          0x08003748      0x38c ./spi_1.o
+                0x08003748                spi1_init
+                0x0800383c                spi1_SelectChip
+                0x08003854                spi1_DeselectChip
+                0x0800386c                spi1_SendData
+                0x080038d8                spi1_GetData
+                0x0800394c                spi1_WriteRegister
+                0x080039fc                spi1_ReadRegister
+ .text          0x08003ad4      0x528 ./usart.o
+                0x08003ad4                USART1_Init
+                0x08003c40                USART1_DeInit
+                0x08003cb4                USART1_SendData
+                0x08003ce4                USART1_GetData
+                0x08003d14                USART1_IRQHandler
+                0x08003d30                USARTx_SendData
+                0x08003e40                USARTx_GetData
+                0x08003efc                USART_IRQHandler
+ .text          0x08003ffc       0x50 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/../../../../arm-none-eabi/lib/thumb2/libc.a(lib_a-init.o)
+                0x08003ffc                __libc_init_array
+ *(.text*)
+ .text.Reset_Handler
+                0x0800404c       0x50 ./stm32_lib/startup_stm32f10x_md_vl.o
+                0x0800404c                Reset_Handler
+ .text.Default_Handler
+                0x0800409c        0x4 ./stm32_lib/startup_stm32f10x_md_vl.o
+                0x0800409c                EXTI2_IRQHandler
+                0x0800409c                TIM1_CC_IRQHandler
+                0x0800409c                PVD_IRQHandler
+                0x0800409c                EXTI0_IRQHandler
+                0x0800409c                I2C2_EV_IRQHandler
+                0x0800409c                TIM1_UP_TIM16_IRQHandler
+                0x0800409c                SPI1_IRQHandler
+                0x0800409c                TAMPER_IRQHandler
+                0x0800409c                TIM6_DAC_IRQHandler
+                0x0800409c                DMA1_Channel4_IRQHandler
+                0x0800409c                ADC1_IRQHandler
+                0x0800409c                USART3_IRQHandler
+                0x0800409c                RTC_IRQHandler
+                0x0800409c                DMA1_Channel7_IRQHandler
+                0x0800409c                TIM4_IRQHandler
+                0x0800409c                I2C1_EV_IRQHandler
+                0x0800409c                DMA1_Channel6_IRQHandler
+                0x0800409c                TIM3_IRQHandler
+                0x0800409c                RCC_IRQHandler
+                0x0800409c                DMA1_Channel1_IRQHandler
+                0x0800409c                Default_Handler
+                0x0800409c                CEC_IRQHandler
+                0x0800409c                TIM7_IRQHandler
+                0x0800409c                EXTI9_5_IRQHandler
+                0x0800409c                SPI2_IRQHandler
+                0x0800409c                DMA1_Channel5_IRQHandler
+                0x0800409c                EXTI4_IRQHandler
+                0x0800409c                TIM1_TRG_COM_TIM17_IRQHandler
+                0x0800409c                DMA1_Channel3_IRQHandler
+                0x0800409c                WWDG_IRQHandler
+                0x0800409c                TIM2_IRQHandler
+                0x0800409c                EXTI1_IRQHandler
+                0x0800409c                RTCAlarm_IRQHandler
+                0x0800409c                USART2_IRQHandler
+                0x0800409c                I2C2_ER_IRQHandler
+                0x0800409c                DMA1_Channel2_IRQHandler
+                0x0800409c                FLASH_IRQHandler
+                0x0800409c                I2C1_ER_IRQHandler
+                0x0800409c                TIM1_BRK_TIM15_IRQHandler
+ *(.rodata)
+ .rodata        0x080040a0       0x1c ./main.o
+ .rodata        0x080040bc      0xc04 ./mousesensor.o
+                0x080040bc                firmware_3k_length
+ .rodata        0x08004cc0       0xf4 ./printf.o
+ *(.rodata*)
+ *(.glue_7)
+ .glue_7        0x00000000        0x0 linker stubs
+ *(.glue_7t)
+ .glue_7t       0x00000000        0x0 linker stubs
+ *(.eh_frame)
+ .eh_frame      0x08004db4        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtbegin.o
+ *(.init)
+ .init          0x08004db4        0x4 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crti.o
+                0x08004db4                _init
+ .init          0x08004db8        0x8 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtn.o
+ *(.fini)
+ .fini          0x08004dc0        0x4 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crti.o
+                0x08004dc0                _fini
+ .fini          0x08004dc4        0x8 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtn.o
+                0x08004dcc                . = ALIGN (0x4)
+                0x08004dcc                _etext = .
+
+.vfp11_veneer   0x08004dcc        0x0
+ .vfp11_veneer  0x00000000        0x0 linker stubs
+
+.v4_bx          0x08004dcc        0x0
+ .v4_bx         0x00000000        0x0 linker stubs
+
+.iplt           0x08004dcc        0x0
+ .iplt          0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtbegin.o
+
+.rel.dyn        0x08004dcc        0x0
+ .rel.iplt      0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtbegin.o
+
+.ARM.extab
+ *(.ARM.extab* .gnu.linkonce.armextab.*)
+
+.ARM            0x08004dcc        0x0
+                0x08004dcc                __exidx_start = .
+ *(.ARM.exidx*)
+                0x08004dcc                __exidx_end = .
+
+.preinit_array  0x08004dcc        0x0
+                0x08004dcc                PROVIDE (__preinit_array_start, .)
+ *(.preinit_array*)
+                0x08004dcc                PROVIDE (__preinit_array_end, .)
+
+.init_array     0x08004dcc        0x4
+                0x08004dcc                PROVIDE (__init_array_start, .)
+ *(SORT(.init_array.*))
+ *(.init_array*)
+ .init_array    0x08004dcc        0x4 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtbegin.o
+                0x08004dd0                PROVIDE (__init_array_end, .)
+
+.fini_array     0x08004dd0        0x4
+                0x08004dd0                PROVIDE (__fini_array_start, .)
+ *(.fini_array*)
+ .fini_array    0x08004dd0        0x4 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtbegin.o
+ *(SORT(.fini_array.*))
+                0x08004dd4                PROVIDE (__fini_array_end, .)
+                0x08004dd4                _sidata = .
+
+.data           0x20000000       0x28 load address 0x08004dd4
+                0x20000000                . = ALIGN (0x4)
+                0x20000000                _sdata = .
+ *(.data)
+ .data          0x20000000       0x14 ./stm32_lib/src/stm32f10x_rcc.o
+ .data          0x20000014       0x14 ./stm32_lib/src/system_stm32f10x.o
+                0x20000014                SystemCoreClock
+                0x20000018                AHBPrescTable
+ *(.data*)
+                0x20000028                . = ALIGN (0x4)
+                0x20000028                _edata = .
+
+.jcr            0x20000028        0x0 load address 0x08004dfc
+ .jcr           0x20000028        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtbegin.o
+
+.igot.plt       0x20000028        0x0 load address 0x08004dfc
+ .igot.plt      0x00000000        0x0 /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtbegin.o
+                0x20000028                . = ALIGN (0x4)
+
+.bss            0x20000028      0x344 load address 0x08004dfc
+                0x20000028                _sbss = .
+                0x20000028                __bss_start__ = _sbss
+ *(.bss)
+ .bss           0x20000028       0x1c /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtbegin.o
+ .bss           0x20000044        0x4 ./main.o
+                0x20000044                time_in_ms
+ *(.bss*)
+ *(COMMON)
+ COMMON         0x20000048       0x10 ./main.o
+                0x20000048                mouse_data
+                0x20000056                spi1_datastat
+                0x20000057                spi2_datastat
+ COMMON         0x20000058      0x106 ./spi_1.o
+                0x20000058                SPI1_Data
+ *fill*         0x2000015e        0x2 00
+ COMMON         0x20000160      0x20a ./usart.o
+                0x20000160                USART1_Data
+                0x2000036c                . = ALIGN (0x4)
+ *fill*         0x2000036a        0x2 00
+                0x2000036c                _ebss = .
+                0x2000036c                __bss_end__ = _ebss
+                0x2000036c                PROVIDE (end, _ebss)
+                0x2000036c                PROVIDE (_end, _ebss)
+
+._user_heap_stack
+                0x2000036c       0x80 load address 0x08005140
+                0x2000036c                . = ALIGN (0x4)
+                0x2000036c                . = (. + _Min_Heap_Size)
+                0x200003ec                . = (. + _Min_Stack_Size)
+ *fill*         0x2000036c       0x80 00
+                0x200003ec                . = ALIGN (0x4)
+
+.memory_b1_text
+ *(.mb1text)
+ *(.mb1text*)
+ *(.mb1rodata)
+ *(.mb1rodata*)
+
+/DISCARD/
+ libc.a(*)
+ libm.a(*)
+ libgcc.a(*)
+
+.ARM.attributes
+                0x00000000       0x2f
+ *(.ARM.attributes)
+ .ARM.attributes
+                0x00000000       0x1b /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crti.o
+ .ARM.attributes
+                0x0000001b       0x2b /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtbegin.o
+ .ARM.attributes
+                0x00000046       0x33 ./stm32_lib/src/misc.o
+ .ARM.attributes
+                0x00000079       0x33 ./stm32_lib/src/stm32f10x_exti.o
+ .ARM.attributes
+                0x000000ac       0x33 ./stm32_lib/src/stm32f10x_gpio.o
+ .ARM.attributes
+                0x000000df       0x33 ./stm32_lib/src/stm32f10x_it.o
+ .ARM.attributes
+                0x00000112       0x33 ./stm32_lib/src/stm32f10x_rcc.o
+ .ARM.attributes
+                0x00000145       0x33 ./stm32_lib/src/stm32f10x_spi.o
+ .ARM.attributes
+                0x00000178       0x33 ./stm32_lib/src/stm32f10x_usart.o
+ .ARM.attributes
+                0x000001ab       0x33 ./stm32_lib/src/system_stm32f10x.o
+ .ARM.attributes
+                0x000001de       0x21 ./stm32_lib/startup_stm32f10x_md_vl.o
+ .ARM.attributes
+                0x000001ff       0x33 ./led.o
+ .ARM.attributes
+                0x00000232       0x33 ./main.o
+ .ARM.attributes
+                0x00000265       0x33 ./mousesensor.o
+ .ARM.attributes
+                0x00000298       0x33 ./printf.o
+ .ARM.attributes
+                0x000002cb       0x33 ./spi_1.o
+ .ARM.attributes
+                0x000002fe       0x33 ./usart.o
+ .ARM.attributes
+                0x00000331       0x2b /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/../../../../arm-none-eabi/lib/thumb2/libc.a(lib_a-init.o)
+ .ARM.attributes
+                0x0000035c       0x1b /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/thumb2/crtn.o
+OUTPUT(stm32vl.elf elf32-littlearm)
+
+.debug_info     0x00000000     0x51fc
+ .debug_info    0x00000000      0x54a ./stm32_lib/src/misc.o
+ .debug_info    0x0000054a      0x365 ./stm32_lib/src/stm32f10x_exti.o
+ .debug_info    0x000008af      0x727 ./stm32_lib/src/stm32f10x_gpio.o
+ .debug_info    0x00000fd6      0x139 ./stm32_lib/src/stm32f10x_it.o
+ .debug_info    0x0000110f      0x97a ./stm32_lib/src/stm32f10x_rcc.o
+ .debug_info    0x00001a89      0x975 ./stm32_lib/src/stm32f10x_spi.o
+ .debug_info    0x000023fe      0xa70 ./stm32_lib/src/stm32f10x_usart.o
+ .debug_info    0x00002e6e      0x2ac ./stm32_lib/src/system_stm32f10x.o
+ .debug_info    0x0000311a       0x70 ./stm32_lib/startup_stm32f10x_md_vl.o
+ .debug_info    0x0000318a      0x20e ./led.o
+ .debug_info    0x00003398      0x338 ./main.o
+ .debug_info    0x000036d0      0x80c ./mousesensor.o
+ .debug_info    0x00003edc      0x3e8 ./printf.o
+ .debug_info    0x000042c4      0x6ee ./spi_1.o
+ .debug_info    0x000049b2      0x84a ./usart.o
+
+.debug_abbrev   0x00000000     0x130b
+ .debug_abbrev  0x00000000      0x137 ./stm32_lib/src/misc.o
+ .debug_abbrev  0x00000137      0x14c ./stm32_lib/src/stm32f10x_exti.o
+ .debug_abbrev  0x00000283      0x1a6 ./stm32_lib/src/stm32f10x_gpio.o
+ .debug_abbrev  0x00000429       0x59 ./stm32_lib/src/stm32f10x_it.o
+ .debug_abbrev  0x00000482      0x193 ./stm32_lib/src/stm32f10x_rcc.o
+ .debug_abbrev  0x00000615      0x15f ./stm32_lib/src/stm32f10x_spi.o
+ .debug_abbrev  0x00000774      0x15d ./stm32_lib/src/stm32f10x_usart.o
+ .debug_abbrev  0x000008d1      0x164 ./stm32_lib/src/system_stm32f10x.o
+ .debug_abbrev  0x00000a35       0x12 ./stm32_lib/startup_stm32f10x_md_vl.o
+ .debug_abbrev  0x00000a47       0xec ./led.o
+ .debug_abbrev  0x00000b33      0x163 ./main.o
+ .debug_abbrev  0x00000c96      0x1cf ./mousesensor.o
+ .debug_abbrev  0x00000e65      0x139 ./printf.o
+ .debug_abbrev  0x00000f9e      0x1b4 ./spi_1.o
+ .debug_abbrev  0x00001152      0x1b9 ./usart.o
+
+.debug_loc      0x00000000     0x2226
+ .debug_loc     0x00000000      0x118 ./stm32_lib/src/misc.o
+ .debug_loc     0x00000118      0x1b4 ./stm32_lib/src/stm32f10x_exti.o
+ .debug_loc     0x000002cc      0x3e4 ./stm32_lib/src/stm32f10x_gpio.o
+ .debug_loc     0x000006b0      0x160 ./stm32_lib/src/stm32f10x_it.o
+ .debug_loc     0x00000810      0x714 ./stm32_lib/src/stm32f10x_rcc.o
+ .debug_loc     0x00000f24      0x508 ./stm32_lib/src/stm32f10x_spi.o
+ .debug_loc     0x0000142c      0x658 ./stm32_lib/src/stm32f10x_usart.o
+ .debug_loc     0x00001a84       0xc8 ./stm32_lib/src/system_stm32f10x.o
+ .debug_loc     0x00001b4c       0x38 ./led.o
+ .debug_loc     0x00001b84       0x90 ./main.o
+ .debug_loc     0x00001c14      0x190 ./mousesensor.o
+ .debug_loc     0x00001da4      0x15e ./printf.o
+ .debug_loc     0x00001f02      0x170 ./spi_1.o
+ .debug_loc     0x00002072      0x1b4 ./usart.o
+
+.debug_aranges  0x00000000      0x1e8
+ .debug_aranges
+                0x00000000       0x20 ./stm32_lib/src/misc.o
+ .debug_aranges
+                0x00000020       0x20 ./stm32_lib/src/stm32f10x_exti.o
+ .debug_aranges
+                0x00000040       0x20 ./stm32_lib/src/stm32f10x_gpio.o
+ .debug_aranges
+                0x00000060       0x20 ./stm32_lib/src/stm32f10x_it.o
+ .debug_aranges
+                0x00000080       0x20 ./stm32_lib/src/stm32f10x_rcc.o
+ .debug_aranges
+                0x000000a0       0x20 ./stm32_lib/src/stm32f10x_spi.o
+ .debug_aranges
+                0x000000c0       0x20 ./stm32_lib/src/stm32f10x_usart.o
+ .debug_aranges
+                0x000000e0       0x20 ./stm32_lib/src/system_stm32f10x.o
+ .debug_aranges
+                0x00000100       0x28 ./stm32_lib/startup_stm32f10x_md_vl.o
+ .debug_aranges
+                0x00000128       0x20 ./led.o
+ .debug_aranges
+                0x00000148       0x20 ./main.o
+ .debug_aranges
+                0x00000168       0x20 ./mousesensor.o
+ .debug_aranges
+                0x00000188       0x20 ./printf.o
+ .debug_aranges
+                0x000001a8       0x20 ./spi_1.o
+ .debug_aranges
+                0x000001c8       0x20 ./usart.o
+
+.debug_line     0x00000000     0x1ef8
+ .debug_line    0x00000000      0x214 ./stm32_lib/src/misc.o
+ .debug_line    0x00000214      0x243 ./stm32_lib/src/stm32f10x_exti.o
+ .debug_line    0x00000457      0x2c8 ./stm32_lib/src/stm32f10x_gpio.o
+ .debug_line    0x0000071f      0x22c ./stm32_lib/src/stm32f10x_it.o
+ .debug_line    0x0000094b      0x329 ./stm32_lib/src/stm32f10x_rcc.o
+ .debug_line    0x00000c74      0x2f7 ./stm32_lib/src/stm32f10x_spi.o
+ .debug_line    0x00000f6b      0x32a ./stm32_lib/src/stm32f10x_usart.o
+ .debug_line    0x00001295      0x25f ./stm32_lib/src/system_stm32f10x.o
+ .debug_line    0x000014f4       0x83 ./stm32_lib/startup_stm32f10x_md_vl.o
+ .debug_line    0x00001577      0x10a ./led.o
+ .debug_line    0x00001681      0x125 ./main.o
+ .debug_line    0x000017a6      0x1c3 ./mousesensor.o
+ .debug_line    0x00001969      0x206 ./printf.o
+ .debug_line    0x00001b6f      0x1c7 ./spi_1.o
+ .debug_line    0x00001d36      0x1c2 ./usart.o
+
+.debug_macinfo  0x00000000   0x1deb49
+ .debug_macinfo
+                0x00000000    0x3b5a5 ./stm32_lib/src/misc.o
+ .debug_macinfo
+                0x0003b5a5    0x3b59d ./stm32_lib/src/stm32f10x_exti.o
+ .debug_macinfo
+                0x00076b42    0x3b7d8 ./stm32_lib/src/stm32f10x_gpio.o
+ .debug_macinfo
+                0x000b231a    0x3b58d ./stm32_lib/src/stm32f10x_it.o
+ .debug_macinfo
+                0x000ed8a7    0x3bd5e ./stm32_lib/src/stm32f10x_rcc.o
+ .debug_macinfo
+                0x00129605    0x3d0e5 ./stm32_lib/src/stm32f10x_spi.o
+ .debug_macinfo
+                0x001666ea    0x3cecd ./stm32_lib/src/stm32f10x_usart.o
+ .debug_macinfo
+                0x001a35b7    0x3b592 ./stm32_lib/src/system_stm32f10x.o
+
+.debug_str      0x00000000     0x1c62
+ .debug_str     0x00000000      0x2f0 ./stm32_lib/src/misc.o
+                                0x324 (size before relaxing)
+ .debug_str     0x000002f0      0x1bc ./stm32_lib/src/stm32f10x_exti.o
+                                0x2bf (size before relaxing)
+ .debug_str     0x000004ac      0x36c ./stm32_lib/src/stm32f10x_gpio.o
+                                0x47a (size before relaxing)
+ .debug_str     0x00000818       0xa0 ./stm32_lib/src/stm32f10x_it.o
+                                0x161 (size before relaxing)
+ .debug_str     0x000008b8      0x476 ./stm32_lib/src/stm32f10x_rcc.o
+                                0x5ce (size before relaxing)
+ .debug_str     0x00000d2e      0x378 ./stm32_lib/src/stm32f10x_spi.o
+                                0x55e (size before relaxing)
+ .debug_str     0x000010a6      0x408 ./stm32_lib/src/stm32f10x_usart.o
+                                0x5f1 (size before relaxing)
+ .debug_str     0x000014ae       0x71 ./stm32_lib/src/system_stm32f10x.o
+                                0x1e8 (size before relaxing)
+ .debug_str     0x0000151f       0x20 ./led.o
+                                0x21f (size before relaxing)
+ .debug_str     0x0000153f      0x10c ./main.o
+                                0x206 (size before relaxing)
+ .debug_str     0x0000164b      0x386 ./mousesensor.o
+                                0x812 (size before relaxing)
+ .debug_str     0x000019d1       0x8d ./printf.o
+                                0x1a1 (size before relaxing)
+ .debug_str     0x00001a5e       0xdd ./spi_1.o
+                                0x4be (size before relaxing)
+ .debug_str     0x00001b3b      0x127 ./usart.o
+                                0x7cf (size before relaxing)
+
+.comment        0x00000000       0x30
+ .comment       0x00000000       0x30 ./stm32_lib/src/misc.o
+                                 0x31 (size before relaxing)
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_exti.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_gpio.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_it.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_rcc.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_spi.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/stm32f10x_usart.o
+ .comment       0x00000000       0x31 ./stm32_lib/src/system_stm32f10x.o
+ .comment       0x00000000       0x31 ./led.o
+ .comment       0x00000000       0x31 ./main.o
+ .comment       0x00000000       0x31 ./mousesensor.o
+ .comment       0x00000000       0x31 ./printf.o
+ .comment       0x00000000       0x31 ./spi_1.o
+ .comment       0x00000000       0x31 ./usart.o
+
+.debug_frame    0x00000000     0x1334
+ .debug_frame   0x00000000       0x9c ./stm32_lib/src/misc.o
+ .debug_frame   0x0000009c       0xf0 ./stm32_lib/src/stm32f10x_exti.o
+ .debug_frame   0x0000018c      0x210 ./stm32_lib/src/stm32f10x_gpio.o
+ .debug_frame   0x0000039c       0xf0 ./stm32_lib/src/stm32f10x_it.o
+ .debug_frame   0x0000048c      0x3b0 ./stm32_lib/src/stm32f10x_rcc.o
+ .debug_frame   0x0000083c      0x29c ./stm32_lib/src/stm32f10x_spi.o
+ .debug_frame   0x00000ad8      0x344 ./stm32_lib/src/stm32f10x_usart.o
+ .debug_frame   0x00000e1c       0x80 ./stm32_lib/src/system_stm32f10x.o
+ .debug_frame   0x00000e9c       0x30 ./led.o
+ .debug_frame   0x00000ecc       0x68 ./main.o
+ .debug_frame   0x00000f34       0xfc ./mousesensor.o
+ .debug_frame   0x00001030       0xdc ./printf.o
+ .debug_frame   0x0000110c       0xec ./spi_1.o
+ .debug_frame   0x000011f8      0x110 ./usart.o
+ .debug_frame   0x00001308       0x2c /opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/../../../../arm-none-eabi/lib/thumb2/libc.a(lib_a-init.o)
+
+.debug_ranges   0x00000000       0x20
+ .debug_ranges  0x00000000       0x20 ./stm32_lib/startup_stm32f10x_md_vl.o

@@ -1,0 +1,1002 @@
+   1              		.syntax unified
+   2              		.cpu cortex-m3
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.thumb
+  14              		.file	"fix16_trig.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.rodata
+  19              		.align	2
+  22              	FOUR_DIV_PI:
+  23 0000 F3450100 		.word	83443
+  24              		.align	2
+  27              	_FOUR_DIV_PI2:
+  28 0004 4098FFFF 		.word	-26560
+  29              		.align	2
+  32              	X4_CORRECTION_COMPONENT:
+  33 0008 9A390000 		.word	14746
+  34              		.align	2
+  37              	PI_DIV_4:
+  38 000c 0FC90000 		.word	51471
+  39              		.align	2
+  42              	THREE_PI_DIV_4:
+  43 0010 2F5B0200 		.word	154415
+  44              		.align	2
+  47              	fix16_max:
+  48 0014 FFFFFF7F 		.word	2147483647
+  49              		.align	2
+  52              	fix16_min:
+  53 0018 00000080 		.word	-2147483648
+  54              		.align	2
+  57              	fix16_overflow:
+  58 001c 00000080 		.word	-2147483648
+  59              		.align	2
+  62              	fix16_pi:
+  63 0020 3F240300 		.word	205887
+  64              		.align	2
+  67              	fix16_e:
+  68 0024 E1B70200 		.word	178145
+  69              		.align	2
+  72              	fix16_one:
+  73 0028 00000100 		.word	65536
+  74              		.bss
+  75              		.align	2
+  76              	_fix16_sin_cache_index:
+  77 0000 00000000 		.space	16384
+  77      00000000 
+  77      00000000 
+  77      00000000 
+  77      00000000 
+  78              		.align	2
+  79              	_fix16_sin_cache_value:
+  80 4000 00000000 		.space	16384
+  80      00000000 
+  80      00000000 
+  80      00000000 
+  80      00000000 
+  81              		.align	2
+  82              	_fix16_atan_cache_index:
+  83 8000 00000000 		.space	32768
+  83      00000000 
+  83      00000000 
+  83      00000000 
+  83      00000000 
+  84              		.align	2
+  85              	_fix16_atan_cache_value:
+  86 10000 00000000 		.space	16384
+  86      00000000 
+  86      00000000 
+  86      00000000 
+  86      00000000 
+  87              		.text
+  88              		.align	2
+  89              		.global	fix16_sin_parabola
+  90              		.thumb
+  91              		.thumb_func
+  93              	fix16_sin_parabola:
+  94              	.LFB6:
+  95              		.file 1 "../libfixmath/fix16_trig.c"
+   1:../libfixmath/fix16_trig.c **** #include <limits.h>
+   2:../libfixmath/fix16_trig.c **** #include "fix16.h"
+   3:../libfixmath/fix16_trig.c **** 
+   4:../libfixmath/fix16_trig.c **** #if defined(FIXMATH_SIN_LUT)
+   5:../libfixmath/fix16_trig.c **** #include "fix16_trig_sin_lut.h"
+   6:../libfixmath/fix16_trig.c **** #elif !defined(FIXMATH_NO_CACHE)
+   7:../libfixmath/fix16_trig.c **** static fix16_t _fix16_sin_cache_index[4096]  = { 0 };
+   8:../libfixmath/fix16_trig.c **** static fix16_t _fix16_sin_cache_value[4096]  = { 0 };
+   9:../libfixmath/fix16_trig.c **** #endif
+  10:../libfixmath/fix16_trig.c **** 
+  11:../libfixmath/fix16_trig.c **** #ifndef FIXMATH_NO_CACHE
+  12:../libfixmath/fix16_trig.c **** static fix16_t _fix16_atan_cache_index[2][4096] = { { 0 }, { 0 } };
+  13:../libfixmath/fix16_trig.c **** static fix16_t _fix16_atan_cache_value[4096] = { 0 };
+  14:../libfixmath/fix16_trig.c **** #endif
+  15:../libfixmath/fix16_trig.c **** 
+  16:../libfixmath/fix16_trig.c **** 
+  17:../libfixmath/fix16_trig.c **** fix16_t fix16_sin_parabola(fix16_t inAngle)
+  18:../libfixmath/fix16_trig.c **** {
+  96              		.loc 1 18 0
+  97              		.cfi_startproc
+  98              		@ args = 0, pretend = 0, frame = 24
+  99              		@ frame_needed = 1, uses_anonymous_args = 0
+ 100 0000 90B5     		push	{r4, r7, lr}
+ 101              	.LCFI0:
+ 102              		.cfi_def_cfa_offset 12
+ 103              		.cfi_offset 14, -4
+ 104              		.cfi_offset 7, -8
+ 105              		.cfi_offset 4, -12
+ 106 0002 87B0     		sub	sp, sp, #28
+ 107              	.LCFI1:
+ 108              		.cfi_def_cfa_offset 40
+ 109 0004 00AF     		add	r7, sp, #0
+ 110              	.LCFI2:
+ 111              		.cfi_def_cfa_register 7
+ 112 0006 7860     		str	r0, [r7, #4]
+  19:../libfixmath/fix16_trig.c **** 	fix16_t abs_inAngle, abs_retval, retval;
+  20:../libfixmath/fix16_trig.c **** 	fix16_t mask;
+  21:../libfixmath/fix16_trig.c **** 
+  22:../libfixmath/fix16_trig.c **** 	/* Absolute function */
+  23:../libfixmath/fix16_trig.c **** 	mask = (inAngle >> (sizeof(fix16_t)*CHAR_BIT-1));
+ 113              		.loc 1 23 0
+ 114 0008 7B68     		ldr	r3, [r7, #4]
+ 115 000a 4FEAE373 		asr	r3, r3, #31
+ 116 000e 7B61     		str	r3, [r7, #20]
+  24:../libfixmath/fix16_trig.c **** 	abs_inAngle = (inAngle + mask) ^ mask;
+ 117              		.loc 1 24 0
+ 118 0010 7A68     		ldr	r2, [r7, #4]
+ 119 0012 7B69     		ldr	r3, [r7, #20]
+ 120 0014 D218     		adds	r2, r2, r3
+ 121 0016 7B69     		ldr	r3, [r7, #20]
+ 122 0018 5340     		eors	r3, r3, r2
+ 123 001a 3B61     		str	r3, [r7, #16]
+  25:../libfixmath/fix16_trig.c **** 	
+  26:../libfixmath/fix16_trig.c **** 	/* On 0->PI, sin looks like x² that is :
+  27:../libfixmath/fix16_trig.c **** 	   - centered on PI/2,
+  28:../libfixmath/fix16_trig.c **** 	   - equals 1 on PI/2,
+  29:../libfixmath/fix16_trig.c **** 	   - equals 0 on 0 and PI
+  30:../libfixmath/fix16_trig.c **** 	  that means :  4/PI * x  - 4/PI² * x²
+  31:../libfixmath/fix16_trig.c **** 	  Use abs(x) to handle (-PI) -> 0 zone.
+  32:../libfixmath/fix16_trig.c **** 	 */
+  33:../libfixmath/fix16_trig.c **** 	retval = fix16_mul(FOUR_DIV_PI, inAngle) + fix16_mul( fix16_mul(_FOUR_DIV_PI2, inAngle), abs_inAng
+ 124              		.loc 1 33 0
+ 125 001c 40F20003 		movw	r3, #:lower16:FOUR_DIV_PI
+ 126 0020 C0F20003 		movt	r3, #:upper16:FOUR_DIV_PI
+ 127 0024 1B68     		ldr	r3, [r3, #0]
+ 128 0026 1846     		mov	r0, r3
+ 129 0028 7968     		ldr	r1, [r7, #4]
+ 130 002a FFF7FEFF 		bl	fix16_mul
+ 131 002e 0446     		mov	r4, r0
+ 132 0030 40F20003 		movw	r3, #:lower16:_FOUR_DIV_PI2
+ 133 0034 C0F20003 		movt	r3, #:upper16:_FOUR_DIV_PI2
+ 134 0038 1B68     		ldr	r3, [r3, #0]
+ 135 003a 1846     		mov	r0, r3
+ 136 003c 7968     		ldr	r1, [r7, #4]
+ 137 003e FFF7FEFF 		bl	fix16_mul
+ 138 0042 0346     		mov	r3, r0
+ 139 0044 1846     		mov	r0, r3
+ 140 0046 3969     		ldr	r1, [r7, #16]
+ 141 0048 FFF7FEFF 		bl	fix16_mul
+ 142 004c 0346     		mov	r3, r0
+ 143 004e E318     		adds	r3, r4, r3
+ 144 0050 FB60     		str	r3, [r7, #12]
+  34:../libfixmath/fix16_trig.c **** 	/* At this point, retval equals sin(inAngle) on important points ( -PI, -PI/2, 0, PI/2, PI),
+  35:../libfixmath/fix16_trig.c **** 	   but is not very precise between these points
+  36:../libfixmath/fix16_trig.c **** 	 */
+  37:../libfixmath/fix16_trig.c **** 	#ifndef FIXMATH_FAST_SIN
+  38:../libfixmath/fix16_trig.c **** 	/* Absolute value of retval */
+  39:../libfixmath/fix16_trig.c **** 	mask = (retval >> (sizeof(fix16_t)*CHAR_BIT-1));
+ 145              		.loc 1 39 0
+ 146 0052 FB68     		ldr	r3, [r7, #12]
+ 147 0054 4FEAE373 		asr	r3, r3, #31
+ 148 0058 7B61     		str	r3, [r7, #20]
+  40:../libfixmath/fix16_trig.c **** 	abs_retval = (retval + mask) ^ mask;
+ 149              		.loc 1 40 0
+ 150 005a FA68     		ldr	r2, [r7, #12]
+ 151 005c 7B69     		ldr	r3, [r7, #20]
+ 152 005e D218     		adds	r2, r2, r3
+ 153 0060 7B69     		ldr	r3, [r7, #20]
+ 154 0062 5340     		eors	r3, r3, r2
+ 155 0064 BB60     		str	r3, [r7, #8]
+  41:../libfixmath/fix16_trig.c **** 	/* So improve its precision by adding some x^4 component to retval */
+  42:../libfixmath/fix16_trig.c **** 	retval += fix16_mul(X4_CORRECTION_COMPONENT, fix16_mul(retval, abs_retval) - retval );
+ 156              		.loc 1 42 0
+ 157 0066 40F20003 		movw	r3, #:lower16:X4_CORRECTION_COMPONENT
+ 158 006a C0F20003 		movt	r3, #:upper16:X4_CORRECTION_COMPONENT
+ 159 006e 1C68     		ldr	r4, [r3, #0]
+ 160 0070 F868     		ldr	r0, [r7, #12]
+ 161 0072 B968     		ldr	r1, [r7, #8]
+ 162 0074 FFF7FEFF 		bl	fix16_mul
+ 163 0078 0246     		mov	r2, r0
+ 164 007a FB68     		ldr	r3, [r7, #12]
+ 165 007c D31A     		subs	r3, r2, r3
+ 166 007e 2046     		mov	r0, r4
+ 167 0080 1946     		mov	r1, r3
+ 168 0082 FFF7FEFF 		bl	fix16_mul
+ 169 0086 0346     		mov	r3, r0
+ 170 0088 FA68     		ldr	r2, [r7, #12]
+ 171 008a D318     		adds	r3, r2, r3
+ 172 008c FB60     		str	r3, [r7, #12]
+  43:../libfixmath/fix16_trig.c **** 	#endif
+  44:../libfixmath/fix16_trig.c **** 	return retval;
+ 173              		.loc 1 44 0
+ 174 008e FB68     		ldr	r3, [r7, #12]
+  45:../libfixmath/fix16_trig.c **** }
+ 175              		.loc 1 45 0
+ 176 0090 1846     		mov	r0, r3
+ 177 0092 07F11C07 		add	r7, r7, #28
+ 178 0096 BD46     		mov	sp, r7
+ 179 0098 90BD     		pop	{r4, r7, pc}
+ 180              		.cfi_endproc
+ 181              	.LFE6:
+ 183 009a 00BF     		.align	2
+ 184              		.global	fix16_sin
+ 185              		.thumb
+ 186              		.thumb_func
+ 188              	fix16_sin:
+ 189              	.LFB7:
+  46:../libfixmath/fix16_trig.c **** 
+  47:../libfixmath/fix16_trig.c **** fix16_t fix16_sin(fix16_t inAngle) {
+ 190              		.loc 1 47 0
+ 191              		.cfi_startproc
+ 192              		@ args = 0, pretend = 0, frame = 24
+ 193              		@ frame_needed = 1, uses_anonymous_args = 0
+ 194 009c 80B5     		push	{r7, lr}
+ 195              	.LCFI3:
+ 196              		.cfi_def_cfa_offset 8
+ 197              		.cfi_offset 14, -4
+ 198              		.cfi_offset 7, -8
+ 199 009e 86B0     		sub	sp, sp, #24
+ 200              	.LCFI4:
+ 201              		.cfi_def_cfa_offset 32
+ 202 00a0 00AF     		add	r7, sp, #0
+ 203              	.LCFI5:
+ 204              		.cfi_def_cfa_register 7
+ 205 00a2 7860     		str	r0, [r7, #4]
+  48:../libfixmath/fix16_trig.c **** 	fix16_t tempAngle = inAngle % (fix16_pi << 1);
+ 206              		.loc 1 48 0
+ 207 00a4 40F20003 		movw	r3, #:lower16:fix16_pi
+ 208 00a8 C0F20003 		movt	r3, #:upper16:fix16_pi
+ 209 00ac 1B68     		ldr	r3, [r3, #0]
+ 210 00ae 4FEA4302 		lsl	r2, r3, #1
+ 211 00b2 7B68     		ldr	r3, [r7, #4]
+ 212 00b4 93FBF2F1 		sdiv	r1, r3, r2
+ 213 00b8 02FB01F2 		mul	r2, r2, r1
+ 214 00bc 9B1A     		subs	r3, r3, r2
+ 215 00be 7B61     		str	r3, [r7, #20]
+  49:../libfixmath/fix16_trig.c **** 
+  50:../libfixmath/fix16_trig.c **** 	#ifdef FIXMATH_SIN_LUT
+  51:../libfixmath/fix16_trig.c **** 	if(tempAngle < 0)
+  52:../libfixmath/fix16_trig.c **** 		tempAngle += (fix16_pi << 1);
+  53:../libfixmath/fix16_trig.c **** 
+  54:../libfixmath/fix16_trig.c **** 	fix16_t tempOut;
+  55:../libfixmath/fix16_trig.c **** 	if(tempAngle >= fix16_pi) {
+  56:../libfixmath/fix16_trig.c **** 		tempAngle -= fix16_pi;
+  57:../libfixmath/fix16_trig.c **** 		if(tempAngle >= (fix16_pi >> 1))
+  58:../libfixmath/fix16_trig.c **** 			tempAngle = fix16_pi - tempAngle;
+  59:../libfixmath/fix16_trig.c **** 		tempOut = -(tempAngle >= _fix16_sin_lut_count ? fix16_one : _fix16_sin_lut[tempAngle]);
+  60:../libfixmath/fix16_trig.c **** 	} else {
+  61:../libfixmath/fix16_trig.c **** 		if(tempAngle >= (fix16_pi >> 1))
+  62:../libfixmath/fix16_trig.c **** 			tempAngle = fix16_pi - tempAngle;
+  63:../libfixmath/fix16_trig.c **** 		tempOut = (tempAngle >= _fix16_sin_lut_count ? fix16_one : _fix16_sin_lut[tempAngle]);
+  64:../libfixmath/fix16_trig.c **** 	}
+  65:../libfixmath/fix16_trig.c **** 	#else
+  66:../libfixmath/fix16_trig.c **** 	if(tempAngle > fix16_pi)
+ 216              		.loc 1 66 0
+ 217 00c0 40F20003 		movw	r3, #:lower16:fix16_pi
+ 218 00c4 C0F20003 		movt	r3, #:upper16:fix16_pi
+ 219 00c8 1B68     		ldr	r3, [r3, #0]
+ 220 00ca 7A69     		ldr	r2, [r7, #20]
+ 221 00cc 9A42     		cmp	r2, r3
+ 222 00ce 0ADD     		ble	.L3
+  67:../libfixmath/fix16_trig.c **** 		tempAngle -= (fix16_pi << 1);
+ 223              		.loc 1 67 0
+ 224 00d0 40F20003 		movw	r3, #:lower16:fix16_pi
+ 225 00d4 C0F20003 		movt	r3, #:upper16:fix16_pi
+ 226 00d8 1B68     		ldr	r3, [r3, #0]
+ 227 00da 4FEA4303 		lsl	r3, r3, #1
+ 228 00de 7A69     		ldr	r2, [r7, #20]
+ 229 00e0 D31A     		subs	r3, r2, r3
+ 230 00e2 7B61     		str	r3, [r7, #20]
+ 231 00e4 13E0     		b	.L4
+ 232              	.L3:
+  68:../libfixmath/fix16_trig.c **** 	else if(tempAngle < -fix16_pi)
+ 233              		.loc 1 68 0
+ 234 00e6 40F20003 		movw	r3, #:lower16:fix16_pi
+ 235 00ea C0F20003 		movt	r3, #:upper16:fix16_pi
+ 236 00ee 1B68     		ldr	r3, [r3, #0]
+ 237 00f0 C3F10002 		rsb	r2, r3, #0
+ 238 00f4 7B69     		ldr	r3, [r7, #20]
+ 239 00f6 9A42     		cmp	r2, r3
+ 240 00f8 09DD     		ble	.L4
+  69:../libfixmath/fix16_trig.c **** 		tempAngle += (fix16_pi << 1);
+ 241              		.loc 1 69 0
+ 242 00fa 40F20003 		movw	r3, #:lower16:fix16_pi
+ 243 00fe C0F20003 		movt	r3, #:upper16:fix16_pi
+ 244 0102 1B68     		ldr	r3, [r3, #0]
+ 245 0104 4FEA4303 		lsl	r3, r3, #1
+ 246 0108 7A69     		ldr	r2, [r7, #20]
+ 247 010a D318     		adds	r3, r2, r3
+ 248 010c 7B61     		str	r3, [r7, #20]
+ 249              	.L4:
+  70:../libfixmath/fix16_trig.c **** 
+  71:../libfixmath/fix16_trig.c **** 	#ifndef FIXMATH_NO_CACHE
+  72:../libfixmath/fix16_trig.c **** 	fix16_t tempIndex = ((inAngle >> 5) & 0x00000FFF);
+ 250              		.loc 1 72 0
+ 251 010e 7B68     		ldr	r3, [r7, #4]
+ 252 0110 4FEA6313 		asr	r3, r3, #5
+ 253 0114 4FEA0353 		lsl	r3, r3, #20
+ 254 0118 4FEA1353 		lsr	r3, r3, #20
+ 255 011c 3B61     		str	r3, [r7, #16]
+  73:../libfixmath/fix16_trig.c **** 	if(_fix16_sin_cache_index[tempIndex] == inAngle)
+ 256              		.loc 1 73 0
+ 257 011e 40F20003 		movw	r3, #:lower16:_fix16_sin_cache_index
+ 258 0122 C0F20003 		movt	r3, #:upper16:_fix16_sin_cache_index
+ 259 0126 3A69     		ldr	r2, [r7, #16]
+ 260 0128 53F82220 		ldr	r2, [r3, r2, lsl #2]
+ 261 012c 7B68     		ldr	r3, [r7, #4]
+ 262 012e 9A42     		cmp	r2, r3
+ 263 0130 07D1     		bne	.L5
+  74:../libfixmath/fix16_trig.c **** 		return _fix16_sin_cache_value[tempIndex];
+ 264              		.loc 1 74 0
+ 265 0132 40F20003 		movw	r3, #:lower16:_fix16_sin_cache_value
+ 266 0136 C0F20003 		movt	r3, #:upper16:_fix16_sin_cache_value
+ 267 013a 3A69     		ldr	r2, [r7, #16]
+ 268 013c 53F82230 		ldr	r3, [r3, r2, lsl #2]
+ 269 0140 7BE0     		b	.L6
+ 270              	.L5:
+  75:../libfixmath/fix16_trig.c **** 	#endif
+  76:../libfixmath/fix16_trig.c **** 
+  77:../libfixmath/fix16_trig.c **** 	fix16_t tempAngleSq = fix16_mul(tempAngle, tempAngle);
+ 271              		.loc 1 77 0
+ 272 0142 7869     		ldr	r0, [r7, #20]
+ 273 0144 7969     		ldr	r1, [r7, #20]
+ 274 0146 FFF7FEFF 		bl	fix16_mul
+ 275 014a F860     		str	r0, [r7, #12]
+  78:../libfixmath/fix16_trig.c **** 
+  79:../libfixmath/fix16_trig.c **** 	#ifndef FIXMATH_FAST_SIN // Most accurate version, accurate to ~2.1%
+  80:../libfixmath/fix16_trig.c **** 	fix16_t tempOut = tempAngle;
+ 276              		.loc 1 80 0
+ 277 014c 7B69     		ldr	r3, [r7, #20]
+ 278 014e BB60     		str	r3, [r7, #8]
+  81:../libfixmath/fix16_trig.c **** 	tempAngle = fix16_mul(tempAngle, tempAngleSq);
+ 279              		.loc 1 81 0
+ 280 0150 7869     		ldr	r0, [r7, #20]
+ 281 0152 F968     		ldr	r1, [r7, #12]
+ 282 0154 FFF7FEFF 		bl	fix16_mul
+ 283 0158 7861     		str	r0, [r7, #20]
+  82:../libfixmath/fix16_trig.c **** 	tempOut -= (tempAngle / 6);
+ 284              		.loc 1 82 0
+ 285 015a 7A69     		ldr	r2, [r7, #20]
+ 286 015c 4AF6AB23 		movw	r3, #43691
+ 287 0160 C2F6AA23 		movt	r3, 10922
+ 288 0164 83FB0201 		smull	r0, r1, r3, r2
+ 289 0168 4FEAE273 		asr	r3, r2, #31
+ 290 016c CB1A     		subs	r3, r1, r3
+ 291 016e BA68     		ldr	r2, [r7, #8]
+ 292 0170 D31A     		subs	r3, r2, r3
+ 293 0172 BB60     		str	r3, [r7, #8]
+  83:../libfixmath/fix16_trig.c **** 	tempAngle = fix16_mul(tempAngle, tempAngleSq);
+ 294              		.loc 1 83 0
+ 295 0174 7869     		ldr	r0, [r7, #20]
+ 296 0176 F968     		ldr	r1, [r7, #12]
+ 297 0178 FFF7FEFF 		bl	fix16_mul
+ 298 017c 7861     		str	r0, [r7, #20]
+  84:../libfixmath/fix16_trig.c **** 	tempOut += (tempAngle / 120);
+ 299              		.loc 1 84 0
+ 300 017e 7B69     		ldr	r3, [r7, #20]
+ 301 0180 48F68902 		movw	r2, #34953
+ 302 0184 C8F68802 		movt	r2, 34952
+ 303 0188 82FB0312 		smull	r1, r2, r2, r3
+ 304 018c D218     		adds	r2, r2, r3
+ 305 018e 4FEAA212 		asr	r2, r2, #6
+ 306 0192 4FEAE373 		asr	r3, r3, #31
+ 307 0196 D31A     		subs	r3, r2, r3
+ 308 0198 BA68     		ldr	r2, [r7, #8]
+ 309 019a D318     		adds	r3, r2, r3
+ 310 019c BB60     		str	r3, [r7, #8]
+  85:../libfixmath/fix16_trig.c **** 	tempAngle = fix16_mul(tempAngle, tempAngleSq);
+ 311              		.loc 1 85 0
+ 312 019e 7869     		ldr	r0, [r7, #20]
+ 313 01a0 F968     		ldr	r1, [r7, #12]
+ 314 01a2 FFF7FEFF 		bl	fix16_mul
+ 315 01a6 7861     		str	r0, [r7, #20]
+  86:../libfixmath/fix16_trig.c **** 	tempOut -= (tempAngle / 5040);
+ 316              		.loc 1 86 0
+ 317 01a8 7B69     		ldr	r3, [r7, #20]
+ 318 01aa 4FF0D102 		mov	r2, #209
+ 319 01ae CDF20D02 		movt	r2, 53261
+ 320 01b2 82FB0302 		smull	r0, r2, r2, r3
+ 321 01b6 D218     		adds	r2, r2, r3
+ 322 01b8 4FEA2232 		asr	r2, r2, #12
+ 323 01bc 4FEAE373 		asr	r3, r3, #31
+ 324 01c0 D31A     		subs	r3, r2, r3
+ 325 01c2 BA68     		ldr	r2, [r7, #8]
+ 326 01c4 D31A     		subs	r3, r2, r3
+ 327 01c6 BB60     		str	r3, [r7, #8]
+  87:../libfixmath/fix16_trig.c **** 	tempAngle = fix16_mul(tempAngle, tempAngleSq);
+ 328              		.loc 1 87 0
+ 329 01c8 7869     		ldr	r0, [r7, #20]
+ 330 01ca F968     		ldr	r1, [r7, #12]
+ 331 01cc FFF7FEFF 		bl	fix16_mul
+ 332 01d0 7861     		str	r0, [r7, #20]
+  88:../libfixmath/fix16_trig.c **** 	tempOut += (tempAngle / 362880);
+ 333              		.loc 1 88 0
+ 334 01d2 7A69     		ldr	r2, [r7, #20]
+ 335 01d4 4CF24B73 		movw	r3, #51019
+ 336 01d8 C2F63B63 		movt	r3, 11835
+ 337 01dc 83FB0213 		smull	r1, r3, r3, r2
+ 338 01e0 4FEA2341 		asr	r1, r3, #16
+ 339 01e4 4FEAE273 		asr	r3, r2, #31
+ 340 01e8 CB1A     		subs	r3, r1, r3
+ 341 01ea BA68     		ldr	r2, [r7, #8]
+ 342 01ec D318     		adds	r3, r2, r3
+ 343 01ee BB60     		str	r3, [r7, #8]
+  89:../libfixmath/fix16_trig.c **** 	tempAngle = fix16_mul(tempAngle, tempAngleSq);
+ 344              		.loc 1 89 0
+ 345 01f0 7869     		ldr	r0, [r7, #20]
+ 346 01f2 F968     		ldr	r1, [r7, #12]
+ 347 01f4 FFF7FEFF 		bl	fix16_mul
+ 348 01f8 7861     		str	r0, [r7, #20]
+  90:../libfixmath/fix16_trig.c **** 	tempOut -= (tempAngle / 39916800);
+ 349              		.loc 1 90 0
+ 350 01fa 7A69     		ldr	r2, [r7, #20]
+ 351 01fc 4CF6AD03 		movw	r3, #51373
+ 352 0200 C0F25C33 		movt	r3, 860
+ 353 0204 83FB0203 		smull	r0, r3, r3, r2
+ 354 0208 4FEAE341 		asr	r1, r3, #19
+ 355 020c 4FEAE273 		asr	r3, r2, #31
+ 356 0210 CB1A     		subs	r3, r1, r3
+ 357 0212 BA68     		ldr	r2, [r7, #8]
+ 358 0214 D31A     		subs	r3, r2, r3
+ 359 0216 BB60     		str	r3, [r7, #8]
+  91:../libfixmath/fix16_trig.c **** 	#else // Fast implementation, runs at 159% the speed of above 'accurate' version with an slightly 
+  92:../libfixmath/fix16_trig.c **** 	fix16_t tempOut;
+  93:../libfixmath/fix16_trig.c **** 	tempOut = fix16_mul(-13, tempAngleSq) + 546;
+  94:../libfixmath/fix16_trig.c **** 	tempOut = fix16_mul(tempOut, tempAngleSq) - 10923;
+  95:../libfixmath/fix16_trig.c **** 	tempOut = fix16_mul(tempOut, tempAngleSq) + 65536;
+  96:../libfixmath/fix16_trig.c **** 	tempOut = fix16_mul(tempOut, tempAngle);
+  97:../libfixmath/fix16_trig.c **** 	#endif
+  98:../libfixmath/fix16_trig.c **** 
+  99:../libfixmath/fix16_trig.c **** 	#ifndef FIXMATH_NO_CACHE
+ 100:../libfixmath/fix16_trig.c **** 	_fix16_sin_cache_index[tempIndex] = inAngle;
+ 360              		.loc 1 100 0
+ 361 0218 40F20003 		movw	r3, #:lower16:_fix16_sin_cache_index
+ 362 021c C0F20003 		movt	r3, #:upper16:_fix16_sin_cache_index
+ 363 0220 3A69     		ldr	r2, [r7, #16]
+ 364 0222 7968     		ldr	r1, [r7, #4]
+ 365 0224 43F82210 		str	r1, [r3, r2, lsl #2]
+ 101:../libfixmath/fix16_trig.c **** 	_fix16_sin_cache_value[tempIndex] = tempOut;
+ 366              		.loc 1 101 0
+ 367 0228 40F20003 		movw	r3, #:lower16:_fix16_sin_cache_value
+ 368 022c C0F20003 		movt	r3, #:upper16:_fix16_sin_cache_value
+ 369 0230 3A69     		ldr	r2, [r7, #16]
+ 370 0232 B968     		ldr	r1, [r7, #8]
+ 371 0234 43F82210 		str	r1, [r3, r2, lsl #2]
+ 102:../libfixmath/fix16_trig.c **** 	#endif
+ 103:../libfixmath/fix16_trig.c **** 	#endif
+ 104:../libfixmath/fix16_trig.c **** 
+ 105:../libfixmath/fix16_trig.c **** 	return tempOut;
+ 372              		.loc 1 105 0
+ 373 0238 BB68     		ldr	r3, [r7, #8]
+ 374              	.L6:
+ 106:../libfixmath/fix16_trig.c **** }
+ 375              		.loc 1 106 0
+ 376 023a 1846     		mov	r0, r3
+ 377 023c 07F11807 		add	r7, r7, #24
+ 378 0240 BD46     		mov	sp, r7
+ 379 0242 80BD     		pop	{r7, pc}
+ 380              		.cfi_endproc
+ 381              	.LFE7:
+ 383              		.align	2
+ 384              		.global	fix16_cos
+ 385              		.thumb
+ 386              		.thumb_func
+ 388              	fix16_cos:
+ 389              	.LFB8:
+ 107:../libfixmath/fix16_trig.c **** 
+ 108:../libfixmath/fix16_trig.c **** fix16_t fix16_cos(fix16_t inAngle) {
+ 390              		.loc 1 108 0
+ 391              		.cfi_startproc
+ 392              		@ args = 0, pretend = 0, frame = 8
+ 393              		@ frame_needed = 1, uses_anonymous_args = 0
+ 394 0244 80B5     		push	{r7, lr}
+ 395              	.LCFI6:
+ 396              		.cfi_def_cfa_offset 8
+ 397              		.cfi_offset 14, -4
+ 398              		.cfi_offset 7, -8
+ 399 0246 82B0     		sub	sp, sp, #8
+ 400              	.LCFI7:
+ 401              		.cfi_def_cfa_offset 16
+ 402 0248 00AF     		add	r7, sp, #0
+ 403              	.LCFI8:
+ 404              		.cfi_def_cfa_register 7
+ 405 024a 7860     		str	r0, [r7, #4]
+ 109:../libfixmath/fix16_trig.c **** 	return fix16_sin(inAngle + (fix16_pi >> 1));
+ 406              		.loc 1 109 0
+ 407 024c 40F20003 		movw	r3, #:lower16:fix16_pi
+ 408 0250 C0F20003 		movt	r3, #:upper16:fix16_pi
+ 409 0254 1B68     		ldr	r3, [r3, #0]
+ 410 0256 4FEA6302 		asr	r2, r3, #1
+ 411 025a 7B68     		ldr	r3, [r7, #4]
+ 412 025c D318     		adds	r3, r2, r3
+ 413 025e 1846     		mov	r0, r3
+ 414 0260 FFF7FEFF 		bl	fix16_sin
+ 415 0264 0346     		mov	r3, r0
+ 110:../libfixmath/fix16_trig.c **** }
+ 416              		.loc 1 110 0
+ 417 0266 1846     		mov	r0, r3
+ 418 0268 07F10807 		add	r7, r7, #8
+ 419 026c BD46     		mov	sp, r7
+ 420 026e 80BD     		pop	{r7, pc}
+ 421              		.cfi_endproc
+ 422              	.LFE8:
+ 424              		.align	2
+ 425              		.global	fix16_tan
+ 426              		.thumb
+ 427              		.thumb_func
+ 429              	fix16_tan:
+ 430              	.LFB9:
+ 111:../libfixmath/fix16_trig.c **** 
+ 112:../libfixmath/fix16_trig.c **** fix16_t fix16_tan(fix16_t inAngle) {
+ 431              		.loc 1 112 0
+ 432              		.cfi_startproc
+ 433              		@ args = 0, pretend = 0, frame = 8
+ 434              		@ frame_needed = 1, uses_anonymous_args = 0
+ 435 0270 90B5     		push	{r4, r7, lr}
+ 436              	.LCFI9:
+ 437              		.cfi_def_cfa_offset 12
+ 438              		.cfi_offset 14, -4
+ 439              		.cfi_offset 7, -8
+ 440              		.cfi_offset 4, -12
+ 441 0272 83B0     		sub	sp, sp, #12
+ 442              	.LCFI10:
+ 443              		.cfi_def_cfa_offset 24
+ 444 0274 00AF     		add	r7, sp, #0
+ 445              	.LCFI11:
+ 446              		.cfi_def_cfa_register 7
+ 447 0276 7860     		str	r0, [r7, #4]
+ 113:../libfixmath/fix16_trig.c **** 	return fix16_sdiv(fix16_sin(inAngle), fix16_cos(inAngle));
+ 448              		.loc 1 113 0
+ 449 0278 7868     		ldr	r0, [r7, #4]
+ 450 027a FFF7FEFF 		bl	fix16_sin
+ 451 027e 0446     		mov	r4, r0
+ 452 0280 7868     		ldr	r0, [r7, #4]
+ 453 0282 FFF7FEFF 		bl	fix16_cos
+ 454 0286 0346     		mov	r3, r0
+ 455 0288 2046     		mov	r0, r4
+ 456 028a 1946     		mov	r1, r3
+ 457 028c FFF7FEFF 		bl	fix16_sdiv
+ 458 0290 0346     		mov	r3, r0
+ 114:../libfixmath/fix16_trig.c **** }
+ 459              		.loc 1 114 0
+ 460 0292 1846     		mov	r0, r3
+ 461 0294 07F10C07 		add	r7, r7, #12
+ 462 0298 BD46     		mov	sp, r7
+ 463 029a 90BD     		pop	{r4, r7, pc}
+ 464              		.cfi_endproc
+ 465              	.LFE9:
+ 467              		.align	2
+ 468              		.global	fix16_asin
+ 469              		.thumb
+ 470              		.thumb_func
+ 472              	fix16_asin:
+ 473              	.LFB10:
+ 115:../libfixmath/fix16_trig.c **** 
+ 116:../libfixmath/fix16_trig.c **** fix16_t fix16_asin(fix16_t inValue) {
+ 474              		.loc 1 116 0
+ 475              		.cfi_startproc
+ 476              		@ args = 0, pretend = 0, frame = 16
+ 477              		@ frame_needed = 1, uses_anonymous_args = 0
+ 478 029c 90B5     		push	{r4, r7, lr}
+ 479              	.LCFI12:
+ 480              		.cfi_def_cfa_offset 12
+ 481              		.cfi_offset 14, -4
+ 482              		.cfi_offset 7, -8
+ 483              		.cfi_offset 4, -12
+ 484 029e 85B0     		sub	sp, sp, #20
+ 485              	.LCFI13:
+ 486              		.cfi_def_cfa_offset 32
+ 487 02a0 00AF     		add	r7, sp, #0
+ 488              	.LCFI14:
+ 489              		.cfi_def_cfa_register 7
+ 490 02a2 7860     		str	r0, [r7, #4]
+ 117:../libfixmath/fix16_trig.c **** 	if((inValue > fix16_one) || (inValue < -fix16_one))
+ 491              		.loc 1 117 0
+ 492 02a4 40F20003 		movw	r3, #:lower16:fix16_one
+ 493 02a8 C0F20003 		movt	r3, #:upper16:fix16_one
+ 494 02ac 1B68     		ldr	r3, [r3, #0]
+ 495 02ae 7A68     		ldr	r2, [r7, #4]
+ 496 02b0 9A42     		cmp	r2, r3
+ 497 02b2 09DC     		bgt	.L10
+ 498              		.loc 1 117 0 is_stmt 0 discriminator 1
+ 499 02b4 40F20003 		movw	r3, #:lower16:fix16_one
+ 500 02b8 C0F20003 		movt	r3, #:upper16:fix16_one
+ 501 02bc 1B68     		ldr	r3, [r3, #0]
+ 502 02be C3F10002 		rsb	r2, r3, #0
+ 503 02c2 7B68     		ldr	r3, [r7, #4]
+ 504 02c4 9A42     		cmp	r2, r3
+ 505 02c6 02DD     		ble	.L11
+ 506              	.L10:
+ 118:../libfixmath/fix16_trig.c **** 		return 0;
+ 507              		.loc 1 118 0 is_stmt 1
+ 508 02c8 4FF00003 		mov	r3, #0
+ 509 02cc 19E0     		b	.L12
+ 510              	.L11:
+ 119:../libfixmath/fix16_trig.c **** 	fix16_t tempOut;
+ 120:../libfixmath/fix16_trig.c **** 	tempOut = (fix16_one - fix16_mul(inValue, inValue));
+ 511              		.loc 1 120 0
+ 512 02ce 40F20003 		movw	r3, #:lower16:fix16_one
+ 513 02d2 C0F20003 		movt	r3, #:upper16:fix16_one
+ 514 02d6 1C68     		ldr	r4, [r3, #0]
+ 515 02d8 7868     		ldr	r0, [r7, #4]
+ 516 02da 7968     		ldr	r1, [r7, #4]
+ 517 02dc FFF7FEFF 		bl	fix16_mul
+ 518 02e0 0346     		mov	r3, r0
+ 519 02e2 E31A     		subs	r3, r4, r3
+ 520 02e4 FB60     		str	r3, [r7, #12]
+ 121:../libfixmath/fix16_trig.c **** 	tempOut = fix16_div(inValue, fix16_sqrt(tempOut));
+ 521              		.loc 1 121 0
+ 522 02e6 F868     		ldr	r0, [r7, #12]
+ 523 02e8 FFF7FEFF 		bl	fix16_sqrt
+ 524 02ec 0346     		mov	r3, r0
+ 525 02ee 7868     		ldr	r0, [r7, #4]
+ 526 02f0 1946     		mov	r1, r3
+ 527 02f2 FFF7FEFF 		bl	fix16_div
+ 528 02f6 F860     		str	r0, [r7, #12]
+ 122:../libfixmath/fix16_trig.c **** 	tempOut = fix16_atan(tempOut);
+ 529              		.loc 1 122 0
+ 530 02f8 F868     		ldr	r0, [r7, #12]
+ 531 02fa FFF7FEFF 		bl	fix16_atan
+ 532 02fe F860     		str	r0, [r7, #12]
+ 123:../libfixmath/fix16_trig.c **** 	return tempOut;
+ 533              		.loc 1 123 0
+ 534 0300 FB68     		ldr	r3, [r7, #12]
+ 535              	.L12:
+ 124:../libfixmath/fix16_trig.c **** }
+ 536              		.loc 1 124 0
+ 537 0302 1846     		mov	r0, r3
+ 538 0304 07F11407 		add	r7, r7, #20
+ 539 0308 BD46     		mov	sp, r7
+ 540 030a 90BD     		pop	{r4, r7, pc}
+ 541              		.cfi_endproc
+ 542              	.LFE10:
+ 544              		.align	2
+ 545              		.global	fix16_acos
+ 546              		.thumb
+ 547              		.thumb_func
+ 549              	fix16_acos:
+ 550              	.LFB11:
+ 125:../libfixmath/fix16_trig.c **** 
+ 126:../libfixmath/fix16_trig.c **** fix16_t fix16_acos(fix16_t inValue) {
+ 551              		.loc 1 126 0
+ 552              		.cfi_startproc
+ 553              		@ args = 0, pretend = 0, frame = 8
+ 554              		@ frame_needed = 1, uses_anonymous_args = 0
+ 555 030c 90B5     		push	{r4, r7, lr}
+ 556              	.LCFI15:
+ 557              		.cfi_def_cfa_offset 12
+ 558              		.cfi_offset 14, -4
+ 559              		.cfi_offset 7, -8
+ 560              		.cfi_offset 4, -12
+ 561 030e 83B0     		sub	sp, sp, #12
+ 562              	.LCFI16:
+ 563              		.cfi_def_cfa_offset 24
+ 564 0310 00AF     		add	r7, sp, #0
+ 565              	.LCFI17:
+ 566              		.cfi_def_cfa_register 7
+ 567 0312 7860     		str	r0, [r7, #4]
+ 127:../libfixmath/fix16_trig.c **** 	return ((fix16_pi >> 1) - fix16_asin(inValue));
+ 568              		.loc 1 127 0
+ 569 0314 40F20003 		movw	r3, #:lower16:fix16_pi
+ 570 0318 C0F20003 		movt	r3, #:upper16:fix16_pi
+ 571 031c 1B68     		ldr	r3, [r3, #0]
+ 572 031e 4FEA6304 		asr	r4, r3, #1
+ 573 0322 7868     		ldr	r0, [r7, #4]
+ 574 0324 FFF7FEFF 		bl	fix16_asin
+ 575 0328 0346     		mov	r3, r0
+ 576 032a E31A     		subs	r3, r4, r3
+ 128:../libfixmath/fix16_trig.c **** }
+ 577              		.loc 1 128 0
+ 578 032c 1846     		mov	r0, r3
+ 579 032e 07F10C07 		add	r7, r7, #12
+ 580 0332 BD46     		mov	sp, r7
+ 581 0334 90BD     		pop	{r4, r7, pc}
+ 582              		.cfi_endproc
+ 583              	.LFE11:
+ 585 0336 00BF     		.align	2
+ 586              		.global	fix16_atan2
+ 587              		.thumb
+ 588              		.thumb_func
+ 590              	fix16_atan2:
+ 591              	.LFB12:
+ 129:../libfixmath/fix16_trig.c **** 
+ 130:../libfixmath/fix16_trig.c **** fix16_t fix16_atan2(fix16_t inY , fix16_t inX) {
+ 592              		.loc 1 130 0
+ 593              		.cfi_startproc
+ 594              		@ args = 0, pretend = 0, frame = 32
+ 595              		@ frame_needed = 1, uses_anonymous_args = 0
+ 596 0338 90B5     		push	{r4, r7, lr}
+ 597              	.LCFI18:
+ 598              		.cfi_def_cfa_offset 12
+ 599              		.cfi_offset 14, -4
+ 600              		.cfi_offset 7, -8
+ 601              		.cfi_offset 4, -12
+ 602 033a 89B0     		sub	sp, sp, #36
+ 603              	.LCFI19:
+ 604              		.cfi_def_cfa_offset 48
+ 605 033c 00AF     		add	r7, sp, #0
+ 606              	.LCFI20:
+ 607              		.cfi_def_cfa_register 7
+ 608 033e 7860     		str	r0, [r7, #4]
+ 609 0340 3960     		str	r1, [r7, #0]
+ 131:../libfixmath/fix16_trig.c **** 	fix16_t abs_inY, mask, angle, r, r_3;
+ 132:../libfixmath/fix16_trig.c **** 
+ 133:../libfixmath/fix16_trig.c **** 	#ifndef FIXMATH_NO_CACHE
+ 134:../libfixmath/fix16_trig.c **** 	uintptr_t hash = (inX ^ inY);
+ 610              		.loc 1 134 0
+ 611 0342 3A68     		ldr	r2, [r7, #0]
+ 612 0344 7B68     		ldr	r3, [r7, #4]
+ 613 0346 5340     		eors	r3, r3, r2
+ 614 0348 BB61     		str	r3, [r7, #24]
+ 135:../libfixmath/fix16_trig.c **** 	hash ^= hash >> 20;
+ 615              		.loc 1 135 0
+ 616 034a BB69     		ldr	r3, [r7, #24]
+ 617 034c 4FEA1353 		lsr	r3, r3, #20
+ 618 0350 BA69     		ldr	r2, [r7, #24]
+ 619 0352 5340     		eors	r3, r3, r2
+ 620 0354 BB61     		str	r3, [r7, #24]
+ 136:../libfixmath/fix16_trig.c **** 	hash &= 0x0FFF;
+ 621              		.loc 1 136 0
+ 622 0356 BB69     		ldr	r3, [r7, #24]
+ 623 0358 4FEA0353 		lsl	r3, r3, #20
+ 624 035c 4FEA1353 		lsr	r3, r3, #20
+ 625 0360 BB61     		str	r3, [r7, #24]
+ 137:../libfixmath/fix16_trig.c **** 	if((_fix16_atan_cache_index[0][hash] == inX) && (_fix16_atan_cache_index[1][hash] == inY))
+ 626              		.loc 1 137 0
+ 627 0362 40F20003 		movw	r3, #:lower16:_fix16_atan_cache_index
+ 628 0366 C0F20003 		movt	r3, #:upper16:_fix16_atan_cache_index
+ 629 036a BA69     		ldr	r2, [r7, #24]
+ 630 036c 53F82220 		ldr	r2, [r3, r2, lsl #2]
+ 631 0370 3B68     		ldr	r3, [r7, #0]
+ 632 0372 9A42     		cmp	r2, r3
+ 633 0374 13D1     		bne	.L15
+ 634              		.loc 1 137 0 is_stmt 0 discriminator 1
+ 635 0376 40F20003 		movw	r3, #:lower16:_fix16_atan_cache_index
+ 636 037a C0F20003 		movt	r3, #:upper16:_fix16_atan_cache_index
+ 637 037e BA69     		ldr	r2, [r7, #24]
+ 638 0380 02F58052 		add	r2, r2, #4096
+ 639 0384 53F82220 		ldr	r2, [r3, r2, lsl #2]
+ 640 0388 7B68     		ldr	r3, [r7, #4]
+ 641 038a 9A42     		cmp	r2, r3
+ 642 038c 07D1     		bne	.L15
+ 138:../libfixmath/fix16_trig.c **** 		return _fix16_atan_cache_value[hash];
+ 643              		.loc 1 138 0 is_stmt 1
+ 644 038e 40F20003 		movw	r3, #:lower16:_fix16_atan_cache_value
+ 645 0392 C0F20003 		movt	r3, #:upper16:_fix16_atan_cache_value
+ 646 0396 BA69     		ldr	r2, [r7, #24]
+ 647 0398 53F82230 		ldr	r3, [r3, r2, lsl #2]
+ 648 039c 81E0     		b	.L16
+ 649              	.L15:
+ 139:../libfixmath/fix16_trig.c **** 	#endif
+ 140:../libfixmath/fix16_trig.c **** 
+ 141:../libfixmath/fix16_trig.c **** 	/* Absolute inY */
+ 142:../libfixmath/fix16_trig.c **** 	mask = (inY >> (sizeof(fix16_t)*CHAR_BIT-1));
+ 650              		.loc 1 142 0
+ 651 039e 7B68     		ldr	r3, [r7, #4]
+ 652 03a0 4FEAE373 		asr	r3, r3, #31
+ 653 03a4 7B61     		str	r3, [r7, #20]
+ 143:../libfixmath/fix16_trig.c **** 	abs_inY = (inY + mask) ^ mask;
+ 654              		.loc 1 143 0
+ 655 03a6 7A68     		ldr	r2, [r7, #4]
+ 656 03a8 7B69     		ldr	r3, [r7, #20]
+ 657 03aa D218     		adds	r2, r2, r3
+ 658 03ac 7B69     		ldr	r3, [r7, #20]
+ 659 03ae 5340     		eors	r3, r3, r2
+ 660 03b0 3B61     		str	r3, [r7, #16]
+ 144:../libfixmath/fix16_trig.c **** 
+ 145:../libfixmath/fix16_trig.c **** 	if (inX >= 0)
+ 661              		.loc 1 145 0
+ 662 03b2 3B68     		ldr	r3, [r7, #0]
+ 663 03b4 002B     		cmp	r3, #0
+ 664 03b6 29DB     		blt	.L17
+ 146:../libfixmath/fix16_trig.c **** 	{
+ 147:../libfixmath/fix16_trig.c **** 		r = fix16_div( (inX - abs_inY), (inX + abs_inY));
+ 665              		.loc 1 147 0
+ 666 03b8 3A68     		ldr	r2, [r7, #0]
+ 667 03ba 3B69     		ldr	r3, [r7, #16]
+ 668 03bc D21A     		subs	r2, r2, r3
+ 669 03be 3968     		ldr	r1, [r7, #0]
+ 670 03c0 3B69     		ldr	r3, [r7, #16]
+ 671 03c2 CB18     		adds	r3, r1, r3
+ 672 03c4 1046     		mov	r0, r2
+ 673 03c6 1946     		mov	r1, r3
+ 674 03c8 FFF7FEFF 		bl	fix16_div
+ 675 03cc F860     		str	r0, [r7, #12]
+ 148:../libfixmath/fix16_trig.c **** 		r_3 = fix16_mul(fix16_mul(r, r),r);
+ 676              		.loc 1 148 0
+ 677 03ce F868     		ldr	r0, [r7, #12]
+ 678 03d0 F968     		ldr	r1, [r7, #12]
+ 679 03d2 FFF7FEFF 		bl	fix16_mul
+ 680 03d6 0346     		mov	r3, r0
+ 681 03d8 1846     		mov	r0, r3
+ 682 03da F968     		ldr	r1, [r7, #12]
+ 683 03dc FFF7FEFF 		bl	fix16_mul
+ 684 03e0 B860     		str	r0, [r7, #8]
+ 149:../libfixmath/fix16_trig.c **** 		angle = fix16_mul(0x00003240 , r_3) - fix16_mul(0x0000FB50,r) + PI_DIV_4;
+ 685              		.loc 1 149 0
+ 686 03e2 4FF44950 		mov	r0, #12864
+ 687 03e6 B968     		ldr	r1, [r7, #8]
+ 688 03e8 FFF7FEFF 		bl	fix16_mul
+ 689 03ec 0446     		mov	r4, r0
+ 690 03ee 4FF65030 		movw	r0, #64336
+ 691 03f2 F968     		ldr	r1, [r7, #12]
+ 692 03f4 FFF7FEFF 		bl	fix16_mul
+ 693 03f8 0346     		mov	r3, r0
+ 694 03fa E21A     		subs	r2, r4, r3
+ 695 03fc 40F20003 		movw	r3, #:lower16:PI_DIV_4
+ 696 0400 C0F20003 		movt	r3, #:upper16:PI_DIV_4
+ 697 0404 1B68     		ldr	r3, [r3, #0]
+ 698 0406 D318     		adds	r3, r2, r3
+ 699 0408 FB61     		str	r3, [r7, #28]
+ 700 040a 28E0     		b	.L18
+ 701              	.L17:
+ 150:../libfixmath/fix16_trig.c **** 	} else {
+ 151:../libfixmath/fix16_trig.c **** 		r = fix16_div( (inX + abs_inY), (abs_inY - inX));
+ 702              		.loc 1 151 0
+ 703 040c 3A68     		ldr	r2, [r7, #0]
+ 704 040e 3B69     		ldr	r3, [r7, #16]
+ 705 0410 D218     		adds	r2, r2, r3
+ 706 0412 3969     		ldr	r1, [r7, #16]
+ 707 0414 3B68     		ldr	r3, [r7, #0]
+ 708 0416 CB1A     		subs	r3, r1, r3
+ 709 0418 1046     		mov	r0, r2
+ 710 041a 1946     		mov	r1, r3
+ 711 041c FFF7FEFF 		bl	fix16_div
+ 712 0420 F860     		str	r0, [r7, #12]
+ 152:../libfixmath/fix16_trig.c **** 		r_3 = fix16_mul(fix16_mul(r, r),r);
+ 713              		.loc 1 152 0
+ 714 0422 F868     		ldr	r0, [r7, #12]
+ 715 0424 F968     		ldr	r1, [r7, #12]
+ 716 0426 FFF7FEFF 		bl	fix16_mul
+ 717 042a 0346     		mov	r3, r0
+ 718 042c 1846     		mov	r0, r3
+ 719 042e F968     		ldr	r1, [r7, #12]
+ 720 0430 FFF7FEFF 		bl	fix16_mul
+ 721 0434 B860     		str	r0, [r7, #8]
+ 153:../libfixmath/fix16_trig.c **** 		angle = fix16_mul(0x00003240 , r_3) - fix16_mul(0x0000FB50,r) + THREE_PI_DIV_4;
+ 722              		.loc 1 153 0
+ 723 0436 4FF44950 		mov	r0, #12864
+ 724 043a B968     		ldr	r1, [r7, #8]
+ 725 043c FFF7FEFF 		bl	fix16_mul
+ 726 0440 0446     		mov	r4, r0
+ 727 0442 4FF65030 		movw	r0, #64336
+ 728 0446 F968     		ldr	r1, [r7, #12]
+ 729 0448 FFF7FEFF 		bl	fix16_mul
+ 730 044c 0346     		mov	r3, r0
+ 731 044e E21A     		subs	r2, r4, r3
+ 732 0450 40F20003 		movw	r3, #:lower16:THREE_PI_DIV_4
+ 733 0454 C0F20003 		movt	r3, #:upper16:THREE_PI_DIV_4
+ 734 0458 1B68     		ldr	r3, [r3, #0]
+ 735 045a D318     		adds	r3, r2, r3
+ 736 045c FB61     		str	r3, [r7, #28]
+ 737              	.L18:
+ 154:../libfixmath/fix16_trig.c **** 	}
+ 155:../libfixmath/fix16_trig.c **** 	if (inY < 0)
+ 738              		.loc 1 155 0
+ 739 045e 7B68     		ldr	r3, [r7, #4]
+ 740 0460 002B     		cmp	r3, #0
+ 741 0462 03DA     		bge	.L19
+ 156:../libfixmath/fix16_trig.c **** 	{
+ 157:../libfixmath/fix16_trig.c **** 		angle = -angle;
+ 742              		.loc 1 157 0
+ 743 0464 FB69     		ldr	r3, [r7, #28]
+ 744 0466 C3F10003 		rsb	r3, r3, #0
+ 745 046a FB61     		str	r3, [r7, #28]
+ 746              	.L19:
+ 158:../libfixmath/fix16_trig.c **** 	}
+ 159:../libfixmath/fix16_trig.c **** 
+ 160:../libfixmath/fix16_trig.c **** 	#ifndef FIXMATH_NO_CACHE
+ 161:../libfixmath/fix16_trig.c **** 	_fix16_atan_cache_index[0][hash] = inX;
+ 747              		.loc 1 161 0
+ 748 046c 40F20003 		movw	r3, #:lower16:_fix16_atan_cache_index
+ 749 0470 C0F20003 		movt	r3, #:upper16:_fix16_atan_cache_index
+ 750 0474 BA69     		ldr	r2, [r7, #24]
+ 751 0476 3968     		ldr	r1, [r7, #0]
+ 752 0478 43F82210 		str	r1, [r3, r2, lsl #2]
+ 162:../libfixmath/fix16_trig.c **** 	_fix16_atan_cache_index[1][hash] = inY;
+ 753              		.loc 1 162 0
+ 754 047c 40F20003 		movw	r3, #:lower16:_fix16_atan_cache_index
+ 755 0480 C0F20003 		movt	r3, #:upper16:_fix16_atan_cache_index
+ 756 0484 BA69     		ldr	r2, [r7, #24]
+ 757 0486 02F58052 		add	r2, r2, #4096
+ 758 048a 7968     		ldr	r1, [r7, #4]
+ 759 048c 43F82210 		str	r1, [r3, r2, lsl #2]
+ 163:../libfixmath/fix16_trig.c **** 	_fix16_atan_cache_value[hash] = angle;
+ 760              		.loc 1 163 0
+ 761 0490 40F20003 		movw	r3, #:lower16:_fix16_atan_cache_value
+ 762 0494 C0F20003 		movt	r3, #:upper16:_fix16_atan_cache_value
+ 763 0498 BA69     		ldr	r2, [r7, #24]
+ 764 049a F969     		ldr	r1, [r7, #28]
+ 765 049c 43F82210 		str	r1, [r3, r2, lsl #2]
+ 164:../libfixmath/fix16_trig.c **** 	#endif
+ 165:../libfixmath/fix16_trig.c **** 
+ 166:../libfixmath/fix16_trig.c **** 	return angle;
+ 766              		.loc 1 166 0
+ 767 04a0 FB69     		ldr	r3, [r7, #28]
+ 768              	.L16:
+ 167:../libfixmath/fix16_trig.c **** }
+ 769              		.loc 1 167 0
+ 770 04a2 1846     		mov	r0, r3
+ 771 04a4 07F12407 		add	r7, r7, #36
+ 772 04a8 BD46     		mov	sp, r7
+ 773 04aa 90BD     		pop	{r4, r7, pc}
+ 774              		.cfi_endproc
+ 775              	.LFE12:
+ 777              		.align	2
+ 778              		.global	fix16_atan
+ 779              		.thumb
+ 780              		.thumb_func
+ 782              	fix16_atan:
+ 783              	.LFB13:
+ 168:../libfixmath/fix16_trig.c **** 
+ 169:../libfixmath/fix16_trig.c **** fix16_t fix16_atan(fix16_t inValue) {
+ 784              		.loc 1 169 0
+ 785              		.cfi_startproc
+ 786              		@ args = 0, pretend = 0, frame = 8
+ 787              		@ frame_needed = 1, uses_anonymous_args = 0
+ 788 04ac 80B5     		push	{r7, lr}
+ 789              	.LCFI21:
+ 790              		.cfi_def_cfa_offset 8
+ 791              		.cfi_offset 14, -4
+ 792              		.cfi_offset 7, -8
+ 793 04ae 82B0     		sub	sp, sp, #8
+ 794              	.LCFI22:
+ 795              		.cfi_def_cfa_offset 16
+ 796 04b0 00AF     		add	r7, sp, #0
+ 797              	.LCFI23:
+ 798              		.cfi_def_cfa_register 7
+ 799 04b2 7860     		str	r0, [r7, #4]
+ 170:../libfixmath/fix16_trig.c **** 	return fix16_atan2(inValue, fix16_one);
+ 800              		.loc 1 170 0
+ 801 04b4 40F20003 		movw	r3, #:lower16:fix16_one
+ 802 04b8 C0F20003 		movt	r3, #:upper16:fix16_one
+ 803 04bc 1B68     		ldr	r3, [r3, #0]
+ 804 04be 7868     		ldr	r0, [r7, #4]
+ 805 04c0 1946     		mov	r1, r3
+ 806 04c2 FFF7FEFF 		bl	fix16_atan2
+ 807 04c6 0346     		mov	r3, r0
+ 171:../libfixmath/fix16_trig.c **** }
+ 808              		.loc 1 171 0
+ 809 04c8 1846     		mov	r0, r3
+ 810 04ca 07F10807 		add	r7, r7, #8
+ 811 04ce BD46     		mov	sp, r7
+ 812 04d0 80BD     		pop	{r7, pc}
+ 813              		.cfi_endproc
+ 814              	.LFE13:
+ 816              	.Letext0:
+ 817              		.file 2 "/opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/../../../../arm-none-eab
+ 818              		.file 3 "../libfixmath/fix16.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 fix16_trig.c
+     /tmp/ccFbEnbs.s:19     .rodata:00000000 $d
+     /tmp/ccFbEnbs.s:22     .rodata:00000000 FOUR_DIV_PI
+     /tmp/ccFbEnbs.s:27     .rodata:00000004 _FOUR_DIV_PI2
+     /tmp/ccFbEnbs.s:32     .rodata:00000008 X4_CORRECTION_COMPONENT
+     /tmp/ccFbEnbs.s:37     .rodata:0000000c PI_DIV_4
+     /tmp/ccFbEnbs.s:42     .rodata:00000010 THREE_PI_DIV_4
+     /tmp/ccFbEnbs.s:47     .rodata:00000014 fix16_max
+     /tmp/ccFbEnbs.s:52     .rodata:00000018 fix16_min
+     /tmp/ccFbEnbs.s:57     .rodata:0000001c fix16_overflow
+     /tmp/ccFbEnbs.s:62     .rodata:00000020 fix16_pi
+     /tmp/ccFbEnbs.s:67     .rodata:00000024 fix16_e
+     /tmp/ccFbEnbs.s:72     .rodata:00000028 fix16_one
+     /tmp/ccFbEnbs.s:75     .bss:00000000 $d
+     /tmp/ccFbEnbs.s:76     .bss:00000000 _fix16_sin_cache_index
+     /tmp/ccFbEnbs.s:79     .bss:00004000 _fix16_sin_cache_value
+     /tmp/ccFbEnbs.s:82     .bss:00008000 _fix16_atan_cache_index
+     /tmp/ccFbEnbs.s:85     .bss:00010000 _fix16_atan_cache_value
+     /tmp/ccFbEnbs.s:88     .text:00000000 $t
+     /tmp/ccFbEnbs.s:93     .text:00000000 fix16_sin_parabola
+     /tmp/ccFbEnbs.s:188    .text:0000009c fix16_sin
+     /tmp/ccFbEnbs.s:388    .text:00000244 fix16_cos
+     /tmp/ccFbEnbs.s:429    .text:00000270 fix16_tan
+     /tmp/ccFbEnbs.s:472    .text:0000029c fix16_asin
+     /tmp/ccFbEnbs.s:782    .text:000004ac fix16_atan
+     /tmp/ccFbEnbs.s:549    .text:0000030c fix16_acos
+     /tmp/ccFbEnbs.s:590    .text:00000338 fix16_atan2
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+fix16_mul
+fix16_sdiv
+fix16_sqrt
+fix16_div

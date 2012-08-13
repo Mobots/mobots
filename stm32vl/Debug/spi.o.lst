@@ -1,0 +1,1169 @@
+   1              		.syntax unified
+   2              		.cpu cortex-m3
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.thumb
+  14              		.file	"spi.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.comm	SPI1_Data,522,4
+  19              		.comm	SPI2_Data,522,4
+  20              		.align	2
+  21              		.global	SPIx_init
+  22              		.thumb
+  23              		.thumb_func
+  25              	SPIx_init:
+  26              	.LFB29:
+  27              		.file 1 "../spi.c"
+   1:../spi.c      **** /*
+   2:../spi.c      ****  * spi.c
+   3:../spi.c      ****  *
+   4:../spi.c      ****  *  Created on: 22.06.2012
+   5:../spi.c      ****  *      Author: simon
+   6:../spi.c      ****  */
+   7:../spi.c      **** 
+   8:../spi.c      **** #include "stm32f10x_spi.h"
+   9:../spi.c      **** #include "spi.h"
+  10:../spi.c      **** #include "stm32f10x_it.h"
+  11:../spi.c      **** 
+  12:../spi.c      **** #define SPI_BUFFER_SIZE 256
+  13:../spi.c      **** 
+  14:../spi.c      **** struct SPI_Data
+  15:../spi.c      **** {
+  16:../spi.c      **** 	u8 RxBuffer[SPI_BUFFER_SIZE];
+  17:../spi.c      **** 	u16 RxWritePointer;
+  18:../spi.c      **** 	u16 RxReadPointer;
+  19:../spi.c      **** 
+  20:../spi.c      **** 	u8 TxBuffer[SPI_BUFFER_SIZE];
+  21:../spi.c      **** 	u16 TxWritePointer;
+  22:../spi.c      **** 	u16 TxReadPointer;
+  23:../spi.c      **** 
+  24:../spi.c      **** 	u8 RxBufferFullError;
+  25:../spi.c      **** 
+  26:../spi.c      **** 	FunctionalState usesInterrupts;
+  27:../spi.c      **** };
+  28:../spi.c      **** 
+  29:../spi.c      **** volatile struct SPI_Data SPI1_Data;
+  30:../spi.c      **** volatile struct SPI_Data SPI2_Data;
+  31:../spi.c      **** 
+  32:../spi.c      **** void SPIx_init(SPI_TypeDef *SPIx, enum SPI_MODE mode)
+  33:../spi.c      **** {
+  28              		.loc 1 33 0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 40
+  31              		@ frame_needed = 1, uses_anonymous_args = 0
+  32 0000 80B5     		push	{r7, lr}
+  33              	.LCFI0:
+  34              		.cfi_def_cfa_offset 8
+  35              		.cfi_offset 14, -4
+  36              		.cfi_offset 7, -8
+  37 0002 8AB0     		sub	sp, sp, #40
+  38              	.LCFI1:
+  39              		.cfi_def_cfa_offset 48
+  40 0004 00AF     		add	r7, sp, #0
+  41              	.LCFI2:
+  42              		.cfi_def_cfa_register 7
+  43 0006 7860     		str	r0, [r7, #4]
+  44 0008 0B46     		mov	r3, r1
+  45 000a FB70     		strb	r3, [r7, #3]
+  34:../spi.c      **** 
+  35:../spi.c      **** 	if (SPIx == SPI1)
+  46              		.loc 1 35 0
+  47 000c 7A68     		ldr	r2, [r7, #4]
+  48 000e 4FF44053 		mov	r3, #12288
+  49 0012 C4F20103 		movt	r3, 16385
+  50 0016 9A42     		cmp	r2, r3
+  51 0018 3FD1     		bne	.L2
+  52              	.LBB2:
+  36:../spi.c      **** 	{
+  37:../spi.c      **** 		RCC_APB2PeriphClockCmd(
+  53              		.loc 1 37 0
+  54 001a 41F20500 		movw	r0, #4101
+  55 001e 4FF00101 		mov	r1, #1
+  56 0022 FFF7FEFF 		bl	RCC_APB2PeriphClockCmd
+  38:../spi.c      **** 				RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOA | RCC_APB2Periph_SPI1,
+  39:../spi.c      **** 				ENABLE);
+  40:../spi.c      **** 		GPIO_InitTypeDef GPIO_InitStructure;
+  41:../spi.c      **** 
+  42:../spi.c      **** 		GPIO_StructInit(&GPIO_InitStructure);
+  57              		.loc 1 42 0
+  58 0026 07F10C03 		add	r3, r7, #12
+  59 002a 1846     		mov	r0, r3
+  60 002c FFF7FEFF 		bl	GPIO_StructInit
+  43:../spi.c      **** 
+  44:../spi.c      **** 		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+  61              		.loc 1 44 0
+  62 0030 4FF00303 		mov	r3, #3
+  63 0034 BB73     		strb	r3, [r7, #14]
+  45:../spi.c      **** 
+  46:../spi.c      **** 		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7;
+  64              		.loc 1 46 0
+  65 0036 4FF0E003 		mov	r3, #224
+  66 003a BB81     		strh	r3, [r7, #12]	@ movhi
+  47:../spi.c      **** 		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+  67              		.loc 1 47 0
+  68 003c 4FF00203 		mov	r3, #2
+  69 0040 BB73     		strb	r3, [r7, #14]
+  48:../spi.c      **** 		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+  70              		.loc 1 48 0
+  71 0042 4FF01803 		mov	r3, #24
+  72 0046 FB73     		strb	r3, [r7, #15]
+  49:../spi.c      **** 		GPIO_Init(GPIOA, &GPIO_InitStructure);
+  73              		.loc 1 49 0
+  74 0048 07F10C03 		add	r3, r7, #12
+  75 004c 4FF40060 		mov	r0, #2048
+  76 0050 C4F20100 		movt	r0, 16385
+  77 0054 1946     		mov	r1, r3
+  78 0056 FFF7FEFF 		bl	GPIO_Init
+  50:../spi.c      **** 
+  51:../spi.c      **** 		SPI1_Data.RxReadPointer = 0;
+  79              		.loc 1 51 0
+  80 005a 40F20003 		movw	r3, #:lower16:SPI1_Data
+  81 005e C0F20003 		movt	r3, #:upper16:SPI1_Data
+  82 0062 4FF00002 		mov	r2, #0
+  83 0066 A3F80221 		strh	r2, [r3, #258]	@ movhi
+  52:../spi.c      **** 		SPI1_Data.RxWritePointer = 0;
+  84              		.loc 1 52 0
+  85 006a 40F20003 		movw	r3, #:lower16:SPI1_Data
+  86 006e C0F20003 		movt	r3, #:upper16:SPI1_Data
+  87 0072 4FF00002 		mov	r2, #0
+  88 0076 A3F80021 		strh	r2, [r3, #256]	@ movhi
+  53:../spi.c      **** 		SPI1_Data.TxReadPointer = 0;
+  89              		.loc 1 53 0
+  90 007a 40F20003 		movw	r3, #:lower16:SPI1_Data
+  91 007e C0F20003 		movt	r3, #:upper16:SPI1_Data
+  92 0082 4FF00002 		mov	r2, #0
+  93 0086 A3F80622 		strh	r2, [r3, #518]	@ movhi
+  54:../spi.c      **** 		SPI1_Data.TxWritePointer = 0;
+  94              		.loc 1 54 0
+  95 008a 40F20003 		movw	r3, #:lower16:SPI1_Data
+  96 008e C0F20003 		movt	r3, #:upper16:SPI1_Data
+  97 0092 4FF00002 		mov	r2, #0
+  98 0096 A3F80422 		strh	r2, [r3, #516]	@ movhi
+  99              	.L2:
+ 100              	.LBE2:
+  55:../spi.c      **** 	}
+  56:../spi.c      **** 
+  57:../spi.c      **** 	if (SPIx == SPI2)
+ 101              		.loc 1 57 0
+ 102 009a 7A68     		ldr	r2, [r7, #4]
+ 103 009c 4FF46053 		mov	r3, #14336
+ 104 00a0 C4F20003 		movt	r3, 16384
+ 105 00a4 9A42     		cmp	r2, r3
+ 106 00a6 51D1     		bne	.L3
+ 107              	.LBB3:
+  58:../spi.c      **** 	{
+  59:../spi.c      **** 		RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2, ENABLE);
+ 108              		.loc 1 59 0
+ 109 00a8 4FF48040 		mov	r0, #16384
+ 110 00ac 4FF00101 		mov	r1, #1
+ 111 00b0 FFF7FEFF 		bl	RCC_APB1PeriphClockCmd
+  60:../spi.c      **** 		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB | RCC_APB2Periph_AFIO,
+ 112              		.loc 1 60 0
+ 113 00b4 4FF00900 		mov	r0, #9
+ 114 00b8 4FF00101 		mov	r1, #1
+ 115 00bc FFF7FEFF 		bl	RCC_APB2PeriphClockCmd
+  61:../spi.c      **** 				ENABLE);
+  62:../spi.c      **** 
+  63:../spi.c      **** 		GPIO_InitTypeDef GPIO_InitStructure;
+  64:../spi.c      **** 
+  65:../spi.c      **** 		GPIO_StructInit(&GPIO_InitStructure);
+ 116              		.loc 1 65 0
+ 117 00c0 07F10803 		add	r3, r7, #8
+ 118 00c4 1846     		mov	r0, r3
+ 119 00c6 FFF7FEFF 		bl	GPIO_StructInit
+  66:../spi.c      **** 
+  67:../spi.c      **** 		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+ 120              		.loc 1 67 0
+ 121 00ca 4FF00303 		mov	r3, #3
+ 122 00ce BB72     		strb	r3, [r7, #10]
+  68:../spi.c      **** 
+  69:../spi.c      **** 		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13 | GPIO_Pin_15;
+ 123              		.loc 1 69 0
+ 124 00d0 4FF42043 		mov	r3, #40960
+ 125 00d4 3B81     		strh	r3, [r7, #8]	@ movhi
+  70:../spi.c      **** 		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+ 126              		.loc 1 70 0
+ 127 00d6 4FF01803 		mov	r3, #24
+ 128 00da FB72     		strb	r3, [r7, #11]
+  71:../spi.c      **** 		GPIO_Init(GPIOB, &GPIO_InitStructure);
+ 129              		.loc 1 71 0
+ 130 00dc 07F10803 		add	r3, r7, #8
+ 131 00e0 4FF44060 		mov	r0, #3072
+ 132 00e4 C4F20100 		movt	r0, 16385
+ 133 00e8 1946     		mov	r1, r3
+ 134 00ea FFF7FEFF 		bl	GPIO_Init
+  72:../spi.c      **** 
+  73:../spi.c      **** 		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12 | GPIO_Pin_14;
+ 135              		.loc 1 73 0
+ 136 00ee 4FF4A043 		mov	r3, #20480
+ 137 00f2 3B81     		strh	r3, [r7, #8]	@ movhi
+  74:../spi.c      **** 		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+ 138              		.loc 1 74 0
+ 139 00f4 4FF01003 		mov	r3, #16
+ 140 00f8 FB72     		strb	r3, [r7, #11]
+  75:../spi.c      **** 		GPIO_Init(GPIOB, &GPIO_InitStructure);
+ 141              		.loc 1 75 0
+ 142 00fa 07F10803 		add	r3, r7, #8
+ 143 00fe 4FF44060 		mov	r0, #3072
+ 144 0102 C4F20100 		movt	r0, 16385
+ 145 0106 1946     		mov	r1, r3
+ 146 0108 FFF7FEFF 		bl	GPIO_Init
+  76:../spi.c      **** 
+  77:../spi.c      **** 		SPI2_Data.RxReadPointer = 0;
+ 147              		.loc 1 77 0
+ 148 010c 40F20003 		movw	r3, #:lower16:SPI2_Data
+ 149 0110 C0F20003 		movt	r3, #:upper16:SPI2_Data
+ 150 0114 4FF00002 		mov	r2, #0
+ 151 0118 A3F80221 		strh	r2, [r3, #258]	@ movhi
+  78:../spi.c      **** 		SPI2_Data.RxWritePointer = 0;
+ 152              		.loc 1 78 0
+ 153 011c 40F20003 		movw	r3, #:lower16:SPI2_Data
+ 154 0120 C0F20003 		movt	r3, #:upper16:SPI2_Data
+ 155 0124 4FF00002 		mov	r2, #0
+ 156 0128 A3F80021 		strh	r2, [r3, #256]	@ movhi
+  79:../spi.c      **** 		SPI2_Data.TxReadPointer = 0;
+ 157              		.loc 1 79 0
+ 158 012c 40F20003 		movw	r3, #:lower16:SPI2_Data
+ 159 0130 C0F20003 		movt	r3, #:upper16:SPI2_Data
+ 160 0134 4FF00002 		mov	r2, #0
+ 161 0138 A3F80622 		strh	r2, [r3, #518]	@ movhi
+  80:../spi.c      **** 		SPI2_Data.TxWritePointer = 0;
+ 162              		.loc 1 80 0
+ 163 013c 40F20003 		movw	r3, #:lower16:SPI2_Data
+ 164 0140 C0F20003 		movt	r3, #:upper16:SPI2_Data
+ 165 0144 4FF00002 		mov	r2, #0
+ 166 0148 A3F80422 		strh	r2, [r3, #516]	@ movhi
+ 167              	.L3:
+ 168              	.LBE3:
+  81:../spi.c      **** 	}
+  82:../spi.c      **** 
+  83:../spi.c      **** 	NVIC_InitTypeDef NVIC_InitStructure;
+  84:../spi.c      **** 	if (mode == SPI_USE_INTERRUPTS)
+ 169              		.loc 1 84 0
+ 170 014c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 171 014e 012B     		cmp	r3, #1
+ 172 0150 20D1     		bne	.L4
+  85:../spi.c      **** 	{
+  86:../spi.c      **** 		if (SPIx == SPI1)
+ 173              		.loc 1 86 0
+ 174 0152 7A68     		ldr	r2, [r7, #4]
+ 175 0154 4FF44053 		mov	r3, #12288
+ 176 0158 C4F20103 		movt	r3, 16385
+ 177 015c 9A42     		cmp	r2, r3
+ 178 015e 04D1     		bne	.L5
+  87:../spi.c      **** 			NVIC_InitStructure.NVIC_IRQChannel = SPI1_IRQn;
+ 179              		.loc 1 87 0
+ 180 0160 4FF02303 		mov	r3, #35
+ 181 0164 87F82430 		strb	r3, [r7, #36]
+ 182 0168 03E0     		b	.L6
+ 183              	.L5:
+  88:../spi.c      **** 		else
+  89:../spi.c      **** 			NVIC_InitStructure.NVIC_IRQChannel = SPI2_IRQn;
+ 184              		.loc 1 89 0
+ 185 016a 4FF02403 		mov	r3, #36
+ 186 016e 87F82430 		strb	r3, [r7, #36]
+ 187              	.L6:
+  90:../spi.c      **** 
+  91:../spi.c      **** 		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 4;
+ 188              		.loc 1 91 0
+ 189 0172 4FF00403 		mov	r3, #4
+ 190 0176 87F82530 		strb	r3, [r7, #37]
+  92:../spi.c      **** 		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+ 191              		.loc 1 92 0
+ 192 017a 4FF00003 		mov	r3, #0
+ 193 017e 87F82630 		strb	r3, [r7, #38]
+  93:../spi.c      **** 		NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+ 194              		.loc 1 93 0
+ 195 0182 4FF00103 		mov	r3, #1
+ 196 0186 87F82730 		strb	r3, [r7, #39]
+  94:../spi.c      **** 		NVIC_Init(&NVIC_InitStructure);
+ 197              		.loc 1 94 0
+ 198 018a 07F12403 		add	r3, r7, #36
+ 199 018e 1846     		mov	r0, r3
+ 200 0190 FFF7FEFF 		bl	NVIC_Init
+ 201              	.L4:
+  95:../spi.c      **** 	}
+  96:../spi.c      **** 
+  97:../spi.c      **** 	SPI_InitTypeDef SPI_InitStructure;
+  98:../spi.c      **** 	SPI_StructInit(&SPI_InitStructure);
+ 202              		.loc 1 98 0
+ 203 0194 07F11003 		add	r3, r7, #16
+ 204 0198 1846     		mov	r0, r3
+ 205 019a FFF7FEFF 		bl	SPI_StructInit
+  99:../spi.c      **** 
+ 100:../spi.c      **** 	SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
+ 206              		.loc 1 100 0
+ 207 019e 4FF00003 		mov	r3, #0
+ 208 01a2 3B82     		strh	r3, [r7, #16]	@ movhi
+ 101:../spi.c      **** 	SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
+ 209              		.loc 1 101 0
+ 210 01a4 4FF48273 		mov	r3, #260
+ 211 01a8 7B82     		strh	r3, [r7, #18]	@ movhi
+ 102:../spi.c      **** 	SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
+ 212              		.loc 1 102 0
+ 213 01aa 4FF00003 		mov	r3, #0
+ 214 01ae BB82     		strh	r3, [r7, #20]	@ movhi
+ 103:../spi.c      **** 	SPI_InitStructure.SPI_CPOL = SPI_CPOL_High;
+ 215              		.loc 1 103 0
+ 216 01b0 4FF00203 		mov	r3, #2
+ 217 01b4 FB82     		strh	r3, [r7, #22]	@ movhi
+ 104:../spi.c      **** 	SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;
+ 218              		.loc 1 104 0
+ 219 01b6 4FF00103 		mov	r3, #1
+ 220 01ba 3B83     		strh	r3, [r7, #24]	@ movhi
+ 105:../spi.c      **** 	SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
+ 221              		.loc 1 105 0
+ 222 01bc 4FF40073 		mov	r3, #512
+ 223 01c0 7B83     		strh	r3, [r7, #26]	@ movhi
+ 106:../spi.c      **** 	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_16;
+ 224              		.loc 1 106 0
+ 225 01c2 4FF01803 		mov	r3, #24
+ 226 01c6 BB83     		strh	r3, [r7, #28]	@ movhi
+ 107:../spi.c      **** 	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
+ 227              		.loc 1 107 0
+ 228 01c8 4FF00003 		mov	r3, #0
+ 229 01cc FB83     		strh	r3, [r7, #30]	@ movhi
+ 108:../spi.c      **** 	SPI_InitStructure.SPI_CRCPolynomial = 7;
+ 230              		.loc 1 108 0
+ 231 01ce 4FF00703 		mov	r3, #7
+ 232 01d2 3B84     		strh	r3, [r7, #32]	@ movhi
+ 109:../spi.c      **** 	SPI_Init(SPIx, &SPI_InitStructure);
+ 233              		.loc 1 109 0
+ 234 01d4 07F11003 		add	r3, r7, #16
+ 235 01d8 7868     		ldr	r0, [r7, #4]
+ 236 01da 1946     		mov	r1, r3
+ 237 01dc FFF7FEFF 		bl	SPI_Init
+ 110:../spi.c      **** 	SPI_SSOutputCmd(SPIx, ENABLE);
+ 238              		.loc 1 110 0
+ 239 01e0 7868     		ldr	r0, [r7, #4]
+ 240 01e2 4FF00101 		mov	r1, #1
+ 241 01e6 FFF7FEFF 		bl	SPI_SSOutputCmd
+ 111:../spi.c      **** 	SPI_I2S_ITConfig(SPIx, SPI_I2S_IT_RXNE | SPI_I2S_IT_TXE,
+ 242              		.loc 1 111 0
+ 243 01ea FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 244 01ec 012B     		cmp	r3, #1
+ 245 01ee 14BF     		ite	ne
+ 246 01f0 0023     		movne	r3, #0
+ 247 01f2 0123     		moveq	r3, #1
+ 248 01f4 DBB2     		uxtb	r3, r3
+ 249 01f6 7868     		ldr	r0, [r7, #4]
+ 250 01f8 4FF07101 		mov	r1, #113
+ 251 01fc 1A46     		mov	r2, r3
+ 252 01fe FFF7FEFF 		bl	SPI_I2S_ITConfig
+ 112:../spi.c      **** 			mode == SPI_USE_INTERRUPTS);
+ 113:../spi.c      **** 
+ 114:../spi.c      **** 	SPI_Cmd(SPIx, ENABLE);
+ 253              		.loc 1 114 0
+ 254 0202 7868     		ldr	r0, [r7, #4]
+ 255 0204 4FF00101 		mov	r1, #1
+ 256 0208 FFF7FEFF 		bl	SPI_Cmd
+ 115:../spi.c      **** 
+ 116:../spi.c      **** }
+ 257              		.loc 1 116 0
+ 258 020c 07F12807 		add	r7, r7, #40
+ 259 0210 BD46     		mov	sp, r7
+ 260 0212 80BD     		pop	{r7, pc}
+ 261              		.cfi_endproc
+ 262              	.LFE29:
+ 264              		.align	2
+ 265              		.global	SPIx_SendData
+ 266              		.thumb
+ 267              		.thumb_func
+ 269              	SPIx_SendData:
+ 270              	.LFB30:
+ 117:../spi.c      **** 
+ 118:../spi.c      **** int SPIx_SendData(SPI_TypeDef* SPIx, volatile struct SPI_Data *spi_data,
+ 119:../spi.c      **** 		const unsigned char *buffer, const unsigned int count)
+ 120:../spi.c      **** {
+ 271              		.loc 1 120 0
+ 272              		.cfi_startproc
+ 273              		@ args = 0, pretend = 0, frame = 32
+ 274              		@ frame_needed = 1, uses_anonymous_args = 0
+ 275 0214 80B5     		push	{r7, lr}
+ 276              	.LCFI3:
+ 277              		.cfi_def_cfa_offset 8
+ 278              		.cfi_offset 14, -4
+ 279              		.cfi_offset 7, -8
+ 280 0216 88B0     		sub	sp, sp, #32
+ 281              	.LCFI4:
+ 282              		.cfi_def_cfa_offset 40
+ 283 0218 00AF     		add	r7, sp, #0
+ 284              	.LCFI5:
+ 285              		.cfi_def_cfa_register 7
+ 286 021a F860     		str	r0, [r7, #12]
+ 287 021c B960     		str	r1, [r7, #8]
+ 288 021e 7A60     		str	r2, [r7, #4]
+ 289 0220 3B60     		str	r3, [r7, #0]
+ 121:../spi.c      **** 	if (!spi_data->usesInterrupts)
+ 290              		.loc 1 121 0
+ 291 0222 BB68     		ldr	r3, [r7, #8]
+ 292 0224 93F80932 		ldrb	r3, [r3, #521]
+ 293 0228 DBB2     		uxtb	r3, r3
+ 294 022a 002B     		cmp	r3, #0
+ 295 022c 21D1     		bne	.L8
+ 296              	.LBB4:
+ 122:../spi.c      **** 	{
+ 123:../spi.c      **** 		u32 pos = 0;
+ 297              		.loc 1 123 0
+ 298 022e 4FF00003 		mov	r3, #0
+ 299 0232 FB61     		str	r3, [r7, #28]
+ 124:../spi.c      **** 
+ 125:../spi.c      **** 		for (pos = 0; pos < count; pos++)
+ 300              		.loc 1 125 0
+ 301 0234 4FF00003 		mov	r3, #0
+ 302 0238 FB61     		str	r3, [r7, #28]
+ 303 023a 14E0     		b	.L9
+ 304              	.L11:
+ 126:../spi.c      **** 		{
+ 127:../spi.c      **** 			SPI_I2S_SendData(SPIx, buffer[pos]);
+ 305              		.loc 1 127 0
+ 306 023c 7A68     		ldr	r2, [r7, #4]
+ 307 023e FB69     		ldr	r3, [r7, #28]
+ 308 0240 D318     		adds	r3, r2, r3
+ 309 0242 1B78     		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 310 0244 F868     		ldr	r0, [r7, #12]
+ 311 0246 1946     		mov	r1, r3
+ 312 0248 FFF7FEFF 		bl	SPI_I2S_SendData
+ 128:../spi.c      **** 
+ 129:../spi.c      **** 			//Wait until data is send
+ 130:../spi.c      **** 			while (SPI_I2S_GetFlagStatus(SPIx, SPI_I2S_FLAG_TXE) == RESET)
+ 313              		.loc 1 130 0
+ 314 024c 00BF     		nop
+ 315              	.L10:
+ 316              		.loc 1 130 0 is_stmt 0 discriminator 1
+ 317 024e F868     		ldr	r0, [r7, #12]
+ 318 0250 4FF00201 		mov	r1, #2
+ 319 0254 FFF7FEFF 		bl	SPI_I2S_GetFlagStatus
+ 320 0258 0346     		mov	r3, r0
+ 321 025a 002B     		cmp	r3, #0
+ 322 025c F7D0     		beq	.L10
+ 125:../spi.c      **** 		for (pos = 0; pos < count; pos++)
+ 323              		.loc 1 125 0 is_stmt 1
+ 324 025e FB69     		ldr	r3, [r7, #28]
+ 325 0260 03F10103 		add	r3, r3, #1
+ 326 0264 FB61     		str	r3, [r7, #28]
+ 327              	.L9:
+ 125:../spi.c      **** 		for (pos = 0; pos < count; pos++)
+ 328              		.loc 1 125 0 is_stmt 0 discriminator 1
+ 329 0266 FA69     		ldr	r2, [r7, #28]
+ 330 0268 3B68     		ldr	r3, [r7, #0]
+ 331 026a 9A42     		cmp	r2, r3
+ 332 026c E6D3     		bcc	.L11
+ 131:../spi.c      **** 			{
+ 132:../spi.c      **** 			}
+ 133:../spi.c      **** 		}
+ 134:../spi.c      **** 		//TODO pulldown NSS
+ 135:../spi.c      **** 		return count;
+ 333              		.loc 1 135 0 is_stmt 1
+ 334 026e 3B68     		ldr	r3, [r7, #0]
+ 335 0270 4EE0     		b	.L12
+ 336              	.L8:
+ 337              	.LBE4:
+ 136:../spi.c      **** 	}
+ 137:../spi.c      **** 
+ 138:../spi.c      **** 	volatile int free_space = 0;
+ 338              		.loc 1 138 0
+ 339 0272 4FF00003 		mov	r3, #0
+ 340 0276 7B61     		str	r3, [r7, #20]
+ 139:../spi.c      **** 	u32 size = 0;
+ 341              		.loc 1 139 0
+ 342 0278 4FF00003 		mov	r3, #0
+ 343 027c BB61     		str	r3, [r7, #24]
+ 140:../spi.c      **** 
+ 141:../spi.c      **** 	free_space = (SPI_BUFFER_SIZE
+ 142:../spi.c      **** 			- (spi_data->TxWritePointer - spi_data->TxReadPointer) - 1)
+ 344              		.loc 1 142 0
+ 345 027e BB68     		ldr	r3, [r7, #8]
+ 346 0280 B3F80632 		ldrh	r3, [r3, #518]	@ movhi
+ 347 0284 9BB2     		uxth	r3, r3
+ 348 0286 1A46     		mov	r2, r3
+ 349 0288 BB68     		ldr	r3, [r7, #8]
+ 350 028a B3F80432 		ldrh	r3, [r3, #516]	@ movhi
+ 351 028e 9BB2     		uxth	r3, r3
+ 352 0290 D31A     		subs	r3, r2, r3
+ 353 0292 03F1FF02 		add	r2, r3, #255
+ 143:../spi.c      **** 			% SPI_BUFFER_SIZE;
+ 354              		.loc 1 143 0
+ 355 0296 4FEAE273 		asr	r3, r2, #31
+ 356 029a 4FEA1363 		lsr	r3, r3, #24
+ 357 029e D218     		adds	r2, r2, r3
+ 358 02a0 D2B2     		uxtb	r2, r2
+ 359 02a2 D31A     		subs	r3, r2, r3
+ 141:../spi.c      **** 	free_space = (SPI_BUFFER_SIZE
+ 360              		.loc 1 141 0
+ 361 02a4 7B61     		str	r3, [r7, #20]
+ 144:../spi.c      **** 	if (free_space < count)
+ 362              		.loc 1 144 0
+ 363 02a6 7B69     		ldr	r3, [r7, #20]
+ 364 02a8 1A46     		mov	r2, r3
+ 365 02aa 3B68     		ldr	r3, [r7, #0]
+ 366 02ac 9A42     		cmp	r2, r3
+ 367 02ae 23D2     		bcs	.L14
+ 145:../spi.c      **** 	{
+ 146:../spi.c      **** 		return -1;
+ 368              		.loc 1 146 0
+ 369 02b0 4FF0FF33 		mov	r3, #-1
+ 370 02b4 2CE0     		b	.L12
+ 371              	.L15:
+ 147:../spi.c      **** 	}
+ 148:../spi.c      **** 
+ 149:../spi.c      **** 	//write to ringbuffer
+ 150:../spi.c      **** 	while (size < count)
+ 151:../spi.c      **** 	{
+ 152:../spi.c      **** 		spi_data->TxBuffer[spi_data->TxWritePointer] = buffer[size];
+ 372              		.loc 1 152 0
+ 373 02b6 BB68     		ldr	r3, [r7, #8]
+ 374 02b8 B3F80432 		ldrh	r3, [r3, #516]	@ movhi
+ 375 02bc 9BB2     		uxth	r3, r3
+ 376 02be 7968     		ldr	r1, [r7, #4]
+ 377 02c0 BA69     		ldr	r2, [r7, #24]
+ 378 02c2 8A18     		adds	r2, r1, r2
+ 379 02c4 1278     		ldrb	r2, [r2, #0]	@ zero_extendqisi2
+ 380 02c6 B968     		ldr	r1, [r7, #8]
+ 381 02c8 CB18     		adds	r3, r1, r3
+ 382 02ca 83F80421 		strb	r2, [r3, #260]
+ 153:../spi.c      **** 		spi_data->TxWritePointer = (spi_data->TxWritePointer + 1)
+ 383              		.loc 1 153 0
+ 384 02ce BB68     		ldr	r3, [r7, #8]
+ 385 02d0 B3F80432 		ldrh	r3, [r3, #516]	@ movhi
+ 386 02d4 9BB2     		uxth	r3, r3
+ 387 02d6 03F10102 		add	r2, r3, #1
+ 154:../spi.c      **** 				% SPI_BUFFER_SIZE;
+ 388              		.loc 1 154 0
+ 389 02da 4FEAE273 		asr	r3, r2, #31
+ 390 02de 4FEA1363 		lsr	r3, r3, #24
+ 391 02e2 D218     		adds	r2, r2, r3
+ 392 02e4 D2B2     		uxtb	r2, r2
+ 393 02e6 D31A     		subs	r3, r2, r3
+ 153:../spi.c      **** 		spi_data->TxWritePointer = (spi_data->TxWritePointer + 1)
+ 394              		.loc 1 153 0
+ 395 02e8 9AB2     		uxth	r2, r3
+ 396 02ea BB68     		ldr	r3, [r7, #8]
+ 397 02ec A3F80422 		strh	r2, [r3, #516]	@ movhi
+ 155:../spi.c      **** 		size++;
+ 398              		.loc 1 155 0
+ 399 02f0 BB69     		ldr	r3, [r7, #24]
+ 400 02f2 03F10103 		add	r3, r3, #1
+ 401 02f6 BB61     		str	r3, [r7, #24]
+ 402              	.L14:
+ 150:../spi.c      **** 	while (size < count)
+ 403              		.loc 1 150 0 discriminator 1
+ 404 02f8 BA69     		ldr	r2, [r7, #24]
+ 405 02fa 3B68     		ldr	r3, [r7, #0]
+ 406 02fc 9A42     		cmp	r2, r3
+ 407 02fe DAD3     		bcc	.L15
+ 156:../spi.c      **** 	}
+ 157:../spi.c      **** 
+ 158:../spi.c      **** 	//    if(!USART_GetITStatus(USARTx, USART_IT_TXE)) {
+ 159:../spi.c      **** 	//Enable the USARTx Transmit interrupt
+ 160:../spi.c      **** 	SPI_I2S_ITConfig(SPIx, SPI_I2S_FLAG_TXE, ENABLE);
+ 408              		.loc 1 160 0
+ 409 0300 F868     		ldr	r0, [r7, #12]
+ 410 0302 4FF00201 		mov	r1, #2
+ 411 0306 4FF00102 		mov	r2, #1
+ 412 030a FFF7FEFF 		bl	SPI_I2S_ITConfig
+ 161:../spi.c      **** 	//}
+ 162:../spi.c      **** 
+ 163:../spi.c      **** 	//TODO pulldown NSS
+ 164:../spi.c      **** 	return count;
+ 413              		.loc 1 164 0
+ 414 030e 3B68     		ldr	r3, [r7, #0]
+ 415              	.L12:
+ 165:../spi.c      **** 
+ 166:../spi.c      **** }
+ 416              		.loc 1 166 0
+ 417 0310 1846     		mov	r0, r3
+ 418 0312 07F12007 		add	r7, r7, #32
+ 419 0316 BD46     		mov	sp, r7
+ 420 0318 80BD     		pop	{r7, pc}
+ 421              		.cfi_endproc
+ 422              	.LFE30:
+ 424 031a 00BF     		.align	2
+ 425              		.global	SPI1_SendData
+ 426              		.thumb
+ 427              		.thumb_func
+ 429              	SPI1_SendData:
+ 430              	.LFB31:
+ 167:../spi.c      **** 
+ 168:../spi.c      **** int SPI1_SendData(const unsigned char *data, const unsigned int size)
+ 169:../spi.c      **** {
+ 431              		.loc 1 169 0
+ 432              		.cfi_startproc
+ 433              		@ args = 0, pretend = 0, frame = 8
+ 434              		@ frame_needed = 1, uses_anonymous_args = 0
+ 435 031c 80B5     		push	{r7, lr}
+ 436              	.LCFI6:
+ 437              		.cfi_def_cfa_offset 8
+ 438              		.cfi_offset 14, -4
+ 439              		.cfi_offset 7, -8
+ 440 031e 82B0     		sub	sp, sp, #8
+ 441              	.LCFI7:
+ 442              		.cfi_def_cfa_offset 16
+ 443 0320 00AF     		add	r7, sp, #0
+ 444              	.LCFI8:
+ 445              		.cfi_def_cfa_register 7
+ 446 0322 7860     		str	r0, [r7, #4]
+ 447 0324 3960     		str	r1, [r7, #0]
+ 170:../spi.c      **** 	return SPIx_SendData(SPI1, &SPI1_Data, data, size);
+ 448              		.loc 1 170 0
+ 449 0326 4FF44050 		mov	r0, #12288
+ 450 032a C4F20100 		movt	r0, 16385
+ 451 032e 40F20001 		movw	r1, #:lower16:SPI1_Data
+ 452 0332 C0F20001 		movt	r1, #:upper16:SPI1_Data
+ 453 0336 7A68     		ldr	r2, [r7, #4]
+ 454 0338 3B68     		ldr	r3, [r7, #0]
+ 455 033a FFF7FEFF 		bl	SPIx_SendData
+ 456 033e 0346     		mov	r3, r0
+ 171:../spi.c      **** }
+ 457              		.loc 1 171 0
+ 458 0340 1846     		mov	r0, r3
+ 459 0342 07F10807 		add	r7, r7, #8
+ 460 0346 BD46     		mov	sp, r7
+ 461 0348 80BD     		pop	{r7, pc}
+ 462              		.cfi_endproc
+ 463              	.LFE31:
+ 465 034a 00BF     		.align	2
+ 466              		.global	SPI2_SendData
+ 467              		.thumb
+ 468              		.thumb_func
+ 470              	SPI2_SendData:
+ 471              	.LFB32:
+ 172:../spi.c      **** 
+ 173:../spi.c      **** int SPI2_SendData(const unsigned char *data, const unsigned int size)
+ 174:../spi.c      **** {
+ 472              		.loc 1 174 0
+ 473              		.cfi_startproc
+ 474              		@ args = 0, pretend = 0, frame = 8
+ 475              		@ frame_needed = 1, uses_anonymous_args = 0
+ 476 034c 80B5     		push	{r7, lr}
+ 477              	.LCFI9:
+ 478              		.cfi_def_cfa_offset 8
+ 479              		.cfi_offset 14, -4
+ 480              		.cfi_offset 7, -8
+ 481 034e 82B0     		sub	sp, sp, #8
+ 482              	.LCFI10:
+ 483              		.cfi_def_cfa_offset 16
+ 484 0350 00AF     		add	r7, sp, #0
+ 485              	.LCFI11:
+ 486              		.cfi_def_cfa_register 7
+ 487 0352 7860     		str	r0, [r7, #4]
+ 488 0354 3960     		str	r1, [r7, #0]
+ 175:../spi.c      **** 	return SPIx_SendData(SPI2, &SPI2_Data, data, size);
+ 489              		.loc 1 175 0
+ 490 0356 4FF46050 		mov	r0, #14336
+ 491 035a C4F20000 		movt	r0, 16384
+ 492 035e 40F20001 		movw	r1, #:lower16:SPI2_Data
+ 493 0362 C0F20001 		movt	r1, #:upper16:SPI2_Data
+ 494 0366 7A68     		ldr	r2, [r7, #4]
+ 495 0368 3B68     		ldr	r3, [r7, #0]
+ 496 036a FFF7FEFF 		bl	SPIx_SendData
+ 497 036e 0346     		mov	r3, r0
+ 176:../spi.c      **** }
+ 498              		.loc 1 176 0
+ 499 0370 1846     		mov	r0, r3
+ 500 0372 07F10807 		add	r7, r7, #8
+ 501 0376 BD46     		mov	sp, r7
+ 502 0378 80BD     		pop	{r7, pc}
+ 503              		.cfi_endproc
+ 504              	.LFE32:
+ 506 037a 00BF     		.align	2
+ 507              		.global	SPIx_GetData
+ 508              		.thumb
+ 509              		.thumb_func
+ 511              	SPIx_GetData:
+ 512              	.LFB33:
+ 177:../spi.c      **** 
+ 178:../spi.c      **** int SPIx_GetData(SPI_TypeDef* SPIx, volatile struct SPI_Data *spi_data,
+ 179:../spi.c      **** 		unsigned char *buffer, const unsigned int buffer_length)
+ 180:../spi.c      **** {
+ 513              		.loc 1 180 0
+ 514              		.cfi_startproc
+ 515              		@ args = 0, pretend = 0, frame = 24
+ 516              		@ frame_needed = 1, uses_anonymous_args = 0
+ 517 037c 80B5     		push	{r7, lr}
+ 518              	.LCFI12:
+ 519              		.cfi_def_cfa_offset 8
+ 520              		.cfi_offset 14, -4
+ 521              		.cfi_offset 7, -8
+ 522 037e 86B0     		sub	sp, sp, #24
+ 523              	.LCFI13:
+ 524              		.cfi_def_cfa_offset 32
+ 525 0380 00AF     		add	r7, sp, #0
+ 526              	.LCFI14:
+ 527              		.cfi_def_cfa_register 7
+ 528 0382 F860     		str	r0, [r7, #12]
+ 529 0384 B960     		str	r1, [r7, #8]
+ 530 0386 7A60     		str	r2, [r7, #4]
+ 531 0388 3B60     		str	r3, [r7, #0]
+ 181:../spi.c      **** 	u32 counter = 0;
+ 532              		.loc 1 181 0
+ 533 038a 4FF00003 		mov	r3, #0
+ 534 038e 7B61     		str	r3, [r7, #20]
+ 182:../spi.c      **** 	while (counter < buffer_length
+ 535              		.loc 1 182 0
+ 536 0390 1FE0     		b	.L19
+ 537              	.L21:
+ 183:../spi.c      **** 			&& spi_data->RxWritePointer != spi_data->RxReadPointer)
+ 184:../spi.c      **** 	{
+ 185:../spi.c      **** 		buffer[counter] = spi_data->RxBuffer[spi_data->RxReadPointer];
+ 538              		.loc 1 185 0
+ 539 0392 7A68     		ldr	r2, [r7, #4]
+ 540 0394 7B69     		ldr	r3, [r7, #20]
+ 541 0396 D318     		adds	r3, r2, r3
+ 542 0398 BA68     		ldr	r2, [r7, #8]
+ 543 039a B2F80221 		ldrh	r2, [r2, #258]	@ movhi
+ 544 039e 92B2     		uxth	r2, r2
+ 545 03a0 B968     		ldr	r1, [r7, #8]
+ 546 03a2 8A5C     		ldrb	r2, [r1, r2]
+ 547 03a4 D2B2     		uxtb	r2, r2
+ 548 03a6 1A70     		strb	r2, [r3, #0]
+ 186:../spi.c      **** 		counter++;
+ 549              		.loc 1 186 0
+ 550 03a8 7B69     		ldr	r3, [r7, #20]
+ 551 03aa 03F10103 		add	r3, r3, #1
+ 552 03ae 7B61     		str	r3, [r7, #20]
+ 187:../spi.c      **** 		spi_data->RxReadPointer = (spi_data->RxReadPointer + 1)
+ 553              		.loc 1 187 0
+ 554 03b0 BB68     		ldr	r3, [r7, #8]
+ 555 03b2 B3F80231 		ldrh	r3, [r3, #258]	@ movhi
+ 556 03b6 9BB2     		uxth	r3, r3
+ 557 03b8 03F10102 		add	r2, r3, #1
+ 188:../spi.c      **** 				% SPI_BUFFER_SIZE;
+ 558              		.loc 1 188 0
+ 559 03bc 4FEAE273 		asr	r3, r2, #31
+ 560 03c0 4FEA1363 		lsr	r3, r3, #24
+ 561 03c4 D218     		adds	r2, r2, r3
+ 562 03c6 D2B2     		uxtb	r2, r2
+ 563 03c8 D31A     		subs	r3, r2, r3
+ 187:../spi.c      **** 		spi_data->RxReadPointer = (spi_data->RxReadPointer + 1)
+ 564              		.loc 1 187 0
+ 565 03ca 9AB2     		uxth	r2, r3
+ 566 03cc BB68     		ldr	r3, [r7, #8]
+ 567 03ce A3F80221 		strh	r2, [r3, #258]	@ movhi
+ 568              	.L19:
+ 182:../spi.c      **** 	while (counter < buffer_length
+ 569              		.loc 1 182 0 discriminator 1
+ 570 03d2 7A69     		ldr	r2, [r7, #20]
+ 571 03d4 3B68     		ldr	r3, [r7, #0]
+ 572 03d6 9A42     		cmp	r2, r3
+ 573 03d8 09D2     		bcs	.L20
+ 183:../spi.c      **** 			&& spi_data->RxWritePointer != spi_data->RxReadPointer)
+ 574              		.loc 1 183 0
+ 575 03da BB68     		ldr	r3, [r7, #8]
+ 576 03dc B3F80031 		ldrh	r3, [r3, #256]	@ movhi
+ 577 03e0 9AB2     		uxth	r2, r3
+ 578 03e2 BB68     		ldr	r3, [r7, #8]
+ 579 03e4 B3F80231 		ldrh	r3, [r3, #258]	@ movhi
+ 580 03e8 9BB2     		uxth	r3, r3
+ 581 03ea 9A42     		cmp	r2, r3
+ 582 03ec D1D1     		bne	.L21
+ 583              	.L20:
+ 189:../spi.c      **** 	}
+ 190:../spi.c      **** 
+ 191:../spi.c      **** 	if (spi_data->RxWritePointer == spi_data->RxReadPointer
+ 584              		.loc 1 191 0
+ 585 03ee BB68     		ldr	r3, [r7, #8]
+ 586 03f0 B3F80031 		ldrh	r3, [r3, #256]	@ movhi
+ 587 03f4 9AB2     		uxth	r2, r3
+ 588 03f6 BB68     		ldr	r3, [r7, #8]
+ 589 03f8 B3F80231 		ldrh	r3, [r3, #258]	@ movhi
+ 590 03fc 9BB2     		uxth	r3, r3
+ 591 03fe 9A42     		cmp	r2, r3
+ 592 0400 14D1     		bne	.L22
+ 192:../spi.c      **** 			&& spi_data->RxBufferFullError)
+ 593              		.loc 1 192 0
+ 594 0402 BB68     		ldr	r3, [r7, #8]
+ 595 0404 93F80832 		ldrb	r3, [r3, #520]
+ 596 0408 DBB2     		uxtb	r3, r3
+ 597 040a 002B     		cmp	r3, #0
+ 598 040c 0ED0     		beq	.L22
+ 193:../spi.c      **** 	{
+ 194:../spi.c      **** 		//clear error
+ 195:../spi.c      **** 		spi_data->RxBufferFullError = 0;
+ 599              		.loc 1 195 0
+ 600 040e BB68     		ldr	r3, [r7, #8]
+ 601 0410 4FF00002 		mov	r2, #0
+ 602 0414 83F80822 		strb	r2, [r3, #520]
+ 196:../spi.c      **** 		//reenable receive interrupt
+ 197:../spi.c      **** 		//TODO pulldown NSS
+ 198:../spi.c      **** 		SPI_I2S_ITConfig(SPIx, SPI_I2S_IT_RXNE, ENABLE);
+ 603              		.loc 1 198 0
+ 604 0418 F868     		ldr	r0, [r7, #12]
+ 605 041a 4FF06001 		mov	r1, #96
+ 606 041e 4FF00102 		mov	r2, #1
+ 607 0422 FFF7FEFF 		bl	SPI_I2S_ITConfig
+ 199:../spi.c      **** 		//inform user space that we had an error
+ 200:../spi.c      **** 		return -1;
+ 608              		.loc 1 200 0
+ 609 0426 4FF0FF33 		mov	r3, #-1
+ 610 042a 00E0     		b	.L23
+ 611              	.L22:
+ 201:../spi.c      **** 	}
+ 202:../spi.c      **** 	return counter;
+ 612              		.loc 1 202 0
+ 613 042c 7B69     		ldr	r3, [r7, #20]
+ 614              	.L23:
+ 203:../spi.c      **** }
+ 615              		.loc 1 203 0
+ 616 042e 1846     		mov	r0, r3
+ 617 0430 07F11807 		add	r7, r7, #24
+ 618 0434 BD46     		mov	sp, r7
+ 619 0436 80BD     		pop	{r7, pc}
+ 620              		.cfi_endproc
+ 621              	.LFE33:
+ 623              		.align	2
+ 624              		.global	SPI1_GetData
+ 625              		.thumb
+ 626              		.thumb_func
+ 628              	SPI1_GetData:
+ 629              	.LFB34:
+ 204:../spi.c      **** 
+ 205:../spi.c      **** int SPI1_GetData(unsigned char *buffer, const unsigned int buffer_length)
+ 206:../spi.c      **** {
+ 630              		.loc 1 206 0
+ 631              		.cfi_startproc
+ 632              		@ args = 0, pretend = 0, frame = 8
+ 633              		@ frame_needed = 1, uses_anonymous_args = 0
+ 634 0438 80B5     		push	{r7, lr}
+ 635              	.LCFI15:
+ 636              		.cfi_def_cfa_offset 8
+ 637              		.cfi_offset 14, -4
+ 638              		.cfi_offset 7, -8
+ 639 043a 82B0     		sub	sp, sp, #8
+ 640              	.LCFI16:
+ 641              		.cfi_def_cfa_offset 16
+ 642 043c 00AF     		add	r7, sp, #0
+ 643              	.LCFI17:
+ 644              		.cfi_def_cfa_register 7
+ 645 043e 7860     		str	r0, [r7, #4]
+ 646 0440 3960     		str	r1, [r7, #0]
+ 207:../spi.c      **** 	return SPIx_GetData(SPI1, &SPI1_Data, buffer, buffer_length);
+ 647              		.loc 1 207 0
+ 648 0442 4FF44050 		mov	r0, #12288
+ 649 0446 C4F20100 		movt	r0, 16385
+ 650 044a 40F20001 		movw	r1, #:lower16:SPI1_Data
+ 651 044e C0F20001 		movt	r1, #:upper16:SPI1_Data
+ 652 0452 7A68     		ldr	r2, [r7, #4]
+ 653 0454 3B68     		ldr	r3, [r7, #0]
+ 654 0456 FFF7FEFF 		bl	SPIx_GetData
+ 655 045a 0346     		mov	r3, r0
+ 208:../spi.c      **** }
+ 656              		.loc 1 208 0
+ 657 045c 1846     		mov	r0, r3
+ 658 045e 07F10807 		add	r7, r7, #8
+ 659 0462 BD46     		mov	sp, r7
+ 660 0464 80BD     		pop	{r7, pc}
+ 661              		.cfi_endproc
+ 662              	.LFE34:
+ 664 0466 00BF     		.align	2
+ 665              		.global	SPI2_GetData
+ 666              		.thumb
+ 667              		.thumb_func
+ 669              	SPI2_GetData:
+ 670              	.LFB35:
+ 209:../spi.c      **** 
+ 210:../spi.c      **** int SPI2_GetData(unsigned char *buffer, const unsigned int buffer_length)
+ 211:../spi.c      **** {
+ 671              		.loc 1 211 0
+ 672              		.cfi_startproc
+ 673              		@ args = 0, pretend = 0, frame = 8
+ 674              		@ frame_needed = 1, uses_anonymous_args = 0
+ 675 0468 80B5     		push	{r7, lr}
+ 676              	.LCFI18:
+ 677              		.cfi_def_cfa_offset 8
+ 678              		.cfi_offset 14, -4
+ 679              		.cfi_offset 7, -8
+ 680 046a 82B0     		sub	sp, sp, #8
+ 681              	.LCFI19:
+ 682              		.cfi_def_cfa_offset 16
+ 683 046c 00AF     		add	r7, sp, #0
+ 684              	.LCFI20:
+ 685              		.cfi_def_cfa_register 7
+ 686 046e 7860     		str	r0, [r7, #4]
+ 687 0470 3960     		str	r1, [r7, #0]
+ 212:../spi.c      **** 	return SPIx_GetData(SPI2, &SPI2_Data, buffer, buffer_length);
+ 688              		.loc 1 212 0
+ 689 0472 4FF46050 		mov	r0, #14336
+ 690 0476 C4F20000 		movt	r0, 16384
+ 691 047a 40F20001 		movw	r1, #:lower16:SPI2_Data
+ 692 047e C0F20001 		movt	r1, #:upper16:SPI2_Data
+ 693 0482 7A68     		ldr	r2, [r7, #4]
+ 694 0484 3B68     		ldr	r3, [r7, #0]
+ 695 0486 FFF7FEFF 		bl	SPIx_GetData
+ 696 048a 0346     		mov	r3, r0
+ 213:../spi.c      **** }
+ 697              		.loc 1 213 0
+ 698 048c 1846     		mov	r0, r3
+ 699 048e 07F10807 		add	r7, r7, #8
+ 700 0492 BD46     		mov	sp, r7
+ 701 0494 80BD     		pop	{r7, pc}
+ 702              		.cfi_endproc
+ 703              	.LFE35:
+ 705 0496 00BF     		.align	2
+ 706              		.global	SPI_IRQHandler
+ 707              		.thumb
+ 708              		.thumb_func
+ 710              	SPI_IRQHandler:
+ 711              	.LFB36:
+ 214:../spi.c      **** 
+ 215:../spi.c      **** void SPI_IRQHandler(SPI_TypeDef* SPIx, volatile struct SPI_Data *spi_data)
+ 216:../spi.c      **** {
+ 712              		.loc 1 216 0
+ 713              		.cfi_startproc
+ 714              		@ args = 0, pretend = 0, frame = 16
+ 715              		@ frame_needed = 1, uses_anonymous_args = 0
+ 716 0498 90B5     		push	{r4, r7, lr}
+ 717              	.LCFI21:
+ 718              		.cfi_def_cfa_offset 12
+ 719              		.cfi_offset 14, -4
+ 720              		.cfi_offset 7, -8
+ 721              		.cfi_offset 4, -12
+ 722 049a 85B0     		sub	sp, sp, #20
+ 723              	.LCFI22:
+ 724              		.cfi_def_cfa_offset 32
+ 725 049c 00AF     		add	r7, sp, #0
+ 726              	.LCFI23:
+ 727              		.cfi_def_cfa_register 7
+ 728 049e 7860     		str	r0, [r7, #4]
+ 729 04a0 3960     		str	r1, [r7, #0]
+ 217:../spi.c      **** 	if (SPI_I2S_GetITStatus(SPIx, SPI_I2S_IT_RXNE) != RESET)
+ 730              		.loc 1 217 0
+ 731 04a2 7868     		ldr	r0, [r7, #4]
+ 732 04a4 4FF06001 		mov	r1, #96
+ 733 04a8 FFF7FEFF 		bl	SPI_I2S_GetITStatus
+ 734 04ac 0346     		mov	r3, r0
+ 735 04ae 002B     		cmp	r3, #0
+ 736 04b0 35D0     		beq	.L27
+ 737              	.LBB5:
+ 218:../spi.c      **** 	{
+ 219:../spi.c      **** 		vu8 nextRxWritePointer = (spi_data->RxWritePointer + 1)
+ 738              		.loc 1 219 0
+ 739 04b2 3B68     		ldr	r3, [r7, #0]
+ 740 04b4 B3F80031 		ldrh	r3, [r3, #256]	@ movhi
+ 741 04b8 9BB2     		uxth	r3, r3
+ 742 04ba 03F10102 		add	r2, r3, #1
+ 220:../spi.c      **** 				% SPI_BUFFER_SIZE;
+ 743              		.loc 1 220 0
+ 744 04be 4FEAE273 		asr	r3, r2, #31
+ 745 04c2 4FEA1363 		lsr	r3, r3, #24
+ 746 04c6 D218     		adds	r2, r2, r3
+ 747 04c8 D2B2     		uxtb	r2, r2
+ 748 04ca D31A     		subs	r3, r2, r3
+ 219:../spi.c      **** 		vu8 nextRxWritePointer = (spi_data->RxWritePointer + 1)
+ 749              		.loc 1 219 0
+ 750 04cc DBB2     		uxtb	r3, r3
+ 751 04ce FB73     		strb	r3, [r7, #15]
+ 221:../spi.c      **** 
+ 222:../spi.c      **** 		//ringbuffer is full :-((
+ 223:../spi.c      **** 		if (nextRxWritePointer == spi_data->RxReadPointer)
+ 752              		.loc 1 223 0
+ 753 04d0 FB7B     		ldrb	r3, [r7, #15]
+ 754 04d2 DBB2     		uxtb	r3, r3
+ 755 04d4 1A46     		mov	r2, r3
+ 756 04d6 3B68     		ldr	r3, [r7, #0]
+ 757 04d8 B3F80231 		ldrh	r3, [r3, #258]	@ movhi
+ 758 04dc 9BB2     		uxth	r3, r3
+ 759 04de 9A42     		cmp	r2, r3
+ 760 04e0 0BD1     		bne	.L28
+ 224:../spi.c      **** 		{
+ 225:../spi.c      **** 			//set error flag and disable receiving
+ 226:../spi.c      **** 			spi_data->RxBufferFullError = 1;
+ 761              		.loc 1 226 0
+ 762 04e2 3B68     		ldr	r3, [r7, #0]
+ 763 04e4 4FF00102 		mov	r2, #1
+ 764 04e8 83F80822 		strb	r2, [r3, #520]
+ 227:../spi.c      **** 			//Disable the USARTx Receive interrupt
+ 228:../spi.c      **** 			//TODO pullup NSS
+ 229:../spi.c      **** 			SPI_I2S_ITConfig(SPIx, SPI_I2S_IT_RXNE, DISABLE);
+ 765              		.loc 1 229 0
+ 766 04ec 7868     		ldr	r0, [r7, #4]
+ 767 04ee 4FF06001 		mov	r1, #96
+ 768 04f2 4FF00002 		mov	r2, #0
+ 769 04f6 FFF7FEFF 		bl	SPI_I2S_ITConfig
+ 770              	.L28:
+ 230:../spi.c      **** 		}
+ 231:../spi.c      **** 
+ 232:../spi.c      **** 		// Read one byte from the receive data register
+ 233:../spi.c      **** 		spi_data->RxBuffer[spi_data->RxWritePointer] = SPI_I2S_ReceiveData(
+ 771              		.loc 1 233 0
+ 772 04fa 3B68     		ldr	r3, [r7, #0]
+ 773 04fc B3F80031 		ldrh	r3, [r3, #256]	@ movhi
+ 774 0500 9BB2     		uxth	r3, r3
+ 775 0502 1C46     		mov	r4, r3
+ 776 0504 7868     		ldr	r0, [r7, #4]
+ 777 0506 FFF7FEFF 		bl	SPI_I2S_ReceiveData
+ 778 050a 0346     		mov	r3, r0
+ 779 050c DAB2     		uxtb	r2, r3
+ 780 050e 3B68     		ldr	r3, [r7, #0]
+ 781 0510 1A55     		strb	r2, [r3, r4]
+ 234:../spi.c      **** 				SPIx);
+ 235:../spi.c      **** 		spi_data->RxWritePointer = nextRxWritePointer;
+ 782              		.loc 1 235 0
+ 783 0512 FB7B     		ldrb	r3, [r7, #15]
+ 784 0514 DBB2     		uxtb	r3, r3
+ 785 0516 1A46     		mov	r2, r3
+ 786 0518 3B68     		ldr	r3, [r7, #0]
+ 787 051a A3F80021 		strh	r2, [r3, #256]	@ movhi
+ 788              	.L27:
+ 789              	.LBE5:
+ 236:../spi.c      **** 	}
+ 237:../spi.c      **** 
+ 238:../spi.c      **** 	if (SPI_I2S_GetITStatus(SPIx, SPI_I2S_IT_TXE) != RESET)
+ 790              		.loc 1 238 0
+ 791 051e 7868     		ldr	r0, [r7, #4]
+ 792 0520 4FF07101 		mov	r1, #113
+ 793 0524 FFF7FEFF 		bl	SPI_I2S_GetITStatus
+ 794 0528 0346     		mov	r3, r0
+ 795 052a 002B     		cmp	r3, #0
+ 796 052c 2FD0     		beq	.L26
+ 239:../spi.c      **** 	{
+ 240:../spi.c      **** 		//ringbuffer empty, nothing more to send
+ 241:../spi.c      **** 		if (spi_data->TxReadPointer == spi_data->TxWritePointer)
+ 797              		.loc 1 241 0
+ 798 052e 3B68     		ldr	r3, [r7, #0]
+ 799 0530 B3F80632 		ldrh	r3, [r3, #518]	@ movhi
+ 800 0534 9AB2     		uxth	r2, r3
+ 801 0536 3B68     		ldr	r3, [r7, #0]
+ 802 0538 B3F80432 		ldrh	r3, [r3, #516]	@ movhi
+ 803 053c 9BB2     		uxth	r3, r3
+ 804 053e 9A42     		cmp	r2, r3
+ 805 0540 07D1     		bne	.L30
+ 242:../spi.c      **** 		{
+ 243:../spi.c      **** 			//Disable the USARTx Transmit interrupt
+ 244:../spi.c      **** 			//TODO pullup NSS
+ 245:../spi.c      **** 			SPI_I2S_ITConfig(SPIx, SPI_I2S_IT_TXE, DISABLE);
+ 806              		.loc 1 245 0
+ 807 0542 7868     		ldr	r0, [r7, #4]
+ 808 0544 4FF07101 		mov	r1, #113
+ 809 0548 4FF00002 		mov	r2, #0
+ 810 054c FFF7FEFF 		bl	SPI_I2S_ITConfig
+ 811 0550 1DE0     		b	.L26
+ 812              	.L30:
+ 246:../spi.c      **** 		}
+ 247:../spi.c      **** 		else
+ 248:../spi.c      **** 		{
+ 249:../spi.c      **** 			// Write one byte to the transmit data register
+ 250:../spi.c      **** 			SPI_I2S_SendData(SPIx, spi_data->TxBuffer[spi_data->TxReadPointer]);
+ 813              		.loc 1 250 0
+ 814 0552 3B68     		ldr	r3, [r7, #0]
+ 815 0554 B3F80632 		ldrh	r3, [r3, #518]	@ movhi
+ 816 0558 9BB2     		uxth	r3, r3
+ 817 055a 3A68     		ldr	r2, [r7, #0]
+ 818 055c D318     		adds	r3, r2, r3
+ 819 055e 93F80431 		ldrb	r3, [r3, #260]
+ 820 0562 DBB2     		uxtb	r3, r3
+ 821 0564 7868     		ldr	r0, [r7, #4]
+ 822 0566 1946     		mov	r1, r3
+ 823 0568 FFF7FEFF 		bl	SPI_I2S_SendData
+ 251:../spi.c      **** 			spi_data->TxReadPointer = (spi_data->TxReadPointer + 1)
+ 824              		.loc 1 251 0
+ 825 056c 3B68     		ldr	r3, [r7, #0]
+ 826 056e B3F80632 		ldrh	r3, [r3, #518]	@ movhi
+ 827 0572 9BB2     		uxth	r3, r3
+ 828 0574 03F10102 		add	r2, r3, #1
+ 252:../spi.c      **** 					% SPI_BUFFER_SIZE;
+ 829              		.loc 1 252 0
+ 830 0578 4FEAE273 		asr	r3, r2, #31
+ 831 057c 4FEA1363 		lsr	r3, r3, #24
+ 832 0580 D218     		adds	r2, r2, r3
+ 833 0582 D2B2     		uxtb	r2, r2
+ 834 0584 D31A     		subs	r3, r2, r3
+ 251:../spi.c      **** 			spi_data->TxReadPointer = (spi_data->TxReadPointer + 1)
+ 835              		.loc 1 251 0
+ 836 0586 9AB2     		uxth	r2, r3
+ 837 0588 3B68     		ldr	r3, [r7, #0]
+ 838 058a A3F80622 		strh	r2, [r3, #518]	@ movhi
+ 839              	.L26:
+ 253:../spi.c      **** 		}
+ 254:../spi.c      **** 	}
+ 255:../spi.c      **** }
+ 840              		.loc 1 255 0
+ 841 058e 07F11407 		add	r7, r7, #20
+ 842 0592 BD46     		mov	sp, r7
+ 843 0594 90BD     		pop	{r4, r7, pc}
+ 844              		.cfi_endproc
+ 845              	.LFE36:
+ 847 0596 00BF     		.align	2
+ 848              		.global	SPI2_IRQHandler
+ 849              		.thumb
+ 850              		.thumb_func
+ 852              	SPI2_IRQHandler:
+ 853              	.LFB37:
+ 256:../spi.c      **** 
+ 257:../spi.c      **** 
+ 258:../spi.c      **** 
+ 259:../spi.c      **** void SPI2_IRQHandler(void)
+ 260:../spi.c      **** {
+ 854              		.loc 1 260 0
+ 855              		.cfi_startproc
+ 856              		@ args = 0, pretend = 0, frame = 0
+ 857              		@ frame_needed = 1, uses_anonymous_args = 0
+ 858 0598 80B5     		push	{r7, lr}
+ 859              	.LCFI24:
+ 860              		.cfi_def_cfa_offset 8
+ 861              		.cfi_offset 14, -4
+ 862              		.cfi_offset 7, -8
+ 863 059a 00AF     		add	r7, sp, #0
+ 864              	.LCFI25:
+ 865              		.cfi_def_cfa_register 7
+ 261:../spi.c      **** 	SPI_IRQHandler(SPI2, &SPI2_Data);
+ 866              		.loc 1 261 0
+ 867 059c 4FF46050 		mov	r0, #14336
+ 868 05a0 C4F20000 		movt	r0, 16384
+ 869 05a4 40F20001 		movw	r1, #:lower16:SPI2_Data
+ 870 05a8 C0F20001 		movt	r1, #:upper16:SPI2_Data
+ 871 05ac FFF7FEFF 		bl	SPI_IRQHandler
+ 262:../spi.c      **** }
+ 872              		.loc 1 262 0
+ 873 05b0 80BD     		pop	{r7, pc}
+ 874              		.cfi_endproc
+ 875              	.LFE37:
+ 877              	.Letext0:
+ 878              		.file 2 "/opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/../../../../arm-none-eab
+ 879              		.file 3 "/home/simon/Workspace/stm32vl/stm32_lib/inc/stm32f10x.h"
+ 880              		.file 4 "/home/simon/Workspace/stm32vl/stm32_lib/inc/stm32f10x_gpio.h"
+ 881              		.file 5 "/home/simon/Workspace/stm32vl/stm32_lib/inc/misc.h"
+ 882              		.file 6 "/home/simon/Workspace/stm32vl/stm32_lib/inc/stm32f10x_spi.h"
+ 883              		.file 7 "../spi.h"
+ 884              		.file 8 "/home/simon/Workspace/stm32vl/stm32_lib/inc/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 spi.c
+                            *COM*:0000020a SPI1_Data
+                            *COM*:0000020a SPI2_Data
+     /tmp/ccOJ7uNx.s:20     .text:00000000 $t
+     /tmp/ccOJ7uNx.s:25     .text:00000000 SPIx_init
+     /tmp/ccOJ7uNx.s:269    .text:00000214 SPIx_SendData
+     /tmp/ccOJ7uNx.s:429    .text:0000031c SPI1_SendData
+     /tmp/ccOJ7uNx.s:470    .text:0000034c SPI2_SendData
+     /tmp/ccOJ7uNx.s:511    .text:0000037c SPIx_GetData
+     /tmp/ccOJ7uNx.s:628    .text:00000438 SPI1_GetData
+     /tmp/ccOJ7uNx.s:669    .text:00000468 SPI2_GetData
+     /tmp/ccOJ7uNx.s:710    .text:00000498 SPI_IRQHandler
+     /tmp/ccOJ7uNx.s:852    .text:00000598 SPI2_IRQHandler
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+RCC_APB2PeriphClockCmd
+GPIO_StructInit
+GPIO_Init
+RCC_APB1PeriphClockCmd
+NVIC_Init
+SPI_StructInit
+SPI_Init
+SPI_SSOutputCmd
+SPI_I2S_ITConfig
+SPI_Cmd
+SPI_I2S_SendData
+SPI_I2S_GetFlagStatus
+SPI_I2S_GetITStatus
+SPI_I2S_ReceiveData

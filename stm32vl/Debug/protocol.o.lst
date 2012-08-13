@@ -1,0 +1,887 @@
+   1              		.syntax unified
+   2              		.cpu cortex-m3
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.thumb
+  14              		.file	"protocol.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.comm	headerInternal,8,4
+  19              		.global	receivedHeaderBytes
+  20              		.bss
+  21              		.align	2
+  24              	receivedHeaderBytes:
+  25 0000 00000000 		.space	4
+  26              		.comm	protocolHandlers,16,4
+  27              		.text
+  28              		.align	2
+  29              		.global	protocol_defaultHandler
+  30              		.thumb
+  31              		.thumb_func
+  33              	protocol_defaultHandler:
+  34              	.LFB0:
+  35              		.file 1 "../protocol.c"
+   1:../protocol.c **** #include "protocol.h"
+   2:../protocol.c **** #include "usart.h"
+   3:../protocol.c **** #include "crc.h"
+   4:../protocol.c **** 
+   5:../protocol.c **** struct ProtocolHeader headerInternal;
+   6:../protocol.c **** int receivedHeaderBytes = 0;
+   7:../protocol.c **** 
+   8:../protocol.c **** void (*protocolHandlers[NUM_IDS])(enum PROTOCOL_IDS id, unsigned char *data, unsigned short size);
+   9:../protocol.c **** 
+  10:../protocol.c **** void protocol_defaultHandler(enum PROTOCOL_IDS id, unsigned char *data, unsigned short size)
+  11:../protocol.c **** {
+  36              		.loc 1 11 0
+  37              		.cfi_startproc
+  38              		@ args = 0, pretend = 0, frame = 16
+  39              		@ frame_needed = 1, uses_anonymous_args = 0
+  40              		@ link register save eliminated.
+  41 0000 80B4     		push	{r7}
+  42              	.LCFI0:
+  43              		.cfi_def_cfa_offset 4
+  44              		.cfi_offset 7, -4
+  45 0002 85B0     		sub	sp, sp, #20
+  46              	.LCFI1:
+  47              		.cfi_def_cfa_offset 24
+  48 0004 00AF     		add	r7, sp, #0
+  49              	.LCFI2:
+  50              		.cfi_def_cfa_register 7
+  51 0006 3960     		str	r1, [r7, #0]
+  52 0008 1346     		mov	r3, r2
+  53 000a 0246     		mov	r2, r0
+  54 000c FA71     		strb	r2, [r7, #7]
+  55 000e BB80     		strh	r3, [r7, #4]	@ movhi
+  12:../protocol.c ****     unsigned short idl = id;
+  56              		.loc 1 12 0
+  57 0010 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+  58 0012 FB81     		strh	r3, [r7, #14]	@ movhi
+  13:../protocol.c **** }
+  59              		.loc 1 13 0
+  60 0014 07F11407 		add	r7, r7, #20
+  61 0018 BD46     		mov	sp, r7
+  62 001a 80BC     		pop	{r7}
+  63 001c 7047     		bx	lr
+  64              		.cfi_endproc
+  65              	.LFE0:
+  67 001e 00BF     		.align	2
+  68              		.global	protocol_init
+  69              		.thumb
+  70              		.thumb_func
+  72              	protocol_init:
+  73              	.LFB1:
+  14:../protocol.c **** 
+  15:../protocol.c **** void protocol_init()
+  16:../protocol.c **** {
+  74              		.loc 1 16 0
+  75              		.cfi_startproc
+  76              		@ args = 0, pretend = 0, frame = 8
+  77              		@ frame_needed = 1, uses_anonymous_args = 0
+  78              		@ link register save eliminated.
+  79 0020 80B4     		push	{r7}
+  80              	.LCFI3:
+  81              		.cfi_def_cfa_offset 4
+  82              		.cfi_offset 7, -4
+  83 0022 83B0     		sub	sp, sp, #12
+  84              	.LCFI4:
+  85              		.cfi_def_cfa_offset 16
+  86 0024 00AF     		add	r7, sp, #0
+  87              	.LCFI5:
+  88              		.cfi_def_cfa_register 7
+  17:../protocol.c ****     receivedHeaderBytes = 0;
+  89              		.loc 1 17 0
+  90 0026 40F20003 		movw	r3, #:lower16:receivedHeaderBytes
+  91 002a C0F20003 		movt	r3, #:upper16:receivedHeaderBytes
+  92 002e 4FF00002 		mov	r2, #0
+  93 0032 1A60     		str	r2, [r3, #0]
+  18:../protocol.c ****     int i = 0;
+  94              		.loc 1 18 0
+  95 0034 4FF00003 		mov	r3, #0
+  96 0038 7B60     		str	r3, [r7, #4]
+  19:../protocol.c ****     for(i = 0; i < NUM_IDS; i++)
+  97              		.loc 1 19 0
+  98 003a 4FF00003 		mov	r3, #0
+  99 003e 7B60     		str	r3, [r7, #4]
+ 100 0040 0EE0     		b	.L3
+ 101              	.L4:
+  20:../protocol.c ****     {
+  21:../protocol.c **** 	protocolHandlers[i] = protocol_defaultHandler;
+ 102              		.loc 1 21 0 discriminator 2
+ 103 0042 40F20003 		movw	r3, #:lower16:protocolHandlers
+ 104 0046 C0F20003 		movt	r3, #:upper16:protocolHandlers
+ 105 004a 7968     		ldr	r1, [r7, #4]
+ 106 004c 40F20002 		movw	r2, #:lower16:protocol_defaultHandler
+ 107 0050 C0F20002 		movt	r2, #:upper16:protocol_defaultHandler
+ 108 0054 43F82120 		str	r2, [r3, r1, lsl #2]
+  19:../protocol.c ****     for(i = 0; i < NUM_IDS; i++)
+ 109              		.loc 1 19 0 discriminator 2
+ 110 0058 7B68     		ldr	r3, [r7, #4]
+ 111 005a 03F10103 		add	r3, r3, #1
+ 112 005e 7B60     		str	r3, [r7, #4]
+ 113              	.L3:
+  19:../protocol.c ****     for(i = 0; i < NUM_IDS; i++)
+ 114              		.loc 1 19 0 is_stmt 0 discriminator 1
+ 115 0060 7B68     		ldr	r3, [r7, #4]
+ 116 0062 032B     		cmp	r3, #3
+ 117 0064 EDDD     		ble	.L4
+  22:../protocol.c ****     }
+  23:../protocol.c **** }
+ 118              		.loc 1 23 0 is_stmt 1
+ 119 0066 07F10C07 		add	r7, r7, #12
+ 120 006a BD46     		mov	sp, r7
+ 121 006c 80BC     		pop	{r7}
+ 122 006e 7047     		bx	lr
+ 123              		.cfi_endproc
+ 124              	.LFE1:
+ 126              		.align	2
+ 127              		.global	protocol_registerHandler
+ 128              		.thumb
+ 129              		.thumb_func
+ 131              	protocol_registerHandler:
+ 132              	.LFB2:
+  24:../protocol.c **** 
+  25:../protocol.c **** void protocol_registerHandler(enum PROTOCOL_IDS id, void (*handler)(enum PROTOCOL_IDS id, unsigned 
+  26:../protocol.c **** {
+ 133              		.loc 1 26 0
+ 134              		.cfi_startproc
+ 135              		@ args = 0, pretend = 0, frame = 8
+ 136              		@ frame_needed = 1, uses_anonymous_args = 0
+ 137              		@ link register save eliminated.
+ 138 0070 80B4     		push	{r7}
+ 139              	.LCFI6:
+ 140              		.cfi_def_cfa_offset 4
+ 141              		.cfi_offset 7, -4
+ 142 0072 83B0     		sub	sp, sp, #12
+ 143              	.LCFI7:
+ 144              		.cfi_def_cfa_offset 16
+ 145 0074 00AF     		add	r7, sp, #0
+ 146              	.LCFI8:
+ 147              		.cfi_def_cfa_register 7
+ 148 0076 0346     		mov	r3, r0
+ 149 0078 3960     		str	r1, [r7, #0]
+ 150 007a FB71     		strb	r3, [r7, #7]
+  27:../protocol.c ****     protocolHandlers[id] = handler;
+ 151              		.loc 1 27 0
+ 152 007c FA79     		ldrb	r2, [r7, #7]	@ zero_extendqisi2
+ 153 007e 40F20003 		movw	r3, #:lower16:protocolHandlers
+ 154 0082 C0F20003 		movt	r3, #:upper16:protocolHandlers
+ 155 0086 3968     		ldr	r1, [r7, #0]
+ 156 0088 43F82210 		str	r1, [r3, r2, lsl #2]
+  28:../protocol.c **** }
+ 157              		.loc 1 28 0
+ 158 008c 07F10C07 		add	r7, r7, #12
+ 159 0090 BD46     		mov	sp, r7
+ 160 0092 80BC     		pop	{r7}
+ 161 0094 7047     		bx	lr
+ 162              		.cfi_endproc
+ 163              	.LFE2:
+ 165 0096 00BF     		.align	2
+ 166              		.global	protocol_receiveHeader
+ 167              		.thumb
+ 168              		.thumb_func
+ 170              	protocol_receiveHeader:
+ 171              	.LFB3:
+  29:../protocol.c **** 
+  30:../protocol.c **** struct ProtocolHeader *protocol_receiveHeader()
+  31:../protocol.c **** {
+ 172              		.loc 1 31 0
+ 173              		.cfi_startproc
+ 174              		@ args = 0, pretend = 0, frame = 24
+ 175              		@ frame_needed = 1, uses_anonymous_args = 0
+ 176 0098 90B5     		push	{r4, r7, lr}
+ 177              	.LCFI9:
+ 178              		.cfi_def_cfa_offset 12
+ 179              		.cfi_offset 14, -4
+ 180              		.cfi_offset 7, -8
+ 181              		.cfi_offset 4, -12
+ 182 009a 87B0     		sub	sp, sp, #28
+ 183              	.LCFI10:
+ 184              		.cfi_def_cfa_offset 40
+ 185 009c 00AF     		add	r7, sp, #0
+ 186              	.LCFI11:
+ 187              		.cfi_def_cfa_register 7
+  32:../protocol.c ****     unsigned char *buffer = (unsigned char *) &headerInternal;
+ 188              		.loc 1 32 0
+ 189 009e 40F20003 		movw	r3, #:lower16:headerInternal
+ 190 00a2 C0F20003 		movt	r3, #:upper16:headerInternal
+ 191 00a6 BB60     		str	r3, [r7, #8]
+ 192              	.L20:
+ 193              	.LBB2:
+  33:../protocol.c **** //     print("Rec header\n");
+  34:../protocol.c ****     while(1)
+  35:../protocol.c ****     {
+  36:../protocol.c **** 	int ret = USART1_GetData(buffer + receivedHeaderBytes, sizeof(struct ProtocolHeader) - receivedHea
+ 194              		.loc 1 36 0
+ 195 00a8 40F20003 		movw	r3, #:lower16:receivedHeaderBytes
+ 196 00ac C0F20003 		movt	r3, #:upper16:receivedHeaderBytes
+ 197 00b0 1B68     		ldr	r3, [r3, #0]
+ 198 00b2 BA68     		ldr	r2, [r7, #8]
+ 199 00b4 D218     		adds	r2, r2, r3
+ 200 00b6 40F20003 		movw	r3, #:lower16:receivedHeaderBytes
+ 201 00ba C0F20003 		movt	r3, #:upper16:receivedHeaderBytes
+ 202 00be 1B68     		ldr	r3, [r3, #0]
+ 203 00c0 C3F10803 		rsb	r3, r3, #8
+ 204 00c4 1046     		mov	r0, r2
+ 205 00c6 1946     		mov	r1, r3
+ 206 00c8 FFF7FEFF 		bl	USART1_GetData
+ 207 00cc 7860     		str	r0, [r7, #4]
+  37:../protocol.c **** 	if(ret < 0)
+ 208              		.loc 1 37 0
+ 209 00ce 7B68     		ldr	r3, [r7, #4]
+ 210 00d0 002B     		cmp	r3, #0
+ 211 00d2 07DA     		bge	.L7
+  38:../protocol.c **** 	{
+  39:../protocol.c **** 
+  40:../protocol.c **** 	    //discard all data and start over
+  41:../protocol.c **** 	    receivedHeaderBytes = 0;
+ 212              		.loc 1 41 0
+ 213 00d4 40F20003 		movw	r3, #:lower16:receivedHeaderBytes
+ 214 00d8 C0F20003 		movt	r3, #:upper16:receivedHeaderBytes
+ 215 00dc 4FF00002 		mov	r2, #0
+ 216 00e0 1A60     		str	r2, [r3, #0]
+  42:../protocol.c **** 	    continue;
+ 217              		.loc 1 42 0
+ 218 00e2 8AE0     		b	.L8
+ 219              	.L7:
+  43:../protocol.c **** 	}
+  44:../protocol.c **** 	receivedHeaderBytes += ret;
+ 220              		.loc 1 44 0
+ 221 00e4 40F20003 		movw	r3, #:lower16:receivedHeaderBytes
+ 222 00e8 C0F20003 		movt	r3, #:upper16:receivedHeaderBytes
+ 223 00ec 1A68     		ldr	r2, [r3, #0]
+ 224 00ee 7B68     		ldr	r3, [r7, #4]
+ 225 00f0 D218     		adds	r2, r2, r3
+ 226 00f2 40F20003 		movw	r3, #:lower16:receivedHeaderBytes
+ 227 00f6 C0F20003 		movt	r3, #:upper16:receivedHeaderBytes
+ 228 00fa 1A60     		str	r2, [r3, #0]
+  45:../protocol.c **** 	
+  46:../protocol.c **** 	//not more data there, try again later
+  47:../protocol.c **** 	if(ret == 0)
+ 229              		.loc 1 47 0
+ 230 00fc 7B68     		ldr	r3, [r7, #4]
+ 231 00fe 002B     		cmp	r3, #0
+ 232 0100 02D1     		bne	.L9
+  48:../protocol.c **** 	    return 0;
+ 233              		.loc 1 48 0
+ 234 0102 4FF00003 		mov	r3, #0
+ 235 0106 79E0     		b	.L10
+ 236              	.L9:
+  49:../protocol.c **** 
+  50:../protocol.c **** 	//search for the magic byte
+  51:../protocol.c **** 	int i;
+  52:../protocol.c **** 	unsigned char found_magic = 0; 
+ 237              		.loc 1 52 0
+ 238 0108 4FF00003 		mov	r3, #0
+ 239 010c FB74     		strb	r3, [r7, #19]
+  53:../protocol.c **** 	for(i = 0; i < receivedHeaderBytes; i++)
+ 240              		.loc 1 53 0
+ 241 010e 4FF00003 		mov	r3, #0
+ 242 0112 7B61     		str	r3, [r7, #20]
+ 243 0114 32E0     		b	.L11
+ 244              	.L16:
+  54:../protocol.c **** 	{
+  55:../protocol.c **** 	    if(buffer[i] == MAGIC_BYTE)
+ 245              		.loc 1 55 0
+ 246 0116 7B69     		ldr	r3, [r7, #20]
+ 247 0118 BA68     		ldr	r2, [r7, #8]
+ 248 011a D318     		adds	r3, r2, r3
+ 249 011c 1B78     		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 250 011e 3F2B     		cmp	r3, #63
+ 251 0120 28D1     		bne	.L12
+ 252              	.LBB3:
+  56:../protocol.c **** 	    {
+  57:../protocol.c **** 		found_magic = 1;
+ 253              		.loc 1 57 0
+ 254 0122 4FF00103 		mov	r3, #1
+ 255 0126 FB74     		strb	r3, [r7, #19]
+  58:../protocol.c **** 		//discard all data before the magic byte
+  59:../protocol.c **** 		int j;
+  60:../protocol.c **** 		for(j = i; j < receivedHeaderBytes; j++)
+ 256              		.loc 1 60 0
+ 257 0128 7B69     		ldr	r3, [r7, #20]
+ 258 012a FB60     		str	r3, [r7, #12]
+ 259 012c 0DE0     		b	.L13
+ 260              	.L14:
+  61:../protocol.c **** 		{
+  62:../protocol.c **** 		    buffer[j-i] = buffer[j];
+ 261              		.loc 1 62 0 discriminator 2
+ 262 012e FA68     		ldr	r2, [r7, #12]
+ 263 0130 7B69     		ldr	r3, [r7, #20]
+ 264 0132 D31A     		subs	r3, r2, r3
+ 265 0134 BA68     		ldr	r2, [r7, #8]
+ 266 0136 D318     		adds	r3, r2, r3
+ 267 0138 FA68     		ldr	r2, [r7, #12]
+ 268 013a B968     		ldr	r1, [r7, #8]
+ 269 013c 8A18     		adds	r2, r1, r2
+ 270 013e 1278     		ldrb	r2, [r2, #0]	@ zero_extendqisi2
+ 271 0140 1A70     		strb	r2, [r3, #0]
+  60:../protocol.c **** 		for(j = i; j < receivedHeaderBytes; j++)
+ 272              		.loc 1 60 0 discriminator 2
+ 273 0142 FB68     		ldr	r3, [r7, #12]
+ 274 0144 03F10103 		add	r3, r3, #1
+ 275 0148 FB60     		str	r3, [r7, #12]
+ 276              	.L13:
+  60:../protocol.c **** 		for(j = i; j < receivedHeaderBytes; j++)
+ 277              		.loc 1 60 0 is_stmt 0 discriminator 1
+ 278 014a 40F20003 		movw	r3, #:lower16:receivedHeaderBytes
+ 279 014e C0F20003 		movt	r3, #:upper16:receivedHeaderBytes
+ 280 0152 1B68     		ldr	r3, [r3, #0]
+ 281 0154 FA68     		ldr	r2, [r7, #12]
+ 282 0156 9A42     		cmp	r2, r3
+ 283 0158 E9DB     		blt	.L14
+  63:../protocol.c **** 		}
+  64:../protocol.c **** 		receivedHeaderBytes -= i;
+ 284              		.loc 1 64 0 is_stmt 1
+ 285 015a 40F20003 		movw	r3, #:lower16:receivedHeaderBytes
+ 286 015e C0F20003 		movt	r3, #:upper16:receivedHeaderBytes
+ 287 0162 1A68     		ldr	r2, [r3, #0]
+ 288 0164 7B69     		ldr	r3, [r7, #20]
+ 289 0166 D21A     		subs	r2, r2, r3
+ 290 0168 40F20003 		movw	r3, #:lower16:receivedHeaderBytes
+ 291 016c C0F20003 		movt	r3, #:upper16:receivedHeaderBytes
+ 292 0170 1A60     		str	r2, [r3, #0]
+  65:../protocol.c **** 		break;
+ 293              		.loc 1 65 0
+ 294 0172 0BE0     		b	.L15
+ 295              	.L12:
+ 296              	.LBE3:
+  53:../protocol.c **** 	for(i = 0; i < receivedHeaderBytes; i++)
+ 297              		.loc 1 53 0
+ 298 0174 7B69     		ldr	r3, [r7, #20]
+ 299 0176 03F10103 		add	r3, r3, #1
+ 300 017a 7B61     		str	r3, [r7, #20]
+ 301              	.L11:
+  53:../protocol.c **** 	for(i = 0; i < receivedHeaderBytes; i++)
+ 302              		.loc 1 53 0 is_stmt 0 discriminator 1
+ 303 017c 40F20003 		movw	r3, #:lower16:receivedHeaderBytes
+ 304 0180 C0F20003 		movt	r3, #:upper16:receivedHeaderBytes
+ 305 0184 1B68     		ldr	r3, [r3, #0]
+ 306 0186 7A69     		ldr	r2, [r7, #20]
+ 307 0188 9A42     		cmp	r2, r3
+ 308 018a C4DB     		blt	.L16
+ 309              	.L15:
+  66:../protocol.c **** 	    }
+  67:../protocol.c **** 	}
+  68:../protocol.c **** 
+  69:../protocol.c **** 	//no start marker found, discard buffer
+  70:../protocol.c **** 	if(!found_magic)
+ 310              		.loc 1 70 0 is_stmt 1
+ 311 018c FB7C     		ldrb	r3, [r7, #19]	@ zero_extendqisi2
+ 312 018e 002B     		cmp	r3, #0
+ 313 0190 07D1     		bne	.L17
+  71:../protocol.c **** 	{
+  72:../protocol.c **** 	    receivedHeaderBytes = 0;
+ 314              		.loc 1 72 0
+ 315 0192 40F20003 		movw	r3, #:lower16:receivedHeaderBytes
+ 316 0196 C0F20003 		movt	r3, #:upper16:receivedHeaderBytes
+ 317 019a 4FF00002 		mov	r2, #0
+ 318 019e 1A60     		str	r2, [r3, #0]
+  73:../protocol.c **** 	    continue;
+ 319              		.loc 1 73 0
+ 320 01a0 2BE0     		b	.L8
+ 321              	.L17:
+  74:../protocol.c **** 	}
+  75:../protocol.c **** 
+  76:../protocol.c **** 	//wait until we received a full header
+  77:../protocol.c **** 	if(receivedHeaderBytes < sizeof(struct ProtocolHeader))
+ 322              		.loc 1 77 0
+ 323 01a2 40F20003 		movw	r3, #:lower16:receivedHeaderBytes
+ 324 01a6 C0F20003 		movt	r3, #:upper16:receivedHeaderBytes
+ 325 01aa 1B68     		ldr	r3, [r3, #0]
+ 326 01ac 072B     		cmp	r3, #7
+ 327 01ae 23D9     		bls	.L21
+ 328              	.L18:
+  78:../protocol.c **** 	    continue;
+  79:../protocol.c **** 
+  80:../protocol.c **** 	struct ProtocolHeader *header = &headerInternal;
+ 329              		.loc 1 80 0
+ 330 01b0 40F20003 		movw	r3, #:lower16:headerInternal
+ 331 01b4 C0F20003 		movt	r3, #:upper16:headerInternal
+ 332 01b8 3B60     		str	r3, [r7, #0]
+  81:../protocol.c **** 	
+  82:../protocol.c **** 	//check crc
+  83:../protocol.c **** 	if(header->headerCRC != protocol_calculateCRC(buffer, sizeof(struct ProtocolHeader)- sizeof(unsign
+ 333              		.loc 1 83 0
+ 334 01ba 3B68     		ldr	r3, [r7, #0]
+ 335 01bc DB88     		ldrh	r3, [r3, #6]	@ unaligned
+ 336 01be 9CB2     		uxth	r4, r3
+ 337 01c0 B868     		ldr	r0, [r7, #8]
+ 338 01c2 4FF00601 		mov	r1, #6
+ 339 01c6 FFF7FEFF 		bl	protocol_calculateCRC
+ 340 01ca 0346     		mov	r3, r0
+ 341 01cc 9C42     		cmp	r4, r3
+ 342 01ce 07D0     		beq	.L19
+  84:../protocol.c **** 	{
+  85:../protocol.c **** 
+  86:../protocol.c **** 	    receivedHeaderBytes = 0;
+ 343              		.loc 1 86 0
+ 344 01d0 40F20003 		movw	r3, #:lower16:receivedHeaderBytes
+ 345 01d4 C0F20003 		movt	r3, #:upper16:receivedHeaderBytes
+ 346 01d8 4FF00002 		mov	r2, #0
+ 347 01dc 1A60     		str	r2, [r3, #0]
+  87:../protocol.c **** 	    continue;
+ 348              		.loc 1 87 0
+ 349 01de 0CE0     		b	.L8
+ 350              	.L19:
+  88:../protocol.c **** 	}
+  89:../protocol.c **** 	
+  90:../protocol.c **** 	receivedHeaderBytes = 0;
+ 351              		.loc 1 90 0
+ 352 01e0 40F20003 		movw	r3, #:lower16:receivedHeaderBytes
+ 353 01e4 C0F20003 		movt	r3, #:upper16:receivedHeaderBytes
+ 354 01e8 4FF00002 		mov	r2, #0
+ 355 01ec 1A60     		str	r2, [r3, #0]
+  91:../protocol.c **** 	
+  92:../protocol.c **** 	return &headerInternal;
+ 356              		.loc 1 92 0
+ 357 01ee 40F20003 		movw	r3, #:lower16:headerInternal
+ 358 01f2 C0F20003 		movt	r3, #:upper16:headerInternal
+ 359 01f6 01E0     		b	.L10
+ 360              	.L21:
+  78:../protocol.c **** 	    continue;
+ 361              		.loc 1 78 0
+ 362 01f8 00BF     		nop
+ 363              	.L8:
+ 364              	.LBE2:
+  93:../protocol.c ****     }
+ 365              		.loc 1 93 0
+ 366 01fa 55E7     		b	.L20
+ 367              	.L10:
+  94:../protocol.c ****     
+  95:../protocol.c ****     return 0;
+  96:../protocol.c **** };
+ 368              		.loc 1 96 0
+ 369 01fc 1846     		mov	r0, r3
+ 370 01fe 07F11C07 		add	r7, r7, #28
+ 371 0202 BD46     		mov	sp, r7
+ 372 0204 90BD     		pop	{r4, r7, pc}
+ 373              		.cfi_endproc
+ 374              	.LFE3:
+ 376 0206 00BF     		.align	2
+ 377              		.global	protocol_receiveData
+ 378              		.thumb
+ 379              		.thumb_func
+ 381              	protocol_receiveData:
+ 382              	.LFB4:
+  97:../protocol.c **** 
+  98:../protocol.c **** void protocol_receiveData()
+  99:../protocol.c **** {
+ 383              		.loc 1 99 0
+ 384              		.cfi_startproc
+ 385              		@ args = 0, pretend = 0, frame = 1048
+ 386              		@ frame_needed = 1, uses_anonymous_args = 0
+ 387 0208 90B5     		push	{r4, r7, lr}
+ 388              	.LCFI12:
+ 389              		.cfi_def_cfa_offset 12
+ 390              		.cfi_offset 14, -4
+ 391              		.cfi_offset 7, -8
+ 392              		.cfi_offset 4, -12
+ 393 020a ADF5826D 		sub	sp, sp, #1040
+ 394              	.LCFI13:
+ 395              		.cfi_def_cfa_offset 1052
+ 396 020e 83B0     		sub	sp, sp, #12
+ 397              	.LCFI14:
+ 398              		.cfi_def_cfa_offset 1064
+ 399 0210 00AF     		add	r7, sp, #0
+ 400              	.LCFI15:
+ 401              		.cfi_def_cfa_register 7
+ 100:../protocol.c ****     
+ 101:../protocol.c ****     struct ProtocolHeader *header;
+ 102:../protocol.c ****     unsigned char buffer[MAX_PACKET_SIZE];
+ 103:../protocol.c ****     
+ 104:../protocol.c ****     int received = 0;
+ 402              		.loc 1 104 0
+ 403 0212 4FF00003 		mov	r3, #0
+ 404 0216 C7F81434 		str	r3, [r7, #1044]
+ 405              	.L29:
+ 105:../protocol.c ****     
+ 106:../protocol.c ****     while(1)
+ 107:../protocol.c ****     {
+ 108:../protocol.c **** 	//receive header
+ 109:../protocol.c **** 	header = protocol_receiveHeader();
+ 406              		.loc 1 109 0
+ 407 021a FFF7FEFF 		bl	protocol_receiveHeader
+ 408 021e C7F81004 		str	r0, [r7, #1040]
+ 110:../protocol.c **** 	
+ 111:../protocol.c **** 	//no header there
+ 112:../protocol.c **** 	if(!header)
+ 409              		.loc 1 112 0
+ 410 0222 D7F81034 		ldr	r3, [r7, #1040]
+ 411 0226 002B     		cmp	r3, #0
+ 412 0228 27D1     		bne	.L30
+ 113:../protocol.c **** 	    return;
+ 413              		.loc 1 113 0
+ 414 022a 64E0     		b	.L22
+ 415              	.L27:
+ 416              	.LBB4:
+ 114:../protocol.c **** 	
+ 115:../protocol.c **** 	//got a valid header, receive the rest of the packet
+ 116:../protocol.c **** 	while(received < header->payloadSize)
+ 117:../protocol.c **** 	{
+ 118:../protocol.c **** 	    int ret = USART1_GetData(buffer + received, header->payloadSize - received);
+ 417              		.loc 1 118 0
+ 418 022c D7F81424 		ldr	r2, [r7, #1044]
+ 419 0230 07F10803 		add	r3, r7, #8
+ 420 0234 A3F10403 		sub	r3, r3, #4
+ 421 0238 9A18     		adds	r2, r3, r2
+ 422 023a D7F81034 		ldr	r3, [r7, #1040]
+ 423 023e B3F80130 		ldrh	r3, [r3, #1]	@ unaligned
+ 424 0242 9BB2     		uxth	r3, r3
+ 425 0244 1946     		mov	r1, r3
+ 426 0246 D7F81434 		ldr	r3, [r7, #1044]
+ 427 024a CB1A     		subs	r3, r1, r3
+ 428 024c 1046     		mov	r0, r2
+ 429 024e 1946     		mov	r1, r3
+ 430 0250 FFF7FEFF 		bl	USART1_GetData
+ 431 0254 C7F80C04 		str	r0, [r7, #1036]
+ 119:../protocol.c **** 	    if(ret < 0)
+ 432              		.loc 1 119 0
+ 433 0258 D7F80C34 		ldr	r3, [r7, #1036]
+ 434 025c 002B     		cmp	r3, #0
+ 435 025e 04DA     		bge	.L26
+ 120:../protocol.c **** 	    {
+ 121:../protocol.c **** 
+ 122:../protocol.c **** 		//discard all data and start over
+ 123:../protocol.c **** 		received = 0;
+ 436              		.loc 1 123 0
+ 437 0260 4FF00003 		mov	r3, #0
+ 438 0264 C7F81434 		str	r3, [r7, #1044]
+ 439 0268 08E0     		b	.L25
+ 440              	.L26:
+ 124:../protocol.c **** 	    } else
+ 125:../protocol.c **** 		received += ret;
+ 441              		.loc 1 125 0
+ 442 026a D7F81424 		ldr	r2, [r7, #1044]
+ 443 026e D7F80C34 		ldr	r3, [r7, #1036]
+ 444 0272 D318     		adds	r3, r2, r3
+ 445 0274 C7F81434 		str	r3, [r7, #1044]
+ 446 0278 00E0     		b	.L25
+ 447              	.L30:
+ 448              	.LBE4:
+ 116:../protocol.c **** 	while(received < header->payloadSize)
+ 449              		.loc 1 116 0
+ 450 027a 00BF     		nop
+ 451              	.L25:
+ 116:../protocol.c **** 	while(received < header->payloadSize)
+ 452              		.loc 1 116 0 is_stmt 0 discriminator 1
+ 453 027c D7F81034 		ldr	r3, [r7, #1040]
+ 454 0280 B3F80130 		ldrh	r3, [r3, #1]	@ unaligned
+ 455 0284 9BB2     		uxth	r3, r3
+ 456 0286 1A46     		mov	r2, r3
+ 457 0288 D7F81434 		ldr	r3, [r7, #1044]
+ 458 028c 9A42     		cmp	r2, r3
+ 459 028e CDDC     		bgt	.L27
+ 126:../protocol.c **** 	}
+ 127:../protocol.c **** 
+ 128:../protocol.c **** 	//check payload crc
+ 129:../protocol.c **** 	if(header->payloadCRC != protocol_calculateCRC(buffer, header->payloadSize))
+ 460              		.loc 1 129 0 is_stmt 1
+ 461 0290 D7F81034 		ldr	r3, [r7, #1040]
+ 462 0294 9B88     		ldrh	r3, [r3, #4]	@ unaligned
+ 463 0296 9CB2     		uxth	r4, r3
+ 464 0298 D7F81034 		ldr	r3, [r7, #1040]
+ 465 029c B3F80130 		ldrh	r3, [r3, #1]	@ unaligned
+ 466 02a0 9AB2     		uxth	r2, r3
+ 467 02a2 07F10803 		add	r3, r7, #8
+ 468 02a6 A3F10403 		sub	r3, r3, #4
+ 469 02aa 1846     		mov	r0, r3
+ 470 02ac 1146     		mov	r1, r2
+ 471 02ae FFF7FEFF 		bl	protocol_calculateCRC
+ 472 02b2 0346     		mov	r3, r0
+ 473 02b4 9C42     		cmp	r4, r3
+ 474 02b6 04D0     		beq	.L28
+ 130:../protocol.c **** 	{
+ 131:../protocol.c **** 
+ 132:../protocol.c **** 	    received = 0;
+ 475              		.loc 1 132 0
+ 476 02b8 4FF00003 		mov	r3, #0
+ 477 02bc C7F81434 		str	r3, [r7, #1044]
+ 133:../protocol.c **** 	    continue;
+ 134:../protocol.c **** 	}
+ 135:../protocol.c **** 	
+ 136:../protocol.c **** 	//ACK or Nack
+ 137:../protocol.c **** 	
+ 138:../protocol.c **** 	//call handler
+ 139:../protocol.c **** // 	assert_param(header->id <= NUM_IDS);
+ 140:../protocol.c **** 	protocolHandlers[header->id](header->id, buffer, header->payloadSize);
+ 141:../protocol.c **** 	
+ 142:../protocol.c **** 	return;
+ 143:../protocol.c ****     }
+ 478              		.loc 1 143 0
+ 479 02c0 ABE7     		b	.L29
+ 480              	.L28:
+ 140:../protocol.c **** 	protocolHandlers[header->id](header->id, buffer, header->payloadSize);
+ 481              		.loc 1 140 0
+ 482 02c2 D7F81034 		ldr	r3, [r7, #1040]
+ 483 02c6 DB78     		ldrb	r3, [r3, #3]	@ zero_extendqisi2
+ 484 02c8 1A46     		mov	r2, r3
+ 485 02ca 40F20003 		movw	r3, #:lower16:protocolHandlers
+ 486 02ce C0F20003 		movt	r3, #:upper16:protocolHandlers
+ 487 02d2 53F82240 		ldr	r4, [r3, r2, lsl #2]
+ 488 02d6 D7F81034 		ldr	r3, [r7, #1040]
+ 489 02da D978     		ldrb	r1, [r3, #3]	@ zero_extendqisi2
+ 490 02dc D7F81034 		ldr	r3, [r7, #1040]
+ 491 02e0 B3F80130 		ldrh	r3, [r3, #1]	@ unaligned
+ 492 02e4 9AB2     		uxth	r2, r3
+ 493 02e6 07F10803 		add	r3, r7, #8
+ 494 02ea A3F10403 		sub	r3, r3, #4
+ 495 02ee 0846     		mov	r0, r1
+ 496 02f0 1946     		mov	r1, r3
+ 497 02f2 A047     		blx	r4
+ 142:../protocol.c **** 	return;
+ 498              		.loc 1 142 0
+ 499 02f4 00BF     		nop
+ 500              	.L22:
+ 144:../protocol.c **** }
+ 501              		.loc 1 144 0
+ 502 02f6 07F11C07 		add	r7, r7, #28
+ 503 02fa 07F58067 		add	r7, r7, #1024
+ 504 02fe BD46     		mov	sp, r7
+ 505 0300 90BD     		pop	{r4, r7, pc}
+ 506              		.cfi_endproc
+ 507              	.LFE4:
+ 509 0302 00BF     		.align	2
+ 510              		.global	protocol_calculateCRC
+ 511              		.thumb
+ 512              		.thumb_func
+ 514              	protocol_calculateCRC:
+ 515              	.LFB5:
+ 145:../protocol.c **** 
+ 146:../protocol.c **** short unsigned int protocol_calculateCRC(unsigned char* data, short unsigned int size)
+ 147:../protocol.c **** {
+ 516              		.loc 1 147 0
+ 517              		.cfi_startproc
+ 518              		@ args = 0, pretend = 0, frame = 8
+ 519              		@ frame_needed = 1, uses_anonymous_args = 0
+ 520 0304 80B5     		push	{r7, lr}
+ 521              	.LCFI16:
+ 522              		.cfi_def_cfa_offset 8
+ 523              		.cfi_offset 14, -4
+ 524              		.cfi_offset 7, -8
+ 525 0306 82B0     		sub	sp, sp, #8
+ 526              	.LCFI17:
+ 527              		.cfi_def_cfa_offset 16
+ 528 0308 00AF     		add	r7, sp, #0
+ 529              	.LCFI18:
+ 530              		.cfi_def_cfa_register 7
+ 531 030a 7860     		str	r0, [r7, #4]
+ 532 030c 0B46     		mov	r3, r1
+ 533 030e 7B80     		strh	r3, [r7, #2]	@ movhi
+ 148:../protocol.c ****     return crcSlow(data, size);
+ 534              		.loc 1 148 0
+ 535 0310 7B88     		ldrh	r3, [r7, #2]
+ 536 0312 7868     		ldr	r0, [r7, #4]
+ 537 0314 1946     		mov	r1, r3
+ 538 0316 FFF7FEFF 		bl	crcSlow
+ 539 031a 0346     		mov	r3, r0
+ 149:../protocol.c **** }
+ 540              		.loc 1 149 0
+ 541 031c 1846     		mov	r0, r3
+ 542 031e 07F10807 		add	r7, r7, #8
+ 543 0322 BD46     		mov	sp, r7
+ 544 0324 80BD     		pop	{r7, pc}
+ 545              		.cfi_endproc
+ 546              	.LFE5:
+ 548 0326 00BF     		.align	2
+ 549              		.global	protocol_sendData
+ 550              		.thumb
+ 551              		.thumb_func
+ 553              	protocol_sendData:
+ 554              	.LFB6:
+ 150:../protocol.c **** 
+ 151:../protocol.c **** 
+ 152:../protocol.c **** void protocol_sendData(enum PROTOCOL_IDS id, unsigned char* data, short unsigned int size)
+ 153:../protocol.c **** {
+ 555              		.loc 1 153 0
+ 556              		.cfi_startproc
+ 557              		@ args = 0, pretend = 0, frame = 32
+ 558              		@ frame_needed = 1, uses_anonymous_args = 0
+ 559 0328 80B5     		push	{r7, lr}
+ 560              	.LCFI19:
+ 561              		.cfi_def_cfa_offset 8
+ 562              		.cfi_offset 14, -4
+ 563              		.cfi_offset 7, -8
+ 564 032a 88B0     		sub	sp, sp, #32
+ 565              	.LCFI20:
+ 566              		.cfi_def_cfa_offset 40
+ 567 032c 00AF     		add	r7, sp, #0
+ 568              	.LCFI21:
+ 569              		.cfi_def_cfa_register 7
+ 570 032e 3960     		str	r1, [r7, #0]
+ 571 0330 1346     		mov	r3, r2
+ 572 0332 0246     		mov	r2, r0
+ 573 0334 FA71     		strb	r2, [r7, #7]
+ 574 0336 BB80     		strh	r3, [r7, #4]	@ movhi
+ 154:../protocol.c ****     struct ProtocolHeader header;
+ 155:../protocol.c ****     
+ 156:../protocol.c ****     header.magicByte = MAGIC_BYTE;
+ 575              		.loc 1 156 0
+ 576 0338 4FF03F03 		mov	r3, #63
+ 577 033c 3B73     		strb	r3, [r7, #12]
+ 157:../protocol.c ****     header.id = id;
+ 578              		.loc 1 157 0
+ 579 033e FB79     		ldrb	r3, [r7, #7]
+ 580 0340 FB73     		strb	r3, [r7, #15]
+ 158:../protocol.c ****     header.payloadSize = size;
+ 581              		.loc 1 158 0
+ 582 0342 BB88     		ldrh	r3, [r7, #4]	@ movhi
+ 583 0344 A7F80D30 		strh	r3, [r7, #13]	@ unaligned
+ 159:../protocol.c ****     header.payloadCRC = protocol_calculateCRC(data, size);
+ 584              		.loc 1 159 0
+ 585 0348 BB88     		ldrh	r3, [r7, #4]
+ 586 034a 3868     		ldr	r0, [r7, #0]
+ 587 034c 1946     		mov	r1, r3
+ 588 034e FFF7FEFF 		bl	protocol_calculateCRC
+ 589 0352 0346     		mov	r3, r0
+ 590 0354 3B82     		strh	r3, [r7, #16]	@ movhi
+ 160:../protocol.c ****     header.headerCRC = protocol_calculateCRC((unsigned char *) &header, sizeof(struct ProtocolHeade
+ 591              		.loc 1 160 0
+ 592 0356 07F10C03 		add	r3, r7, #12
+ 593 035a 1846     		mov	r0, r3
+ 594 035c 4FF00601 		mov	r1, #6
+ 595 0360 FFF7FEFF 		bl	protocol_calculateCRC
+ 596 0364 0346     		mov	r3, r0
+ 597 0366 7B82     		strh	r3, [r7, #18]	@ movhi
+ 161:../protocol.c ****     
+ 162:../protocol.c ****     int sent = 0;
+ 598              		.loc 1 162 0
+ 599 0368 4FF00003 		mov	r3, #0
+ 600 036c FB61     		str	r3, [r7, #28]
+ 163:../protocol.c ****     while(sent < sizeof(struct ProtocolHeader))
+ 601              		.loc 1 163 0
+ 602 036e 16E0     		b	.L33
+ 603              	.L35:
+ 604              	.LBB5:
+ 164:../protocol.c ****     {
+ 165:../protocol.c **** 	int ret = USART1_SendData(((unsigned char *) &header) + sent, sizeof(struct ProtocolHeader) - sent
+ 605              		.loc 1 165 0
+ 606 0370 FB69     		ldr	r3, [r7, #28]
+ 607 0372 07F10C02 		add	r2, r7, #12
+ 608 0376 D218     		adds	r2, r2, r3
+ 609 0378 FB69     		ldr	r3, [r7, #28]
+ 610 037a C3F10803 		rsb	r3, r3, #8
+ 611 037e 1046     		mov	r0, r2
+ 612 0380 1946     		mov	r1, r3
+ 613 0382 FFF7FEFF 		bl	USART1_SendData
+ 614 0386 B861     		str	r0, [r7, #24]
+ 166:../protocol.c **** 	if(ret < 0)
+ 615              		.loc 1 166 0
+ 616 0388 BB69     		ldr	r3, [r7, #24]
+ 617 038a 002B     		cmp	r3, #0
+ 618 038c 03DA     		bge	.L34
+ 167:../protocol.c **** 	{
+ 168:../protocol.c **** 
+ 169:../protocol.c **** 	    sent = 0;
+ 619              		.loc 1 169 0
+ 620 038e 4FF00003 		mov	r3, #0
+ 621 0392 FB61     		str	r3, [r7, #28]
+ 622 0394 03E0     		b	.L33
+ 623              	.L34:
+ 170:../protocol.c **** 	}
+ 171:../protocol.c **** 	else
+ 172:../protocol.c **** 	    sent += ret;
+ 624              		.loc 1 172 0
+ 625 0396 FA69     		ldr	r2, [r7, #28]
+ 626 0398 BB69     		ldr	r3, [r7, #24]
+ 627 039a D318     		adds	r3, r2, r3
+ 628 039c FB61     		str	r3, [r7, #28]
+ 629              	.L33:
+ 630              	.LBE5:
+ 163:../protocol.c ****     while(sent < sizeof(struct ProtocolHeader))
+ 631              		.loc 1 163 0 discriminator 1
+ 632 039e FB69     		ldr	r3, [r7, #28]
+ 633 03a0 072B     		cmp	r3, #7
+ 634 03a2 E5D9     		bls	.L35
+ 173:../protocol.c ****     }
+ 174:../protocol.c ****     
+ 175:../protocol.c ****     sent = 0;
+ 635              		.loc 1 175 0
+ 636 03a4 4FF00003 		mov	r3, #0
+ 637 03a8 FB61     		str	r3, [r7, #28]
+ 176:../protocol.c ****     while(sent < size)
+ 638              		.loc 1 176 0
+ 639 03aa 15E0     		b	.L36
+ 640              	.L38:
+ 641              	.LBB6:
+ 177:../protocol.c ****     {
+ 178:../protocol.c **** 	int ret = USART1_SendData(data + sent, size - sent);
+ 642              		.loc 1 178 0
+ 643 03ac FB69     		ldr	r3, [r7, #28]
+ 644 03ae 3A68     		ldr	r2, [r7, #0]
+ 645 03b0 D218     		adds	r2, r2, r3
+ 646 03b2 B988     		ldrh	r1, [r7, #4]
+ 647 03b4 FB69     		ldr	r3, [r7, #28]
+ 648 03b6 CB1A     		subs	r3, r1, r3
+ 649 03b8 1046     		mov	r0, r2
+ 650 03ba 1946     		mov	r1, r3
+ 651 03bc FFF7FEFF 		bl	USART1_SendData
+ 652 03c0 7861     		str	r0, [r7, #20]
+ 179:../protocol.c **** 	if(ret < 0)
+ 653              		.loc 1 179 0
+ 654 03c2 7B69     		ldr	r3, [r7, #20]
+ 655 03c4 002B     		cmp	r3, #0
+ 656 03c6 03DA     		bge	.L37
+ 180:../protocol.c **** 	{
+ 181:../protocol.c **** 
+ 182:../protocol.c **** 	    sent = 0;
+ 657              		.loc 1 182 0
+ 658 03c8 4FF00003 		mov	r3, #0
+ 659 03cc FB61     		str	r3, [r7, #28]
+ 660 03ce 03E0     		b	.L36
+ 661              	.L37:
+ 183:../protocol.c **** 	}
+ 184:../protocol.c **** 	else
+ 185:../protocol.c **** 	    sent += ret;
+ 662              		.loc 1 185 0
+ 663 03d0 FA69     		ldr	r2, [r7, #28]
+ 664 03d2 7B69     		ldr	r3, [r7, #20]
+ 665 03d4 D318     		adds	r3, r2, r3
+ 666 03d6 FB61     		str	r3, [r7, #28]
+ 667              	.L36:
+ 668              	.LBE6:
+ 176:../protocol.c ****     while(sent < size)
+ 669              		.loc 1 176 0 discriminator 1
+ 670 03d8 BA88     		ldrh	r2, [r7, #4]
+ 671 03da FB69     		ldr	r3, [r7, #28]
+ 672 03dc 9A42     		cmp	r2, r3
+ 673 03de E5DC     		bgt	.L38
+ 186:../protocol.c ****     }
+ 187:../protocol.c ****     
+ 188:../protocol.c **** }
+ 674              		.loc 1 188 0
+ 675 03e0 07F12007 		add	r7, r7, #32
+ 676 03e4 BD46     		mov	sp, r7
+ 677 03e6 80BD     		pop	{r7, pc}
+ 678              		.cfi_endproc
+ 679              	.LFE6:
+ 681              	.Letext0:
+ 682              		.file 2 "../protocol.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 protocol.c
+                            *COM*:00000008 headerInternal
+     /tmp/ccehPxYs.s:24     .bss:00000000 receivedHeaderBytes
+     /tmp/ccehPxYs.s:21     .bss:00000000 $d
+                            *COM*:00000010 protocolHandlers
+     /tmp/ccehPxYs.s:28     .text:00000000 $t
+     /tmp/ccehPxYs.s:33     .text:00000000 protocol_defaultHandler
+     /tmp/ccehPxYs.s:72     .text:00000020 protocol_init
+     /tmp/ccehPxYs.s:131    .text:00000070 protocol_registerHandler
+     /tmp/ccehPxYs.s:170    .text:00000098 protocol_receiveHeader
+     /tmp/ccehPxYs.s:514    .text:00000304 protocol_calculateCRC
+     /tmp/ccehPxYs.s:381    .text:00000208 protocol_receiveData
+     /tmp/ccehPxYs.s:553    .text:00000328 protocol_sendData
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+USART1_GetData
+crcSlow
+USART1_SendData
