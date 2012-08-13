@@ -20,7 +20,7 @@ Shutter::~Shutter() {
 void Shutter::startShutter()
 {
     ROS_INFO("Mobot %d: Shutterfunktion gestartet.", id);
-    poseImage_pub = nh.advertise<mobots_msgs::ImagePoseID>("/mobot_pose/ImagePoseID", 2);
+    poseImage_pub = nh.advertise<mobots_msgs::ImageWithDeltaPoseAndID>("/mobot_pose/ImageWithDeltaPoseAndID", 2);
 
     image_sub = nh.subscribe("/my_cam/image", 5, &Shutter::imageCallback, this);
     pose_sub = nh.subscribe("/mouse/pose", 100, &Shutter::mouseCallback, this);

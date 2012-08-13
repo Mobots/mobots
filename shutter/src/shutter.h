@@ -1,7 +1,7 @@
 #include <cstdio>
 #include <iostream>
 #include <ros/ros.h>
-#include <mobots_msgs/ImagePoseID.h>
+#include <mobots_msgs/ImageWithDeltaPoseAndID.h>
 #include <math.h>
 #include "geometry.h"
 
@@ -22,7 +22,7 @@ public:
     ros::Subscriber pose_sub;
     ros::Subscriber image_sub;
     ros::Publisher poseImage_pub;
-    mobots_msgs::ImagePoseID ipid;
+    mobots_msgs::ImageWithDeltaPoseAndID ipid;
     
     
 private:
