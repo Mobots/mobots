@@ -20,12 +20,12 @@ Shutter::~Shutter() {
 void Shutter::startShutter()
 {
     ROS_INFO("Mobot %d: Shutterfunktion gestartet.", id);
-    poseImage_pub = nh.advertise<mobots_msgs::ImageWithDeltaPoseAndID>("/mobot_pose/ImageWithDeltaPoseAndID", 2);
+    poseImage_pub = nh.advertise<mobots_msgs::ImageWithDeltaPoseAndID>("mobot_pose/ImageWithDeltaPoseAndID", 2);
 
-    image_sub = nh.subscribe("/my_cam/image", 5, &Shutter::imageCallback, this);
-    pose_sub = nh.subscribe("/mouse/pose", 100, &Shutter::mouseCallback, this);
+    image_sub = nh.subscribe("driver/my_cam/image", 5, &Shutter::imageCallback, this);
+    pose_sub = nh.subscribe("driver/mouse_pose", 100, &Shutter::mouseCallback, this);
 
-    ros::ServiceServer service = nh.advertiseService("getDelta", &Shutter::getDelta, this);
+    ros::ServiceServer service = nh.advertiseService("mobot_pose/getDelta", &Shutter::getDelta, this);
     
     ros::param::param<double>("overlap",overlap, 0.3);
     dX = 0;
