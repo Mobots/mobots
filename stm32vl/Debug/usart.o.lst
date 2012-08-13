@@ -1,0 +1,1035 @@
+   1              		.syntax unified
+   2              		.cpu cortex-m3
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.thumb
+  14              		.file	"usart.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.comm	USART1_Data,522,4
+  19              		.align	2
+  20              		.global	USART1_Init
+  21              		.thumb
+  22              		.thumb_func
+  24              	USART1_Init:
+  25              	.LFB29:
+  26              		.file 1 "../usart.c"
+   1:../usart.c    **** #include "usart.h"
+   2:../usart.c    **** #include "stm32f10x_usart.h"
+   3:../usart.c    **** #include "stm32f10x_rcc.h"
+   4:../usart.c    **** #include "stm32f10x_gpio.h"
+   5:../usart.c    **** #include "misc.h"
+   6:../usart.c    **** 
+   7:../usart.c    **** #include "stm32f10x_it.h"
+   8:../usart.c    **** 
+   9:../usart.c    **** #define USART_BUFFER_SIZE 256
+  10:../usart.c    **** 
+  11:../usart.c    **** //internal helper functions, 
+  12:../usart.c    **** //user space does not need to know 
+  13:../usart.c    **** //about these
+  14:../usart.c    **** struct USART_Data {
+  15:../usart.c    ****   u8 RxBuffer[USART_BUFFER_SIZE];
+  16:../usart.c    ****   u16 RxWritePointer;
+  17:../usart.c    ****   u16 RxReadPointer;
+  18:../usart.c    ****   
+  19:../usart.c    ****   u8 TxBuffer[USART_BUFFER_SIZE];
+  20:../usart.c    ****   u16 TxWritePointer;
+  21:../usart.c    ****   u16 TxReadPointer;
+  22:../usart.c    **** 
+  23:../usart.c    ****   u8 RxBufferFullError;
+  24:../usart.c    **** 
+  25:../usart.c    ****   FunctionalState usesInterrupts;
+  26:../usart.c    **** };
+  27:../usart.c    **** 
+  28:../usart.c    **** signed int USARTx_SendData(USART_TypeDef* USARTx, volatile struct USART_Data *usart_data,const u8 *
+  29:../usart.c    **** signed int USARTx_GetData(USART_TypeDef* USARTx, volatile struct USART_Data *usart_data, u8 *buffer
+  30:../usart.c    **** void USART_IRQHandler(USART_TypeDef* USARTx, volatile struct USART_Data *data);
+  31:../usart.c    **** 
+  32:../usart.c    **** volatile struct USART_Data USART1_Data;
+  33:../usart.c    **** 
+  34:../usart.c    **** void USART1_Init(enum USART_MODE mode)
+  35:../usart.c    **** {
+  27              		.loc 1 35 0
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 32
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31 0000 80B5     		push	{r7, lr}
+  32              	.LCFI0:
+  33              		.cfi_def_cfa_offset 8
+  34              		.cfi_offset 14, -4
+  35              		.cfi_offset 7, -8
+  36 0002 88B0     		sub	sp, sp, #32
+  37              	.LCFI1:
+  38              		.cfi_def_cfa_offset 40
+  39 0004 00AF     		add	r7, sp, #0
+  40              	.LCFI2:
+  41              		.cfi_def_cfa_register 7
+  42 0006 0346     		mov	r3, r0
+  43 0008 FB71     		strb	r3, [r7, #7]
+  36:../usart.c    ****     GPIO_InitTypeDef GPIO_InitStructure;
+  37:../usart.c    **** 
+  38:../usart.c    ****     assert_param(mode == USART_USE_INTERRUPTS || mode == USART_POLL);
+  39:../usart.c    **** 
+  40:../usart.c    ****     //get default GPIO config
+  41:../usart.c    ****     GPIO_StructInit(&GPIO_InitStructure);
+  44              		.loc 1 41 0
+  45 000a 07F11C03 		add	r3, r7, #28
+  46 000e 1846     		mov	r0, r3
+  47 0010 FFF7FEFF 		bl	GPIO_StructInit
+  42:../usart.c    **** 
+  43:../usart.c    ****     RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOA | RCC_APB2Periph_USART1, ENAB
+  48              		.loc 1 43 0
+  49 0014 44F20500 		movw	r0, #16389
+  50 0018 4FF00101 		mov	r1, #1
+  51 001c FFF7FEFF 		bl	RCC_APB2PeriphClockCmd
+  44:../usart.c    **** 
+  45:../usart.c    ****     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+  52              		.loc 1 45 0
+  53 0020 4FF00303 		mov	r3, #3
+  54 0024 BB77     		strb	r3, [r7, #30]
+  46:../usart.c    **** 
+  47:../usart.c    ****     // Configure USART1 Tx (PA09) as alternate function push-pull
+  48:../usart.c    ****     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
+  55              		.loc 1 48 0
+  56 0026 4FF40073 		mov	r3, #512
+  57 002a BB83     		strh	r3, [r7, #28]	@ movhi
+  49:../usart.c    ****     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+  58              		.loc 1 49 0
+  59 002c 4FF01803 		mov	r3, #24
+  60 0030 FB77     		strb	r3, [r7, #31]
+  50:../usart.c    ****     GPIO_Init(GPIOA, &GPIO_InitStructure);
+  61              		.loc 1 50 0
+  62 0032 07F11C03 		add	r3, r7, #28
+  63 0036 4FF40060 		mov	r0, #2048
+  64 003a C4F20100 		movt	r0, 16385
+  65 003e 1946     		mov	r1, r3
+  66 0040 FFF7FEFF 		bl	GPIO_Init
+  51:../usart.c    **** 
+  52:../usart.c    ****     // Configure USART1 Rx (PA10) as input floating
+  53:../usart.c    ****     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+  67              		.loc 1 53 0
+  68 0044 4FF48063 		mov	r3, #1024
+  69 0048 BB83     		strh	r3, [r7, #28]	@ movhi
+  54:../usart.c    ****     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+  70              		.loc 1 54 0
+  71 004a 4FF00403 		mov	r3, #4
+  72 004e FB77     		strb	r3, [r7, #31]
+  55:../usart.c    ****     GPIO_Init(GPIOA, &GPIO_InitStructure); 
+  73              		.loc 1 55 0
+  74 0050 07F11C03 		add	r3, r7, #28
+  75 0054 4FF40060 		mov	r0, #2048
+  76 0058 C4F20100 		movt	r0, 16385
+  77 005c 1946     		mov	r1, r3
+  78 005e FFF7FEFF 		bl	GPIO_Init
+  56:../usart.c    **** 
+  57:../usart.c    ****     USART1_Data.RxWritePointer = 0;
+  79              		.loc 1 57 0
+  80 0062 40F20003 		movw	r3, #:lower16:USART1_Data
+  81 0066 C0F20003 		movt	r3, #:upper16:USART1_Data
+  82 006a 4FF00002 		mov	r2, #0
+  83 006e A3F80021 		strh	r2, [r3, #256]	@ movhi
+  58:../usart.c    ****     USART1_Data.RxReadPointer = 0;
+  84              		.loc 1 58 0
+  85 0072 40F20003 		movw	r3, #:lower16:USART1_Data
+  86 0076 C0F20003 		movt	r3, #:upper16:USART1_Data
+  87 007a 4FF00002 		mov	r2, #0
+  88 007e A3F80221 		strh	r2, [r3, #258]	@ movhi
+  59:../usart.c    ****     
+  60:../usart.c    ****     USART1_Data.TxWritePointer = 0;
+  89              		.loc 1 60 0
+  90 0082 40F20003 		movw	r3, #:lower16:USART1_Data
+  91 0086 C0F20003 		movt	r3, #:upper16:USART1_Data
+  92 008a 4FF00002 		mov	r2, #0
+  93 008e A3F80422 		strh	r2, [r3, #516]	@ movhi
+  61:../usart.c    ****     USART1_Data.TxReadPointer = 0;
+  94              		.loc 1 61 0
+  95 0092 40F20003 		movw	r3, #:lower16:USART1_Data
+  96 0096 C0F20003 		movt	r3, #:upper16:USART1_Data
+  97 009a 4FF00002 		mov	r2, #0
+  98 009e A3F80622 		strh	r2, [r3, #518]	@ movhi
+  62:../usart.c    ****     USART1_Data.usesInterrupts = mode == USART_USE_INTERRUPTS;
+  99              		.loc 1 62 0
+ 100 00a2 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 101 00a4 012B     		cmp	r3, #1
+ 102 00a6 14BF     		ite	ne
+ 103 00a8 0023     		movne	r3, #0
+ 104 00aa 0123     		moveq	r3, #1
+ 105 00ac DAB2     		uxtb	r2, r3
+ 106 00ae 40F20003 		movw	r3, #:lower16:USART1_Data
+ 107 00b2 C0F20003 		movt	r3, #:upper16:USART1_Data
+ 108 00b6 83F80922 		strb	r2, [r3, #521]
+  63:../usart.c    **** 
+  64:../usart.c    ****     if(mode == USART_USE_INTERRUPTS)
+ 109              		.loc 1 64 0
+ 110 00ba FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 111 00bc 012B     		cmp	r3, #1
+ 112 00be 10D1     		bne	.L2
+ 113              	.LBB2:
+  65:../usart.c    ****     {
+  66:../usart.c    **** 	NVIC_InitTypeDef NVIC_InitStructure;
+  67:../usart.c    **** 
+  68:../usart.c    **** 	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
+ 114              		.loc 1 68 0
+ 115 00c0 4FF02503 		mov	r3, #37
+ 116 00c4 3B72     		strb	r3, [r7, #8]
+  69:../usart.c    **** 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+ 117              		.loc 1 69 0
+ 118 00c6 4FF00203 		mov	r3, #2
+ 119 00ca 7B72     		strb	r3, [r7, #9]
+  70:../usart.c    **** 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+ 120              		.loc 1 70 0
+ 121 00cc 4FF00003 		mov	r3, #0
+ 122 00d0 BB72     		strb	r3, [r7, #10]
+  71:../usart.c    **** 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+ 123              		.loc 1 71 0
+ 124 00d2 4FF00103 		mov	r3, #1
+ 125 00d6 FB72     		strb	r3, [r7, #11]
+  72:../usart.c    **** 	NVIC_Init(&NVIC_InitStructure);
+ 126              		.loc 1 72 0
+ 127 00d8 07F10803 		add	r3, r7, #8
+ 128 00dc 1846     		mov	r0, r3
+ 129 00de FFF7FEFF 		bl	NVIC_Init
+ 130              	.L2:
+ 131              	.LBE2:
+  73:../usart.c    ****     }
+  74:../usart.c    **** 
+  75:../usart.c    ****     USART_InitTypeDef USART_InitStructure;
+  76:../usart.c    **** 
+  77:../usart.c    ****     USART_InitStructure.USART_BaudRate = 115200;
+ 132              		.loc 1 77 0
+ 133 00e2 4FF4E133 		mov	r3, #115200
+ 134 00e6 FB60     		str	r3, [r7, #12]
+  78:../usart.c    ****     USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+ 135              		.loc 1 78 0
+ 136 00e8 4FF00003 		mov	r3, #0
+ 137 00ec 3B82     		strh	r3, [r7, #16]	@ movhi
+  79:../usart.c    ****     USART_InitStructure.USART_StopBits = USART_StopBits_1;
+ 138              		.loc 1 79 0
+ 139 00ee 4FF00003 		mov	r3, #0
+ 140 00f2 7B82     		strh	r3, [r7, #18]	@ movhi
+  80:../usart.c    ****     USART_InitStructure.USART_Parity = USART_Parity_No;
+ 141              		.loc 1 80 0
+ 142 00f4 4FF00003 		mov	r3, #0
+ 143 00f8 BB82     		strh	r3, [r7, #20]	@ movhi
+  81:../usart.c    ****     USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+ 144              		.loc 1 81 0
+ 145 00fa 4FF00003 		mov	r3, #0
+ 146 00fe 3B83     		strh	r3, [r7, #24]	@ movhi
+  82:../usart.c    ****     USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+ 147              		.loc 1 82 0
+ 148 0100 4FF00C03 		mov	r3, #12
+ 149 0104 FB82     		strh	r3, [r7, #22]	@ movhi
+  83:../usart.c    ****     
+  84:../usart.c    ****     /* Configure USART1 */
+  85:../usart.c    ****     USART_Init(USART1, &USART_InitStructure);
+ 150              		.loc 1 85 0
+ 151 0106 07F10C03 		add	r3, r7, #12
+ 152 010a 4FF46050 		mov	r0, #14336
+ 153 010e C4F20100 		movt	r0, 16385
+ 154 0112 1946     		mov	r1, r3
+ 155 0114 FFF7FEFF 		bl	USART_Init
+  86:../usart.c    **** 
+  87:../usart.c    ****     /* Enable USART1 Receive and Transmit interrupts */
+  88:../usart.c    ****     USART_ITConfig(USART1, USART_IT_RXNE, mode == USART_USE_INTERRUPTS);
+ 156              		.loc 1 88 0
+ 157 0118 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 158 011a 012B     		cmp	r3, #1
+ 159 011c 14BF     		ite	ne
+ 160 011e 0023     		movne	r3, #0
+ 161 0120 0123     		moveq	r3, #1
+ 162 0122 DBB2     		uxtb	r3, r3
+ 163 0124 4FF46050 		mov	r0, #14336
+ 164 0128 C4F20100 		movt	r0, 16385
+ 165 012c 40F22551 		movw	r1, #1317
+ 166 0130 1A46     		mov	r2, r3
+ 167 0132 FFF7FEFF 		bl	USART_ITConfig
+  89:../usart.c    ****     USART_ITConfig(USART1, USART_IT_TXE, mode == USART_USE_INTERRUPTS);
+ 168              		.loc 1 89 0
+ 169 0136 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 170 0138 012B     		cmp	r3, #1
+ 171 013a 14BF     		ite	ne
+ 172 013c 0023     		movne	r3, #0
+ 173 013e 0123     		moveq	r3, #1
+ 174 0140 DBB2     		uxtb	r3, r3
+ 175 0142 4FF46050 		mov	r0, #14336
+ 176 0146 C4F20100 		movt	r0, 16385
+ 177 014a 40F22771 		movw	r1, #1831
+ 178 014e 1A46     		mov	r2, r3
+ 179 0150 FFF7FEFF 		bl	USART_ITConfig
+  90:../usart.c    **** 
+  91:../usart.c    ****     /* Enable the USART1 */
+  92:../usart.c    ****     USART_Cmd(USART1, ENABLE);
+ 180              		.loc 1 92 0
+ 181 0154 4FF46050 		mov	r0, #14336
+ 182 0158 C4F20100 		movt	r0, 16385
+ 183 015c 4FF00101 		mov	r1, #1
+ 184 0160 FFF7FEFF 		bl	USART_Cmd
+  93:../usart.c    **** }
+ 185              		.loc 1 93 0
+ 186 0164 07F12007 		add	r7, r7, #32
+ 187 0168 BD46     		mov	sp, r7
+ 188 016a 80BD     		pop	{r7, pc}
+ 189              		.cfi_endproc
+ 190              	.LFE29:
+ 192              		.align	2
+ 193              		.global	USART1_DeInit
+ 194              		.thumb
+ 195              		.thumb_func
+ 197              	USART1_DeInit:
+ 198              	.LFB30:
+  94:../usart.c    **** 
+  95:../usart.c    **** 
+  96:../usart.c    **** void USART1_DeInit(void )
+  97:../usart.c    **** {
+ 199              		.loc 1 97 0
+ 200              		.cfi_startproc
+ 201              		@ args = 0, pretend = 0, frame = 8
+ 202              		@ frame_needed = 1, uses_anonymous_args = 0
+ 203 016c 80B5     		push	{r7, lr}
+ 204              	.LCFI3:
+ 205              		.cfi_def_cfa_offset 8
+ 206              		.cfi_offset 14, -4
+ 207              		.cfi_offset 7, -8
+ 208 016e 82B0     		sub	sp, sp, #8
+ 209              	.LCFI4:
+ 210              		.cfi_def_cfa_offset 16
+ 211 0170 00AF     		add	r7, sp, #0
+ 212              	.LCFI5:
+ 213              		.cfi_def_cfa_register 7
+  98:../usart.c    ****     NVIC_InitTypeDef NVIC_InitStructure;
+  99:../usart.c    **** 
+ 100:../usart.c    ****     NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
+ 214              		.loc 1 100 0
+ 215 0172 4FF02503 		mov	r3, #37
+ 216 0176 3B71     		strb	r3, [r7, #4]
+ 101:../usart.c    ****     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 4;
+ 217              		.loc 1 101 0
+ 218 0178 4FF00403 		mov	r3, #4
+ 219 017c 7B71     		strb	r3, [r7, #5]
+ 102:../usart.c    ****     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+ 220              		.loc 1 102 0
+ 221 017e 4FF00003 		mov	r3, #0
+ 222 0182 BB71     		strb	r3, [r7, #6]
+ 103:../usart.c    ****     NVIC_InitStructure.NVIC_IRQChannelCmd = DISABLE;
+ 223              		.loc 1 103 0
+ 224 0184 4FF00003 		mov	r3, #0
+ 225 0188 FB71     		strb	r3, [r7, #7]
+ 104:../usart.c    ****     NVIC_Init(&NVIC_InitStructure);
+ 226              		.loc 1 104 0
+ 227 018a 07F10403 		add	r3, r7, #4
+ 228 018e 1846     		mov	r0, r3
+ 229 0190 FFF7FEFF 		bl	NVIC_Init
+ 105:../usart.c    **** 
+ 106:../usart.c    ****     // Disable USART1 Receive and Transmit interrupts
+ 107:../usart.c    ****     USART_ITConfig(USART1, USART_IT_RXNE, DISABLE);
+ 230              		.loc 1 107 0
+ 231 0194 4FF46050 		mov	r0, #14336
+ 232 0198 C4F20100 		movt	r0, 16385
+ 233 019c 40F22551 		movw	r1, #1317
+ 234 01a0 4FF00002 		mov	r2, #0
+ 235 01a4 FFF7FEFF 		bl	USART_ITConfig
+ 108:../usart.c    ****     USART_ITConfig(USART1, USART_IT_TXE, DISABLE);
+ 236              		.loc 1 108 0
+ 237 01a8 4FF46050 		mov	r0, #14336
+ 238 01ac C4F20100 		movt	r0, 16385
+ 239 01b0 40F22771 		movw	r1, #1831
+ 240 01b4 4FF00002 		mov	r2, #0
+ 241 01b8 FFF7FEFF 		bl	USART_ITConfig
+ 109:../usart.c    **** 
+ 110:../usart.c    ****     // Enable the USART1
+ 111:../usart.c    ****     USART_Cmd(USART1, DISABLE);
+ 242              		.loc 1 111 0
+ 243 01bc 4FF46050 		mov	r0, #14336
+ 244 01c0 C4F20100 		movt	r0, 16385
+ 245 01c4 4FF00001 		mov	r1, #0
+ 246 01c8 FFF7FEFF 		bl	USART_Cmd
+ 112:../usart.c    ****     RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, DISABLE);
+ 247              		.loc 1 112 0
+ 248 01cc 4FF48040 		mov	r0, #16384
+ 249 01d0 4FF00001 		mov	r1, #0
+ 250 01d4 FFF7FEFF 		bl	RCC_APB2PeriphClockCmd
+ 113:../usart.c    **** }
+ 251              		.loc 1 113 0
+ 252 01d8 07F10807 		add	r7, r7, #8
+ 253 01dc BD46     		mov	sp, r7
+ 254 01de 80BD     		pop	{r7, pc}
+ 255              		.cfi_endproc
+ 256              	.LFE30:
+ 258              		.align	2
+ 259              		.global	USART1_SendData
+ 260              		.thumb
+ 261              		.thumb_func
+ 263              	USART1_SendData:
+ 264              	.LFB31:
+ 114:../usart.c    **** 
+ 115:../usart.c    **** signed int USART1_SendData(const unsigned char *data, const unsigned int size) {
+ 265              		.loc 1 115 0
+ 266              		.cfi_startproc
+ 267              		@ args = 0, pretend = 0, frame = 8
+ 268              		@ frame_needed = 1, uses_anonymous_args = 0
+ 269 01e0 80B5     		push	{r7, lr}
+ 270              	.LCFI6:
+ 271              		.cfi_def_cfa_offset 8
+ 272              		.cfi_offset 14, -4
+ 273              		.cfi_offset 7, -8
+ 274 01e2 82B0     		sub	sp, sp, #8
+ 275              	.LCFI7:
+ 276              		.cfi_def_cfa_offset 16
+ 277 01e4 00AF     		add	r7, sp, #0
+ 278              	.LCFI8:
+ 279              		.cfi_def_cfa_register 7
+ 280 01e6 7860     		str	r0, [r7, #4]
+ 281 01e8 3960     		str	r1, [r7, #0]
+ 116:../usart.c    ****   return USARTx_SendData(USART1, &USART1_Data, data, size);
+ 282              		.loc 1 116 0
+ 283 01ea 4FF46050 		mov	r0, #14336
+ 284 01ee C4F20100 		movt	r0, 16385
+ 285 01f2 40F20001 		movw	r1, #:lower16:USART1_Data
+ 286 01f6 C0F20001 		movt	r1, #:upper16:USART1_Data
+ 287 01fa 7A68     		ldr	r2, [r7, #4]
+ 288 01fc 3B68     		ldr	r3, [r7, #0]
+ 289 01fe FFF7FEFF 		bl	USARTx_SendData
+ 290 0202 0346     		mov	r3, r0
+ 117:../usart.c    **** }
+ 291              		.loc 1 117 0
+ 292 0204 1846     		mov	r0, r3
+ 293 0206 07F10807 		add	r7, r7, #8
+ 294 020a BD46     		mov	sp, r7
+ 295 020c 80BD     		pop	{r7, pc}
+ 296              		.cfi_endproc
+ 297              	.LFE31:
+ 299 020e 00BF     		.align	2
+ 300              		.global	USART1_GetData
+ 301              		.thumb
+ 302              		.thumb_func
+ 304              	USART1_GetData:
+ 305              	.LFB32:
+ 118:../usart.c    **** 
+ 119:../usart.c    **** signed int USART1_GetData (unsigned char *buffer, const unsigned int buffer_length) {
+ 306              		.loc 1 119 0
+ 307              		.cfi_startproc
+ 308              		@ args = 0, pretend = 0, frame = 8
+ 309              		@ frame_needed = 1, uses_anonymous_args = 0
+ 310 0210 80B5     		push	{r7, lr}
+ 311              	.LCFI9:
+ 312              		.cfi_def_cfa_offset 8
+ 313              		.cfi_offset 14, -4
+ 314              		.cfi_offset 7, -8
+ 315 0212 82B0     		sub	sp, sp, #8
+ 316              	.LCFI10:
+ 317              		.cfi_def_cfa_offset 16
+ 318 0214 00AF     		add	r7, sp, #0
+ 319              	.LCFI11:
+ 320              		.cfi_def_cfa_register 7
+ 321 0216 7860     		str	r0, [r7, #4]
+ 322 0218 3960     		str	r1, [r7, #0]
+ 120:../usart.c    ****   return USARTx_GetData(USART1, &USART1_Data, buffer, buffer_length);
+ 323              		.loc 1 120 0
+ 324 021a 4FF46050 		mov	r0, #14336
+ 325 021e C4F20100 		movt	r0, 16385
+ 326 0222 40F20001 		movw	r1, #:lower16:USART1_Data
+ 327 0226 C0F20001 		movt	r1, #:upper16:USART1_Data
+ 328 022a 7A68     		ldr	r2, [r7, #4]
+ 329 022c 3B68     		ldr	r3, [r7, #0]
+ 330 022e FFF7FEFF 		bl	USARTx_GetData
+ 331 0232 0346     		mov	r3, r0
+ 121:../usart.c    **** }
+ 332              		.loc 1 121 0
+ 333 0234 1846     		mov	r0, r3
+ 334 0236 07F10807 		add	r7, r7, #8
+ 335 023a BD46     		mov	sp, r7
+ 336 023c 80BD     		pop	{r7, pc}
+ 337              		.cfi_endproc
+ 338              	.LFE32:
+ 340 023e 00BF     		.align	2
+ 341              		.global	USART1_IRQHandler
+ 342              		.thumb
+ 343              		.thumb_func
+ 345              	USART1_IRQHandler:
+ 346              	.LFB33:
+ 122:../usart.c    **** 
+ 123:../usart.c    **** void USART1_IRQHandler(void)
+ 124:../usart.c    **** { 
+ 347              		.loc 1 124 0
+ 348              		.cfi_startproc
+ 349              		@ args = 0, pretend = 0, frame = 0
+ 350              		@ frame_needed = 1, uses_anonymous_args = 0
+ 351 0240 80B5     		push	{r7, lr}
+ 352              	.LCFI12:
+ 353              		.cfi_def_cfa_offset 8
+ 354              		.cfi_offset 14, -4
+ 355              		.cfi_offset 7, -8
+ 356 0242 00AF     		add	r7, sp, #0
+ 357              	.LCFI13:
+ 358              		.cfi_def_cfa_register 7
+ 125:../usart.c    ****   USART_IRQHandler(USART1, &USART1_Data);
+ 359              		.loc 1 125 0
+ 360 0244 4FF46050 		mov	r0, #14336
+ 361 0248 C4F20100 		movt	r0, 16385
+ 362 024c 40F20001 		movw	r1, #:lower16:USART1_Data
+ 363 0250 C0F20001 		movt	r1, #:upper16:USART1_Data
+ 364 0254 FFF7FEFF 		bl	USART_IRQHandler
+ 126:../usart.c    **** }
+ 365              		.loc 1 126 0
+ 366 0258 80BD     		pop	{r7, pc}
+ 367              		.cfi_endproc
+ 368              	.LFE33:
+ 370 025a 00BF     		.align	2
+ 371              		.global	USARTx_SendData
+ 372              		.thumb
+ 373              		.thumb_func
+ 375              	USARTx_SendData:
+ 376              	.LFB34:
+ 127:../usart.c    **** 
+ 128:../usart.c    **** /**
+ 129:../usart.c    ****  * returns the amount of bytes sent.
+ 130:../usart.c    ****  */
+ 131:../usart.c    **** signed int USARTx_SendData(USART_TypeDef* USARTx, volatile struct USART_Data *usart_data,const unsi
+ 377              		.loc 1 131 0
+ 378              		.cfi_startproc
+ 379              		@ args = 0, pretend = 0, frame = 32
+ 380              		@ frame_needed = 1, uses_anonymous_args = 0
+ 381 025c 80B5     		push	{r7, lr}
+ 382              	.LCFI14:
+ 383              		.cfi_def_cfa_offset 8
+ 384              		.cfi_offset 14, -4
+ 385              		.cfi_offset 7, -8
+ 386 025e 88B0     		sub	sp, sp, #32
+ 387              	.LCFI15:
+ 388              		.cfi_def_cfa_offset 40
+ 389 0260 00AF     		add	r7, sp, #0
+ 390              	.LCFI16:
+ 391              		.cfi_def_cfa_register 7
+ 392 0262 F860     		str	r0, [r7, #12]
+ 393 0264 B960     		str	r1, [r7, #8]
+ 394 0266 7A60     		str	r2, [r7, #4]
+ 395 0268 3B60     		str	r3, [r7, #0]
+ 132:../usart.c    ****     if(!usart_data->usesInterrupts)
+ 396              		.loc 1 132 0
+ 397 026a BB68     		ldr	r3, [r7, #8]
+ 398 026c 93F80932 		ldrb	r3, [r3, #521]
+ 399 0270 DBB2     		uxtb	r3, r3
+ 400 0272 002B     		cmp	r3, #0
+ 401 0274 21D1     		bne	.L8
+ 402              	.LBB3:
+ 133:../usart.c    ****     {
+ 134:../usart.c    **** 	u32 pos = 0;
+ 403              		.loc 1 134 0
+ 404 0276 4FF00003 		mov	r3, #0
+ 405 027a FB61     		str	r3, [r7, #28]
+ 135:../usart.c    **** 
+ 136:../usart.c    **** 	for(pos = 0; pos < count; pos++)
+ 406              		.loc 1 136 0
+ 407 027c 4FF00003 		mov	r3, #0
+ 408 0280 FB61     		str	r3, [r7, #28]
+ 409 0282 14E0     		b	.L9
+ 410              	.L11:
+ 137:../usart.c    **** 	{
+ 138:../usart.c    **** 	    USART_SendData(USARTx, buffer[pos]);
+ 411              		.loc 1 138 0
+ 412 0284 7A68     		ldr	r2, [r7, #4]
+ 413 0286 FB69     		ldr	r3, [r7, #28]
+ 414 0288 D318     		adds	r3, r2, r3
+ 415 028a 1B78     		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 416 028c F868     		ldr	r0, [r7, #12]
+ 417 028e 1946     		mov	r1, r3
+ 418 0290 FFF7FEFF 		bl	USART_SendData
+ 139:../usart.c    **** 	
+ 140:../usart.c    **** 	    //Wait until data is send
+ 141:../usart.c    **** 	    while(USART_GetFlagStatus(USARTx, USART_FLAG_TXE) == RESET)
+ 419              		.loc 1 141 0
+ 420 0294 00BF     		nop
+ 421              	.L10:
+ 422              		.loc 1 141 0 is_stmt 0 discriminator 1
+ 423 0296 F868     		ldr	r0, [r7, #12]
+ 424 0298 4FF08001 		mov	r1, #128
+ 425 029c FFF7FEFF 		bl	USART_GetFlagStatus
+ 426 02a0 0346     		mov	r3, r0
+ 427 02a2 002B     		cmp	r3, #0
+ 428 02a4 F7D0     		beq	.L10
+ 136:../usart.c    **** 	for(pos = 0; pos < count; pos++)
+ 429              		.loc 1 136 0 is_stmt 1
+ 430 02a6 FB69     		ldr	r3, [r7, #28]
+ 431 02a8 03F10103 		add	r3, r3, #1
+ 432 02ac FB61     		str	r3, [r7, #28]
+ 433              	.L9:
+ 136:../usart.c    **** 	for(pos = 0; pos < count; pos++)
+ 434              		.loc 1 136 0 is_stmt 0 discriminator 1
+ 435 02ae FA69     		ldr	r2, [r7, #28]
+ 436 02b0 3B68     		ldr	r3, [r7, #0]
+ 437 02b2 9A42     		cmp	r2, r3
+ 438 02b4 E6D3     		bcc	.L11
+ 142:../usart.c    **** 	    {
+ 143:../usart.c    **** 	    }
+ 144:../usart.c    **** 	}
+ 145:../usart.c    **** 	return count;
+ 439              		.loc 1 145 0 is_stmt 1
+ 440 02b6 3B68     		ldr	r3, [r7, #0]
+ 441 02b8 53E0     		b	.L12
+ 442              	.L8:
+ 443              	.LBE3:
+ 146:../usart.c    ****     }
+ 147:../usart.c    ****     
+ 148:../usart.c    ****     u32 size = 0;
+ 444              		.loc 1 148 0
+ 445 02ba 4FF00003 		mov	r3, #0
+ 446 02be BB61     		str	r3, [r7, #24]
+ 149:../usart.c    **** 
+ 150:../usart.c    ****     u16 nextPtr = (usart_data->TxWritePointer + 1) % USART_BUFFER_SIZE; 
+ 447              		.loc 1 150 0
+ 448 02c0 BB68     		ldr	r3, [r7, #8]
+ 449 02c2 B3F80432 		ldrh	r3, [r3, #516]	@ movhi
+ 450 02c6 9BB2     		uxth	r3, r3
+ 451 02c8 03F10102 		add	r2, r3, #1
+ 452 02cc 4FEAE273 		asr	r3, r2, #31
+ 453 02d0 4FEA1363 		lsr	r3, r3, #24
+ 454 02d4 D218     		adds	r2, r2, r3
+ 455 02d6 D2B2     		uxtb	r2, r2
+ 456 02d8 D31A     		subs	r3, r2, r3
+ 457 02da FB82     		strh	r3, [r7, #22]	@ movhi
+ 151:../usart.c    ****     while(size < count && nextPtr != usart_data->TxReadPointer) {
+ 458              		.loc 1 151 0
+ 459 02dc 2EE0     		b	.L13
+ 460              	.L15:
+ 152:../usart.c    **** 	usart_data->TxBuffer[usart_data->TxWritePointer] = buffer[size];
+ 461              		.loc 1 152 0
+ 462 02de BB68     		ldr	r3, [r7, #8]
+ 463 02e0 B3F80432 		ldrh	r3, [r3, #516]	@ movhi
+ 464 02e4 9BB2     		uxth	r3, r3
+ 465 02e6 7968     		ldr	r1, [r7, #4]
+ 466 02e8 BA69     		ldr	r2, [r7, #24]
+ 467 02ea 8A18     		adds	r2, r1, r2
+ 468 02ec 1278     		ldrb	r2, [r2, #0]	@ zero_extendqisi2
+ 469 02ee B968     		ldr	r1, [r7, #8]
+ 470 02f0 CB18     		adds	r3, r1, r3
+ 471 02f2 83F80421 		strb	r2, [r3, #260]
+ 153:../usart.c    **** 	usart_data->TxWritePointer = (usart_data->TxWritePointer + 1) % USART_BUFFER_SIZE;
+ 472              		.loc 1 153 0
+ 473 02f6 BB68     		ldr	r3, [r7, #8]
+ 474 02f8 B3F80432 		ldrh	r3, [r3, #516]	@ movhi
+ 475 02fc 9BB2     		uxth	r3, r3
+ 476 02fe 03F10102 		add	r2, r3, #1
+ 477 0302 4FEAE273 		asr	r3, r2, #31
+ 478 0306 4FEA1363 		lsr	r3, r3, #24
+ 479 030a D218     		adds	r2, r2, r3
+ 480 030c D2B2     		uxtb	r2, r2
+ 481 030e D31A     		subs	r3, r2, r3
+ 482 0310 9AB2     		uxth	r2, r3
+ 483 0312 BB68     		ldr	r3, [r7, #8]
+ 484 0314 A3F80422 		strh	r2, [r3, #516]	@ movhi
+ 154:../usart.c    **** 	size++;
+ 485              		.loc 1 154 0
+ 486 0318 BB69     		ldr	r3, [r7, #24]
+ 487 031a 03F10103 		add	r3, r3, #1
+ 488 031e BB61     		str	r3, [r7, #24]
+ 155:../usart.c    **** 	nextPtr = (usart_data->TxWritePointer + 1) % USART_BUFFER_SIZE;
+ 489              		.loc 1 155 0
+ 490 0320 BB68     		ldr	r3, [r7, #8]
+ 491 0322 B3F80432 		ldrh	r3, [r3, #516]	@ movhi
+ 492 0326 9BB2     		uxth	r3, r3
+ 493 0328 03F10102 		add	r2, r3, #1
+ 494 032c 4FEAE273 		asr	r3, r2, #31
+ 495 0330 4FEA1363 		lsr	r3, r3, #24
+ 496 0334 D218     		adds	r2, r2, r3
+ 497 0336 D2B2     		uxtb	r2, r2
+ 498 0338 D31A     		subs	r3, r2, r3
+ 499 033a FB82     		strh	r3, [r7, #22]	@ movhi
+ 500              	.L13:
+ 151:../usart.c    ****     while(size < count && nextPtr != usart_data->TxReadPointer) {
+ 501              		.loc 1 151 0 discriminator 1
+ 502 033c BA69     		ldr	r2, [r7, #24]
+ 503 033e 3B68     		ldr	r3, [r7, #0]
+ 504 0340 9A42     		cmp	r2, r3
+ 505 0342 06D2     		bcs	.L14
+ 151:../usart.c    ****     while(size < count && nextPtr != usart_data->TxReadPointer) {
+ 506              		.loc 1 151 0 is_stmt 0 discriminator 2
+ 507 0344 BB68     		ldr	r3, [r7, #8]
+ 508 0346 B3F80632 		ldrh	r3, [r3, #518]	@ movhi
+ 509 034a 9BB2     		uxth	r3, r3
+ 510 034c FA8A     		ldrh	r2, [r7, #22]
+ 511 034e 9A42     		cmp	r2, r3
+ 512 0350 C5D1     		bne	.L15
+ 513              	.L14:
+ 156:../usart.c    ****     }
+ 157:../usart.c    **** 
+ 158:../usart.c    ****     //Enable the USARTx Transmit interrupt
+ 159:../usart.c    ****     USART_ITConfig(USARTx, USART_IT_TXE, ENABLE);
+ 514              		.loc 1 159 0 is_stmt 1
+ 515 0352 F868     		ldr	r0, [r7, #12]
+ 516 0354 40F22771 		movw	r1, #1831
+ 517 0358 4FF00102 		mov	r2, #1
+ 518 035c FFF7FEFF 		bl	USART_ITConfig
+ 160:../usart.c    ****     
+ 161:../usart.c    ****     return size;
+ 519              		.loc 1 161 0
+ 520 0360 BB69     		ldr	r3, [r7, #24]
+ 521              	.L12:
+ 162:../usart.c    **** }
+ 522              		.loc 1 162 0
+ 523 0362 1846     		mov	r0, r3
+ 524 0364 07F12007 		add	r7, r7, #32
+ 525 0368 BD46     		mov	sp, r7
+ 526 036a 80BD     		pop	{r7, pc}
+ 527              		.cfi_endproc
+ 528              	.LFE34:
+ 530              		.align	2
+ 531              		.global	USARTx_GetData
+ 532              		.thumb
+ 533              		.thumb_func
+ 535              	USARTx_GetData:
+ 536              	.LFB35:
+ 163:../usart.c    **** 
+ 164:../usart.c    **** /**
+ 165:../usart.c    ****  * Fetches Data from the receive queue.
+ 166:../usart.c    ****  * returns bytes fetched from rx queue
+ 167:../usart.c    ****  */
+ 168:../usart.c    **** signed int USARTx_GetData(USART_TypeDef* USARTx, volatile struct USART_Data *usart_data, unsigned c
+ 537              		.loc 1 168 0
+ 538              		.cfi_startproc
+ 539              		@ args = 0, pretend = 0, frame = 24
+ 540              		@ frame_needed = 1, uses_anonymous_args = 0
+ 541 036c 80B5     		push	{r7, lr}
+ 542              	.LCFI17:
+ 543              		.cfi_def_cfa_offset 8
+ 544              		.cfi_offset 14, -4
+ 545              		.cfi_offset 7, -8
+ 546 036e 86B0     		sub	sp, sp, #24
+ 547              	.LCFI18:
+ 548              		.cfi_def_cfa_offset 32
+ 549 0370 00AF     		add	r7, sp, #0
+ 550              	.LCFI19:
+ 551              		.cfi_def_cfa_register 7
+ 552 0372 F860     		str	r0, [r7, #12]
+ 553 0374 B960     		str	r1, [r7, #8]
+ 554 0376 7A60     		str	r2, [r7, #4]
+ 555 0378 3B60     		str	r3, [r7, #0]
+ 169:../usart.c    ****     u32 counter = 0;
+ 556              		.loc 1 169 0
+ 557 037a 4FF00003 		mov	r3, #0
+ 558 037e 7B61     		str	r3, [r7, #20]
+ 170:../usart.c    ****     while(counter < buffer_length && usart_data->RxWritePointer != usart_data->RxReadPointer) {
+ 559              		.loc 1 170 0
+ 560 0380 1FE0     		b	.L17
+ 561              	.L19:
+ 171:../usart.c    **** 	buffer[counter] = usart_data->RxBuffer[usart_data->RxReadPointer];
+ 562              		.loc 1 171 0
+ 563 0382 7A68     		ldr	r2, [r7, #4]
+ 564 0384 7B69     		ldr	r3, [r7, #20]
+ 565 0386 D318     		adds	r3, r2, r3
+ 566 0388 BA68     		ldr	r2, [r7, #8]
+ 567 038a B2F80221 		ldrh	r2, [r2, #258]	@ movhi
+ 568 038e 92B2     		uxth	r2, r2
+ 569 0390 B968     		ldr	r1, [r7, #8]
+ 570 0392 8A5C     		ldrb	r2, [r1, r2]
+ 571 0394 D2B2     		uxtb	r2, r2
+ 572 0396 1A70     		strb	r2, [r3, #0]
+ 172:../usart.c    **** 	counter++;
+ 573              		.loc 1 172 0
+ 574 0398 7B69     		ldr	r3, [r7, #20]
+ 575 039a 03F10103 		add	r3, r3, #1
+ 576 039e 7B61     		str	r3, [r7, #20]
+ 173:../usart.c    **** 	usart_data->RxReadPointer = (usart_data->RxReadPointer + 1) % USART_BUFFER_SIZE;
+ 577              		.loc 1 173 0
+ 578 03a0 BB68     		ldr	r3, [r7, #8]
+ 579 03a2 B3F80231 		ldrh	r3, [r3, #258]	@ movhi
+ 580 03a6 9BB2     		uxth	r3, r3
+ 581 03a8 03F10102 		add	r2, r3, #1
+ 582 03ac 4FEAE273 		asr	r3, r2, #31
+ 583 03b0 4FEA1363 		lsr	r3, r3, #24
+ 584 03b4 D218     		adds	r2, r2, r3
+ 585 03b6 D2B2     		uxtb	r2, r2
+ 586 03b8 D31A     		subs	r3, r2, r3
+ 587 03ba 9AB2     		uxth	r2, r3
+ 588 03bc BB68     		ldr	r3, [r7, #8]
+ 589 03be A3F80221 		strh	r2, [r3, #258]	@ movhi
+ 590              	.L17:
+ 170:../usart.c    ****     while(counter < buffer_length && usart_data->RxWritePointer != usart_data->RxReadPointer) {
+ 591              		.loc 1 170 0 discriminator 1
+ 592 03c2 7A69     		ldr	r2, [r7, #20]
+ 593 03c4 3B68     		ldr	r3, [r7, #0]
+ 594 03c6 9A42     		cmp	r2, r3
+ 595 03c8 09D2     		bcs	.L18
+ 170:../usart.c    ****     while(counter < buffer_length && usart_data->RxWritePointer != usart_data->RxReadPointer) {
+ 596              		.loc 1 170 0 is_stmt 0 discriminator 2
+ 597 03ca BB68     		ldr	r3, [r7, #8]
+ 598 03cc B3F80031 		ldrh	r3, [r3, #256]	@ movhi
+ 599 03d0 9AB2     		uxth	r2, r3
+ 600 03d2 BB68     		ldr	r3, [r7, #8]
+ 601 03d4 B3F80231 		ldrh	r3, [r3, #258]	@ movhi
+ 602 03d8 9BB2     		uxth	r3, r3
+ 603 03da 9A42     		cmp	r2, r3
+ 604 03dc D1D1     		bne	.L19
+ 605              	.L18:
+ 174:../usart.c    ****     }
+ 175:../usart.c    ****     
+ 176:../usart.c    ****     if(usart_data->RxWritePointer == usart_data->RxReadPointer && usart_data->RxBufferFullError)
+ 606              		.loc 1 176 0 is_stmt 1
+ 607 03de BB68     		ldr	r3, [r7, #8]
+ 608 03e0 B3F80031 		ldrh	r3, [r3, #256]	@ movhi
+ 609 03e4 9AB2     		uxth	r2, r3
+ 610 03e6 BB68     		ldr	r3, [r7, #8]
+ 611 03e8 B3F80231 		ldrh	r3, [r3, #258]	@ movhi
+ 612 03ec 9BB2     		uxth	r3, r3
+ 613 03ee 9A42     		cmp	r2, r3
+ 614 03f0 14D1     		bne	.L20
+ 615              		.loc 1 176 0 is_stmt 0 discriminator 1
+ 616 03f2 BB68     		ldr	r3, [r7, #8]
+ 617 03f4 93F80832 		ldrb	r3, [r3, #520]
+ 618 03f8 DBB2     		uxtb	r3, r3
+ 619 03fa 002B     		cmp	r3, #0
+ 620 03fc 0ED0     		beq	.L20
+ 177:../usart.c    ****     {
+ 178:../usart.c    **** 	//clear error
+ 179:../usart.c    **** 	usart_data->RxBufferFullError = 0;
+ 621              		.loc 1 179 0 is_stmt 1
+ 622 03fe BB68     		ldr	r3, [r7, #8]
+ 623 0400 4FF00002 		mov	r2, #0
+ 624 0404 83F80822 		strb	r2, [r3, #520]
+ 180:../usart.c    **** 	//reenable receive interrupt
+ 181:../usart.c    **** 	USART_ITConfig(USARTx, USART_IT_RXNE, ENABLE);
+ 625              		.loc 1 181 0
+ 626 0408 F868     		ldr	r0, [r7, #12]
+ 627 040a 40F22551 		movw	r1, #1317
+ 628 040e 4FF00102 		mov	r2, #1
+ 629 0412 FFF7FEFF 		bl	USART_ITConfig
+ 182:../usart.c    **** 	//inform user space that we had an error
+ 183:../usart.c    **** 	return -1;
+ 630              		.loc 1 183 0
+ 631 0416 4FF0FF33 		mov	r3, #-1
+ 632 041a 00E0     		b	.L21
+ 633              	.L20:
+ 184:../usart.c    ****     }
+ 185:../usart.c    ****     
+ 186:../usart.c    ****     return counter;
+ 634              		.loc 1 186 0
+ 635 041c 7B69     		ldr	r3, [r7, #20]
+ 636              	.L21:
+ 187:../usart.c    **** }
+ 637              		.loc 1 187 0
+ 638 041e 1846     		mov	r0, r3
+ 639 0420 07F11807 		add	r7, r7, #24
+ 640 0424 BD46     		mov	sp, r7
+ 641 0426 80BD     		pop	{r7, pc}
+ 642              		.cfi_endproc
+ 643              	.LFE35:
+ 645              		.align	2
+ 646              		.global	USART_IRQHandler
+ 647              		.thumb
+ 648              		.thumb_func
+ 650              	USART_IRQHandler:
+ 651              	.LFB36:
+ 188:../usart.c    **** 
+ 189:../usart.c    **** 
+ 190:../usart.c    **** /*******************************************************************************
+ 191:../usart.c    **** * Function Name  : USARTx_IRQHandler
+ 192:../usart.c    **** * Description    : This function handles USARTx global interrupt request.
+ 193:../usart.c    **** * Input          : None
+ 194:../usart.c    **** * Output         : None
+ 195:../usart.c    **** * Return         : None
+ 196:../usart.c    **** *******************************************************************************/
+ 197:../usart.c    **** void USART_IRQHandler(USART_TypeDef* USARTx,volatile struct USART_Data *data)
+ 198:../usart.c    **** {
+ 652              		.loc 1 198 0
+ 653              		.cfi_startproc
+ 654              		@ args = 0, pretend = 0, frame = 16
+ 655              		@ frame_needed = 1, uses_anonymous_args = 0
+ 656 0428 90B5     		push	{r4, r7, lr}
+ 657              	.LCFI20:
+ 658              		.cfi_def_cfa_offset 12
+ 659              		.cfi_offset 14, -4
+ 660              		.cfi_offset 7, -8
+ 661              		.cfi_offset 4, -12
+ 662 042a 85B0     		sub	sp, sp, #20
+ 663              	.LCFI21:
+ 664              		.cfi_def_cfa_offset 32
+ 665 042c 00AF     		add	r7, sp, #0
+ 666              	.LCFI22:
+ 667              		.cfi_def_cfa_register 7
+ 668 042e 7860     		str	r0, [r7, #4]
+ 669 0430 3960     		str	r1, [r7, #0]
+ 199:../usart.c    ****   if(USART_GetITStatus(USARTx, USART_IT_RXNE) != RESET)
+ 670              		.loc 1 199 0
+ 671 0432 7868     		ldr	r0, [r7, #4]
+ 672 0434 40F22551 		movw	r1, #1317
+ 673 0438 FFF7FEFF 		bl	USART_GetITStatus
+ 674 043c 0346     		mov	r3, r0
+ 675 043e 002B     		cmp	r3, #0
+ 676 0440 35D0     		beq	.L23
+ 677              	.LBB4:
+ 200:../usart.c    ****   {
+ 201:../usart.c    ****     vu8 nextRxWritePointer = (data->RxWritePointer + 1) % USART_BUFFER_SIZE;
+ 678              		.loc 1 201 0
+ 679 0442 3B68     		ldr	r3, [r7, #0]
+ 680 0444 B3F80031 		ldrh	r3, [r3, #256]	@ movhi
+ 681 0448 9BB2     		uxth	r3, r3
+ 682 044a 03F10102 		add	r2, r3, #1
+ 683 044e 4FEAE273 		asr	r3, r2, #31
+ 684 0452 4FEA1363 		lsr	r3, r3, #24
+ 685 0456 D218     		adds	r2, r2, r3
+ 686 0458 D2B2     		uxtb	r2, r2
+ 687 045a D31A     		subs	r3, r2, r3
+ 688 045c DBB2     		uxtb	r3, r3
+ 689 045e FB73     		strb	r3, [r7, #15]
+ 202:../usart.c    **** 
+ 203:../usart.c    ****     //ringbuffer is full :-((
+ 204:../usart.c    ****     if(nextRxWritePointer == data->RxReadPointer) {
+ 690              		.loc 1 204 0
+ 691 0460 FB7B     		ldrb	r3, [r7, #15]
+ 692 0462 DBB2     		uxtb	r3, r3
+ 693 0464 1A46     		mov	r2, r3
+ 694 0466 3B68     		ldr	r3, [r7, #0]
+ 695 0468 B3F80231 		ldrh	r3, [r3, #258]	@ movhi
+ 696 046c 9BB2     		uxth	r3, r3
+ 697 046e 9A42     		cmp	r2, r3
+ 698 0470 0BD1     		bne	.L24
+ 205:../usart.c    ****       //set error flag and disable receiving
+ 206:../usart.c    ****       data->RxBufferFullError = 1;
+ 699              		.loc 1 206 0
+ 700 0472 3B68     		ldr	r3, [r7, #0]
+ 701 0474 4FF00102 		mov	r2, #1
+ 702 0478 83F80822 		strb	r2, [r3, #520]
+ 207:../usart.c    ****       //Disable the USARTx Receive interrupt
+ 208:../usart.c    ****       USART_ITConfig(USARTx, USART_IT_RXNE, DISABLE);
+ 703              		.loc 1 208 0
+ 704 047c 7868     		ldr	r0, [r7, #4]
+ 705 047e 40F22551 		movw	r1, #1317
+ 706 0482 4FF00002 		mov	r2, #0
+ 707 0486 FFF7FEFF 		bl	USART_ITConfig
+ 708              	.L24:
+ 209:../usart.c    ****     }
+ 210:../usart.c    **** 
+ 211:../usart.c    ****     // Read one byte from the receive data register
+ 212:../usart.c    ****     data->RxBuffer[data->RxWritePointer] = USART_ReceiveData(USARTx);      
+ 709              		.loc 1 212 0
+ 710 048a 3B68     		ldr	r3, [r7, #0]
+ 711 048c B3F80031 		ldrh	r3, [r3, #256]	@ movhi
+ 712 0490 9BB2     		uxth	r3, r3
+ 713 0492 1C46     		mov	r4, r3
+ 714 0494 7868     		ldr	r0, [r7, #4]
+ 715 0496 FFF7FEFF 		bl	USART_ReceiveData
+ 716 049a 0346     		mov	r3, r0
+ 717 049c DAB2     		uxtb	r2, r3
+ 718 049e 3B68     		ldr	r3, [r7, #0]
+ 719 04a0 1A55     		strb	r2, [r3, r4]
+ 213:../usart.c    ****     data->RxWritePointer = nextRxWritePointer;
+ 720              		.loc 1 213 0
+ 721 04a2 FB7B     		ldrb	r3, [r7, #15]
+ 722 04a4 DBB2     		uxtb	r3, r3
+ 723 04a6 1A46     		mov	r2, r3
+ 724 04a8 3B68     		ldr	r3, [r7, #0]
+ 725 04aa A3F80021 		strh	r2, [r3, #256]	@ movhi
+ 726              	.L23:
+ 727              	.LBE4:
+ 214:../usart.c    ****   }
+ 215:../usart.c    ****   
+ 216:../usart.c    ****   if(USART_GetITStatus(USARTx, USART_IT_TXE) != RESET)
+ 728              		.loc 1 216 0
+ 729 04ae 7868     		ldr	r0, [r7, #4]
+ 730 04b0 40F22771 		movw	r1, #1831
+ 731 04b4 FFF7FEFF 		bl	USART_GetITStatus
+ 732 04b8 0346     		mov	r3, r0
+ 733 04ba 002B     		cmp	r3, #0
+ 734 04bc 2FD0     		beq	.L22
+ 217:../usart.c    ****   {
+ 218:../usart.c    ****     //ringbuffer empty, nothing more to send
+ 219:../usart.c    ****     if(data->TxReadPointer == data->TxWritePointer)
+ 735              		.loc 1 219 0
+ 736 04be 3B68     		ldr	r3, [r7, #0]
+ 737 04c0 B3F80632 		ldrh	r3, [r3, #518]	@ movhi
+ 738 04c4 9AB2     		uxth	r2, r3
+ 739 04c6 3B68     		ldr	r3, [r7, #0]
+ 740 04c8 B3F80432 		ldrh	r3, [r3, #516]	@ movhi
+ 741 04cc 9BB2     		uxth	r3, r3
+ 742 04ce 9A42     		cmp	r2, r3
+ 743 04d0 07D1     		bne	.L26
+ 220:../usart.c    ****     {
+ 221:../usart.c    ****       //Disable the USARTx Transmit interrupt
+ 222:../usart.c    ****       USART_ITConfig(USARTx, USART_IT_TXE, DISABLE);
+ 744              		.loc 1 222 0
+ 745 04d2 7868     		ldr	r0, [r7, #4]
+ 746 04d4 40F22771 		movw	r1, #1831
+ 747 04d8 4FF00002 		mov	r2, #0
+ 748 04dc FFF7FEFF 		bl	USART_ITConfig
+ 749 04e0 1DE0     		b	.L22
+ 750              	.L26:
+ 223:../usart.c    ****     } else {
+ 224:../usart.c    ****       // Write one byte to the transmit data register
+ 225:../usart.c    ****       USART_SendData(USARTx, data->TxBuffer[data->TxReadPointer]);                    
+ 751              		.loc 1 225 0
+ 752 04e2 3B68     		ldr	r3, [r7, #0]
+ 753 04e4 B3F80632 		ldrh	r3, [r3, #518]	@ movhi
+ 754 04e8 9BB2     		uxth	r3, r3
+ 755 04ea 3A68     		ldr	r2, [r7, #0]
+ 756 04ec D318     		adds	r3, r2, r3
+ 757 04ee 93F80431 		ldrb	r3, [r3, #260]
+ 758 04f2 DBB2     		uxtb	r3, r3
+ 759 04f4 7868     		ldr	r0, [r7, #4]
+ 760 04f6 1946     		mov	r1, r3
+ 761 04f8 FFF7FEFF 		bl	USART_SendData
+ 226:../usart.c    ****       data->TxReadPointer = (data->TxReadPointer + 1) % USART_BUFFER_SIZE;
+ 762              		.loc 1 226 0
+ 763 04fc 3B68     		ldr	r3, [r7, #0]
+ 764 04fe B3F80632 		ldrh	r3, [r3, #518]	@ movhi
+ 765 0502 9BB2     		uxth	r3, r3
+ 766 0504 03F10102 		add	r2, r3, #1
+ 767 0508 4FEAE273 		asr	r3, r2, #31
+ 768 050c 4FEA1363 		lsr	r3, r3, #24
+ 769 0510 D218     		adds	r2, r2, r3
+ 770 0512 D2B2     		uxtb	r2, r2
+ 771 0514 D31A     		subs	r3, r2, r3
+ 772 0516 9AB2     		uxth	r2, r3
+ 773 0518 3B68     		ldr	r3, [r7, #0]
+ 774 051a A3F80622 		strh	r2, [r3, #518]	@ movhi
+ 775              	.L22:
+ 227:../usart.c    ****     }
+ 228:../usart.c    ****   }
+ 229:../usart.c    **** }
+ 776              		.loc 1 229 0
+ 777 051e 07F11407 		add	r7, r7, #20
+ 778 0522 BD46     		mov	sp, r7
+ 779 0524 90BD     		pop	{r4, r7, pc}
+ 780              		.cfi_endproc
+ 781              	.LFE36:
+ 783              	.Letext0:
+ 784              		.file 2 "../usart.h"
+ 785              		.file 3 "/home/simon/Workspace/stm32vl/stm32_lib/inc/stm32f10x.h"
+ 786              		.file 4 "/opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/../../../../arm-none-eab
+ 787              		.file 5 "/home/simon/Workspace/stm32vl/stm32_lib/inc/stm32f10x_gpio.h"
+ 788              		.file 6 "/home/simon/Workspace/stm32vl/stm32_lib/inc/misc.h"
+ 789              		.file 7 "/home/simon/Workspace/stm32vl/stm32_lib/inc/stm32f10x_usart.h"
+ 790              		.file 8 "/home/simon/Workspace/stm32vl/stm32_lib/inc/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 usart.c
+                            *COM*:0000020a USART1_Data
+     /tmp/ccOBuxyX.s:19     .text:00000000 $t
+     /tmp/ccOBuxyX.s:24     .text:00000000 USART1_Init
+     /tmp/ccOBuxyX.s:197    .text:0000016c USART1_DeInit
+     /tmp/ccOBuxyX.s:263    .text:000001e0 USART1_SendData
+     /tmp/ccOBuxyX.s:375    .text:0000025c USARTx_SendData
+     /tmp/ccOBuxyX.s:304    .text:00000210 USART1_GetData
+     /tmp/ccOBuxyX.s:535    .text:0000036c USARTx_GetData
+     /tmp/ccOBuxyX.s:345    .text:00000240 USART1_IRQHandler
+     /tmp/ccOBuxyX.s:650    .text:00000428 USART_IRQHandler
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+GPIO_StructInit
+RCC_APB2PeriphClockCmd
+GPIO_Init
+NVIC_Init
+USART_Init
+USART_ITConfig
+USART_Cmd
+USART_SendData
+USART_GetFlagStatus
+USART_GetITStatus
+USART_ReceiveData

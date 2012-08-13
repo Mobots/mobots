@@ -1,0 +1,144 @@
+   1              		.syntax unified
+   2              		.cpu cortex-m3
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.thumb
+  14              		.file	"uint32.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.align	2
+  19              		.global	uint32_log2
+  20              		.thumb
+  21              		.thumb_func
+  23              	uint32_log2:
+  24              	.LFB0:
+  25              		.file 1 "../libfixmath/uint32.c"
+   1:../libfixmath/uint32.c **** #include "uint32.h"
+   2:../libfixmath/uint32.c **** 
+   3:../libfixmath/uint32.c **** 
+   4:../libfixmath/uint32.c **** 
+   5:../libfixmath/uint32.c **** uint32_t uint32_log2(uint32_t inVal) {
+  26              		.loc 1 5 0
+  27              		.cfi_startproc
+  28              		@ args = 0, pretend = 0, frame = 16
+  29              		@ frame_needed = 1, uses_anonymous_args = 0
+  30              		@ link register save eliminated.
+  31 0000 80B4     		push	{r7}
+  32              	.LCFI0:
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 7, -4
+  35 0002 85B0     		sub	sp, sp, #20
+  36              	.LCFI1:
+  37              		.cfi_def_cfa_offset 24
+  38 0004 00AF     		add	r7, sp, #0
+  39              	.LCFI2:
+  40              		.cfi_def_cfa_register 7
+  41 0006 7860     		str	r0, [r7, #4]
+   6:../libfixmath/uint32.c **** 	if(inVal == 0)
+  42              		.loc 1 6 0
+  43 0008 7B68     		ldr	r3, [r7, #4]
+  44 000a 002B     		cmp	r3, #0
+  45 000c 02D1     		bne	.L2
+   7:../libfixmath/uint32.c **** 		return 0;
+  46              		.loc 1 7 0
+  47 000e 4FF00003 		mov	r3, #0
+  48 0012 38E0     		b	.L3
+  49              	.L2:
+   8:../libfixmath/uint32.c **** 	uint32_t tempOut = 0;
+  50              		.loc 1 8 0
+  51 0014 4FF00003 		mov	r3, #0
+  52 0018 FB60     		str	r3, [r7, #12]
+   9:../libfixmath/uint32.c **** 	if(inVal >= (1 << 16)) { inVal >>= 16; tempOut += 16; }
+  53              		.loc 1 9 0
+  54 001a 7A68     		ldr	r2, [r7, #4]
+  55 001c 4FF6FF73 		movw	r3, #65535
+  56 0020 9A42     		cmp	r2, r3
+  57 0022 07D9     		bls	.L4
+  58              		.loc 1 9 0 is_stmt 0 discriminator 1
+  59 0024 7B68     		ldr	r3, [r7, #4]
+  60 0026 4FEA1343 		lsr	r3, r3, #16
+  61 002a 7B60     		str	r3, [r7, #4]
+  62 002c FB68     		ldr	r3, [r7, #12]
+  63 002e 03F11003 		add	r3, r3, #16
+  64 0032 FB60     		str	r3, [r7, #12]
+  65              	.L4:
+  10:../libfixmath/uint32.c **** 	if(inVal >= (1 <<  8)) { inVal >>=  8; tempOut +=  8; }
+  66              		.loc 1 10 0 is_stmt 1
+  67 0034 7B68     		ldr	r3, [r7, #4]
+  68 0036 FF2B     		cmp	r3, #255
+  69 0038 07D9     		bls	.L5
+  70              		.loc 1 10 0 is_stmt 0 discriminator 1
+  71 003a 7B68     		ldr	r3, [r7, #4]
+  72 003c 4FEA1323 		lsr	r3, r3, #8
+  73 0040 7B60     		str	r3, [r7, #4]
+  74 0042 FB68     		ldr	r3, [r7, #12]
+  75 0044 03F10803 		add	r3, r3, #8
+  76 0048 FB60     		str	r3, [r7, #12]
+  77              	.L5:
+  11:../libfixmath/uint32.c **** 	if(inVal >= (1 <<  4)) { inVal >>=  4; tempOut +=  4; }
+  78              		.loc 1 11 0 is_stmt 1
+  79 004a 7B68     		ldr	r3, [r7, #4]
+  80 004c 0F2B     		cmp	r3, #15
+  81 004e 07D9     		bls	.L6
+  82              		.loc 1 11 0 is_stmt 0 discriminator 1
+  83 0050 7B68     		ldr	r3, [r7, #4]
+  84 0052 4FEA1313 		lsr	r3, r3, #4
+  85 0056 7B60     		str	r3, [r7, #4]
+  86 0058 FB68     		ldr	r3, [r7, #12]
+  87 005a 03F10403 		add	r3, r3, #4
+  88 005e FB60     		str	r3, [r7, #12]
+  89              	.L6:
+  12:../libfixmath/uint32.c **** 	if(inVal >= (1 <<  2)) { inVal >>=  2; tempOut +=  2; }
+  90              		.loc 1 12 0 is_stmt 1
+  91 0060 7B68     		ldr	r3, [r7, #4]
+  92 0062 032B     		cmp	r3, #3
+  93 0064 07D9     		bls	.L7
+  94              		.loc 1 12 0 is_stmt 0 discriminator 1
+  95 0066 7B68     		ldr	r3, [r7, #4]
+  96 0068 4FEA9303 		lsr	r3, r3, #2
+  97 006c 7B60     		str	r3, [r7, #4]
+  98 006e FB68     		ldr	r3, [r7, #12]
+  99 0070 03F10203 		add	r3, r3, #2
+ 100 0074 FB60     		str	r3, [r7, #12]
+ 101              	.L7:
+  13:../libfixmath/uint32.c **** 	if(inVal >= (1 <<  1)) {               tempOut +=  1; }
+ 102              		.loc 1 13 0 is_stmt 1
+ 103 0076 7B68     		ldr	r3, [r7, #4]
+ 104 0078 012B     		cmp	r3, #1
+ 105 007a 03D9     		bls	.L8
+ 106              		.loc 1 13 0 is_stmt 0 discriminator 1
+ 107 007c FB68     		ldr	r3, [r7, #12]
+ 108 007e 03F10103 		add	r3, r3, #1
+ 109 0082 FB60     		str	r3, [r7, #12]
+ 110              	.L8:
+  14:../libfixmath/uint32.c **** 	return tempOut;
+ 111              		.loc 1 14 0 is_stmt 1
+ 112 0084 FB68     		ldr	r3, [r7, #12]
+ 113              	.L3:
+  15:../libfixmath/uint32.c **** }
+ 114              		.loc 1 15 0
+ 115 0086 1846     		mov	r0, r3
+ 116 0088 07F11407 		add	r7, r7, #20
+ 117 008c BD46     		mov	sp, r7
+ 118 008e 80BC     		pop	{r7}
+ 119 0090 7047     		bx	lr
+ 120              		.cfi_endproc
+ 121              	.LFE0:
+ 123              	.Letext0:
+ 124              		.file 2 "/opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/../../../../arm-none-eab
+DEFINED SYMBOLS
+                            *ABS*:00000000 uint32.c
+     /tmp/cc98YE3A.s:18     .text:00000000 $t
+     /tmp/cc98YE3A.s:23     .text:00000000 uint32_log2
+                     .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS
