@@ -1,0 +1,338 @@
+   1              		.syntax unified
+   2              		.cpu cortex-m3
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.thumb
+  14              		.file	"crc.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.align	2
+  19              		.thumb
+  20              		.thumb_func
+  22              	reflect:
+  23              	.LFB0:
+  24              		.file 1 "../crc.c"
+   1:../crc.c      **** /**********************************************************************
+   2:../crc.c      ****  *
+   3:../crc.c      ****  * Filename:    crc.c
+   4:../crc.c      ****  * 
+   5:../crc.c      ****  * Description: Slow and fast implementations of the CRC standards.
+   6:../crc.c      ****  *
+   7:../crc.c      ****  * Notes:       The parameters for each supported CRC standard are
+   8:../crc.c      ****  *				defined in the header file crc.h.  The implementations
+   9:../crc.c      ****  *				here should stand up to further additions to that list.
+  10:../crc.c      ****  *
+  11:../crc.c      ****  * 
+  12:../crc.c      ****  * Copyright (c) 2000 by Michael Barr.  This software is placed into
+  13:../crc.c      ****  * the public domain and may be used for any purpose.  However, this
+  14:../crc.c      ****  * notice must not be changed or removed and no warranty is either
+  15:../crc.c      ****  * expressed or implied by its publication or distribution.
+  16:../crc.c      ****  **********************************************************************/
+  17:../crc.c      ****  
+  18:../crc.c      **** #include "crc.h"
+  19:../crc.c      **** 
+  20:../crc.c      **** 
+  21:../crc.c      **** /*
+  22:../crc.c      ****  * Derive parameters from the standard-specific parameters in crc.h.
+  23:../crc.c      ****  */
+  24:../crc.c      **** #define WIDTH    (8 * sizeof(crc))
+  25:../crc.c      **** #define TOPBIT   (1 << (WIDTH - 1))
+  26:../crc.c      **** 
+  27:../crc.c      **** #if (REFLECT_DATA == TRUE)
+  28:../crc.c      **** #undef  REFLECT_DATA
+  29:../crc.c      **** #define REFLECT_DATA(X)			((unsigned char) reflect((X), 8))
+  30:../crc.c      **** #else
+  31:../crc.c      **** #undef  REFLECT_DATA
+  32:../crc.c      **** #define REFLECT_DATA(X)			(X)
+  33:../crc.c      **** #endif
+  34:../crc.c      **** 
+  35:../crc.c      **** #if (REFLECT_REMAINDER == TRUE)
+  36:../crc.c      **** #undef  REFLECT_REMAINDER
+  37:../crc.c      **** #define REFLECT_REMAINDER(X)	((crc) reflect((X), WIDTH))
+  38:../crc.c      **** #else
+  39:../crc.c      **** #undef  REFLECT_REMAINDER
+  40:../crc.c      **** #define REFLECT_REMAINDER(X)	(X)
+  41:../crc.c      **** #endif
+  42:../crc.c      **** 
+  43:../crc.c      **** 
+  44:../crc.c      **** /*********************************************************************
+  45:../crc.c      ****  *
+  46:../crc.c      ****  * Function:    reflect()
+  47:../crc.c      ****  * 
+  48:../crc.c      ****  * Description: Reorder the bits of a binary sequence, by reflecting
+  49:../crc.c      ****  *				them about the middle position.
+  50:../crc.c      ****  *
+  51:../crc.c      ****  * Notes:		No checking is done that nBits <= 32.
+  52:../crc.c      ****  *
+  53:../crc.c      ****  * Returns:		The reflection of the original data.
+  54:../crc.c      ****  *
+  55:../crc.c      ****  *********************************************************************/
+  56:../crc.c      **** static unsigned long
+  57:../crc.c      **** reflect(unsigned long data, unsigned char nBits)
+  58:../crc.c      **** {
+  25              		.loc 1 58 0
+  26              		.cfi_startproc
+  27              		@ args = 0, pretend = 0, frame = 16
+  28              		@ frame_needed = 1, uses_anonymous_args = 0
+  29              		@ link register save eliminated.
+  30 0000 80B4     		push	{r7}
+  31              	.LCFI0:
+  32              		.cfi_def_cfa_offset 4
+  33              		.cfi_offset 7, -4
+  34 0002 85B0     		sub	sp, sp, #20
+  35              	.LCFI1:
+  36              		.cfi_def_cfa_offset 24
+  37 0004 00AF     		add	r7, sp, #0
+  38              	.LCFI2:
+  39              		.cfi_def_cfa_register 7
+  40 0006 7860     		str	r0, [r7, #4]
+  41 0008 0B46     		mov	r3, r1
+  42 000a FB70     		strb	r3, [r7, #3]
+  59:../crc.c      **** 	unsigned long  reflection = 0x00000000;
+  43              		.loc 1 59 0
+  44 000c 4FF00003 		mov	r3, #0
+  45 0010 FB60     		str	r3, [r7, #12]
+  60:../crc.c      **** 	unsigned char  bit;
+  61:../crc.c      **** 
+  62:../crc.c      **** 	/*
+  63:../crc.c      **** 	 * Reflect the data about the center bit.
+  64:../crc.c      **** 	 */
+  65:../crc.c      **** 	for (bit = 0; bit < nBits; ++bit)
+  46              		.loc 1 65 0
+  47 0012 4FF00003 		mov	r3, #0
+  48 0016 FB72     		strb	r3, [r7, #11]
+  49 0018 19E0     		b	.L2
+  50              	.L4:
+  66:../crc.c      **** 	{
+  67:../crc.c      **** 		/*
+  68:../crc.c      **** 		 * If the LSB bit is set, set the reflection of it.
+  69:../crc.c      **** 		 */
+  70:../crc.c      **** 		if (data & 0x01)
+  51              		.loc 1 70 0
+  52 001a 7B68     		ldr	r3, [r7, #4]
+  53 001c 03F00103 		and	r3, r3, #1
+  54 0020 DBB2     		uxtb	r3, r3
+  55 0022 002B     		cmp	r3, #0
+  56 0024 0BD0     		beq	.L3
+  71:../crc.c      **** 		{
+  72:../crc.c      **** 			reflection |= (1 << ((nBits - 1) - bit));
+  57              		.loc 1 72 0
+  58 0026 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+  59 0028 03F1FF32 		add	r2, r3, #-1
+  60 002c FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+  61 002e D31A     		subs	r3, r2, r3
+  62 0030 4FF00102 		mov	r2, #1
+  63 0034 02FA03F3 		lsl	r3, r2, r3
+  64 0038 FA68     		ldr	r2, [r7, #12]
+  65 003a 1343     		orrs	r3, r3, r2
+  66 003c FB60     		str	r3, [r7, #12]
+  67              	.L3:
+  73:../crc.c      **** 		}
+  74:../crc.c      **** 
+  75:../crc.c      **** 		data = (data >> 1);
+  68              		.loc 1 75 0
+  69 003e 7B68     		ldr	r3, [r7, #4]
+  70 0040 4FEA5303 		lsr	r3, r3, #1
+  71 0044 7B60     		str	r3, [r7, #4]
+  65:../crc.c      **** 	for (bit = 0; bit < nBits; ++bit)
+  72              		.loc 1 65 0
+  73 0046 FB7A     		ldrb	r3, [r7, #11]
+  74 0048 03F10103 		add	r3, r3, #1
+  75 004c FB72     		strb	r3, [r7, #11]
+  76              	.L2:
+  65:../crc.c      **** 	for (bit = 0; bit < nBits; ++bit)
+  77              		.loc 1 65 0 is_stmt 0 discriminator 1
+  78 004e FA7A     		ldrb	r2, [r7, #11]	@ zero_extendqisi2
+  79 0050 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+  80 0052 9A42     		cmp	r2, r3
+  81 0054 E1D3     		bcc	.L4
+  76:../crc.c      **** 	}
+  77:../crc.c      **** 
+  78:../crc.c      **** 	return (reflection);
+  82              		.loc 1 78 0 is_stmt 1
+  83 0056 FB68     		ldr	r3, [r7, #12]
+  79:../crc.c      **** 
+  80:../crc.c      **** }	/* reflect() */
+  84              		.loc 1 80 0
+  85 0058 1846     		mov	r0, r3
+  86 005a 07F11407 		add	r7, r7, #20
+  87 005e BD46     		mov	sp, r7
+  88 0060 80BC     		pop	{r7}
+  89 0062 7047     		bx	lr
+  90              		.cfi_endproc
+  91              	.LFE0:
+  93              		.align	2
+  94              		.global	crcSlow
+  95              		.thumb
+  96              		.thumb_func
+  98              	crcSlow:
+  99              	.LFB1:
+  81:../crc.c      **** 
+  82:../crc.c      **** 
+  83:../crc.c      **** /*********************************************************************
+  84:../crc.c      ****  *
+  85:../crc.c      ****  * Function:    crcSlow()
+  86:../crc.c      ****  * 
+  87:../crc.c      ****  * Description: Compute the CRC of a given message.
+  88:../crc.c      ****  *
+  89:../crc.c      ****  * Notes:		
+  90:../crc.c      ****  *
+  91:../crc.c      ****  * Returns:		The CRC of the message.
+  92:../crc.c      ****  *
+  93:../crc.c      ****  *********************************************************************/
+  94:../crc.c      **** crc
+  95:../crc.c      **** crcSlow(unsigned char const message[], int nBytes)
+  96:../crc.c      **** {
+ 100              		.loc 1 96 0
+ 101              		.cfi_startproc
+ 102              		@ args = 0, pretend = 0, frame = 24
+ 103              		@ frame_needed = 1, uses_anonymous_args = 0
+ 104              		@ link register save eliminated.
+ 105 0064 80B4     		push	{r7}
+ 106              	.LCFI3:
+ 107              		.cfi_def_cfa_offset 4
+ 108              		.cfi_offset 7, -4
+ 109 0066 87B0     		sub	sp, sp, #28
+ 110              	.LCFI4:
+ 111              		.cfi_def_cfa_offset 32
+ 112 0068 00AF     		add	r7, sp, #0
+ 113              	.LCFI5:
+ 114              		.cfi_def_cfa_register 7
+ 115 006a 7860     		str	r0, [r7, #4]
+ 116 006c 3960     		str	r1, [r7, #0]
+  97:../crc.c      ****     crc            remainder = INITIAL_REMAINDER;
+ 117              		.loc 1 97 0
+ 118 006e 4FF6FF73 		movw	r3, #65535
+ 119 0072 FB82     		strh	r3, [r7, #22]	@ movhi
+  98:../crc.c      **** 	int            byte;
+  99:../crc.c      **** 	unsigned char  bit;
+ 100:../crc.c      **** 
+ 101:../crc.c      **** 
+ 102:../crc.c      ****     /*
+ 103:../crc.c      ****      * Perform modulo-2 division, a byte at a time.
+ 104:../crc.c      ****      */
+ 105:../crc.c      ****     for (byte = 0; byte < nBytes; ++byte)
+ 120              		.loc 1 105 0
+ 121 0074 4FF00003 		mov	r3, #0
+ 122 0078 3B61     		str	r3, [r7, #16]
+ 123 007a 2CE0     		b	.L6
+ 124              	.L11:
+ 106:../crc.c      ****     {
+ 107:../crc.c      ****         /*
+ 108:../crc.c      ****          * Bring the next byte into the remainder.
+ 109:../crc.c      ****          */
+ 110:../crc.c      ****         remainder ^= (REFLECT_DATA(message[byte]) << (WIDTH - 8));
+ 125              		.loc 1 110 0
+ 126 007c 3B69     		ldr	r3, [r7, #16]
+ 127 007e 7A68     		ldr	r2, [r7, #4]
+ 128 0080 D318     		adds	r3, r2, r3
+ 129 0082 1B78     		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 130 0084 4FEA0323 		lsl	r3, r3, #8
+ 131 0088 9AB2     		uxth	r2, r3
+ 132 008a FB8A     		ldrh	r3, [r7, #22]
+ 133 008c 5340     		eors	r3, r3, r2
+ 134 008e 9BB2     		uxth	r3, r3
+ 135 0090 FB82     		strh	r3, [r7, #22]	@ movhi
+ 111:../crc.c      **** 
+ 112:../crc.c      ****         /*
+ 113:../crc.c      ****          * Perform modulo-2 division, a bit at a time.
+ 114:../crc.c      ****          */
+ 115:../crc.c      ****         for (bit = 8; bit > 0; --bit)
+ 136              		.loc 1 115 0
+ 137 0092 4FF00803 		mov	r3, #8
+ 138 0096 FB73     		strb	r3, [r7, #15]
+ 139 0098 16E0     		b	.L7
+ 140              	.L10:
+ 116:../crc.c      ****         {
+ 117:../crc.c      ****             /*
+ 118:../crc.c      ****              * Try to divide the current data bit.
+ 119:../crc.c      ****              */
+ 120:../crc.c      ****             if (remainder & TOPBIT)
+ 141              		.loc 1 120 0
+ 142 009a FB8A     		ldrh	r3, [r7, #22]
+ 143 009c 1BB2     		sxth	r3, r3
+ 144 009e 002B     		cmp	r3, #0
+ 145 00a0 0ADA     		bge	.L8
+ 121:../crc.c      ****             {
+ 122:../crc.c      ****                 remainder = (remainder << 1) ^ POLYNOMIAL;
+ 146              		.loc 1 122 0
+ 147 00a2 FB8A     		ldrh	r3, [r7, #22]
+ 148 00a4 4FEA4303 		lsl	r3, r3, #1
+ 149 00a8 9BB2     		uxth	r3, r3
+ 150 00aa 83F48053 		eor	r3, r3, #4096
+ 151 00ae 83F02103 		eor	r3, r3, #33
+ 152 00b2 9BB2     		uxth	r3, r3
+ 153 00b4 FB82     		strh	r3, [r7, #22]	@ movhi
+ 154 00b6 03E0     		b	.L9
+ 155              	.L8:
+ 123:../crc.c      ****             }
+ 124:../crc.c      ****             else
+ 125:../crc.c      ****             {
+ 126:../crc.c      ****                 remainder = (remainder << 1);
+ 156              		.loc 1 126 0
+ 157 00b8 FB8A     		ldrh	r3, [r7, #22]	@ movhi
+ 158 00ba 4FEA4303 		lsl	r3, r3, #1
+ 159 00be FB82     		strh	r3, [r7, #22]	@ movhi
+ 160              	.L9:
+ 115:../crc.c      ****         for (bit = 8; bit > 0; --bit)
+ 161              		.loc 1 115 0
+ 162 00c0 FB7B     		ldrb	r3, [r7, #15]
+ 163 00c2 03F1FF33 		add	r3, r3, #-1
+ 164 00c6 FB73     		strb	r3, [r7, #15]
+ 165              	.L7:
+ 115:../crc.c      ****         for (bit = 8; bit > 0; --bit)
+ 166              		.loc 1 115 0 is_stmt 0 discriminator 1
+ 167 00c8 FB7B     		ldrb	r3, [r7, #15]	@ zero_extendqisi2
+ 168 00ca 002B     		cmp	r3, #0
+ 169 00cc E5D1     		bne	.L10
+ 105:../crc.c      ****     for (byte = 0; byte < nBytes; ++byte)
+ 170              		.loc 1 105 0 is_stmt 1
+ 171 00ce 3B69     		ldr	r3, [r7, #16]
+ 172 00d0 03F10103 		add	r3, r3, #1
+ 173 00d4 3B61     		str	r3, [r7, #16]
+ 174              	.L6:
+ 105:../crc.c      ****     for (byte = 0; byte < nBytes; ++byte)
+ 175              		.loc 1 105 0 is_stmt 0 discriminator 1
+ 176 00d6 3A69     		ldr	r2, [r7, #16]
+ 177 00d8 3B68     		ldr	r3, [r7, #0]
+ 178 00da 9A42     		cmp	r2, r3
+ 179 00dc CEDB     		blt	.L11
+ 127:../crc.c      ****             }
+ 128:../crc.c      ****         }
+ 129:../crc.c      ****     }
+ 130:../crc.c      **** 
+ 131:../crc.c      ****     /*
+ 132:../crc.c      ****      * The final remainder is the CRC result.
+ 133:../crc.c      ****      */
+ 134:../crc.c      ****     return (REFLECT_REMAINDER(remainder) ^ FINAL_XOR_VALUE);
+ 180              		.loc 1 134 0 is_stmt 1
+ 181 00de FB8A     		ldrh	r3, [r7, #22]
+ 135:../crc.c      **** 
+ 136:../crc.c      **** }   /* crcSlow() */
+ 182              		.loc 1 136 0
+ 183 00e0 1846     		mov	r0, r3
+ 184 00e2 07F11C07 		add	r7, r7, #28
+ 185 00e6 BD46     		mov	sp, r7
+ 186 00e8 80BC     		pop	{r7}
+ 187 00ea 7047     		bx	lr
+ 188              		.cfi_endproc
+ 189              	.LFE1:
+ 191              	.Letext0:
+ 192              		.file 2 "../crc.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 crc.c
+     /tmp/ccBXD5FE.s:18     .text:00000000 $t
+     /tmp/ccBXD5FE.s:22     .text:00000000 reflect
+     /tmp/ccBXD5FE.s:98     .text:00000064 crcSlow
+                     .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS

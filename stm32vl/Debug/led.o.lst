@@ -1,0 +1,100 @@
+   1              		.syntax unified
+   2              		.cpu cortex-m3
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.thumb
+  14              		.file	"led.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.align	2
+  19              		.global	led_init
+  20              		.thumb
+  21              		.thumb_func
+  23              	led_init:
+  24              	.LFB29:
+  25              		.file 1 "../led.c"
+   1:../led.c      **** /*
+   2:../led.c      ****  * led.c
+   3:../led.c      ****  *
+   4:../led.c      ****  *  Created on: 13.06.2012
+   5:../led.c      ****  *      Author: simon
+   6:../led.c      ****  */
+   7:../led.c      **** 
+   8:../led.c      **** #include "led.h"
+   9:../led.c      **** #include "stm32f10x_gpio.h"
+  10:../led.c      **** 
+  11:../led.c      **** void led_init(void){
+  26              		.loc 1 11 0
+  27              		.cfi_startproc
+  28              		@ args = 0, pretend = 0, frame = 8
+  29              		@ frame_needed = 1, uses_anonymous_args = 0
+  30 0000 80B5     		push	{r7, lr}
+  31              	.LCFI0:
+  32              		.cfi_def_cfa_offset 8
+  33              		.cfi_offset 14, -4
+  34              		.cfi_offset 7, -8
+  35 0002 82B0     		sub	sp, sp, #8
+  36              	.LCFI1:
+  37              		.cfi_def_cfa_offset 16
+  38 0004 00AF     		add	r7, sp, #0
+  39              	.LCFI2:
+  40              		.cfi_def_cfa_register 7
+  12:../led.c      **** 	GPIO_InitTypeDef LED_InitStruc;
+  13:../led.c      **** 
+  14:../led.c      **** 		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
+  41              		.loc 1 14 0
+  42 0006 4FF01000 		mov	r0, #16
+  43 000a 4FF00101 		mov	r1, #1
+  44 000e FFF7FEFF 		bl	RCC_APB2PeriphClockCmd
+  15:../led.c      **** 
+  16:../led.c      **** 
+  17:../led.c      **** 		//GPIO_StructInit(&LED_InitStruc);
+  18:../led.c      **** 		LED_InitStruc.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9;
+  45              		.loc 1 18 0
+  46 0012 4FF44073 		mov	r3, #768
+  47 0016 BB80     		strh	r3, [r7, #4]	@ movhi
+  19:../led.c      **** 		LED_InitStruc.GPIO_Mode = GPIO_Mode_Out_PP;
+  48              		.loc 1 19 0
+  49 0018 4FF01003 		mov	r3, #16
+  50 001c FB71     		strb	r3, [r7, #7]
+  20:../led.c      **** 		LED_InitStruc.GPIO_Speed = GPIO_Speed_50MHz;
+  51              		.loc 1 20 0
+  52 001e 4FF00303 		mov	r3, #3
+  53 0022 BB71     		strb	r3, [r7, #6]
+  21:../led.c      **** 		GPIO_Init(GPIOC, &LED_InitStruc);
+  54              		.loc 1 21 0
+  55 0024 07F10403 		add	r3, r7, #4
+  56 0028 4FF48050 		mov	r0, #4096
+  57 002c C4F20100 		movt	r0, 16385
+  58 0030 1946     		mov	r1, r3
+  59 0032 FFF7FEFF 		bl	GPIO_Init
+  22:../led.c      **** }
+  60              		.loc 1 22 0
+  61 0036 07F10807 		add	r7, r7, #8
+  62 003a BD46     		mov	sp, r7
+  63 003c 80BD     		pop	{r7, pc}
+  64              		.cfi_endproc
+  65              	.LFE29:
+  67              	.Letext0:
+  68              		.file 2 "/opt/CodeSourcery/arm-2011.09/bin/../lib/gcc/arm-none-eabi/4.6.1/../../../../arm-none-eab
+  69              		.file 3 "/home/simon/Workspace/stm32vl/stm32_lib/inc/stm32f10x.h"
+  70              		.file 4 "/home/simon/Workspace/stm32vl/stm32_lib/inc/stm32f10x_gpio.h"
+  71              		.file 5 "/home/simon/Workspace/stm32vl/stm32_lib/inc/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 led.c
+     /tmp/ccBJUynK.s:18     .text:00000000 $t
+     /tmp/ccBJUynK.s:23     .text:00000000 led_init
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+RCC_APB2PeriphClockCmd
+GPIO_Init

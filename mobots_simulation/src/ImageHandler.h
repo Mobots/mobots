@@ -20,8 +20,7 @@ private:
   ros::Subscriber featureSetSubscriber;
   ros::Subscriber imageSubscriber;
 
-  sensor_msgs::Image image1;
-  sensor_msgs::Image image2;
+
   ImageFeatures features1;
   ImageFeatures features2;
   

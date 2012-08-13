@@ -48,7 +48,7 @@ int main(int argc, char** argv){
   
   //detector = new SurfFeaturesFinder(400, 3, 4, 4, 2, false);
   detector = new OrbFeaturesFinder(1000);
-  cout << TAG << "now spinning on id:" << mobotId << endl;
+  ROS_INFO("%s now spinning on id:%i", TAG, mobotId);
   ros::spin();
   return 0;
 }
