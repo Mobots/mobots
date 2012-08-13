@@ -16,7 +16,7 @@ class ImageHandler{
 private:
   char shutterPos;
   char featurePos;
-  ros::Publisher publisher;
+  ros::Publisher imagePublisher;
   ros::Subscriber featureSetSubscriber;
   ros::Subscriber imageSubscriber;
 

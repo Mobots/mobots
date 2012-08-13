@@ -183,7 +183,15 @@ int main(int argc, char** argv){
   Ptr<FeaturesMatcher> matcher = new CpuFeaturesMatcher(CpuFeaturesMatcher::SURF_DEFAULT);
   ImageFeatures features1;
   ImageFeatures features2;
-  Delta delta;
+  Delta delta;    t
+    Forum
+    TeilnehmerInnen
+    Dateien
+    Ablaufplan
+    Literatur
+    Wiki
+
+
   finder->findFeatures(image1Gray, features1);
   finder->findFeatures(image2Gray, features2);
   bool matchResult = matcher->match(features1, features2, delta);
