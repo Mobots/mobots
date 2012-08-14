@@ -97,7 +97,7 @@ void ImageHandler::shutterCallback(){
   shutterPos %= 2;
 }
 
-void ImageHandler::shutterCallback2(const mobots_msgs::ImagePoseID imageWithPoseAndId){
+void ImageHandler::shutterCallback2(const mobots_msgs::ImageWithDeltaPoseAndID imageWithPoseAndId){
   imageCallback(imageWithPoseAndId.image);
   shutterCallback();
 }
