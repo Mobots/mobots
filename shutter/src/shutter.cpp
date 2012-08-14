@@ -2,7 +2,8 @@
 
 int main(int argc, char** argv){
 ros::init(argc, argv, "shutter");
-Shutter shutter(0,1.06805,0.80104); //l/b für Simulator: 1.06805,0.80104
+//Shutter shutter(0,1.06805,0.80104); //l/b für Simulator: 1.06805,0.80104
+Shutter shutter(0,0.4,0.3); //l/b für Simulator: 1.06805,0.80104
 }
 Shutter::Shutter(int mobot_ID,double l, double b):id(mobot_ID),g(l,b) //Instanzierung von Geometry
 {
@@ -38,7 +39,7 @@ void Shutter::startShutter()
 }
 
 void Shutter::publishMessage(double &x, double &y, double &theta, const sensor_msgs::Image &image) {
-    ipid.Mobot_ID = id;
+    ipid.mobot_id = id;
     ipid.image = image;
 
     geometry_msgs::Pose2D pose;
@@ -53,10 +54,15 @@ void Shutter::publishMessage(double &x, double &y, double &theta, const sensor_m
 
 }
 
-
+int i = 0;
 
 void Shutter::imageCallback(const sensor_msgs::Image &mobot_image) {
-    std::cout << g.checkPicture(dX, dY, dTheta) << " - " << overlap << std::endl;
+    i++;
+    if(i > 20){
+      double val = g.checkPicture(dX, dY, dTheta);
+      std::cout << val << " / " << overlap << " => " << overlap/val << "%" << std::endl;
+      i = 0;
+    }
     if (g.checkPicture(dX, dY, dTheta) < overlap) {
         publishMessage(dX, dY, dTheta, mobot_image);
         dX = 0;
