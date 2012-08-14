@@ -130,8 +130,8 @@ rot = -2*M_PI - rot;*/
       rotate(p21, b, -rot);
       sumsMidX[index] += p11.x - b.x;
       sumsMidY[index] += p11.y - b.y;
-      xOffsetsMid[index].push_back(p11.x - b.x);
-      yOffsetsMid[index].push_back(p11.y - b.y);
+      //xOffsetsMid[index].push_back(p11.x - b.x);
+      //yOffsetsMid[index].push_back(p11.y - b.y);
     }
   }
   int bestAvgCount = 0;
@@ -144,11 +144,11 @@ rot = -2*M_PI - rot;*/
     }
     //cout << i*rotationStep << " = " << toDegree(i*rotationStep) << " => " << count << " times" << endl;
   }
-  cout << "size " << xOffsets[bestIndex].size() << " should be " << bestAvgCount << endl;
+  /*cout << "size " << xOffsets[bestIndex].size() << " should be " << bestAvgCount << endl;
   for(int i = 0; i < xOffsets[bestIndex].size(); i++){
     cout << "xOff: " << xOffsets[bestIndex][i] << " - yOff: " << yOffsets[bestIndex][i] << endl;
-  }
-  if(bestAvgCount == 0)
+  }*/
+  if(bestAvgCount < 3)
     return false;
   float bestAvg = sumsTheta[bestIndex]/bestAvgCount;
   cout << "most likely rotation is: " << bestAvg << " = " << toDegree(bestAvg) << "°" << endl;
