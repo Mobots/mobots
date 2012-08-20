@@ -15,14 +15,16 @@
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "toro_server_test");
+	ros::init(argc, argv, "image_store_test");
 	ros::NodeHandle handle;
-	ros::Publisher pub = handle.advertise<mobots_msgs::ImageWithDeltaPoseAndID>("mobot_image_pose", 10);
+	ros::Publisher pub = handle.advertise<mobots_msgs::ImageWithDeltaPoseAndID>("image_store_save", 10);
 	
 	mobots_msgs::ImageWithDeltaPoseAndID msg;
-	msg.pose.x = 0;
-	msg.pose.y = 42;
+	msg.pose.x = 40.23;
+	msg.pose.y = 42.23;
+	msg.pose.theta = 30.00;
 	msg.image.encoding = "jpg";
+	msg.mobot_id = 3;
 	std::ifstream imageFile(argv[1], std::ios::binary);
 	imageFile.seekg(0, std::ios::end);
 	int length = imageFile.tellg();
