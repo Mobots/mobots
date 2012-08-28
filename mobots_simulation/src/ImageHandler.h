@@ -6,7 +6,7 @@
 #include "feature_detector/MessageBridge.h"
 #include "mobots_msgs/FeatureSetWithDeltaPose.h"
 #include "mobots_msgs/ImageWithPoseDebug.h"
-#include "mobots_msgs/ImageWithDeltaPoseAndID.h"
+#include "mobots_msgs/ImagePoseID.h"
 #include "cv_bridge/cv_bridge.h"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
@@ -16,7 +16,7 @@ class ImageHandler{
 private:
   char shutterPos;
   char featurePos;
-  ros::Publisher imagePublisher;
+  ros::Publisher publisher;
   ros::Subscriber featureSetSubscriber;
   ros::Subscriber imageSubscriber;
 
@@ -31,7 +31,7 @@ public:
   
   void shutterCallback();
 
-  void shutterCallback2(const mobots_msgs::ImageWithDeltaPoseAndID imageWithPoseAndId);
+  void shutterCallback2(const mobots_msgs::ImagePoseID imageWithPoseAndId);
   
 private:
   void imageCallback(const sensor_msgs::Image image);

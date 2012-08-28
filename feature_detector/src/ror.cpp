@@ -36,22 +36,22 @@ double euclideanDistance(const Point2f& p1, const Point2f& p2){
 }
 
 /**
-* [0, pi]
-*/
+ * [0, pi]
+ */
 inline double getHeading(const Point2f& p1, const Point2f& p2){
   double yDiff = double(p2.y)-double(p1.y);
   double xDiff = double(p2.x)-double(p1.x);
   /*if(abs(xDiff) == 0 && abs(yDiff) == 0){
-return 0;
-}*/ //impossibru
+    return 0;
+  }*/ //impossibru
   double result = atan2(yDiff, xDiff);
   if(result < 0)
     result = M_PI + result;
   return result;
 }
 /**
-* [-pi, pi]
-*/
+ * [-pi, pi]
+ */
 inline double getRotation(const Point2f& p11, const Point2f& p12, const Point2f& p21, const Point2f& p22){
   double heading1 = getHeading(p11, p12);
   double heading2 = getHeading(p21, p22);
@@ -69,15 +69,15 @@ inline void rotate(const Point2f& in, Point2f& out, double angle){
 }
 
 /**
-* FTW
-* Inspired by ror
-* maybe use a simpler method than computing all possible combinations when n is very high,
-* complexity is at least nC2
-*/
+ * FTW
+ * Inspired by ror
+ * maybe use a simpler method than computing all possible combinations when n is very high,
+ * complexity is at least nC2
+ */
 bool rorAlternative(const vector<Point2f>& points1, const vector<Point2f>& points2, Delta& delta){
   //additional ideas:
   //first simple matching: p1[i],p1[i+1] <--> p2[i],p2[i+1]
-  // and: p1[i],p1[i+2] <--> p2[i],p2[i+2]
+  // 		     and: p1[i],p1[i+2] <--> p2[i],p2[i+2]
   //if one rotation get's more than 60% it's ok.
   vector<vector<double> > xOffsets(N);
   vector<vector<double> > yOffsets(N);
@@ -102,25 +102,25 @@ bool rorAlternative(const vector<Point2f>& points1, const vector<Point2f>& point
       Point2f p21 = points2[i1];
       Point2f p22 = points2[i2];
       if(abs(
-euclideanDistance(p11, p12)
-- euclideanDistance(p21, p22)
-) > 10){
-if(out < 100){
-cout << "sorted out " << i1 << "-" << i2 << endl;
-out++;
-}
-continue;
+	euclideanDistance(p11, p12) 
+	- euclideanDistance(p21, p22)
+	    ) > 10){
+	if(out < 100){
+	  cout << "sorted out " << i1 << "-" << i2 << endl;
+	  out++;
+	}
+	continue;
       }
       /*if(abs(euclideanDistance(p11, p12)) < 10){
-cout << "small val!! : " << abs(euclideanDistance(p11, p12)) << endl;
-continue;
-}*/
+	cout << "small val!! : " << abs(euclideanDistance(p11, p12)) << endl;
+	continue;
+      }*/
       double rot = getRotation(p11, p12, p21, p22);
       /*float origR = rot;
-if(rot > M_PI)
-rot = 2*M_PI - rot;
-else if(rot < -M_PI)
-rot = -2*M_PI - rot;*/
+      if(rot > M_PI)
+	rot = 2*M_PI - rot;
+      else if(rot < -M_PI)
+	rot = -2*M_PI - rot;*/
       int index = round(rot/rotationStep);
       best1Mid[index] = i1;
       best2Mid[index] = i2;
@@ -130,8 +130,8 @@ rot = -2*M_PI - rot;*/
       rotate(p21, b, -rot);
       sumsMidX[index] += p11.x - b.x;
       sumsMidY[index] += p11.y - b.y;
-      //xOffsetsMid[index].push_back(p11.x - b.x);
-      //yOffsetsMid[index].push_back(p11.y - b.y);
+      xOffsetsMid[index].push_back(p11.x - b.x);
+      yOffsetsMid[index].push_back(p11.y - b.y);
     }
   }
   int bestAvgCount = 0;
@@ -144,30 +144,31 @@ rot = -2*M_PI - rot;*/
     }
     //cout << i*rotationStep << " = " << toDegree(i*rotationStep) << " => " << count << " times" << endl;
   }
-  /*cout << "size " << xOffsets[bestIndex].size() << " should be " << bestAvgCount << endl;
+  cout << "size " << xOffsets[bestIndex].size() << " should be " << bestAvgCount << endl;
   for(int i = 0; i < xOffsets[bestIndex].size(); i++){
     cout << "xOff: " << xOffsets[bestIndex][i] << " - yOff: " << yOffsets[bestIndex][i] << endl;
-  }*/
-  if(bestAvgCount < 3)
+  }
+  if(bestAvgCount == 0)
     return false;
   float bestAvg = sumsTheta[bestIndex]/bestAvgCount;
-  cout << "most likely rotation is: " << bestAvg << " = " << toDegree(bestAvg) << "°" << endl;
-  double rot = getRotation(points1[bestIndex1[bestIndex]], points1[bestIndex2[bestIndex]],
-points2[bestIndex1[bestIndex]], points2[bestIndex2[bestIndex]]);
-  cout << "most likely rotation2 is: " << rot << " = " << toDegree(rot) << "°" << endl;
+  cout << "most likely rotation is: " << bestAvg  << " = " << toDegree(bestAvg) << "°" << endl;
+  double rot = getRotation(points1[bestIndex1[bestIndex]], points1[bestIndex2[bestIndex]], 
+			   points2[bestIndex1[bestIndex]], points2[bestIndex2[bestIndex]]);
+  cout << "most likely rotation2 is: " << rot  << " = " << toDegree(rot) << "°" << endl;
   delta2.theta = rot;
   Point2f b;
   rotate(points2[bestIndex], b, -rot);
   delta2.x = points1[bestIndex].x - b.x;
   delta2.y = points1[bestIndex].y - b.y;
   delta.theta = bestAvg;
-  float xDiff = sumsX[bestIndex]/bestAvgCount;
-  float yDiff = sumsY[bestIndex]/bestAvgCount;
+  float xDiff =  sumsX[bestIndex]/bestAvgCount;
+  float yDiff =  sumsY[bestIndex]/bestAvgCount;
   delta.x = xDiff;
   delta.y = yDiff;
-  cout << "xdiff " << xDiff << endl;
-  cout << "ydiff " << yDiff << endl;
-  cout << "xdiff2 " << delta2.x << endl;
-  cout << "ydiff2 " << delta2.y << endl;
+  cout << "xdiff " <<  xDiff << endl;
+  cout << "ydiff " <<  yDiff  << endl;
+  cout << "xdiff2 " <<  delta2.x << endl;
+  cout << "ydiff2 " <<  delta2.y  << endl;
   return true;
 }
+
