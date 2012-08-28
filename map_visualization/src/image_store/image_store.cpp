@@ -1,3 +1,8 @@
+/**
+ * For further information: http://pc3.bime.de/dokuwiki/doku.php?id=mobots:software:gui
+ * Writen by Moritz Ulmer, Uni Bremen
+ */
+
 #include <boost/filesystem.hpp>
 
 #include <iostream>
@@ -16,9 +21,8 @@ char naming[] = "%ssession-%i/mobotID%i-%i.%s"; // /home/john/session-1/mobotID2
 int *imageCounter;
 
 /**
- * The imageHandler method. 
- * Image naming convention: mobotID-imageNo.jpeg
- * TODO add session IDs and folders
+ * This Method saves incoming messages. The logic is found in
+ * "image_info". The imageCounter is incremented.
  * TODO check if a session is already has images
  */
 void imageHandlerIn(const mobots_msgs::ImageWithDeltaPoseAndID::ConstPtr& msg){
@@ -28,13 +32,18 @@ void imageHandlerIn(const mobots_msgs::ImageWithDeltaPoseAndID::ConstPtr& msg){
 }
 
 /**
- * 
+ * This Method returns an image and its info upon a valid request.
+ * TODO Move logic to image_info
  */
 bool imageHandlerOut(map_visualization::GetImage::Request &req, map_visualization::GetImage::Response &res){
 	ImageInfo info(req.sessionID, req.mobotID, req.imageID);
+	if(info.getErrorStatus() != 0){
+		res.error = info.getErrorStatus();
+		return true;
+	}
 	
-	// Copy image data from HDD to server response
-	std::ifstream::pos_type size;
+	res.image.image.data = info.getImageData();
+	/*std::ifstream::pos_type size;
 	std::ifstream imageFile(info.getImagePath(), std::ios::binary);
 	if(imageFile.is_open()){
 		imageFile.seekg (0, std::ios::end);
@@ -48,20 +57,25 @@ bool imageHandlerOut(map_visualization::GetImage::Request &req, map_visualizatio
 		res.image.image.data = fifth;
 		delete fileData;
 	} else {
-		res.error = "Image file not found";
+	// Error 1 = Image not found
+		res.error = 1;
 		return true;
-	}
+	}*/
 	return true;
 }
 
 /**
- * The main method.
+ * This node saves images and thier data for later use. The topic to
+ * save images is "image_store_save" and to get them and thier data is
+ * "image_store_get". "mobots_msgs::ImageWithDeltaPoseAndID" is used to
+ * save and "map_visualization::GetImage".
  */
 int main(int argc, char **argv){
-	// The node is called image_in
+	// The node is called image_store_server
 	ros::init(argc, argv, "image_store_server");
 	ros::NodeHandle n;
-	// The topic name is mobot_image_pose
+	// To save images: image_store_save
+	// To get images: image_store_get
 	ros::Subscriber sub = n.subscribe("image_store_save", 10, imageHandlerIn);
 	ros::ServiceServer service = n.advertiseService("image_store_get", imageHandlerOut);
 	
