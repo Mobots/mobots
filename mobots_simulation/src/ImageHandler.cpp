@@ -14,14 +14,6 @@ extern Delta delta2;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-static char TAG[] = "[FeatureDetector] ";
-
-static string getPathForMobot(int mobotId, const string& topic){
-  stringstream ss;
-  ss << "/mobot" << mobotId << "/" << topic;
-  return ss.str();
-}
-
 void copyMatToImageMSg(const cv::Mat& in, mobots_msgs::ImageWithPoseDebug& out2){
   sensor_msgs::Image* out = &out2.image;
   out->height = in.rows;
@@ -67,7 +59,7 @@ inline double toDegree(double rad){
 ImageHandler::ImageHandler():
   shutterPos(0), featurePos(0){
   ros::NodeHandle nh;
-  imagePublisher = nh.advertise<mobots_msgs::ImageWithPoseDebug>("ImageWithPose", 2);
+  publisher = nh.advertise<mobots_msgs::ImageWithPoseDebug>("ImageWithPose", 2);
   featureSetSubscriber = nh.subscribe("FeatureSetWithDeltaPose", 2, &ImageHandler::featuresCallback, this);
   imageSubscriber = nh.subscribe("/usb_cam/image_raw", 2, &ImageHandler::imageCallback, this);
 }
@@ -91,13 +83,14 @@ void ImageHandler::shutterCallback(){
     gimage2 = b1->image;
     msg.image = image2;
   }
-  imagePublisher.publish(msg);
   pthread_mutex_unlock(&mutex);
+  
+  publisher.publish(msg);
   shutterPos++;
   shutterPos %= 2;
 }
 
-void ImageHandler::shutterCallback2(const mobots_msgs::ImageWithDeltaPoseAndID imageWithPoseAndId){
+void ImageHandler::shutterCallback2(const mobots_msgs::ImagePoseID imageWithPoseAndId){
   imageCallback(imageWithPoseAndId.image);
   shutterCallback();
 }

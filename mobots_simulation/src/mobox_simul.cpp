@@ -20,14 +20,6 @@ char yAvg;
 float theta;
 Ptr<ImageHandler> imageHandler;
 
-static char TAG[] = "[mobox_simul.cpp] ";
-
-static string getPathForMobot(int mobotId, const string& topic){
-  stringstream ss;
-  ss << "/mobot" << mobotId << "/" << topic;
-  return ss.str();
-}
-
 void* publisherThread(void* data){
   ros::NodeHandle nodeHandle;
   ros::Rate rate(50);
@@ -53,11 +45,11 @@ int main(int argc, char **argv){
   ros::init(argc, argv, "mouse_node");
   ros::NodeHandle nh("~");
   string mousePath;
-  nh.param("mousePath", mousePath, string("/dev/input/mouse2"));
+  nh.param("mousePath", mousePath, string("/dev/input/mouse1"));
   
   int mouse1 = open(mousePath.c_str(), O_RDONLY);
   if(mouse1 < 0){
-    ROS_ERROR("cannot open %s ", mousePath.c_str());
+    cout << "cannot open " << mousePath << endl;
     //exit(1);
   }
 #ifdef USE_DUAL
@@ -67,8 +59,7 @@ int main(int argc, char **argv){
       exit(1);
     }
 #endif
-  string path = getPathForMobot(0, "ImageWithDeltaPoseAndID");
-  ros::Subscriber sub = nh.subscribe("/mobot_pose/ImageWithDeltaPoseAndID", 2, &ImageHandler::shutterCallback2, &(*imageHandler));
+  ros::Subscriber sub = nh.subscribe("/mobot_pose/ImagePoseID", 2, &ImageHandler::shutterCallback2, &(*imageHandler));
   cout << "Press [ENTER] for manual shutter" << endl;
   imageHandler = new ImageHandler;
   pthread_t thread;
@@ -82,7 +73,7 @@ int main(int argc, char **argv){
   char data2[3];
   ros::Rate rate(50);
   while(ros::ok()){
-    xAvg = 0;
+    /*xAvg = 0;
     yAvg = 0;
     theta = 0;
     read(mouse1, &data1, 3);
