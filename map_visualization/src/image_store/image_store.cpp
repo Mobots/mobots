@@ -4,25 +4,21 @@
  */
 
 #include <boost/filesystem.hpp>
-
 #include <iostream>
 #include <fstream>
 
 #include <ros/ros.h>
-
 #include "image_info.cpp"
 #include "map_visualization/GetImage.h"
 
-
 int mobotNumber = 3; // Number of Mobots
-char savePath[] = "/home/moritz/"; // used to change the default save path
-char naming[] = "%ssession-%i/mobotID%i-%i.%s"; // /home/john/session-1/mobotID2-12.jpg
 int *imageCounter;
 
 /**
  * This Method saves incoming messages. The logic is found in
  * "image_info". The imageCounter is incremented.
  * TODO check if a session is already has images
+ * TODO forward images to "image_map_display"
  */
 void imageHandlerIn(const mobots_msgs::ImageWithDeltaPoseAndID::ConstPtr& msg){
 	ImageInfo info(0, msg->mobot_id, imageCounter[msg->mobot_id], msg->pose.x,  msg->pose.y, msg->pose.theta, msg->image.encoding.c_str(), msg->image.data);
@@ -32,7 +28,6 @@ void imageHandlerIn(const mobots_msgs::ImageWithDeltaPoseAndID::ConstPtr& msg){
 
 /**
  * This Method returns an image and its info upon a valid request.
- * TODO Move logic to image_info
  */
 bool imageHandlerOut(map_visualization::GetImage::Request &req, map_visualization::GetImage::Response &res){
 	ImageInfo info(req.sessionID, req.mobotID, req.imageID);
@@ -48,7 +43,9 @@ bool imageHandlerOut(map_visualization::GetImage::Request &req, map_visualizatio
  * This node saves images and thier data for later use. The topic to
  * save images is "image_store_save" and to get them and thier data is
  * "image_store_get". "mobots_msgs::ImageWithDeltaPoseAndID" is used to
- * save and "map_visualization::GetImage".
+ * save and "map_visualization::GetImage" is used to get.
+ * TODO Write method to delete/modify images/info. Forward changes to
+ * "image_map_display".
  */
 int main(int argc, char **argv){
 	// The node is called image_store_server

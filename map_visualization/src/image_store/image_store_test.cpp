@@ -45,6 +45,7 @@ void saveRequest(std::string filePath, ros::NodeHandle* handle){
 		// Change image info data (pose)
 		msg.pose.x++;
 		msg.pose.y++;
+		count++;
 	}
 	return;
 }
