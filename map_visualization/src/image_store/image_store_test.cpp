@@ -13,7 +13,6 @@
 /**
  * This is an example of how to interface with the image_store server.
  */
-<<<<<<< HEAD
 void saveRequest(std::string filePath, ros::NodeHandle* handle){
 	ros::Publisher pub = handle->advertise<mobots_msgs::ImageWithDeltaPoseAndID>("image_store_save", 10);
 	mobots_msgs::ImageWithDeltaPoseAndID msg;
@@ -25,20 +24,6 @@ void saveRequest(std::string filePath, ros::NodeHandle* handle){
 	msg.mobot_id = 3;
 	// Load image data
 	std::ifstream imageFile(filePath.c_str(), std::ios::binary);
-=======
-
-int main(int argc, char **argv)
-{
-	ros::init(argc, argv, "toro_server_test");
-	ros::NodeHandle handle;
-	ros::Publisher pub = handle.advertise<mobots_msgs::ImageWithDeltaPoseAndID>("mobot_image_pose", 10);
-	
-	mobots_msgs::ImageWithDeltaPoseAndID msg;
-	msg.pose.x = 0;
-	msg.pose.y = 42;
-	msg.image.encoding = "jpg";
-	std::ifstream imageFile(argv[1], std::ios::binary);
->>>>>>> 7600c0cfd7825244935da494abc68b77bcb95055
 	imageFile.seekg(0, std::ios::end);
 	int length = imageFile.tellg();
 	ROS_INFO("length: %i", length);

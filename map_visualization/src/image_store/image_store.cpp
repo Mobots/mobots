@@ -17,7 +17,6 @@
 int mobotNumber = 3; // Number of Mobots
 char savePath[] = "/home/moritz/"; // used to change the default save path
 char naming[] = "%ssession-%i/mobotID%i-%i.%s"; // /home/john/session-1/mobotID2-12.jpg
-
 int *imageCounter;
 
 /**
@@ -41,7 +40,6 @@ bool imageHandlerOut(map_visualization::GetImage::Request &req, map_visualizatio
 		res.error = info.getErrorStatus();
 		return true;
 	}
-	
 	res.image.image.data = info.getImageData();
 	return true;
 }
