@@ -1,7 +1,7 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
-#include "mobots_msgs/ImageWithDeltaPoseAndID.h"
-#include "map_visualization/GetImage.h"
+#include "mobots_msgs/ImageWithDeltaPose.h"
+#include "map_visualization/GetImageWithPose.h"
 #include "image_transport/image_transport.h"
 #include "opencv/cvwimage.h"
 #include "opencv/highgui.h"
@@ -14,14 +14,14 @@
  * This is an example of how to interface with the image_store server.
  */
 void saveRequest(std::string filePath, ros::NodeHandle* handle){
-	ros::Publisher pub = handle->advertise<mobots_msgs::ImageWithDeltaPoseAndID>("image_store_save", 10);
-	mobots_msgs::ImageWithDeltaPoseAndID msg;
+	ros::Publisher pub = handle->advertise<mobots_msgs::ImageWithDeltaPose>("image_store_save", 10);
+	mobots_msgs::ImageWithDeltaPose msg;
 	// Set image info data
-	msg.pose.x = 40.23;
-	msg.pose.y = 42.23;
-	msg.pose.theta = 30.00;
+	msg.delta_pose.x = 40.23;
+	msg.delta_pose.y = 42.23;
+	msg.delta_pose.theta = 30.00;
 	msg.image.encoding = "jpg";
-	msg.mobot_id = 3;
+	msg.id.mobot_id = 3;
 	// Load image data
 	std::ifstream imageFile(filePath.c_str(), std::ios::binary);
 	imageFile.seekg(0, std::ios::end);
@@ -43,19 +43,19 @@ void saveRequest(std::string filePath, ros::NodeHandle* handle){
 		ros::spinOnce();
 		loop_rate.sleep();
 		// Change image info data (pose)
-		msg.pose.x++;
-		msg.pose.y++;
+		msg.delta_pose.x++;
+		msg.delta_pose.y++;
 		count++;
 	}
 	return;
 }
 
 void getRequest(int sessionID, int mobotID, int imageID, ros::NodeHandle* handle){
-	ros::ServiceClient client = handle->serviceClient<map_visualization::GetImage>("image_store_get");
-	map_visualization::GetImage srv;
-	srv.request.sessionID = sessionID;
-	srv.request.mobotID = mobotID;
-	srv.request.imageID = imageID;
+	ros::ServiceClient client = handle->serviceClient<map_visualization::GetImageWithPose>("image_store_get");
+	map_visualization::GetImageWithPose srv;
+	srv.request.id.session_id = sessionID;
+	srv.request.id.mobot_id = mobotID;
+	srv.request.id.image_id = imageID;
 	
 	if(client.call(srv)){
 		if(srv.response.error == 0){
@@ -71,7 +71,7 @@ void getRequest(int sessionID, int mobotID, int imageID, ros::NodeHandle* handle
 
 /**
  * This server is used to check if the toro_client.cpp works.
- * The ImageWithDeltaPoseAndID msg is tested.
+ * The ImagePoseID msg is tested.
  */
 int main(int argc, char **argv)
 {

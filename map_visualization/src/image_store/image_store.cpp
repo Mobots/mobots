@@ -9,7 +9,8 @@
 
 #include <ros/ros.h>
 #include "image_info.cpp"
-#include "map_visualization/GetImage.h"
+#include "map_visualization/GetImageWithPose.h"
+#include "mobots_msgs/ImageWithDeltaPose.h"
 
 int mobotNumber = 3; // Number of Mobots
 int *imageCounter;
@@ -20,22 +21,22 @@ int *imageCounter;
  * TODO check if a session is already has images
  * TODO forward images to "image_map_display"
  */
-void imageHandlerIn(const mobots_msgs::ImageWithDeltaPoseAndID::ConstPtr& msg){
-	ImageInfo info(0, msg->mobot_id, imageCounter[msg->mobot_id], msg->pose.x,  msg->pose.y, msg->pose.theta, msg->image.encoding.c_str(), msg->image.data);
-	ROS_INFO("image_store: image saved: %i", imageCounter[msg->mobot_id]);
-	imageCounter[msg->mobot_id]++;
+void imageHandlerIn(const mobots_msgs::ImageWithDeltaPose::ConstPtr& msg){
+	ImageInfo info(0, msg->id.mobot_id, imageCounter[msg->id.mobot_id], msg->delta_pose.x,  msg->delta_pose.y, msg->delta_pose.theta, msg->image.encoding.c_str(), msg->image.data);
+	ROS_INFO("image_store: image saved: %i", imageCounter[msg->id.mobot_id]);
+	imageCounter[msg->id.mobot_id]++;
 }
 
 /**
  * This Method returns an image and its info upon a valid request.
  */
-bool imageHandlerOut(map_visualization::GetImage::Request &req, map_visualization::GetImage::Response &res){
-	ImageInfo info(req.sessionID, req.mobotID, req.imageID);
+bool imageHandlerOut(map_visualization::GetImageWithPose::Request &req, map_visualization::GetImageWithPose::Response &res){
+	ImageInfo info(req.id.session_id, req.id.mobot_id, req.id.image_id);
 	if(info.getErrorStatus() != 0){
 		res.error = info.getErrorStatus();
 		return true;
 	}
-	res.image.image.data = info.getImageData();
+	res.image.data = info.getImageData();
 	return true;
 }
 
@@ -43,7 +44,7 @@ bool imageHandlerOut(map_visualization::GetImage::Request &req, map_visualizatio
  * This node saves images and thier data for later use. The topic to
  * save images is "image_store_save" and to get them and thier data is
  * "image_store_get". "mobots_msgs::ImageWithDeltaPoseAndID" is used to
- * save and "map_visualization::GetImage" is used to get.
+ * save and "map_visualization::GetImageWithPose" is used to get.
  * TODO Write method to delete/modify images/info. Forward changes to
  * "image_map_display".
  */
