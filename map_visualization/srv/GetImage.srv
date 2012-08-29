@@ -1,8 +1,0 @@
-# This srv request specifies an image and a compressed image is returned.
-
-uint8 sessionID
-uint8 mobotID
-uint8 imageID
----
-mobots_msgs/ImageWithDeltaPoseAndID image
-uint8 error

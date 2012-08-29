@@ -1,0 +1,12 @@
+# This srv request specifies an image and a compressed image is returned.
+# type defines which information is requested.(Both - 0, Image - 1, Pose - 2)
+# rel_pose - Relative Pose, abs_pose - Absolute Pose
+# error codes are found in map_visualization/src/image_store/error_status.cpp
+
+mobots_msgs/ID id
+int8 type
+---
+sensor_msgs/Image image
+geometry_msgs/Pose2D rel_pose
+geometry_msgs/Pose2D abs_pose
+int8 error

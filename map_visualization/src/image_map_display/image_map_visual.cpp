@@ -52,8 +52,8 @@ ImageMapVisual::ImageMapVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNo
   Ogre::String ext = filename_.substr(pos+1);
   
   ROS_INFO("Check3.0| %s", filename_.c_str());
-  IplImage* img = cvLoadImage( "/home/moritz/TillEvil.jpg", 0);
-  ROS_INFO("Check3.1| %i,%i;%i;%i-%i", img->width, img->height, img->imageSize, sizeof(img->imageData), img->depth);  
+  IplImage* img = cvLoadImage( "/home/moritz/TillEvil.jpg", 1);
+  ROS_INFO("Check3.1| %i,%i;%i;%i", img->width, img->height, img->imageSize, img->depth);
   //cvShowImage("mainWin", img );
   
   ROS_INFO("Check4");
@@ -64,7 +64,7 @@ ImageMapVisual::ImageMapVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNo
     Ogre::TEX_TYPE_2D, 		// type
     img->width, img->height,// width & height
     0,						// No. of mipmaps
-    Ogre::PF_L8,		// PixelFormat
+	Ogre::PF_X8R8G8B8,		// PixelFormat
     Ogre::TU_DEFAULT);
   //---------------------------------------------------------
   // Get the pixel buffer
@@ -75,26 +75,23 @@ ImageMapVisual::ImageMapVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNo
   pixelBuffer->lock(Ogre::HardwareBuffer::HBL_NORMAL); // for best performance use HBL_DISCARD!
   const Ogre::PixelBox& pixelBox = pixelBuffer->getCurrentLock();
   
-  Ogre::uint8* pDest = static_cast<Ogre::uint8*>(pixelBox.data);
+  Ogre::uint32* pDest = static_cast<Ogre::uint32*>(pixelBox.data);
   
-  // Fill in some pixel data. This will give a semi-transparent blue,
-  // but this is of course dependent on the chosen pixel format.
-  {
-	int k = 0;
-	for (size_t j = 0; j < img->width; j++){
-	  for(size_t i = 0; i < img->height; i++)
-	  {
-		// Black n White TV
-		*pDest++ = img->imageData[k++]; // L
-		// Color TV
-		/* *pDest++ = 127;					// A
-		*pDest++ = img->imageData[k+1]; // B
-		*pDest++ = img->imageData[k+2]; // G
-		*pDest++ = img->imageData[k+0]; // R
-		k+=3;*/
-	  }
+  // Fill in some pixel data.
+	{
+		int k = 0;
+		Ogre::uint32 bit32;
+		int imageSize = img->width * img->height;
+		for (int j = 0; j < imageSize; j++){
+			// Black n White TV
+			bit32 = ((img->imageData[k]&0xFF)<<16) | ((img->imageData[k + 1]&0xFF)<<8) | ((img->imageData[k + 2]&0xFF));
+			ROS_INFO("hex pixel: %x", bit32);
+			*pDest++ = bit32;
+			k += 3;
+			//*pDest++ = 0x00FFFF00;
+			//*pDest++ = img->imageData[k++];
+		}
 	}
-  }
   
   // Unlock the pixel buffer
   pixelBuffer->unlock();
