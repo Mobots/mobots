@@ -83,9 +83,7 @@ ImageMapVisual::ImageMapVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNo
 		Ogre::uint32 bit32;
 		int imageSize = img->width * img->height;
 		for (int j = 0; j < imageSize; j++){
-			// Black n White TV
 			bit32 = ((img->imageData[k]&0xFF)<<16) | ((img->imageData[k + 1]&0xFF)<<8) | ((img->imageData[k + 2]&0xFF));
-			ROS_INFO("hex pixel: %x", bit32);
 			*pDest++ = bit32;
 			k += 3;
 			//*pDest++ = 0x00FFFF00;
