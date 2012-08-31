@@ -2,26 +2,29 @@
  * For further information: http://pc3.bime.de/dokuwiki/doku.php?id=mobots:software:gui
  * Writen by Moritz Ulmer, Uni Bremen
  */
-
 #include <iostream>
 #include <fstream>
-#include <string>
 #include <limits>
-
 #include <boost/filesystem.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 
 /**
   * Image info file convention. dataConvention[] is used.
-  * TODO unite dataConvention[] and sessionIDLine,... etc.
+  * TODO move to XML
   * # This expresses a pose(x, y, theta), sessionID, mobotID, encoding
   * 
   * uint8 sessionID
   * uint8 mobotID
   * uint8 imageID
   * 
-  * float64 x
-  * float64 y
-  * float64 theta
+  * float64 delta_x
+  * float64 delta_y
+  * float64 delta_theta
+  * 
+  * float64 absolute_x
+  * float64 absolute_y
+  * float64 absolute_theta
   * 
   * string encoding
   */
@@ -54,42 +57,42 @@ char infoHeader[] = "# This expresses a pose(x, y, theta), sessionID, mobotID, e
  * TODO calculate imagePath size
  */
 class ImageInfo{
-	public:
-		// Load an image/infos: sessionID, mobotID, imageID
-		ImageInfo(int, int, int);
-		// Save an image/infos: sessionID, mobotID, imageID, poseX,
-		// poseY, poseTheta, encoding, imageData 
-		ImageInfo(int, int, int, float, float, float, const char*, const std::vector<unsigned char>);
-		
-		std::string savePath;
-		uint sessionID;
-		uint mobotID;
-		uint imageID;
-		
-		std::string infoPath;
-		float poseX;
-		float poseY;
-		float poseTheta;
-		
-		std::string imagePath;
-		std::vector<unsigned char> imageData;
-		size_t imageSize;
-		std::string encoding;
-		
-		const char* getEncoding();
-		void setEncoding(char*);
-		const char* getImagePath();
-		int getErrorStatus();
-		std::vector<unsigned char> getImageData();
-	private:
-		int goToLine(std::ifstream& file, uint num);
-		char* concPath(const char*);
-		char* concPath();
-		int initReadInfo();
-		int initReadImage();
-		int initWrite();
-		void printVars();
-		int errorStatus;
+public:
+	// Load an image/infos: sessionID, mobotID, imageID
+	ImageInfo(int, int, int);
+	// Save an image/infos: sessionID, mobotID, imageID, poseX,
+	// poseY, poseTheta, encoding, imageData
+	ImageInfo(int, int, int, float, float, float, const char*, const std::vector<unsigned char>);
+	
+	std::string savePath;
+	uint sessionID;
+	uint mobotID;
+	uint imageID;
+	
+	std::string infoPath;
+	float poseX;
+	float poseY;
+	float poseTheta;
+	
+	std::string imagePath;
+	std::vector<unsigned char> imageData;
+	size_t imageSize;
+	std::string encoding;
+	
+	const char* getEncoding();
+	void setEncoding(char*);
+	const char* getImagePath();
+	int getErrorStatus();
+	std::vector<unsigned char> getImageData();
+private:
+	int goToLine(std::ifstream& file, uint num);
+	char* concPath(const char*);
+	char* concPath();
+	int initReadInfo();
+	int initReadImage();
+	int initWrite();
+	void printVars();
+	int errorStatus;
 };
 
 /**
