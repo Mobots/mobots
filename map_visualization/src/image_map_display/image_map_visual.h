@@ -1,6 +1,3 @@
-#ifndef IMU_VISUAL_H
-#define IMU_VISUAL_H
-
 #include <sensor_msgs/Imu.h>
 
 #include <ros/ros.h>
@@ -80,5 +77,3 @@ private:
 // END_TUTORIAL
 
 } // end namespace rviz_plugin_tutorials
-
-#endif // IMU_VISUAL_H

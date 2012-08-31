@@ -218,7 +218,6 @@ void ImageMapDisplay::fixedFrameChanged()
 // This is our callback to handle an incoming message.
 void ImageMapDisplay::incomingMessage( const sensor_msgs::Imu::ConstPtr& msg )
 {
-  ROS_INFO("Dis: Incoming Msg");
   ++messages_received_;
   
   // Each display can have multiple status lines.  This one is called
@@ -319,4 +318,3 @@ void ImageMapDisplay::createProperties()
 // global scope, outside our package's namespace.
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_DECLARE_CLASS( map_visualization, ImageMap, map_visualization::ImageMapDisplay, rviz::Display )
-// END_TUTORIAL
