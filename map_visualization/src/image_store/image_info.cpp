@@ -9,6 +9,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
+#include "image_info_data.cpp"
+
 /**
   * Image info file convention. dataConvention[] is used.
   * TODO move to XML
@@ -59,10 +61,10 @@ char infoHeader[] = "# This expresses a pose(x, y, theta), sessionID, mobotID, e
 class ImageInfo{
 public:
 	// Load an image/infos: sessionID, mobotID, imageID
-	ImageInfo(int, int, int);
+	ImageInfo(const image_id_t* id);
 	// Save an image/infos: sessionID, mobotID, imageID, poseX,
 	// poseY, poseTheta, encoding, imageData
-	ImageInfo(int, int, int, float, float, float, const char*, const std::vector<unsigned char>);
+	ImageInfo(const image_info_data* infoData_, const std::vector<unsigned char>);
 	
 	std::string savePath;
 	uint sessionID;
@@ -88,29 +90,34 @@ private:
 	int goToLine(std::ifstream& file, uint num);
 	char* concPath(const char*);
 	char* concPath();
-	int initReadInfo();
+	//int initReadInfo();
 	int initReadImage();
 	int initWrite();
 	void printVars();
 	int errorStatus;
+
+	image_info_data infoData;
 };
 
 /**
  * Constructor if the image exists
  */
-ImageInfo::ImageInfo(int sessionID_, int mobotID_, int imageID_){
+ImageInfo::ImageInfo(const image_id_t* id){
 	savePath = savePathRoot;
-	sessionID = sessionID_;
-	mobotID = mobotID_;
-	imageID = imageID_;
+	infoData.id = *id;
 	infoPath = concPath(infoEnding.c_str());
 	errorStatus = 0;
-	if(initReadInfo() == 0){
+	try{
+		infoData.load(infoPath);
+	}catch (std::exception &e){
+		ROS_INFO("Error: %s", e.what());
+	}
+	/*if(initReadInfo() == 0){
 		ROS_INFO("initInfoRead: Success:%s", infoPath.c_str());
 	} else {
 		ROS_INFO("initInfoRead: Failure:%s", infoPath.c_str());
 		return;
-	}
+	}*/
 	// Only now do we have the encoding type(= image ending)
 	imagePath = concPath(encoding.c_str());
 	if(initReadImage() == 0){
@@ -125,23 +132,20 @@ ImageInfo::ImageInfo(int sessionID_, int mobotID_, int imageID_){
  * Constructor if the image does not exist. This is the case when a new image
  * is recieved to be stored.
  */
-ImageInfo::ImageInfo(int sessionID_, int mobotID_, int imageID_, float poseX_, float poseY_, float poseTheta_, const char* encoding_, const std::vector<unsigned char> imageData_){
+ImageInfo::ImageInfo(const image_info_data* infoData_, const std::vector<unsigned char> imageData_){
 	savePath = savePathRoot;
-	sessionID = sessionID_;
-	mobotID = mobotID_;
-	imageID = imageID_;
-	poseX = poseX_;
-	poseY = poseY_;
-	poseTheta = poseTheta_;
-	encoding = encoding_;
+	infoData = *infoData_;
+	
 	imageData = imageData_;
 	imageSize = imageData.size();
-	imagePath = concPath(encoding.c_str());
+	imagePath = concPath(infoData.encoding.c_str());
 	infoPath = concPath(infoEnding.c_str());
 	errorStatus = 0;
-	
-	//printVars(); // For debug purposes
-	
+	try{
+		infoData.save(infoPath);
+	}catch (std::exception &e){
+		ROS_INFO("Error: %s", e.what());
+	}
 	if(initWrite() == 0){
 		ROS_INFO("ImageInfo: Init Write Success:%s", imagePath.c_str());
 	} else {
@@ -153,7 +157,7 @@ ImageInfo::ImageInfo(int sessionID_, int mobotID_, int imageID_, float poseX_, f
  * Loads the meta data of an image.
  * @return if fail, return 1. Else return 0.
  */
-int ImageInfo::initReadInfo(){
+/*int ImageInfo::initReadInfo(){
 	std::ifstream infoFile(infoPath.c_str());
 	std::string value;
 	if(infoFile.is_open()){
@@ -190,7 +194,7 @@ int ImageInfo::initReadInfo(){
 	}
 	infoFile.close();
 	return 0;
-}
+}*/
 
 /**
  * Loads the image data.
@@ -237,18 +241,18 @@ int ImageInfo::initWrite(){
 	}
 	
 	//Save info file to disk
-	char* infoData = new char[1000];
-	sprintf(infoData, dataConvention, infoHeader, sessionID, mobotID, imageID, poseX, poseY, poseTheta, encoding.c_str());
+	/*char* infoContents = new char[1000];
+	sprintf(infoContents, dataConvention, infoHeader, sessionID, mobotID, imageID, poseX, poseY, poseTheta, encoding.c_str());
 	std::ofstream infoFile(infoPath.c_str());
 	if(infoFile.is_open()){
-		infoFile << infoData;
+		infoFile << infoContents;
 		infoFile.close();
 	} else {
 		ROS_INFO("ImageInfo:%s: Can't save info", infoPath.c_str());
-		delete infoData;
+		delete infoContents;
 		return 1;
 	}
-	delete infoData;
+	delete infoContents;*/
 	return 0;
 }
 
@@ -277,7 +281,7 @@ int ImageInfo::goToLine(std::ifstream& file, uint num){
 char* ImageInfo::concPath(const char* ending){
 	char* path = new char[1000];
 	std::string pathConvention = folderConvention + fileConvention;
-	sprintf(path, pathConvention.c_str(), savePath.c_str(), sessionID, mobotID, imageID, ending);
+	sprintf(path, pathConvention.c_str(), savePath.c_str(), infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ending);
 	return path;
 }
 
@@ -287,7 +291,7 @@ char* ImageInfo::concPath(const char* ending){
  */
 char* ImageInfo::concPath(){
 	char* path = new char[1000];
-	sprintf(path, folderConvention.c_str(), savePath.c_str(), sessionID);
+	sprintf(path, folderConvention.c_str(), savePath.c_str(), infoData.id.sessionID);
 	return path;
 }
 
@@ -306,22 +310,4 @@ int ImageInfo::getErrorStatus(){
 }
 std::vector<unsigned char> ImageInfo::getImageData(){
 	return imageData;
-}
-
-void ImageInfo::printVars(){
-	ROS_INFO("image_info:infoPath %s", infoPath.c_str());
-	ROS_INFO("image_info:savePath %s", savePath.c_str());
-	ROS_INFO("image_info:sessionID %i", sessionID);
-	ROS_INFO("image_info:mobotID %i", mobotID);
-	ROS_INFO("image_info:imageID %i", imageID);
-		
-	ROS_INFO("image_info:poseX %f", poseX);
-	ROS_INFO("image_info:poseY %f", poseY);
-	ROS_INFO("image_info:poseTheta %f", poseTheta);
-		
-	ROS_INFO("image_info:imageData %i", sizeof(imageData));
-	ROS_INFO("image_info:imageSize %i", imageSize);
-	ROS_INFO("image_info:imagePath %s", imagePath.c_str());
-	ROS_INFO("image_info:encoding %s", encoding.c_str());
-	return;
 }
