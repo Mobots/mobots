@@ -1,6 +1,6 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
-#include "mobots_msgs/ImageWithDeltaPose.h"
+#include "mobots_msgs/ImageWithPoseAndID.h"
 #include "map_visualization/GetImageWithPose.h"
 #include "image_transport/image_transport.h"
 #include "opencv/cvwimage.h"
@@ -14,12 +14,12 @@
  * This is an example of how to interface with the image_store server.
  */
 void saveRequest(std::string filePath, ros::NodeHandle* handle){
-	ros::Publisher pub = handle->advertise<mobots_msgs::ImageWithDeltaPose>("image_store_save", 10);
-	mobots_msgs::ImageWithDeltaPose msg;
+	ros::Publisher pub = handle->advertise<mobots_msgs::ImageWithPoseAndID>("image_store_save", 10);
+	mobots_msgs::ImageWithPoseAndID msg;
 	// Set image info data
-	msg.delta_pose.x = 40.23;
-	msg.delta_pose.y = 42.23;
-	msg.delta_pose.theta = 30.00;
+	msg.pose.x = 40.23;
+	msg.pose.y = 42.23;
+	msg.pose.theta = 30.00;
 	msg.image.encoding = "jpg";
 	msg.id.mobot_id = 3;
 	// Load image data
@@ -43,8 +43,8 @@ void saveRequest(std::string filePath, ros::NodeHandle* handle){
 		ros::spinOnce();
 		loop_rate.sleep();
 		// Change image info data (pose)
-		msg.delta_pose.x++;
-		msg.delta_pose.y++;
+		msg.pose.x++;
+		msg.pose.y++;
 		count++;
 	}
 	return;
