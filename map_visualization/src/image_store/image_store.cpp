@@ -13,9 +13,23 @@
 #include "mobots_msgs/ImageWithPoseAndID.h"
 #include "mobots_msgs/PoseAndID.h"
 
+std::vector<pose_t> deltaPoseBuffer;
+int currentSessionID = 0;
+
+void refreshDeltaPoseBuffer(){
+	ImageInfo imageInfo;
+	image_id_t id;
+	deltaPoseBuffer.clear();
+	id.sessionID = currentSessionID;
+	for(id.mobotID = 0; imageInfo.getErrorStatus() == 0; id.mobotID++){
+		imageInfo.loadLast(&id);
+		deltaPoseBuffer.push_back(imageInfo.getRelPose());
+	}
+}
+
 /**
  * This Method saves incoming messages. The logic is found in
- * "image_info". The imageCounter is incremented.
+ * "image_info".
  * TODO check if a session is already has images
  * TODO forward images to "image_map_display"
  */
@@ -26,6 +40,20 @@ void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg)
 		{0,0,0,0},
 		msg->image.encoding
 	};
+	// Check if the correct session is used
+	if(currentSessionID != infoData.id.sessionID){
+		currentSessionID = infoData.id.sessionID;
+		refreshDeltaPoseBuffer();
+	}
+	// All delta poses exept the first one need to be added to the last one.
+	if(infoData.id.imageID != 0){
+		infoData.rel_pose = infoData.rel_pose + deltaPoseBuffer[infoData.id.mobotID];
+	}
+	// If the vector is too small
+	if(infoData.id.mobotID > deltaPoseBuffer.size()){
+		deltaPoseBuffer.resize(infoData.id.mobotID);
+	}
+	deltaPoseBuffer[infoData.id.mobotID] = infoData.rel_pose;
 	ImageInfo info(&infoData, msg->image.data);
 	ROS_INFO("image_store: image saved: %i", msg->id.image_id);
 }

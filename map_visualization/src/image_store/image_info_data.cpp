@@ -16,7 +16,16 @@ struct pose_t{
 	float y;
 	float theta;
 	bool enable;
+	pose_t operator+(const pose_t&);
 };
+
+pose_t pose_t::operator+(const pose_t& other)
+{
+	float resultX = x + other.x;
+	float resultY = y + other.y;
+	float resultTheta = theta + other.theta;
+	return pose_t{resultX, resultY, resultTheta, 1};
+}
 
 struct image_info_data{
 	image_id_t id;
