@@ -19,6 +19,12 @@ struct pose_t{
 	pose_t operator+(const pose_t&);
 };
 
+struct imageT{
+	int x;
+	int y;
+	std::string encoding;
+};
+
 pose_t pose_t::operator+(const pose_t& other)
 {
 	float resultX = x + other.x;
