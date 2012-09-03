@@ -32,6 +32,10 @@ public:
 	void setRelPose(const pose_t* pose);
 	pose_t getAbsPose();
 	void setAbsPose(const pose_t* pose);
+	image_id_t getID();
+	void setID(const image_id_t* id);
+	std::string getEncoding();
+	void setEncoding(const std::string* encoding);
 	
 	int getErrorStatus();
 	std::vector<unsigned char> getImageData();
@@ -210,6 +214,11 @@ pose_t ImageInfo::getRelPose(){return infoData.rel_pose;}
 void ImageInfo::setRelPose(const pose_t* pose){infoData.rel_pose = *pose;}
 pose_t ImageInfo::getAbsPose(){return infoData.abs_pose;}
 void ImageInfo::setAbsPose(const pose_t* pose){infoData.abs_pose = *pose;}
+image_id_t ImageInfo::getID(){return infoData.id;}
+void ImageInfo::setID(const image_id_t* id){infoData.id = *id;}
+std::string ImageInfo::getEncoding(){return infoData.encoding;}
+void ImageInfo::setEncoding(const std::string* encoding)
+	{infoData.encoding = *encoding;}
 
 std::vector<unsigned char> ImageInfo::getImageData(){
 	if(imageData.size() == 0){
