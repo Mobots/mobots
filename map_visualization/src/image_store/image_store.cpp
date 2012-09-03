@@ -11,6 +11,7 @@
 #include "image_info.cpp"
 #include "map_visualization/GetImageWithPose.h"
 #include "mobots_msgs/ImageWithPoseAndID.h"
+#include "mobots_msgs/PoseAndID.h"
 
 /**
  * This Method saves incoming messages. The logic is found in
@@ -18,7 +19,7 @@
  * TODO check if a session is already has images
  * TODO forward images to "image_map_display"
  */
-void imageHandlerIn(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg){
+void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg){
 	image_info_data infoData{
 		{msg->id.session_id, msg->id.mobot_id, msg->id.image_id},
 		{msg->pose.x, msg->pose.y, msg->pose.theta, 1},
@@ -26,6 +27,17 @@ void imageHandlerIn(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg){
 		msg->image.encoding
 	};
 	ImageInfo info(&infoData, msg->image.data);
+	ROS_INFO("image_store: image saved: %i", msg->id.image_id);
+}
+
+void absolutePoseHandler(const mobots_msgs::PoseAndID::ConstPtr& msg){
+	image_info_data infoData{
+		{msg->id.session_id, msg->id.mobot_id, msg->id.image_id},
+		{0,0,0,0},
+		{msg->pose.x, msg->pose.y, msg->pose.theta, 1},
+		0
+	};
+	ImageInfo info(&infoData);
 	ROS_INFO("image_store: image saved: %i", msg->id.image_id);
 }
 
@@ -48,7 +60,7 @@ bool imageHandlerOut(map_visualization::GetImageWithPose::Request &req, map_visu
  * save images is "image_store_save" and to get them and thier data is
  * "image_store_get". "mobots_msgs::ImageWithPoseAndID" is used to
  * save and "map_visualization::GetImageWithPose" is used to get.
- * TODO Write method to delete/modify images/info. Forward changes to
+ * TODO Write method to delete images/info. Forward changes to
  * "image_map_display".
  */
 int main(int argc, char **argv){
@@ -57,7 +69,8 @@ int main(int argc, char **argv){
 	ros::NodeHandle n;
 	// To save images: image_store_save
 	// To get images: image_store_get
-	ros::Subscriber sub = n.subscribe("image_store_save", 10, imageHandlerIn);
+	ros::Subscriber deltaSub = n.subscribe("shutter_image_delta_pose", 10, imageDeltaPoseHandler);
+	ros::Subscriber absoluteSub = n.subscribe("slam_absolute_pose", 10, absolutePoseHandler);
 	ros::ServiceServer service = n.advertiseService("image_store_get", imageHandlerOut);
 	
 	ROS_INFO("Image_store: Ready");
