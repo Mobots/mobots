@@ -57,11 +57,15 @@ void Shutter::publishMessage(double &x, double &y, double &theta, const sensor_m
     poseImage_pub.publish(ipid);
 }
 
-
+int frame = 0;
 
 void Shutter::imageCallback(const sensor_msgs::Image &mobot_image) {
     double safe = g.checkPicture(dX, dY, dTheta);
-	std::out << "Überlappung: " << safe << std::endl;
+    frame++;
+    if(frame == 20){
+      std::out << "Überlappung: " << safe << "of " << overlap << "  => " << safe/overlap*100 << "%" << std::endl;
+      frame = 0;
+    }
     if (safe < overlap) {
         publishMessage(dX, dY, dTheta, mobot_image);
         dX = 0;
