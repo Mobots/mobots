@@ -63,7 +63,7 @@ void Shutter::imageCallback(const sensor_msgs::Image &mobot_image) {
     double safe = g.checkPicture(dX, dY, dTheta);
     frame++;
     if(frame == 20){
-      std::out << "Überlappung: " << safe << "of " << overlap << "  => " << safe/overlap*100 << "%" << std::endl;
+      std::cout << "Überlappung: " << safe << "of " << overlap << "  => " << safe/overlap*100 << "%" << std::endl;
       frame = 0;
     }
     if (safe < overlap) {
