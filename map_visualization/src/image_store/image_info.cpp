@@ -23,54 +23,59 @@ std::string infoEnding("info");
  */
 class ImageInfo{
 public:
+	ImageInfo();
 	ImageInfo(const image_id_t* id);
 	ImageInfo(const image_info_data* infoData_);
 	ImageInfo(const image_info_data* infoData_, const std::vector<unsigned char>);
+
+	pose_t getRelPose();
+	void setRelPose(const pose_t* pose);
+	pose_t getAbsPose();
+	void setAbsPose(const pose_t* pose);
+	image_id_t getID();
+	void setID(const image_id_t* id);
+	std::string getEncoding();
+	void setEncoding(const std::string* encoding);
 	
-	const char* getEncoding();
-	void setEncoding(char*);
-	const char* getImagePath();
 	int getErrorStatus();
 	std::vector<unsigned char> getImageData();
+	void loadLast(const image_id_t* id_);
 private:
 	std::string savePath;
-	std::string infoPath;
+	int errorStatus;
 	
+	std::string infoPath;
 	image_info_data infoData;
 	
 	std::string imagePath;
 	std::vector<unsigned char> imageData;
-	size_t imageSize;
-	std::string encoding;
 	
 	char* concPath(const char*);
 	char* concPath();
 	int initReadImage();
 	int initWrite();
-	int errorStatus;
 };
 
-/**
- * Constructor if the image exists
- */
-ImageInfo::ImageInfo(const image_id_t* id){
+ImageInfo::ImageInfo(){
 	savePath = savePathRoot;
-	infoData.id = *id;
-	infoPath = concPath(infoEnding.c_str());
 	errorStatus = 0;
+}
+
+/**
+ * Constructor if the image exists. The image is loaded only when it is needed.
+ */
+ImageInfo::ImageInfo(const image_id_t* id_){
+	errorStatus = 0;
+	savePath = savePathRoot;
+	infoData.id = *id_;
+	infoPath = concPath(infoEnding.c_str());
 	try{
 		infoData.load(infoPath);
 	}catch (std::exception &e){
 		ROS_INFO("Error: %s", e.what());
+		errorStatus = 102;
 	}
-	// Only now do we have the encoding type(= image ending)
-	imagePath = concPath(encoding.c_str());
-	if(initReadImage() == 0){
-		ROS_INFO("initImageRead: Success:%s", imagePath.c_str());
-	} else {
-		ROS_INFO("initImageRead: Failure:%s", imagePath.c_str());
-		return;
-	}
+	imagePath = concPath(infoData.encoding.c_str());
 }
 
 /**
@@ -78,6 +83,7 @@ ImageInfo::ImageInfo(const image_id_t* id){
  * be overwritten.
  */
 ImageInfo::ImageInfo(const image_info_data* infoData_){
+	errorStatus = 0;
 	infoData.id = infoData_->id;
 	infoPath = concPath(infoEnding.c_str());
 	try{
@@ -91,6 +97,7 @@ ImageInfo::ImageInfo(const image_info_data* infoData_){
 		infoData.save(infoPath);
 	}catch (std::exception &e){
 		ROS_INFO("Error: %s", e.what());
+		errorStatus = 102;
 	}
 }
 
@@ -99,24 +106,13 @@ ImageInfo::ImageInfo(const image_info_data* infoData_){
  * is recieved to be stored.
  */
 ImageInfo::ImageInfo(const image_info_data* infoData_, const std::vector<unsigned char> imageData_){
+	errorStatus = 0;
 	savePath = savePathRoot;
 	infoData = *infoData_;
-	
 	imageData = imageData_;
-	imageSize = imageData.size();
 	imagePath = concPath(infoData.encoding.c_str());
 	infoPath = concPath(infoEnding.c_str());
-	errorStatus = 0;
-	try{
-		infoData.save(infoPath);
-	}catch (std::exception &e){
-		ROS_INFO("Error: %s", e.what());
-	}
-	if(initWrite() == 0){
-		ROS_INFO("ImageInfo: Init Write Success:%s", imagePath.c_str());
-	} else {
-		ROS_INFO("ImageInfo: Init Write Failure:%s", imagePath.c_str());
- 	}
+	initWrite();
 }
 
 /**
@@ -147,22 +143,48 @@ int ImageInfo::initReadImage(){
  * Save an image and its info file.
  */
 int ImageInfo::initWrite(){
-	//Create the directory
+	// Create the directory
 	char* infoFolderPath = concPath();
 	boost::filesystem::create_directories(infoFolderPath);
 	delete infoFolderPath;
-	
-	//Save image to disk
+	// Save info to disk
+	try{
+		infoData.save(infoPath);
+	}catch (std::exception &e){
+		ROS_INFO("Error: %s", e.what());
+		errorStatus = 102;
+		return 1;
+	}
+	// Save image to disk
 	std::ofstream imageFile(imagePath.c_str(), std::ios::binary);
 	if(imageFile.is_open()){
-		//imageFile.write((const char*) imageData, imageSize);
-		imageFile.write((const char*) &imageData[0], imageSize * sizeof(unsigned char));
+		imageFile.write((const char*) &imageData[0], imageData.size() * sizeof(unsigned char));
 		imageFile.close();
 	} else {
 		ROS_INFO("ImageInfo:%s: Can't save image", imagePath.c_str());
 		return 1;
 	}
 	return 0;
+}
+
+void ImageInfo::loadLast(const image_id_t* id_){
+	infoData.id = *id_;
+	infoData.id.imageID = 0;
+	infoPath = concPath(infoEnding.c_str());
+	if(!boost::filesystem::exists(infoPath)){
+		errorStatus = 102;
+		return;
+	}
+	while(boost::filesystem::exists(infoPath)){
+		infoPath = concPath(infoEnding.c_str());
+		infoData.id.imageID++;
+	}
+	try{
+		infoData.load(infoPath);
+	}catch (std::exception &e){
+		ROS_INFO("Error: %s", e.what());
+		errorStatus = 102;
+	}
 }
 
 /**
@@ -186,19 +208,25 @@ char* ImageInfo::concPath(){
 	return path;
 }
 
-const char* ImageInfo::getEncoding(){
-	return encoding.c_str();
-}
-void ImageInfo::setEncoding(char* encoding_){
-	encoding = encoding_;
-	return;
-}
-const char* ImageInfo::getImagePath(){
-	return imagePath.c_str();
-}
-int ImageInfo::getErrorStatus(){
-	return errorStatus;
-}
+int ImageInfo::getErrorStatus(){return errorStatus;}
+
+pose_t ImageInfo::getRelPose(){return infoData.rel_pose;}
+void ImageInfo::setRelPose(const pose_t* pose){infoData.rel_pose = *pose;}
+pose_t ImageInfo::getAbsPose(){return infoData.abs_pose;}
+void ImageInfo::setAbsPose(const pose_t* pose){infoData.abs_pose = *pose;}
+image_id_t ImageInfo::getID(){return infoData.id;}
+void ImageInfo::setID(const image_id_t* id){infoData.id = *id;}
+std::string ImageInfo::getEncoding(){return infoData.encoding;}
+void ImageInfo::setEncoding(const std::string* encoding)
+	{infoData.encoding = *encoding;}
+
 std::vector<unsigned char> ImageInfo::getImageData(){
+	if(imageData.size() == 0){
+		if(initReadImage() == 0){
+			ROS_INFO("initImageRead: Success:%s", imagePath.c_str());
+		} else {
+			ROS_INFO("initImageRead: Failure:%s", imagePath.c_str());
+		}
+	}
 	return imageData;
 }
