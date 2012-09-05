@@ -36,7 +36,7 @@ void refreshDeltaPoseBuffer(){
 /**
  * This Method saves incoming messages.
  * TODO check if a session is already has images
- * TODO forward images to "image_map_display"
+ * TODO add support for non-square images
  */
 void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg){
 	image_info_data infoData{
