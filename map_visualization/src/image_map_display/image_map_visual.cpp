@@ -146,13 +146,11 @@ ImageMapVisual::~ImageMapVisual()
 }
 
 // Position and orientation are passed through to the SceneNode.
-void ImageMapVisual::setFramePosition( const Ogre::Vector3& position )
-{
+void ImageMapVisual::setFramePosition(const Ogre::Vector3& position, int sessionID, int mobotID, int imageID){
   frame_node_->setPosition( position );
 }
 
-void ImageMapVisual::setFrameOrientation( const Ogre::Quaternion& orientation )
-{
+void ImageMapVisual::setFrameOrientation(const Ogre::Quaternion& orientation, int sessionID, int mobotID, int imageID){
   frame_node_->setOrientation( orientation );
 }
 
