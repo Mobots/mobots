@@ -6,7 +6,6 @@
 #include "feature_detector/MessageBridge.h"
 #include "feature_detector/FeaturesFinder.h"
 #include "mobots_msgs/FeatureSetWithDeltaPose.h"
-#include "mobots_msgs/ImageWithPoseDebug.h"
 
 using namespace std;
 
@@ -16,7 +15,7 @@ ros::Publisher publisher;
 
 void processImage(const mobots_msgs::ImageWithPoseDebug& image){
   cout << "processImage" << endl;
-  ImageFeatures features;
+  FeatureSet features;
   cv_bridge::CvImagePtr imagePtr = cv_bridge::toCvCopy(image.image);
   detector->findFeatures(imagePtr->image, features);
   mobots_msgs::FeatureSetWithDeltaPose result;
