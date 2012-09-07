@@ -20,10 +20,28 @@ namespace map_visualization
 {
 
 // BEGIN_TUTORIAL
-ImageMapVisual::ImageMapVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node ){
-	scene_manager_ = scene_manager;
-	frame_node_ = parent_node->createChildSceneNode();
+ImageMapVisual::ImageMapVisual( Ogre::SceneManager* sceneManager_, Ogre::SceneNode* parent_node ){
+	sceneManager = sceneManager_;
+	rootNode = parent_node->createChildSceneNode();
+}
 
+ImageMapVisual::~ImageMapVisual()
+{
+	sceneManager->destroySceneNode(rootNode);
+}
+
+/**
+ * TODO variable image resolution
+ */
+int ImageMapVisual::insertImage(
+	float poseX, float poseY, float poseTheta,
+	int sessionID, int mobotID, int imageID,
+	const std::vector<unsigned char>* imageData,
+	const std::string* encoding, int width, int height
+){
+	// Get the node to which the image shall be assigned to
+	Ogre::SceneNode* imageNode = getImageNode(sessionID, mobotID, imageID);
+	
 	static int count = 0;
 	std::stringstream ss;
 	ss << "MapObjectMaterial" << count++;
@@ -33,14 +51,14 @@ ImageMapVisual::ImageMapVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNo
 	material_->setDepthBias( -16.0f, 0.0f );
 	material_->setCullingMode( Ogre::CULL_NONE );
 	material_->setDepthWriteEnabled(false);
-
+	
 	static int tex_count = 0;
 	std::stringstream ss2;
 	ss2 << "MapTexture" << tex_count++;
-
+	
 	IplImage* img = cvLoadImage( "/home/moritz/TillEvil.jpg", 1);
 	//cvShowImage("mainWin", img );
-
+	
 	// Create the texture
 	texture_ = Ogre::TextureManager::getSingleton().createManual(
 		ss2.str(),				// name
@@ -53,15 +71,15 @@ ImageMapVisual::ImageMapVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNo
 	//---------------------------------------------------------
 	// Get the pixel buffer
 	Ogre::HardwarePixelBufferSharedPtr pixelBuffer = texture_
-		->getBuffer();
-
+	->getBuffer();
+	
 	// Lock the pixel buffer and get a pixel box
 	pixelBuffer->lock(Ogre::HardwareBuffer::HBL_NORMAL); // for best performance use HBL_DISCARD!
 	const Ogre::PixelBox& pixelBox = pixelBuffer->getCurrentLock();
-
+	
 	Ogre::uint32* pDest = static_cast<Ogre::uint32*>(pixelBox.data);
-  
-  // Fill in the pixel data.
+	
+	// Fill in the pixel data.
 	int k = 0;
 	Ogre::uint32 bit32;
 	for (int j = 0; j < img->width * img->height; j++){
@@ -69,10 +87,10 @@ ImageMapVisual::ImageMapVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNo
 		*pDest++ = bit32;
 		k += 3;
 	}
-
+	
 	// Unlock the pixel buffer
 	pixelBuffer->unlock();
-
+	
 	// Create a material using the texture
 	material_ = Ogre::MaterialManager::getSingleton().create(
 		"DynamicTextureMaterial", // name
@@ -89,69 +107,82 @@ ImageMapVisual::ImageMapVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNo
 	}
 	tex_unit_->setTextureName(texture_->getName());
 	tex_unit_->setTextureFiltering( Ogre::TFO_NONE );
-
+	
 	static int map_count = 0;
 	std::stringstream ss3;
 	ss3 << "MapObject" << map_count++;
-	manual_object_ = scene_manager_->createManualObject( ss3.str() );
-	frame_node_->attachObject( manual_object_ );
-
+	manual_object_ = sceneManager->createManualObject( ss3.str() );
+	imageNode->attachObject( manual_object_ );
+	
 	width_ = 5;
 	height_ = 5;
-
+	
 	manual_object_->begin(material_->getName(), Ogre::RenderOperation::OT_TRIANGLE_LIST);
 	{
 		// First triangle
 		{
-		// Bottom left
-		manual_object_->position( 0.0f, 0.0f, 0.0f );
-		manual_object_->textureCoord(0.0f, 1.0f);
-		manual_object_->normal( 0.0f, 0.0f, 1.0f );
-
-		// Top right
-		manual_object_->position( width_, height_, 0.0f );
-		manual_object_->textureCoord(1.0f, 0.0f);
-		manual_object_->normal( 0.0f, 0.0f, 1.0f );
-
-		// Top left
-		manual_object_->position( 0.0f, height_, 0.0f );
-		manual_object_->textureCoord(0.0f, 0.0f);
-		manual_object_->normal( 0.0f, 0.0f, 1.0f );
+			// Bottom left
+			manual_object_->position( 0.0f, 0.0f, 0.0f );
+			manual_object_->textureCoord(0.0f, 1.0f);
+			manual_object_->normal( 0.0f, 0.0f, 1.0f );
+			
+			// Top right
+			manual_object_->position( width_, height_, 0.0f );
+			manual_object_->textureCoord(1.0f, 0.0f);
+			manual_object_->normal( 0.0f, 0.0f, 1.0f );
+			
+			// Top left
+			manual_object_->position( 0.0f, height_, 0.0f );
+			manual_object_->textureCoord(0.0f, 0.0f);
+			manual_object_->normal( 0.0f, 0.0f, 1.0f );
 		}
-
+		
 		// Second triangle
 		{
-		// Bottom left
-		manual_object_->position( 0.0f, 0.0f, 0.0f );
-		manual_object_->textureCoord(0.0f, 1.0f);
-		manual_object_->normal( 0.0f, 0.0f, 1.0f );
-
-		// Bottom right
-		manual_object_->position( width_, 0.0f, 0.0f );
-		manual_object_->textureCoord(1.0f, 1.0f);
-		manual_object_->normal( 0.0f, 0.0f, 1.0f );
-
-		// Top right
-		manual_object_->position( width_, height_, 0.0f );
-		manual_object_->textureCoord(1.0f, 0.0f);
-		manual_object_->normal( 0.0f, 0.0f, 1.0f );
+			// Bottom left
+			manual_object_->position( 0.0f, 0.0f, 0.0f );
+			manual_object_->textureCoord(0.0f, 1.0f);
+			manual_object_->normal( 0.0f, 0.0f, 1.0f );
+			
+			// Bottom right
+			manual_object_->position( width_, 0.0f, 0.0f );
+			manual_object_->textureCoord(1.0f, 1.0f);
+			manual_object_->normal( 0.0f, 0.0f, 1.0f );
+			
+			// Top right
+			manual_object_->position( width_, height_, 0.0f );
+			manual_object_->textureCoord(1.0f, 0.0f);
+			manual_object_->normal( 0.0f, 0.0f, 1.0f );
 		}
 	}
 	manual_object_->end();
-}
-
-ImageMapVisual::~ImageMapVisual()
-{
-	scene_manager_->destroySceneNode(frame_node_);
+	return 0;
 }
 
 // Position and orientation are passed through to the SceneNode.
-void ImageMapVisual::setFramePosition(const Ogre::Vector3& position, int sessionID, int mobotID, int imageID){
-  frame_node_->setPosition( position );
+void ImageMapVisual::setPosition(const Ogre::Vector3& position, int sessionID, int mobotID, int imageID){
+	Ogre::SceneNode* imageNode = getImageNode(sessionID, mobotID, imageID);
+	imageNode->setPosition(position);
 }
 
-void ImageMapVisual::setFrameOrientation(const Ogre::Quaternion& orientation, int sessionID, int mobotID, int imageID){
-  frame_node_->setOrientation( orientation );
+void ImageMapVisual::setOrientation(const Ogre::Quaternion& orientation, int sessionID, int mobotID, int imageID){
+	Ogre::SceneNode* imageNode = getImageNode(sessionID, mobotID, imageID);
+	imageNode->setOrientation(orientation);
+}
+
+/**
+ * With the ID's, the scene graph is traversed to find the requested leaf node.
+ */
+Ogre::SceneNode* ImageMapVisual::getImageNode(int sessionID, int mobotID, int imageID){
+	std::string tempName = "s";
+	tempName += static_cast<std::ostringstream*>( &(std::ostringstream() << sessionID))->str();
+	Ogre::Node* tempNode = rootNode->getChild(tempName);
+	tempName += "m";
+	tempName += static_cast<std::ostringstream*>( &(std::ostringstream() << mobotID))->str();
+	tempNode = tempNode->getChild(tempName);
+	tempName += "i";
+	tempName += static_cast<std::ostringstream*>( &(std::ostringstream() << imageID))->str();
+	return (Ogre::SceneNode*) tempNode->getChild(tempName);
 }
 
 }
