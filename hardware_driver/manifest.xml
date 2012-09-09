@@ -1,0 +1,16 @@
+<package>
+  <description brief="hardware_driver">
+
+     hardware_driver
+
+  </description>
+  <author>jonas</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <depend package="roscpp" />
+  <depend package="geometry_msgs" />
+  <url>http://ros.org/wiki/hardware_driver</url>
+
+</package>
+
+
