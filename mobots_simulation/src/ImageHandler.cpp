@@ -1,20 +1,21 @@
 #include "ImageHandler.h"
 #include <pthread.h>
+#include <iostream>
 #include "../../feature_detector/include/feature_detector/FeaturesFinder.h"
 
 using namespace std;
 using namespace cv;
 
 //debug and shit
-
 cv::Mat gimage1;
 cv::Mat gimage2;
 extern Mat H;
 extern Delta delta2;
 
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+const char TAG[] = "[ImageHandler] ";
 
-void copyMatToImageMSg(const cv::Mat& in, mobots_msgs::ImageWithPoseDebug& out2){
+
+void copyMatToImageMSg(const cv::Mat& in, mobots_msgs::ImageWithDeltaPoseAndID& out2){
   sensor_msgs::Image* out = &out2.image;
   out->height = in.rows;
   out->width = in.cols;
@@ -59,54 +60,23 @@ inline double toDegree(double rad){
 ImageHandler::ImageHandler():
   shutterPos(0), featurePos(0){
   ros::NodeHandle nh;
-  publisher = nh.advertise<mobots_msgs::ImageWithPoseDebug>("ImageWithPose", 2);
   featureSetSubscriber = nh.subscribe("FeatureSetWithDeltaPose", 2, &ImageHandler::featuresCallback, this);
-  imageSubscriber = nh.subscribe("/usb_cam/image_raw", 2, &ImageHandler::imageCallback, this);
 }
 
-cv_bridge::CvImagePtr a1;
-cv_bridge::CvImagePtr b1;
-sensor_msgs::Image imsg;
-  sensor_msgs::Image image1;
-  sensor_msgs::Image image2;
-
-void ImageHandler::shutterCallback(){
-  std::cout << "shutter" << std::endl;
-  mobots_msgs::ImageWithPoseDebug msg;
-  pthread_mutex_lock(&mutex);
+void ImageHandler::shutterCallback(const mobots_msgs::ImageWithDeltaPoseAndID &imageWithPoseAndId){
+  cout << TAG << "shutter" << endl;
   if(shutterPos == 0){
-    a1 =  cv_bridge::toCvCopy(image1);
+    cv_bridge::CvImagePtr a1 =  cv_bridge::toCvCopy(imageWithPoseAndId.image);
     gimage1 = a1->image;
-    msg.image = image1;
   }else{
-    b1 = cv_bridge::toCvCopy(image2);
+    cv_bridge::CvImagePtr b1 = cv_bridge::toCvCopy(imageWithPoseAndId.image);
     gimage2 = b1->image;
-    msg.image = image2;
   }
-  pthread_mutex_unlock(&mutex);
-  
-  publisher.publish(msg);
   shutterPos++;
   shutterPos %= 2;
 }
 
-void ImageHandler::shutterCallback2(const mobots_msgs::ImagePoseID imageWithPoseAndId){
-  imageCallback(imageWithPoseAndId.image);
-  shutterCallback();
-}
-
-void ImageHandler::imageCallback(const sensor_msgs::Image image){
-  pthread_mutex_lock(&mutex);
-  if(shutterPos == 0){
-    image1 = image;
-  }
-  else{
-    image2 = image;
-  }
-  pthread_mutex_unlock(&mutex);
-}
-
-void ImageHandler::featuresCallback(const mobots_msgs::FeatureSetWithDeltaPose featuresMsg){
+void ImageHandler::featuresCallback(const mobots_msgs::FeatureSetWithDeltaPoseAndID &featuresMsg){
   if(featurePos == 1){
     MessageBridge::copyToCvStruct(featuresMsg, features2);
     featurePos = 0;
@@ -114,10 +84,20 @@ void ImageHandler::featuresCallback(const mobots_msgs::FeatureSetWithDeltaPose f
     Delta delta;
     Ptr<FeaturesMatcher> matcher = new CpuFeaturesMatcher("BruteForce-Hamming");
     bool matchResult = matcher->match(features1, features2, delta);
-    if(!matchResult){
-      cout << "images do not overlap at all" << endl;
-      return;
-    }
+    if(matchResult){
+      //cout << "images do not overlap at all" << endl;
+      //return;
+    //}
+    
+    time_t time(0);
+    stringstream ss;
+    ss << "img1" << time;
+    imwrite(ss.str(), gimage1);
+    ss.str("");
+    ss.clear();
+    ss << "img2" << time;
+    imwrite(ss.str(), gimage2);
+    
     Mat aff;
     findRotationMatrix2D(Point2f(0,0), delta.theta, aff);
     aff.at<double>(0,2) = delta.x;
@@ -138,6 +118,7 @@ void ImageHandler::featuresCallback(const mobots_msgs::FeatureSetWithDeltaPose f
 
     imshow("result", result);
     imshow("result2", result2);
+    }
     
     Mat aff2;
     findRotationMatrix2D(Point2f(0,0), delta2.theta, aff2);
