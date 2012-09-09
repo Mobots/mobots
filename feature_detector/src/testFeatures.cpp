@@ -6,9 +6,8 @@
 #include "feature_detector/FeaturesFinder.h"
 #include "feature_detector/MessageBridge.h"
 #include "FeaturesMatcher.h"
-#include "mobots_msgs/FeatureSetWithDeltaPose.h"
-#include "mobots_msgs/ImageWithPoseDebug.h"
-#include "std_msgs/String.h"
+#include "mobots_msgs/ImageWithDeltaPoseAndID.h"
+#include "mobots_msgs/FeatureSetWithDeltaPoseAndID.h"
 
 
 
@@ -20,12 +19,13 @@ Mat gimage2;
 extern Mat H;
 
 char pos = 0;
-ImageFeatures features1;
-ImageFeatures features2;
+FeatureSet features1;
+FeatureSet features2;
 
 /**
  * angle is in radian kk
  */
+
 void findRotationMatrix2D(Point2f center, double angle, Mat& rotMat){
     double alpha = cos(angle);
     double beta = sin(angle);
@@ -40,7 +40,7 @@ void findRotationMatrix2D(Point2f center, double angle, Mat& rotMat){
     m[5] = beta*center.x + (1-alpha)*center.y;
 }
 
-void copyMatToImageMSg(const cv::Mat& in, mobots_msgs::ImageWithPoseDebug& out2){
+void copyMatToImageMSg(const cv::Mat& in, mobots_msgs::ImageWithDeltaPoseAndID& out2){
   sensor_msgs::Image* out = &out2.image;
   out->height = in.rows;
   out->width = in.cols;
@@ -79,6 +79,7 @@ void checkResult(){
   cout << "deltaY " << delta.y << endl;
   cout << "theta " << delta.theta << " rad = " << toDegree(delta.theta) << "°" << endl;
   Mat aff;
+  
   findRotationMatrix2D(Point2f(gimage2.cols/2, gimage2.rows/2), delta.theta, aff);
   aff.at<double>(0,2) = delta.x;
   aff.at<double>(1,2) = delta.y;
@@ -124,9 +125,9 @@ void checkResult(){
   waitKey(0);
 }
 
-void featuresReceived(const mobots_msgs::FeatureSetWithDeltaPose& featuresMsg){
+void featuresReceived(const mobots_msgs::FeatureSetWithDeltaPoseAndID& featuresMsg){
   cout << "received features" << endl;
-  ImageFeatures* features;
+  FeatureSet* features;
   if(pos++ == 0){
     features = &features1;
   }else{
@@ -151,13 +152,13 @@ int main(int argc, char** argv){
   Mat image2Gray;
   cvtColor(gimage1, image1Gray, CV_RGB2GRAY); //FeatureDetecter etc. arbeiten alle auf Graustufenbildern
   cvtColor(gimage2, image2Gray, CV_RGB2GRAY);
-  mobots_msgs::ImageWithPoseDebug i1;
-  mobots_msgs::ImageWithPoseDebug i2;
+  mobots_msgs::ImageWithDeltaPoseAndID i1;
+  mobots_msgs::ImageWithDeltaPoseAndID i2;
   copyMatToImageMSg(image1Gray, i1);
   copyMatToImageMSg(image2Gray, i2);
   ros::NodeHandle nodeHandle;
-  ros::Subscriber subscriber = nodeHandle.subscribe("FeatureSetWithDeltaPose", 2, featuresReceived);
-  ros::Publisher publisher = nodeHandle.advertise<mobots_msgs::ImageWithPoseDebug>("ImageWithPose", 2);
+  ros::Subscriber subscriber = nodeHandle.subscribe("FeatureSetWithDeltaPoseAndID", 2, featuresReceived);
+  ros::Publisher publisher = nodeHandle.advertise<mobots_msgs::ImageWithDeltaPoseAndID>("ImageWithPose", 2);
   cout << "now sending" << endl;
   sleep(1);
   publisher.publish(i1);

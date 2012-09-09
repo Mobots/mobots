@@ -16,13 +16,13 @@ protected:
   float ratioThreshold;
 public:
   FeaturesMatcher(){
-    this->ratioThreshold = 0.7; //0.6 seems to be good..
+    this->ratioThreshold = 0.8; //0.6 seems to be good..
   }
   void setRatioThreshold(float ratioThreshold){
     this->ratioThreshold = ratioThreshold;
   }
   virtual ~FeaturesMatcher(){}
-  virtual bool match(const ImageFeatures& img1, const ImageFeatures& img2, Delta& delta) const = 0;
+  virtual bool match(const FeatureSet& img1, const FeatureSet& img2, Delta& delta) const = 0;
 };
 
 class CpuFeaturesMatcher : public FeaturesMatcher{
@@ -31,7 +31,7 @@ private:
 public:
   virtual ~CpuFeaturesMatcher(){}
   CpuFeaturesMatcher(const std::string& type);
-  virtual bool match(const ImageFeatures& img1, const ImageFeatures& img2, Delta& delta) const;
+  virtual bool match(const FeatureSet& img1, const FeatureSet& img2, Delta& delta) const;
   
   static const char SURF_DEFAULT[];
   static const char ORB_DEFAULT[];
@@ -41,7 +41,7 @@ class GpuFeaturesMatcher : public FeaturesMatcher{
 public:
   virtual ~GpuFeaturesMatcher(){}
   GpuFeaturesMatcher(){}
-  virtual bool match(const ImageFeatures& img1, const ImageFeatures& img2, Delta& delta) const{
+  virtual bool match(const FeatureSet& img1, const FeatureSet& img2, Delta& delta) const{
     return false;
   }
 };

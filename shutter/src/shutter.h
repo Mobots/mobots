@@ -1,7 +1,7 @@
 #include <cstdio>
 #include <iostream>
 #include <ros/ros.h>
-#include "shutter/delta.h"
+//#include "shutter/delta.h"
 #include <mobots_msgs/ImageWithDeltaPoseAndID.h>
 #include <math.h>
 #include "geometry.h"
@@ -19,7 +19,7 @@ public:
     void startShutter();
     void publishMessage(double& x, double& y, double& theta, const sensor_msgs::Image &image);
     //getDelta-Service:
-    bool getDelta(shutter::delta::Request &req, shutter::delta::Response &res); 
+    //bool getDelta(shutter::delta::Request &req, shutter::delta::Response &res); 
     double checkPicture(double x, double y, double theta);
 
 
