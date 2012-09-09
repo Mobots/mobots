@@ -28,9 +28,7 @@ class ImageMapVisual;
 //
 // The ImageMapDisplay class itself just implements the buffer,
 // editable parameters, and Display subclass machinery.  The visuals
-// themselves are represented by a separate class, ImageMapVisual. The
-// idiom for the visuals is that when the objects exist, they appear
-// in the scene, and when they are deleted, they disappear.
+// themselves are represented by a separate class, ImageMapVisual.
 class ImageMapDisplay: public rviz::Display
 {
 public:
@@ -48,15 +46,6 @@ public:
 	void setTopic(const std::string& topic);
 	const std::string& getTopic() { return topic_; }
 
-	void setColor( const rviz::Color& color );
-	const rviz::Color& getColor() { return color_; }
-
-	void setAlpha( float alpha );
-	float getAlpha() { return alpha_; }
-
-	void setHistoryLength( int history_length );
-	int getHistoryLength() const { return history_length_; }
-
 	// Overrides of protected virtual functions from Display.  As much
 	// as possible, when Displays are not enabled, they should not be
 	// subscribed to incoming data and should not show anything in the
@@ -72,8 +61,6 @@ protected:
 
 	// Function to handle an incoming ROS message.
 private:
-	void incomingMessage( const sensor_msgs::Imu::ConstPtr& msg );
-
 	// Internal helpers which do the work of subscribing and
 	// unsubscribing from the ROS topic.
 	void subscribe();
@@ -82,33 +69,11 @@ private:
 	// A helper to clear this display back to the initial state.
 	void clear();
 
-	// Helper function to apply color and alpha to all visuals.
-	void updateColorAndAlpha();
-
-	// Storage for the list of visuals.  This display supports an
-	// adjustable history length, so we need one visual per history
-	// item.
-	std::vector<ImageMapVisual*> visuals_;
-
 	// A node in the Ogre scene tree to be the parent of all our visuals.
 	Ogre::SceneNode* scene_node_;
 
-	// Data input: Subscriber and tf message filter.
-	message_filters::Subscriber<sensor_msgs::Imu> sub_;
-	tf::MessageFilter<sensor_msgs::Imu>* tf_filter_;
-	int messages_received_;
-
 	// User-editable property variables.
-	rviz::Color color_;
 	std::string topic_;
-	float alpha_;
-	int history_length_;
-
-	// Property objects for user-editable properties.
-	rviz::ColorPropertyWPtr color_property_;
-	rviz::ROSTopicStringPropertyWPtr topic_property_;
-	rviz::FloatPropertyWPtr alpha_property_;
-	rviz::IntPropertyWPtr history_length_property_;
 };
 
 }

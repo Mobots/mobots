@@ -36,7 +36,7 @@ void refreshDeltaPoseBuffer(){
 /**
  * This Method saves incoming messages.
  * TODO check if a session is already has images
- * TODO forward images to "image_map_display"
+ * TODO add support for non-square images
  */
 void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg){
 	image_info_data infoData{
@@ -122,11 +122,9 @@ int main(int argc, char **argv){
 		("shutter_image_delta_pose", 10, imageDeltaPoseHandler);
 	ros::Subscriber absoluteSub = n.subscribe
 		("slam_absolute_pose", 10, absolutePoseHandler);
-	ros::Publisher relPub = n.advertise<mobots_msgs::ImageWithPoseAndID>
-		("image_store_image_rel_pose", 10);
+	ros::Publisher relPub = n.advertise<mobots_msgs::ImageWithPoseAndID>("image_store_image_rel_pose", 10);
 	relativePub = &relPub;
-	ros::Publisher absPub = n.advertise<mobots_msgs::PoseAndID>
-		("image_store_abs_pose", 10);
+	ros::Publisher absPub = n.advertise<mobots_msgs::PoseAndID> ("image_store_abs_pose", 10);
 	absolutePub = &absPub;
 	ros::ServiceServer service = n.advertiseService
 		("image_store_get", imageHandlerOut);
