@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+<node name="shutter" pkg="shutter" type="shutter" output="screen" ns="$(env mobotNamespace)" />
+</launch>
