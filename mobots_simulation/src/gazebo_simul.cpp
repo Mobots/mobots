@@ -121,7 +121,7 @@ int main(int argc, char** argv){
   
   
   imageHandler = new ImageHandler;
-  ros::Subscriber sub3 = nodeHandle.subscribe("/mobot_pose/ImagePoseID", 2, &ImageHandler::shutterCallback2, &(*imageHandler));
+  ros::Subscriber sub3 = nodeHandle.subscribe("/mobot_pose/ImageWithDeltaPoseAndID", 2, &ImageHandler::shutterCallback, &(*imageHandler));
   posePublisher = nodeHandle.advertise<geometry_msgs::Pose2D>("/mouse/pose", 10);
   boost::thread t = boost::thread(keyboardLoop);
   pthread_t t2;
@@ -165,7 +165,7 @@ void keyboardLoop(){
   puts("Use W/S to drive forward/backward");
   puts("Use A/D to turn around");
   puts("Press Shift to move faster");
-  puts("Press space to shutter");
+  //puts("Press space to shutter");
   
   struct pollfd ufd;
   ufd.fd = kfd;
@@ -246,11 +246,11 @@ void keyboardLoop(){
 	    turn = -1;
 	    dirty = true;
 	    break;
-	case KEYCODE_SPACE:
+	/*case KEYCODE_SPACE:
 	  imageHandler->shutterCallback();
 	  speed = 0;
 	  turn = 0;
-	  break;
+	  break;*/
     }
     modelState.pose = getStateRequest.response.pose;
     modelState.twist.linear.x = sin(heading)*speed*max_tv;
