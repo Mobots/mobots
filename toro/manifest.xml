@@ -1,0 +1,15 @@
+<package>
+  <description>
+    toro
+  </description>
+  <author>Giorgio Grisetti; Cyrill Stachniss; Slawomir Grzonka; Wolfram Burgard</author>
+  <license>Creative Commons (Attribution-NonCommercial-ShareAlike)</license>
+  <review status="3rdparty" notes=""/>
+  <export>
+    <cpp cflags="-I${prefix}/toro_svn/trunk" lflags="-L${prefix}/toro_svn/trunk -ltoro -Wl,-rpath,${prefix}/toro_svn/trunk" />
+  </export>
+  <versioncontrol type="svn" url="https://svn.openslam.org/data/svn/toro"/>
+  <platform os="ubuntu" version="9.04"/>
+  <platform os="ubuntu" version="9.10"/>
+  <platform os="ubuntu" version="10.04"/>
+</package>
