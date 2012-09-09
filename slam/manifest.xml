@@ -9,6 +9,10 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/slam</url>
 
+  <depend package="roscpp"/>
+  <depend package="mobots_msgs"/>
+  <depend package="toro" />
+
 </package>
 
 
