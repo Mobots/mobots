@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-<node name="hardware_driver" pkg="hardware_driver" type="hardware_driver" output="screen" ns="$(env mobotNamespace)" >
+<node name="hardware_driver" pkg="hardware_driver" type="hardware_driver" output="screen" ns="$(env ROS_NAMESPACE)" >
 	<param name="miceCount" value="1" />
 	<param name="path1" value="/dev/input/mouse0" />
 	<param name="path2" value="/dev/input/mouse1" />
