@@ -2,7 +2,8 @@
 
 int main(int argc, char** argv){
 ros::init(argc, argv, "shutter");
-Shutter shutter(0,1.06805,0.80104); //l/b für Simulator: 1.06805,0.80104
+//Shutter shutter(0,1.06805,0.80104); //l/b für Simulator: 1.06805,0.80104
+Shutter shutter(0, 3000.06805, 2500.80104);
 }
 Shutter::Shutter(int mobot_ID,double l, double b):id(mobot_ID),g(l,b) //Instanzierung von Geometry
 {
@@ -20,12 +21,12 @@ Shutter::~Shutter() {
 void Shutter::startShutter()
 {
     ROS_INFO("Mobot %d: Shutterfunktion gestartet.", id);
-    poseImage_pub = nh.advertise<mobots_msgs::ImageWithDeltaPoseAndID>("mobot_pose/ImageWithDeltaPoseAndID", 2);
+    poseImage_pub = nh.advertise<mobots_msgs::ImageWithDeltaPoseAndID>("ImageWithDeltaPoseAndID", 2);
 
-    image_sub = nh.subscribe("driver/my_cam/image", 5, &Shutter::imageCallback, this);
-    pose_sub = nh.subscribe("driver/mouse_pose", 100, &Shutter::mouseCallback, this);
+    image_sub = nh.subscribe("usb_cam/image_raw", 5, &Shutter::imageCallback, this);
+    pose_sub = nh.subscribe("mouse/pose", 100, &Shutter::mouseCallback, this);
 
-    ros::ServiceServer service = nh.advertiseService("mobot_pose/getDelta", &Shutter::getDelta, this);
+    //ros::ServiceServer service = nh.advertiseService("mobot_pose/getDelta", &Shutter::getDelta, this);
     
     ros::param::param<double>("overlap",overlap, 0.3);
     dX = 0;
@@ -36,13 +37,13 @@ void Shutter::startShutter()
 
 }
 
-bool Shutter::getDelta(shutter::delta::Request &req, shutter::delta::Response &res)
+/*bool Shutter::getDelta(shutter::delta::Request &req, shutter::delta::Response &res)
 {
   res.x = dX;
   res.y = dY;
   res.theta = dTheta;
   return true;
-}
+}*/
 
 void Shutter::publishMessage(double &x, double &y, double &theta, const sensor_msgs::Image &image) {
     ipid.mobot_id = id;
@@ -62,11 +63,12 @@ int frame = 0;
 void Shutter::imageCallback(const sensor_msgs::Image &mobot_image) {
     double safe = g.checkPicture(dX, dY, dTheta);
     frame++;
-    if(frame == 20){
+    if(frame == 25){
       std::cout << "Überlappung: " << safe << "of " << overlap << "  => " << safe/overlap*100 << "%" << std::endl;
       frame = 0;
     }
     if (safe < overlap) {
+	std::cout << "shuttered" << std::endl;
         publishMessage(dX, dY, dTheta, mobot_image);
         dX = 0;
         dY = 0;

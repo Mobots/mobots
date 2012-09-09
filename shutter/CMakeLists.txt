@@ -25,6 +25,7 @@ SET_TARGET_PROPERTIES(geometry PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR
 endif()
 
 rosbuild_add_executable(shutter src/shutter.cpp)
+rosbuild_add_executable(manualShutter src/manualShutter.cpp)
 target_link_libraries(shutter geometry)
 #target_link_libraries(example ${PROJECT_NAME})
 #rosbuild_find_ros_package(image_transport)

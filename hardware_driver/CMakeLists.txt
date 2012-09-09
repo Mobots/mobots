@@ -7,7 +7,7 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 #  Release        : w/o debug symbols, w/ optimization
 #  RelWithDebInfo : w/ debug symbols, w/ optimization
 #  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-set(ROS_BUILD_TYPE Debug)
+#set(ROS_BUILD_TYPE RelWithDebInfo)
 
 rosbuild_init()
 
@@ -15,6 +15,7 @@ rosbuild_init()
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+rosbuild_add_executable(hardware_driver src/hardware_driver.cpp)
 
 #uncomment if you have defined messages
 #rosbuild_genmsg()
@@ -22,12 +23,9 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_gensrv()
 
 #common commands for building c++ executables and libraries
-#include_directories(include/)
-rosbuild_add_library(messageBridge src/MessageBridge.cpp)
+#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
+#target_link_libraries(${PROJECT_NAME} another_library)
 #rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
-rosbuild_add_executable(feature_detector src/FeatureDetector.cpp src/FeaturesFinder.cpp)
-target_link_libraries(feature_detector messageBridge)
-rosbuild_add_executable(testFeatures src/testFeatures.cpp src/FeaturesFinder.cpp src/FeaturesMatcher.cpp src/ror.cpp src/draw.cpp)
-target_link_libraries(testFeatures messageBridge)
+#rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
