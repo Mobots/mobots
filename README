@@ -1,3 +1,5 @@
+'rospack profile' ausführen um die package list neu zu indizieren.
+
 All mobot specific msgs should be placed in mobots_msgs
 
 #####################

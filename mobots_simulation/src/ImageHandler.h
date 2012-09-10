@@ -4,9 +4,8 @@
 #include "../../feature_detector/src/FeaturesMatcher.h" //debug and shit
 #include "feature_detector/FeaturesFinder.h"
 #include "feature_detector/MessageBridge.h"
-#include "mobots_msgs/FeatureSetWithDeltaPose.h"
-#include "mobots_msgs/ImageWithPoseDebug.h"
-#include "mobots_msgs/ImagePoseID.h"
+#include "mobots_msgs/FeatureSetWithDeltaPoseAndID.h"
+#include "mobots_msgs/ImageWithDeltaPoseAndID.h"
 #include "cv_bridge/cv_bridge.h"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
@@ -16,25 +15,20 @@ class ImageHandler{
 private:
   char shutterPos;
   char featurePos;
-  ros::Publisher publisher;
   ros::Subscriber featureSetSubscriber;
   ros::Subscriber imageSubscriber;
 
 
-  ImageFeatures features1;
-  ImageFeatures features2;
+  FeatureSet features1;
+  FeatureSet features2;
   
 public:
   ImageHandler();
   
   ~ImageHandler(){}
-  
-  void shutterCallback();
 
-  void shutterCallback2(const mobots_msgs::ImagePoseID imageWithPoseAndId);
+  void shutterCallback(const mobots_msgs::ImageWithDeltaPoseAndID &imageWithPoseAndId);
   
-private:
-  void imageCallback(const sensor_msgs::Image image);
-
-  void featuresCallback(const mobots_msgs::FeatureSetWithDeltaPose featuresMsg);
+private:  
+  void featuresCallback(const mobots_msgs::FeatureSetWithDeltaPoseAndID &featuresMsg);
 };

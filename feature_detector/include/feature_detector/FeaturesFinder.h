@@ -7,12 +7,12 @@
 typedef struct{
   std::vector<cv::KeyPoint> keyPoints;
   cv::Mat descriptors;
-} ImageFeatures;
+} FeatureSet;
 
 class FeaturesFinder{
 public:
   virtual ~FeaturesFinder(){}
-  virtual void findFeatures(const cv::Mat &image, ImageFeatures& features) const = 0;
+  virtual void findFeatures(const cv::Mat &image, FeatureSet& features) const = 0;
 };
 
 class CpuFeaturesFinder : public FeaturesFinder{
@@ -20,7 +20,7 @@ private:
  cv::Ptr<cv::FeatureDetector> detector;
  cv::Ptr<cv::DescriptorExtractor> extractor;
 public:
-  void findFeatures(const cv::Mat& image, ImageFeatures& features) const;
+  void findFeatures(const cv::Mat& image, FeatureSet& features) const;
   void set(cv::Ptr<cv::FeatureDetector> detector, cv::Ptr<cv::DescriptorExtractor> extractor){
     this->detector = detector;
     this->extractor = extractor;
@@ -68,7 +68,7 @@ public:
 class GpuFeaturesFinder: public FeaturesFinder{
 public:
   GpuFeaturesFinder();
-  virtual void findFeatures(const cv::Mat& image, ImageFeatures& features) const = 0;
+  virtual void findFeatures(const cv::Mat& image, FeatureSet& features) const = 0;
   virtual ~GpuFeaturesFinder(){}
 };
 

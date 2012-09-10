@@ -18,9 +18,8 @@ using namespace cv;
 char xAvg;
 char yAvg;
 float theta;
-Ptr<ImageHandler> imageHandler;
 
-void* publisherThread(void* data){
+/*void* publisherThread(void* data){
   ros::NodeHandle nodeHandle;
   ros::Rate rate(50);
   ros::Publisher pub = nodeHandle.advertise<geometry_msgs::Pose2D>("/mouse/pose", 2);
@@ -39,12 +38,12 @@ void* shutterThread(void* data){
     cin.ignore(std::numeric_limits<streamsize>::max(),'\n');
     imageHandler->shutterCallback();
   }
-}
+}*/
 
 int main(int argc, char **argv){
-  ros::init(argc, argv, "mouse_node");
+  ros::init(argc, argv, "mobox_simul");
   ros::NodeHandle nh("~");
-  string mousePath;
+/*  string mousePath;
   nh.param("mousePath", mousePath, string("/dev/input/mouse1"));
   
   int mouse1 = open(mousePath.c_str(), O_RDONLY);
@@ -58,11 +57,11 @@ int main(int argc, char **argv){
       cout << "cannot open mouse 2" << endl;
       exit(1);
     }
-#endif
-  ros::Subscriber sub = nh.subscribe("/mobot_pose/ImagePoseID", 2, &ImageHandler::shutterCallback2, &(*imageHandler));
-  cout << "Press [ENTER] for manual shutter" << endl;
-  imageHandler = new ImageHandler;
-  pthread_t thread;
+#endif*/
+  ImageHandler imageHandler;
+  ros::Subscriber sub = nh.subscribe("/mobot_pose/ImageWithDeltaPoseAndID", 2, &ImageHandler::shutterCallback, &imageHandler);
+  //cout << "Press [ENTER] for manual shutter" << endl;
+  /*pthread_t thread;
   pthread_create(&thread, 0, publisherThread, 0);
   pthread_create(&thread, 0, shutterThread, 0);
   /*int xd=0,yd=0; //x/y movement delta
