@@ -18,7 +18,6 @@ class SceneNode;
 // required but is good practice.
 namespace map_visualization
 {
-
 class ImageMapVisual;
 
 // BEGIN_TUTORIAL
@@ -38,7 +37,6 @@ public:
 
 	// Overrides of public virtual functions from the Display class.
 	virtual void onInitialize();
-	virtual void fixedFrameChanged();
 	virtual void reset();
 	virtual void createProperties();
 
@@ -69,11 +67,17 @@ private:
 	// A helper to clear this display back to the initial state.
 	void clear();
 
+	// Test
+	void testVisual(ImageMapVisual* visual_, std::string fileName);
+	
 	// A node in the Ogre scene tree to be the parent of all our visuals.
 	Ogre::SceneNode* scene_node_;
+	ImageMapVisual* visual_;
 
 	// User-editable property variables.
 	std::string topic_;
+	rviz::ROSTopicStringPropertyWPtr topic_property_;
+	
 };
 
 }

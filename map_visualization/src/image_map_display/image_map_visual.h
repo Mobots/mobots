@@ -60,8 +60,7 @@ private:
 
 	Ogre::SceneNode* rootNode;
 	Ogre::SceneManager* sceneManager;
-	Ogre::SceneNode* rootLoaded;
-	Ogre::SceneNode* rootUnloaded;
+	std::list<Ogre::ManualObject*> manualObjects;
 
 	// Get the node in which the image entity is to be placed
 	Ogre::SceneNode* getImageNode(int sessionID, int mobotID, int imageID);

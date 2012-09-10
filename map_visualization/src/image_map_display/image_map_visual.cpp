@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <list>
 
 #include <opencv/cv.h>
 #include <opencv/cvaux.h>
@@ -19,15 +20,25 @@
 namespace map_visualization
 {
 
-// BEGIN_TUTORIAL
 ImageMapVisual::ImageMapVisual( Ogre::SceneManager* sceneManager_, Ogre::SceneNode* parent_node ){
 	sceneManager = sceneManager_;
 	rootNode = parent_node->createChildSceneNode();
 }
 
+// delete: nodes->objects->textures->materials
 ImageMapVisual::~ImageMapVisual()
 {
+	ROS_INFO("~visual");
+	while(!manualObjects.empty()){
+		sceneManager->destroyManualObject(manualObjects.front());
+		manualObjects.pop_front();
+		ROS_INFO("object deleted");
+	}
+	ROS_INFO("remove all children");
+	rootNode->removeAndDestroyAllChildren();
+	ROS_INFO("remove root");
 	sceneManager->destroySceneNode(rootNode);
+	ROS_INFO("~visual");
 }
 
 /**
@@ -41,7 +52,7 @@ int ImageMapVisual::insertImage(
 ){
 	// Get the node to which the image shall be assigned to
 	Ogre::SceneNode* imageNode = getImageNode(sessionID, mobotID, imageID);
-	
+	ROS_INFO("insertImage, image node name: %s", (imageNode->getName()).c_str());
 	static int count = 0;
 	std::stringstream ss;
 	ss << "MapObjectMaterial" << count++;
@@ -113,6 +124,7 @@ int ImageMapVisual::insertImage(
 	ss3 << "MapObject" << map_count++;
 	manual_object_ = sceneManager->createManualObject( ss3.str() );
 	imageNode->attachObject( manual_object_ );
+	manualObjects.push_back(manual_object_);
 	
 	width_ = 5;
 	height_ = 5;
@@ -174,15 +186,32 @@ void ImageMapVisual::setOrientation(const Ogre::Quaternion& orientation, int ses
  * With the ID's, the scene graph is traversed to find the requested leaf node.
  */
 Ogre::SceneNode* ImageMapVisual::getImageNode(int sessionID, int mobotID, int imageID){
-	std::string tempName = "s";
-	tempName += static_cast<std::ostringstream*>( &(std::ostringstream() << sessionID))->str();
-	Ogre::Node* tempNode = rootNode->getChild(tempName);
-	tempName += "m";
-	tempName += static_cast<std::ostringstream*>( &(std::ostringstream() << mobotID))->str();
-	tempNode = tempNode->getChild(tempName);
-	tempName += "i";
-	tempName += static_cast<std::ostringstream*>( &(std::ostringstream() << imageID))->str();
-	return (Ogre::SceneNode*) tempNode->getChild(tempName);
+	std::string name = "s";
+	name += static_cast<std::ostringstream*>( &(std::ostringstream() << sessionID))->str();
+	Ogre::Node* node;
+	try{
+		node = rootNode->getChild(name);
+	} catch(Ogre::Exception& e) {
+		rootNode->createChild(name, Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
+		node = rootNode->getChild(name);
+	}
+	name += "m";
+	name += static_cast<std::ostringstream*>( &(std::ostringstream() << mobotID))->str();
+	try{
+		node = node->getChild(name);
+	} catch(Ogre::Exception& e) {
+		node->createChild(name, Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
+		node = node->getChild(name);
+	}
+	name += "i";
+	name += static_cast<std::ostringstream*>( &(std::ostringstream() << imageID))->str();
+	try{
+		node = node->getChild(name);
+	} catch(Ogre::Exception& e) {
+		node->createChild(name, Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
+		node = node->getChild(name);
+	}
+	return (Ogre::SceneNode*) node;
 }
 
 }
