@@ -43,12 +43,9 @@ public:
 	// Delete all images belonging to a session
 	int deleteSession(int sessionID);
 	
-	void setOrientation(const Ogre::Quaternion& orientation, int sessionID, int mobotID, int imageID);
+	void setPose(float poseX, float poseY, float poseTheta, int sessionID, int mobotID, int imageID);
 	// Updates the orientation of all images belonging to a mobot
 	//void setOrientation(const linkedlist<Ogre::Quaternion>* orientationList, int sessionID, int mobotID);
-	void setPosition(const Ogre::Vector3& position, int sessionID, int mobotID, int imageID);
-	// Updates the position of all images belonging to a mobot
-	//void setPosition(const linkedlist<Ogre::Vector3> positionList, int sessionID, int mobotID);
 private:
 	Ogre::MaterialPtr material_;
 	Ogre::TexturePtr texture_;
