@@ -1,0 +1,3 @@
+<launch>
+<node name="camView" pkg="image_view" type="image_view" args="image:=/usb_cam/image_raw"/>
+</launch>

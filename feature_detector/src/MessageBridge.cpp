@@ -5,7 +5,7 @@
 using namespace std;
 using namespace cv;
 
-void MessageBridge::copyToRosMessage(const FeatureSet& in, mobots_msgs::FeatureSetWithDeltaPose& out){
+void MessageBridge::copyToRosMessage(const FeatureSet& in, mobots_msgs::FeatureSetWithDeltaPoseAndID& out){
   const int N = in.keyPoints.size();
   out.features.keyPoints.resize(N);
 
@@ -32,7 +32,7 @@ void MessageBridge::copyToRosMessage(const FeatureSet& in, mobots_msgs::FeatureS
   descriptors.data.resize(in.descriptors.rows * step);
   if(in.descriptors.isContinuous()){
     memcpy(&descriptors.data[0], in.descriptors.data, in.descriptors.rows * step);
-    cout << "copyToRos continous" << endl;
+    //cout << "copyToRos continous" << endl;
   }else{
     // Copy row by row
     uchar* ros_data_ptr = (uchar*)(&descriptors.data[0]);
@@ -42,11 +42,11 @@ void MessageBridge::copyToRosMessage(const FeatureSet& in, mobots_msgs::FeatureS
       ros_data_ptr += step;
       cv_data_ptr += in.descriptors.step;
     }
-    cout << "copyToRos not continous" << endl;
+    //cout << "copyToRos not continous" << endl;
   }
 }
 
-void MessageBridge::copyToCvStruct(const mobots_msgs::FeatureSetWithDeltaPose& in, FeatureSet& out){
+void MessageBridge::copyToCvStruct(const mobots_msgs::FeatureSetWithDeltaPoseAndID& in, FeatureSet& out){
   const int N = in.features.keyPoints.size();
   out.keyPoints.resize(N);
   

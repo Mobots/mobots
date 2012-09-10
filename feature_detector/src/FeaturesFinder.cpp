@@ -6,7 +6,6 @@
 
 using namespace std;
 using namespace cv;
-using namespace cv::gpu;
 
 /*void assertGpu(){
   int cudaCnt = cv::gpu::getCudaEnabledDeviceCount();
@@ -18,7 +17,7 @@ using namespace cv::gpu;
   }
 }*/
 
-void CpuFeaturesFinder::findFeatures(const cv::Mat& image, ImageFeatures& features)const{
+void CpuFeaturesFinder::findFeatures(const cv::Mat& image, FeatureSet& features)const{
   moduleStarted("cpu features finder");
   detector->detect(image, features.keyPoints);
   extractor->compute(image, features.keyPoints, features.descriptors);

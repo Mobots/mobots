@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+<node name="feature_detector" pkg="feature_detector" type="feature_detector" output="screen" ns="$(env ROS_NAMESPACE)" >
+	<remap from="feature_detector/FeatureSetWithDeltaPoseAndID" to="FeatureSetWithDeltaPoseAndID" />
+</node>
+</launch>

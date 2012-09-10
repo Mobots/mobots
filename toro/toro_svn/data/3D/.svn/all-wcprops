@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 34
+/data/svn/toro/!svn/ver/22/data/3D
+END
+README-fileformat.txt
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/data/svn/toro/!svn/ver/22/data/3D/README-fileformat.txt
+END
+sphere_bignoise.graph
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/data/svn/toro/!svn/ver/22/data/3D/sphere_bignoise.graph
+END
+sphere_mednoise.graph
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/data/svn/toro/!svn/ver/22/data/3D/sphere_mednoise.graph
+END
+sphere_smallnoise.graph
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/data/svn/toro/!svn/ver/22/data/3D/sphere_smallnoise.graph
+END

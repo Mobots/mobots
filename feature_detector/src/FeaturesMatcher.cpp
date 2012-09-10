@@ -107,8 +107,23 @@ void normalize(double& value){
     value = -1;
 }
 
-bool CpuFeaturesMatcher::match(const ImageFeatures& img1, const ImageFeatures& img2, Delta& delta) const{
-  moduleStarted("cpu matcher");
+Delta delta2;
+Mat affine3;
+
+bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, Delta& delta) const{
+  moduleStarted("only ror");
+  vector<DMatch> matches;
+  matcher->match(img1.descriptors, img2.descriptors, matches);
+  vector<Point2f> points11;
+  vector<Point2f> points22;
+  for(int i = 0; i < matches.size(); i++){
+    points11.push_back(img1.keyPoints[matches[i].queryIdx].pt);
+    points22.push_back(img2.keyPoints[matches[i].trainIdx].pt);
+  }
+  rorAlternative(points11, points22, delta2);
+  moduleEnded();
+  
+  moduleStarted("cpu matcher + get transform");
   vector<vector<DMatch> > matches1;
   vector<vector<DMatch> > matches2;
   matcher->knnMatch(img1.descriptors, img2.descriptors, matches1, 2);
@@ -123,21 +138,20 @@ bool CpuFeaturesMatcher::match(const ImageFeatures& img1, const ImageFeatures& i
       good_matches.push_back(matches1[i][0]);
   }*/
   cout << "symmetric matches: " << good_matches.size() << endl;
-  if(good_matches.size() < 5){
+  /*if(good_matches.size() < 5){
     return false;
-  }
+  }*/
   vector<Point2f> points1;
   vector<Point2f> points2;
   for(int i = 0; i < good_matches.size(); i++){
     points1.push_back(img1.keyPoints[good_matches[i].queryIdx].pt);
     points2.push_back(img2.keyPoints[good_matches[i].trainIdx].pt);
   }
-  moduleEnded();
-  moduleStarted("get transform");
   bool ok = rorAlternative(points1, points2, delta);
+  moduleEnded();
   //Mat H = getAffineTransform(&points2[0], &points1[0]);
   //aff = H;
-  vector<uchar> inliers;
+  /*vector<uchar> inliers;
   H = findHomography(points2, points1, CV_RANSAC, 3, inliers);
   vector<Point2f> v1;
   vector<Point2f> v2;
@@ -152,9 +166,11 @@ bool CpuFeaturesMatcher::match(const ImageFeatures& img1, const ImageFeatures& i
   }
   cout << "v1 size " << v1.size() << endl;
   cout << "H" << endl << H << endl;
-  Mat affine = getAffineTransform(v1, v2);
+  if(v1.size() == 3){
+  affine3 = getAffineTransform(v1, v2);
   //correctMatches() ?
-  cout << "affine" << endl << affine << endl;
+  cout << "affine3" << endl << affine3 << endl;
+  }
   //aff = H;
   /* Matrix form:
    * cos(theta)  -sin(theta) deltaX
@@ -175,11 +191,14 @@ bool CpuFeaturesMatcher::match(const ImageFeatures& img1, const ImageFeatures& i
   delta.theta = theta;
   delta.x = H.at<double>(0,2);
   delta.y = H.at<double>(1,2);*/
-  moduleEnded();
   Mat img_matches;
   drawing::drawMatches(gimage1, img1.keyPoints, gimage2, img2.keyPoints,
                good_matches, img_matches, Scalar::all(-1), Scalar::all(-1),
                vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
-  imshow("method2 good Matches", img_matches);
+  imshow("good Matches", img_matches);
+  drawing::drawMatches(gimage1, img1.keyPoints, gimage2, img2.keyPoints,
+               matches, img_matches, Scalar::all(-1), Scalar::all(-1),
+               vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+  imshow("ror only Matches", img_matches);
   return ok;
 }
