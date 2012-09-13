@@ -24,28 +24,36 @@ std::string infoEnding("info");
 class ImageInfo{
 public:
 	ImageInfo();
-	ImageInfo(const image_id_t* id);
-	ImageInfo(const image_info_data* infoData_);
-	ImageInfo(const image_info_data* infoData_, const std::vector<unsigned char>);
+	ImageInfo(const IDT* id);
+	ImageInfo(const imageInfoData* infoData_);
+	ImageInfo(const imageInfoData* infoData_, const std::vector<unsigned char>);
 
-	pose_t getRelPose();
-	void setRelPose(const pose_t* pose);
-	pose_t getAbsPose();
-	void setAbsPose(const pose_t* pose);
-	image_id_t getID();
-	void setID(const image_id_t* id);
-	std::string getEncoding();
-	void setEncoding(const std::string* encoding);
+	int getErrorStatus(){return errorStatus;}
 	
-	int getErrorStatus();
+	poseT getDelPose(){return infoData.delPose;}
+	void setDelPose(const poseT* pose){infoData.delPose = *pose;}
+	
+	poseT getRelPose(){return infoData.relPose;}
+	void setRelPose(const poseT* pose){infoData.relPose = *pose;}
+	
+	poseT getAbsPose(){return infoData.absPose;}
+	void setAbsPose(const poseT* pose){infoData.absPose = *pose;}
+	
+	IDT getID(){return infoData.id;}
+	void setID(const IDT* id){infoData.id = *id;}
+	
+	std::string getEncoding(){return infoData.image.encoding;}
+	void setEncoding(const std::string* encoding)
+		{infoData.image.encoding = *encoding;}
+	
 	std::vector<unsigned char> getImageData();
-	void loadLast(const image_id_t* id_);
+	void loadLast(const IDT* id_);
 private:
 	std::string savePath;
 	int errorStatus;
 	
 	std::string infoPath;
-	image_info_data infoData;
+	imageInfoData infoData;
 	
 	std::string imagePath;
 	std::vector<unsigned char> imageData;
@@ -62,9 +70,10 @@ ImageInfo::ImageInfo(){
 }
 
 /**
- * Constructor if the image exists. The image is loaded only when it is needed.
+ * Constructor to access the image/info.
+ * The image is loaded only when it is requested.
  */
-ImageInfo::ImageInfo(const image_id_t* id_){
+ImageInfo::ImageInfo(const IDT* id_){
 	errorStatus = 0;
 	savePath = savePathRoot;
 	infoData.id = *id_;
@@ -75,24 +84,27 @@ ImageInfo::ImageInfo(const image_id_t* id_){
 		ROS_INFO("Error: %s", e.what());
 		errorStatus = 102;
 	}
-	imagePath = concPath(infoData.encoding.c_str());
+	imagePath = concPath(infoData.image.encoding.c_str());
 }
 
 /**
- * Constructor to update the infoData. If a pose is not 'enabled', it will not
- * be overwritten.
+ * Constructor to update the infoData.
+ * If a pose is not 'enabled', it will not be overwritten.
  */
-ImageInfo::ImageInfo(const image_info_data* infoData_){
+ImageInfo::ImageInfo(const imageInfoData* infoData_){
 	errorStatus = 0;
 	infoData.id = infoData_->id;
 	infoPath = concPath(infoEnding.c_str());
 	try{
 		infoData.load(infoPath);
-		if(infoData_->rel_pose.enable != 0){
-			infoData.rel_pose = infoData_->rel_pose;
+		if(infoData_->delPose.enable != 0){
+			infoData.delPose = infoData_->delPose;
 		}
-		if(infoData_->abs_pose.enable != 0){
-			infoData.abs_pose = infoData_->abs_pose;
+		if(infoData_->relPose.enable != 0){
+			infoData.relPose = infoData_->relPose;
+		}
+		if(infoData_->absPose.enable != 0){
+			infoData.absPose = infoData_->absPose;
 		}
 		infoData.save(infoPath);
 	}catch (std::exception &e){
@@ -102,15 +114,14 @@ ImageInfo::ImageInfo(const image_info_data* infoData_){
 }
 
 /**
- * Constructor if the image does not exist. This is the case when a new image
- * is recieved to be stored.
+ * Constructor to store the image/info
  */
-ImageInfo::ImageInfo(const image_info_data* infoData_, const std::vector<unsigned char> imageData_){
+ImageInfo::ImageInfo(const imageInfoData* infoData_, const std::vector<unsigned char> imageData_){
 	errorStatus = 0;
 	savePath = savePathRoot;
 	infoData = *infoData_;
 	imageData = imageData_;
-	imagePath = concPath(infoData.encoding.c_str());
+	imagePath = concPath(infoData.image.encoding.c_str());
 	infoPath = concPath(infoEnding.c_str());
 	initWrite();
 }
@@ -167,7 +178,10 @@ int ImageInfo::initWrite(){
 	return 0;
 }
 
-void ImageInfo::loadLast(const image_id_t* id_){
+/**
+ * Loads the loads the most recent info file of a mobot
+ */
+void ImageInfo::loadLast(const IDT* id_){
 	infoData.id = *id_;
 	infoData.id.imageID = 0;
 	infoPath = concPath(infoEnding.c_str());
@@ -175,10 +189,14 @@ void ImageInfo::loadLast(const image_id_t* id_){
 		errorStatus = 102;
 		return;
 	}
+	infoData.id.imageID++;
+	infoPath = concPath(infoEnding.c_str());
 	while(boost::filesystem::exists(infoPath)){
-		infoPath = concPath(infoEnding.c_str());
 		infoData.id.imageID++;
+		infoPath = concPath(infoEnding.c_str());
 	}
+	infoData.id.imageID--;
+	infoPath = concPath(infoEnding.c_str());
 	try{
 		infoData.load(infoPath);
 	}catch (std::exception &e){
@@ -190,6 +208,7 @@ void ImageInfo::loadLast(const image_id_t* id_){
 /**
  * Takes the ID's needed to identify an image and then concatinates them
  * into a filepath.
+ * TODO calculate pathlength
  */
 char* ImageInfo::concPath(const char* ending){
 	char* path = new char[1000];
@@ -201,24 +220,13 @@ char* ImageInfo::concPath(const char* ending){
 /**
  * Takes the sessionID and concatinates the root path plus the session folder
  * into a filepath.
+ * TODO calculate pathlength
  */
 char* ImageInfo::concPath(){
 	char* path = new char[1000];
 	sprintf(path, folderConvention.c_str(), savePath.c_str(), infoData.id.sessionID);
 	return path;
 }
-
-int ImageInfo::getErrorStatus(){return errorStatus;}
-
-pose_t ImageInfo::getRelPose(){return infoData.rel_pose;}
-void ImageInfo::setRelPose(const pose_t* pose){infoData.rel_pose = *pose;}
-pose_t ImageInfo::getAbsPose(){return infoData.abs_pose;}
-void ImageInfo::setAbsPose(const pose_t* pose){infoData.abs_pose = *pose;}
-image_id_t ImageInfo::getID(){return infoData.id;}
-void ImageInfo::setID(const image_id_t* id){infoData.id = *id;}
-std::string ImageInfo::getEncoding(){return infoData.encoding;}
-void ImageInfo::setEncoding(const std::string* encoding)
-	{infoData.encoding = *encoding;}
 
 std::vector<unsigned char> ImageInfo::getImageData(){
 	if(imageData.size() == 0){

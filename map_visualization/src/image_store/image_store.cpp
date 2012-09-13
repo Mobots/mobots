@@ -13,7 +13,8 @@
 #include "mobots_msgs/ImageWithPoseAndID.h"
 #include "mobots_msgs/PoseAndID.h"
 
-std::vector<pose_t> deltaPoseBuffer;
+// Saves the last pose of each mobot
+std::vector<poseT> deltaPoseBuffer;
 int currentSessionID = 0;
 ros::Publisher* relativePub;
 ros::Publisher* absolutePub;
@@ -24,7 +25,7 @@ ros::Publisher* absolutePub;
  */
 void refreshDeltaPoseBuffer(){
 	ImageInfo imageInfo;
-	image_id_t id;
+	IDT id;
 	deltaPoseBuffer.clear();
 	id.sessionID = currentSessionID;
 	for(id.mobotID = 0; imageInfo.getErrorStatus() == 0; id.mobotID++){
@@ -39,11 +40,12 @@ void refreshDeltaPoseBuffer(){
  * TODO add support for non-square images
  */
 void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg){
-	image_info_data infoData{
+	imageInfoData infoData{
 		{msg->id.session_id, msg->id.mobot_id, msg->id.image_id},
-		{msg->pose.x, msg->pose.y, msg->pose.theta, 1},
-		{0,0,0,0},
-		msg->image.encoding
+		{msg->pose.x, msg->pose.y, msg->pose.theta, 1}, // delta
+		{msg->pose.x, msg->pose.y, msg->pose.theta, 1}, // relative
+		{0,0,0,0}, // absolute
+		{msg->image.width, msg->image.height, msg->image.encoding}
 	};
 	// Check if the correct session is used
 	if(currentSessionID != infoData.id.sessionID){
@@ -52,23 +54,25 @@ void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg)
 	}
 	// All delta poses exept the first one need to be added to the last one.
 	if(infoData.id.imageID != 0){
-		infoData.rel_pose = infoData.rel_pose + deltaPoseBuffer[infoData.id.mobotID];
+		infoData.relPose= infoData.relPose + deltaPoseBuffer[infoData.id.mobotID];
 	}
-	// If the vector is too small
+	// If the delta pose buffer vector is too small
 	if(infoData.id.mobotID > deltaPoseBuffer.size()){
 		deltaPoseBuffer.resize(infoData.id.mobotID);
 	}
-	deltaPoseBuffer[infoData.id.mobotID] = infoData.rel_pose;
+	deltaPoseBuffer[infoData.id.mobotID] = infoData.relPose;
 	ImageInfo imageInfo(&infoData, msg->image.data);
 	// Relay the image and updated pose to Rviz
 	mobots_msgs::ImageWithPoseAndID relayMsg;
-	relayMsg.pose.x = infoData.rel_pose.x;
-	relayMsg.pose.y = infoData.rel_pose.y;
-	relayMsg.pose.theta = infoData.rel_pose.theta;
+	relayMsg.pose.x = infoData.relPose.x;
+	relayMsg.pose.y = infoData.relPose.y;
+	relayMsg.pose.theta = infoData.relPose.theta;
 	relayMsg.id.session_id = infoData.id.sessionID;
 	relayMsg.id.mobot_id = infoData.id.mobotID;
 	relayMsg.id.image_id = infoData.id.imageID;
-	relayMsg.image.encoding = infoData.encoding;
+	relayMsg.image.width = infoData.image.width;
+	relayMsg.image.height = infoData.image.height;
+	relayMsg.image.encoding = infoData.image.encoding;
 	relayMsg.image.data = msg->image.data;
 	relativePub->publish(relayMsg);
 	ros::spinOnce();
@@ -77,11 +81,12 @@ void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg)
 }
 
 void absolutePoseHandler(const mobots_msgs::PoseAndID::ConstPtr& msg){
-	image_info_data infoData{
+	imageInfoData infoData{
 		{msg->id.session_id, msg->id.mobot_id, msg->id.image_id},
 		{0,0,0,0},
+		{0,0,0,0},
 		{msg->pose.x, msg->pose.y, msg->pose.theta, 1},
-		0
+		{0,0,0}
 	};
 	ImageInfo info(&infoData);
 	absolutePub->publish(*msg);
@@ -91,16 +96,33 @@ void absolutePoseHandler(const mobots_msgs::PoseAndID::ConstPtr& msg){
 
 /**
  * This Method returns an image and its info upon a valid request.
- * TODO return rel_pose and abs_pose
+ * TODO return relPose and absPose
  */
 bool imageHandlerOut(map_visualization::GetImageWithPose::Request &req, map_visualization::GetImageWithPose::Response &res){
-	image_id_t id{req.id.session_id, req.id.mobot_id, req.id.image_id};
+	IDT id{req.id.session_id, req.id.mobot_id, req.id.image_id};
 	ImageInfo info(&id);
 	if(info.getErrorStatus() != 0){
 		res.error = info.getErrorStatus();
 		return true;
 	}
-	res.image.data = info.getImageData();
+	// 0 - Both, 1 - Image, 2 - Pose
+	if(req.type != 2){
+		res.image.data = info.getImageData();
+	}
+	if(req.type != 1){
+		poseT delPose = info.getDelPose();
+		poseT relPose = info.getRelPose();
+		poseT absPose = info.getAbsPose();
+		res.del_pose.x = delPose.x;
+		res.del_pose.y = delPose.y;
+		res.del_pose.theta = delPose.theta;
+		res.rel_pose.x = relPose.x;
+		res.rel_pose.y = relPose.y;
+		res.rel_pose.theta = relPose.theta;
+		res.abs_pose.x = absPose.x;
+		res.abs_pose.y = absPose.y;
+		res.abs_pose.theta = absPose.theta;
+	}
 	return true;
 }
 

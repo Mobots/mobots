@@ -130,6 +130,7 @@ void ImageMapDisplay::testVisual(ImageMapVisual* visual_, std::string filePath){
 	std::string enc = "jpg";
 	visual_->insertImage(a,a,a, 0,0,0, &imageData, &enc, 4,4);
 	ROS_INFO("testVisual");
+	visual_->setPose(1,1,0, 0,0,0);
 }
 
 } // end namespace rviz_plugin_tutorials

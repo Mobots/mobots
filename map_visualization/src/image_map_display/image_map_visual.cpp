@@ -172,15 +172,18 @@ int ImageMapVisual::insertImage(
 }
 
 // Position and orientation are passed through to the SceneNode.
-void ImageMapVisual::setPosition(const Ogre::Vector3& position, int sessionID, int mobotID, int imageID){
+void ImageMapVisual::setPose(float poseX, float poseY, float poseTheta, int sessionID, int mobotID, int imageID){
 	Ogre::SceneNode* imageNode = getImageNode(sessionID, mobotID, imageID);
-	imageNode->setPosition(position);
+	// Set the orientation (theta)
+	Ogre::Radian rad(poseTheta);
+	Ogre::Quaternion quat(rad, Ogre::Vector3::UNIT_Y);
+	imageNode->setOrientation(quat);
+	// Set the position (x and y)
+	Ogre::Vector3 vect(poseX, poseY, 0);
+	imageNode->setPosition(vect);
+	return;
 }
 
-void ImageMapVisual::setOrientation(const Ogre::Quaternion& orientation, int sessionID, int mobotID, int imageID){
-	Ogre::SceneNode* imageNode = getImageNode(sessionID, mobotID, imageID);
-	imageNode->setOrientation(orientation);
-}
 
 /**
  * With the ID's, the scene graph is traversed to find the requested leaf node.
