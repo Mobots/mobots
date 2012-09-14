@@ -24,23 +24,14 @@ public:
 		const std::vector<unsigned char>* imageData,
 		const std::string* encoding, int width, int height
 	);
-	// Make an image visible
-	int loadImage(int sessionID, int mobotID, int imageID);
-	// Make an image invisible
-	int unloadImage(int sessionID, int mobotID, int imageID);
-	// Delete an image
+	int showImage(int sessionID, int mobotID, int imageID);
+	int hideImage(int sessionID, int mobotID, int imageID);
 	int deleteImage(int sessionID, int mobotID, int imageID);
-	// Make all images belonging to a mobot visible
-	int loadMobot(int sessionID, int mobotID);
-	// Make all images belonging to a mobot invisible
-	int unloadMobot(int sessionID, int mobotID);
-	// Delete all images belonging to a mobot
+	int showMobot(int sessionID, int mobotID);
+	int hideMobot(int sessionID, int mobotID);
 	int deleteMobot(int sessionID, int mobotID);
-	// Make all images belonging to a session visible
-	int loadSession(int sessionID);
-	// Make all images belonging to a session invisible
-	int unloadSession(int sessionID);
-	// Delete all images belonging to a session
+	int showSession(int sessionID);
+	int hideSession(int sessionID);
 	int deleteSession(int sessionID);
 	
 	void setPose(float poseX, float poseY, float poseTheta, int sessionID, int mobotID, int imageID);
@@ -59,8 +50,12 @@ private:
 	Ogre::SceneManager* sceneManager;
 	std::list<Ogre::ManualObject*> manualObjects;
 
-	// Get the node in which the image entity is to be placed
-	Ogre::SceneNode* getImageNode(int sessionID, int mobotID, int imageID);
+	// If the node is not found, a NULL pointer is returned.
+	Ogre::SceneNode* getNode(int sessionID, int mobotID, int imageID);
+	// If the node is not found, a the node and its path is created.
+	Ogre::SceneNode* findNode(int sessionID, int mobotID, int imageID);
+	// returns the name of the specified map tile (manual object)
+	std::string getMapObjectName(int sessionID, int mobotID, int imageID);
 };
 
 }

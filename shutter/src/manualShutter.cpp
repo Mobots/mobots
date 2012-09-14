@@ -2,7 +2,7 @@
 #include <iostream>
 #include <ros/ros.h>
 
-#include "mobots_msgs/ImageWithDeltaPoseAndID.h"
+#include "mobots_msgs/ImageWithPoseAndID.h"
 
 using namespace std;
 
@@ -15,11 +15,15 @@ void imageCallback(const sensor_msgs::Image &image){
 }
 
 void* shutterThread(void* data){
-  mobots_msgs::ImageWithDeltaPoseAndID msg;
+  mobots_msgs::ImageWithPoseAndID msg;
+  int imageID = 0;
+  int mobotID = 0;
+  int sessionID = 0;
   while(ros::ok()){
     cin.ignore(std::numeric_limits<streamsize>::max(),'\n');
     msg.image = currentImage;
     pub.publish(msg);
+	msg.id.image_id++;
     cout << TAG << "shuttered" << endl;
   }
 }
@@ -27,7 +31,7 @@ void* shutterThread(void* data){
 int main(int argc, char **argv){
   ros::init(argc, argv, "manualShutter");
   ros::NodeHandle nh;
-  pub = nh.advertise<mobots_msgs::ImageWithDeltaPoseAndID>("ImageWithDeltaPoseAndID", 2);
+  pub = nh.advertise<mobots_msgs::ImageWithPoseAndID>("shutter_image_delta_pose", 2);
   ros::Subscriber image_sub = nh.subscribe("usb_cam/image_raw", 1, imageCallback);
   pthread_t thread_t;
   pthread_create(&thread_t, 0, shutterThread, 0);
