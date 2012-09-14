@@ -39,9 +39,10 @@ private:
     void callback(const mobots_msgs::FeatureSetWithDeltaPoseAndID::ConstPtr& msg, uint mobot_id);
     
     static const uint MOBOT_COUNT = 3;
-    int last_vertex[MOBOT_COUNT];
+    int last_id[MOBOT_COUNT];
+    int current_id[MOBOT_COUNT];
     
-    std::vector<mobots_msgs::FeatureSet> feature_sets_;
+    std::vector<mobots_msgs::FeatureSet> feature_sets_; // lieber eine map verwenden, wenn ich weiß, wie die funktioniert.
 };
 
 #endif

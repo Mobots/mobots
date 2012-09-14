@@ -32,8 +32,18 @@ void Slam::callback3(const mobots_msgs::FeatureSetWithDeltaPoseAndID::ConstPtr& 
 void Slam::callback(const mobots_msgs::FeatureSetWithDeltaPoseAndID::ConstPtr& msg, uint mobot_id)
 {
   ROS_INFO("Slam got a FeatureSetWithDeltaPoseAndID from mobot%u!", mobot_id);
-  
+  1. FeatureSet in Map unter Key (concatenated) ID abspeichern.
+  2. last_id und current_id aktualisieren
+  3. Neuen Vertex mit concatenated ID in TORO-Graph einfügen.
+  4. Eventuell standardmäßig mit letztem FeatureSet matchen und Warnung an Moritz raushauen.
+  5. FeatureSets finden, die sich zu matchen lohnen.
+     Dazu TORO-Graph durchiterieren und Radien checken. Jeder mit jedem oder nur aktueller mit jedem?
+  6. TORO-Algoritmus keine, eine oder mehrere Iterationen laufen lassen.
 }
+
+  7. public getter für aktuelle mobot_id
+  8. public getter für aktuelle pose einer bestimmten id
+  9. setter für start position
 
 int main(int argc, char* argv[])
 {
