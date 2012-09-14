@@ -13,7 +13,10 @@ using namespace cv;
 #define N int(2*M_PI/rotationStep + 3)
 #define MID ((N)/2) -1
 
-static unsigned int counts[N];
+const int UNCERTAINITY_THRESHOL0D = 5; //if <
+const int LENGTHDIFF_THRESHOLD = 2;    //if >
+
+static uint counts[N];
 static double sumsTheta[N];
 static double sumsX[N];
 static double sumsY[N];
@@ -22,6 +25,17 @@ static unsigned int* const countsMid = &counts[MID];
 static double* const sumsMid = &sumsTheta[MID];
 static double* const sumsMidX = &sumsX[MID];
 static double* const sumsMidY = &sumsY[MID];
+
+
+static uint uncertain_counts[N];
+static double uncertain_sumsTheta[N];
+static double uncertain_sumsX[N];
+static double uncertain_sumsY[N];
+
+static unsigned int* const uncertain_countsMid = &uncertain_counts[MID];
+static double* const uncertain_sumsMid = &uncertain_sumsTheta[MID];
+static double* const uncertain_sumsMidX = &uncertain_sumsX[MID];
+static double* const uncertain_sumsMidY = &uncertain_sumsY[MID];
 
 
 inline double toDegree(double rad){
@@ -67,6 +81,10 @@ inline void rotate(const Point2f& in, Point2f& out, double angle){
   out.y = xOrig*sina + yOrig*cosa;
 }
 
+//DEBUG
+/*extern double rotationStep;
+extern int N;
+extern int MID;*/
 
 /**
  * FTW
@@ -79,23 +97,20 @@ bool rorAlternative(const vector<Point2f>& points1, const vector<Point2f>& point
   //first simple matching: p1[i],p1[i+1] <--> p2[i],p2[i+1]
   // 		     and: p1[i],p1[i+2] <--> p2[i],p2[i+2]
   //if one rotation get's more than 60% it's ok.
-  vector<vector<double> > xOffsets(N);
-  vector<vector<double> > yOffsets(N);
+  
   for(int i = 0; i < N; i++){
     counts[i] = 0;
     sumsTheta[i] = 0;
     sumsX[i] = 0;
     sumsY[i] = 0;
+    uncertain_counts[i] = 0;
+    uncertain_sumsTheta[i] = 0;
+    uncertain_sumsX[i] = 0;
+    uncertain_sumsY[i] = 0;
   }
-  int out = 0;
-  int out2 = 0;
+  int out = 100;
+  int out2 = 100;
   const int p1Size = points1.size();
-  vector<int> bestIndex1(N, 0);
-  vector<int> bestIndex2(N, 0);
-  int* best1Mid = &bestIndex1[MID];
-  int* best2Mid = &bestIndex2[MID];
-  vector<double>* xOffsetsMid = &xOffsets[MID];
-  vector<double>* yOffsetsMid = &yOffsets[MID];
   for(int i1 = 0; i1 < p1Size; i1++){
     for(int i2 = i1+1; i2 < p1Size; i2++){
       Point2f p11 = points1[i1];
@@ -105,36 +120,33 @@ bool rorAlternative(const vector<Point2f>& points1, const vector<Point2f>& point
       if(abs(
 	euclideanDistance(p11, p12) 
 	- euclideanDistance(p21, p22)
-	    ) > 2){
+	    ) > LENGTHDIFF_THRESHOLD){
 	if(out < 100){
 	  cout << "sorted out " << i1 << "-" << i2 << endl;
 	  out++;
 	}
 	continue;
       }
-      if(abs(euclideanDistance(p11, p12)) < 10){
+      double rot = getRotation(p11, p12, p21, p22);
+      int index = round(rot/rotationStep);
+      if(abs(euclideanDistance(p11, p12)) < UNCERTAINITY_THRESHOL0D){
 	if(out2 < 100){
 	  cout << "small val!! : " << abs(euclideanDistance(p11, p12)) << "  " << i1 << "-" << i2 << endl;
 	}
+	uncertain_countsMid[index]++;
+	uncertain_sumsMid[index] += rot;
+	Point2f b;
+	rotate(p21, b, -rot);
+	uncertain_sumsMidX[index] += p11.x - b.x;
+	uncertain_sumsMidY[index] += p11.y - b.y;
 	continue;
       }
-      double rot = getRotation(p11, p12, p21, p22);
-      /*float origR = rot;
-      if(rot > M_PI)
-	rot = 2*M_PI - rot;
-      else if(rot < -M_PI)
-	rot = -2*M_PI - rot;*/
-      int index = round(rot/rotationStep);
-      best1Mid[index] = i1;
-      best2Mid[index] = i2;
       countsMid[index]++;
       sumsMid[index] += rot;
       Point2f b;
       rotate(p21, b, -rot);
       sumsMidX[index] += p11.x - b.x;
       sumsMidY[index] += p11.y - b.y;
-      xOffsetsMid[index].push_back(p11.x - b.x);
-      yOffsetsMid[index].push_back(p11.y - b.y);
     }
   }
   int bestAvgCount = 0;
@@ -147,22 +159,13 @@ bool rorAlternative(const vector<Point2f>& points1, const vector<Point2f>& point
     }
     //cout << i*rotationStep << " = " << toDegree(i*rotationStep) << " => " << count << " times" << endl;
   }
-  cout << "size " << xOffsets[bestIndex].size() << " should be " << bestAvgCount << endl;
-  /*for(int i = 0; i < xOffsets[bestIndex].size(); i++){
-    cout << "xOff: " << xOffsets[bestIndex][i] << " - yOff: " << yOffsets[bestIndex][i] << endl;
-  }*/
-  //if(bestAvgCount < 2)
-  //  return false;
+  if(bestAvgCount < 2)
+    return false;
   float bestAvg = sumsTheta[bestIndex]/bestAvgCount;
   cout << "most likely rotation is: " << bestAvg  << " = " << toDegree(bestAvg) << "°" << endl;
-  double rot = getRotation(points1[bestIndex1[bestIndex]], points1[bestIndex2[bestIndex]], 
-			   points2[bestIndex1[bestIndex]], points2[bestIndex2[bestIndex]]);
-  //cout << "most likely rotation2 is: " << rot  << " = " << toDegree(rot) << "°" << endl;
-  //delta2.theta = rot;
+
   Point2f b;
-  rotate(points2[bestIndex], b, -rot);
-  //delta2.x = points1[bestIndex].x - b.x;
-  //delta2.y = points1[bestIndex].y - b.y;
+  rotate(points2[bestIndex], b, -bestAvg);
   delta.theta = bestAvg;
   float xDiff =  sumsX[bestIndex]/bestAvgCount;
   float yDiff =  sumsY[bestIndex]/bestAvgCount;
