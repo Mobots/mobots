@@ -111,8 +111,8 @@ Delta delta2;
 Mat affine3;
 
 bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, Delta& delta) const{
-  moduleStarted("only ror");
-  vector<DMatch> matches;
+    vector<DMatch> matches;
+  /*moduleStarted("only ror");
   matcher->match(img1.descriptors, img2.descriptors, matches);
   vector<Point2f> points11;
   vector<Point2f> points22;
@@ -121,7 +121,7 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, D
     points22.push_back(img2.keyPoints[matches[i].trainIdx].pt);
   }
   rorAlternative(points11, points22, delta2);
-  moduleEnded();
+  moduleEnded();*/
   
   moduleStarted("cpu matcher + get transform");
   vector<vector<DMatch> > matches1;
@@ -149,6 +149,22 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, D
   }
   bool ok = rorAlternative(points1, points2, delta);
   moduleEnded();
+  
+    moduleStarted("cpu matcher, homo + ror");
+  vector<uchar> mask;
+  vector<Point2f> points11;
+  vector<Point2f> points22;
+  findHomography(points1, points2, CV_RANSAC, 3, mask);
+  for(int i = 0; i < mask.size(); i++){
+    if(mask[i]){
+      points11.push_back(points1[i]);
+      points22.push_back(points2[i]);
+    }
+  }
+  cout << "size2: " << points22.size() << endl;
+  rorAlternative(points11, points22, delta2);
+  moduleEnded();
+  
   //Mat H = getAffineTransform(&points2[0], &points1[0]);
   //aff = H;
   /*vector<uchar> inliers;
@@ -196,9 +212,9 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, D
                good_matches, img_matches, Scalar::all(-1), Scalar::all(-1),
                vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
   imshow("good Matches", img_matches);
-  drawing::drawMatches(gimage1, img1.keyPoints, gimage2, img2.keyPoints,
+  /*drawing::drawMatches(gimage1, img1.keyPoints, gimage2, img2.keyPoints,
                matches, img_matches, Scalar::all(-1), Scalar::all(-1),
                vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
-  imshow("ror only Matches", img_matches);
+  imshow("ror only Matches", img_matches);*/
   return ok;
 }

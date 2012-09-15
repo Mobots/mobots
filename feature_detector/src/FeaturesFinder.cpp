@@ -17,10 +17,25 @@ using namespace cv;
   }
 }*/
 
-void CpuFeaturesFinder::findFeatures(const cv::Mat& image, FeatureSet& features)const{
+Ptr<FeaturesFinder> FeaturesFinder::getDefault(){
+  return new OrbFeaturesFinder;
+}
+
+void SurfFeaturesFinder::computeFeatureSet(const Mat& image, FeatureSet& features)const{
   moduleStarted("cpu features finder");
-  detector->detect(image, features.keyPoints);
-  extractor->compute(image, features.keyPoints, features.descriptors);
+  (*surf)(image, Mat(), features.keyPoints, features.descriptors, true);
+  moduleEnded();
+}
+
+void OrbFeaturesFinder::computeFeatureSet(const Mat& image, FeatureSet& features)const{
+  moduleStarted("cpu features finder");
+  (*orb)(image, Mat(), features.keyPoints, features.descriptors, false);
+  moduleEnded();
+}
+
+void FastFeaturesFinder::computeFeatureSet(const Mat& image, FeatureSet& features)const{
+  moduleStarted("cpu features finder");
+  FAST(image, features.keyPoints, threshold, nonmaxSuppression);
   moduleEnded();
 }
 

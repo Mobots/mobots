@@ -67,6 +67,8 @@ inline double toDegree(double rad){
   return rad * 180 / M_PI;
 }
 
+extern Delta delta2;
+
 void checkResult(){
   Delta delta;
   Ptr<FeaturesMatcher> matcher = new CpuFeaturesMatcher(CpuFeaturesMatcher::ORB_DEFAULT);
@@ -100,7 +102,6 @@ void checkResult(){
   imshow("result", result);
   imshow("result2", result2);
   
-  cout << "H mat " << endl << H << endl;
   
   Mat result3;
   Mat result4;
@@ -108,18 +109,23 @@ void checkResult(){
   result4.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
   Mat outImg3 = result3(Rect(0, 0, gimage1.cols, gimage1.rows));
   Mat outImg41 = result4(Rect(0, 0, gimage1.cols, gimage1.rows));
+  
+  findRotationMatrix2D(Point2f(gimage2.cols/2, gimage2.rows/2), delta2.theta, aff);
+  aff.at<double>(0,2) = delta2.x;
+  aff.at<double>(1,2) = delta2.y;
+  cout << "affen mat2: " << endl << aff << endl;
 
-  warpPerspective(gimage2, result3, H, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  warpAffine(gimage2, result3, aff, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
   gimage1.copyTo(outImg3);
   
   gimage1.copyTo(outImg41);
-  warpPerspective(gimage2, result4, H, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  warpAffine(gimage2, result4, aff, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
   
   imshow("result", result);
   imshow("result2", result2);
   
-  imshow("result H", result3);
-  imshow("result H2", result4);
+  imshow("result aff2", result3);
+  imshow("result 2 aff2", result4);
   
   //imwrite("out.png", result);
   waitKey(0);
@@ -158,7 +164,7 @@ int main(int argc, char** argv){
   copyMatToImageMSg(image2Gray, i2);
   ros::NodeHandle nodeHandle;
   ros::Subscriber subscriber = nodeHandle.subscribe("FeatureSetWithDeltaPoseAndID", 2, featuresReceived);
-  ros::Publisher publisher = nodeHandle.advertise<mobots_msgs::ImageWithDeltaPoseAndID>("ImageWithPose", 2);
+  ros::Publisher publisher = nodeHandle.advertise<mobots_msgs::ImageWithDeltaPoseAndID>("ImageWithDeltaPoseAndID", 2);
   cout << "now sending" << endl;
   sleep(1);
   publisher.publish(i1);
