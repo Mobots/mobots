@@ -67,9 +67,12 @@ inline double toDegree(double rad){
   return rad * 180 / M_PI;
 }
 
+extern Delta delta2;
+extern Mat affine3;
+
 void checkResult(){
   Delta delta;
-  Ptr<FeaturesMatcher> matcher = new CpuFeaturesMatcher(CpuFeaturesMatcher::ORB_DEFAULT);
+  Ptr<FeaturesMatcher> matcher = FeaturesMatcher::getDefault();
   bool matchResult = matcher->match(features1, features2, delta);
   if(!matchResult){
     cout << "images do not overlap at all" << endl;
@@ -83,7 +86,6 @@ void checkResult(){
   findRotationMatrix2D(Point2f(gimage2.cols/2, gimage2.rows/2), delta.theta, aff);
   aff.at<double>(0,2) = delta.x;
   aff.at<double>(1,2) = delta.y;
-  cout << "affen mat: " << endl << aff << endl;
   Mat result;
   Mat result2;
   result2.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
@@ -100,9 +102,32 @@ void checkResult(){
   imshow("result", result);
   imshow("result2", result2);
   
-  cout << "H mat " << endl << H << endl;
   
   Mat result3;
+  Mat result4;
+  result3.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
+  result4.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
+  Mat outImg3 = result3(Rect(0, 0, gimage1.cols, gimage1.rows));
+  Mat outImg41 = result4(Rect(0, 0, gimage1.cols, gimage1.rows));
+  
+  cout << "deltaX2 " << delta2.x << endl;
+  cout << "deltaY2 " << delta2.y << endl;
+  cout << "theta2 " << delta2.theta << " rad = " << toDegree(delta2.theta) << "°" << endl;
+  /*findRotationMatrix2D(Point2f(gimage2.cols/2, gimage2.rows/2), delta2.theta, aff);
+  aff.at<double>(0,2) = delta2.x;
+  aff.at<double>(1,2) = delta2.y;*/
+
+  warpAffine(gimage2, result3, affine3, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  gimage1.copyTo(outImg3);
+  
+  gimage1.copyTo(outImg41);
+  warpAffine(gimage2, result4, affine3, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  
+  
+  imshow("result aff2", result3);
+  imshow("result 2 aff2", result4);
+  
+  /*Mat result3;
   Mat result4;
   result3.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
   result4.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
@@ -115,11 +140,9 @@ void checkResult(){
   gimage1.copyTo(outImg41);
   warpPerspective(gimage2, result4, H, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
   
-  imshow("result", result);
-  imshow("result2", result2);
   
   imshow("result H", result3);
-  imshow("result H2", result4);
+  imshow("result H2", result4);*/
   
   //imwrite("out.png", result);
   waitKey(0);
@@ -158,7 +181,7 @@ int main(int argc, char** argv){
   copyMatToImageMSg(image2Gray, i2);
   ros::NodeHandle nodeHandle;
   ros::Subscriber subscriber = nodeHandle.subscribe("FeatureSetWithDeltaPoseAndID", 2, featuresReceived);
-  ros::Publisher publisher = nodeHandle.advertise<mobots_msgs::ImageWithDeltaPoseAndID>("ImageWithPose", 2);
+  ros::Publisher publisher = nodeHandle.advertise<mobots_msgs::ImageWithDeltaPoseAndID>("ImageWithDeltaPoseAndID", 2);
   cout << "now sending" << endl;
   sleep(1);
   publisher.publish(i1);

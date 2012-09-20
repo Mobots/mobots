@@ -1,0 +1,3 @@
+[Project]
+Manager=KDevCMakeManager
+Name=feature_detector

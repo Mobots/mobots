@@ -16,13 +16,14 @@ protected:
   float ratioThreshold;
 public:
   FeaturesMatcher(){
-    this->ratioThreshold = 0.8; //0.6 seems to be good..
+    this->ratioThreshold = 1; //0.6 seems to be good..
   }
   void setRatioThreshold(float ratioThreshold){
     this->ratioThreshold = ratioThreshold;
   }
   virtual ~FeaturesMatcher(){}
   virtual bool match(const FeatureSet& img1, const FeatureSet& img2, Delta& delta) const = 0;
+  static cv::Ptr<FeaturesMatcher> getDefault();
 };
 
 class CpuFeaturesMatcher : public FeaturesMatcher{

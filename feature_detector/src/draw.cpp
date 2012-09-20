@@ -162,7 +162,7 @@ void drawMatches( const Mat& img1, const vector<KeyPoint>& keypoints1,
                   const Mat& img2, const vector<KeyPoint>& keypoints2,
                   const vector<DMatch>& matches1to2, Mat& outImg,
                   const Scalar& matchColor, const Scalar& singlePointColor,
-                  const vector<char>& matchesMask, int flags )
+                  const vector<char>& matchesMask, int flags, int maxCount)
 {
     if( !matchesMask.empty() && matchesMask.size() != matches1to2.size() )
         CV_Error( CV_StsBadSize, "matchesMask must have the same size as matches1to2" );
@@ -182,7 +182,7 @@ void drawMatches( const Mat& img1, const vector<KeyPoint>& keypoints1,
             const KeyPoint &kp1 = keypoints1[i1], &kp2 = keypoints2[i2];
             _drawMatch( outImg, outImg1, outImg2, kp1, kp2, matchColor, flags, pos);
 	    pos++;
-	    if(pos > 45)
+	    if(pos > maxCount)
 	      return;
         }
     }
