@@ -2,7 +2,7 @@
 #include <iostream>
 #include <ros/ros.h>
 //#include "shutter/delta.h"
-#include <mobots_msgs/ImageWithDeltaPoseAndID.h>
+#include <mobots_msgs/ImageWithPoseAndID.h>
 #include <math.h>
 #include "geometry.h"
 
@@ -26,7 +26,7 @@ public:
     ros::Subscriber pose_sub;
     ros::Subscriber image_sub;
     ros::Publisher poseImage_pub;
-    mobots_msgs::ImageWithDeltaPoseAndID ipid;
+    mobots_msgs::ImageWithPoseAndID ipid;
     
     
 private:
