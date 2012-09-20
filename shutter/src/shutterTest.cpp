@@ -47,6 +47,7 @@ void* shutterThread(void* data){
     fread(result, 1, sizeof(result), fp);
     pclose(fp);
     stringstream ss;
+    result[strlen(result)-1] = '\0';
     ss << result << "/testImages/image00" << imageID << ".png";
     cv::Mat img = cv::imread(string(), 0);
     copyMatToImageMSg(img, msg);
