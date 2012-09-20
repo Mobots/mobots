@@ -21,7 +21,7 @@ Shutter::~Shutter() {
 void Shutter::startShutter()
 {
     ROS_INFO("Mobot %d: Shutterfunktion gestartet.", id);
-    poseImage_pub = nh.advertise<mobots_msgs::ImageWithDeltaPoseAndID>("ImageWithDeltaPoseAndID", 2);
+    poseImage_pub = nh.advertise<mobots_msgs::ImageWithPoseAndID>("ImageWithPoseAndID", 2);
 
     image_sub = nh.subscribe("usb_cam/image_raw", 5, &Shutter::imageCallback, this);
     pose_sub = nh.subscribe("mouse/pose", 100, &Shutter::mouseCallback, this);
@@ -46,7 +46,7 @@ void Shutter::startShutter()
 }*/
 
 void Shutter::publishMessage(double &x, double &y, double &theta, const sensor_msgs::Image &image) {
-    ipid.mobot_id = id;
+    ipid.id.mobot_id = id;
     ipid.image = image;
 
     geometry_msgs::Pose2D pose;

@@ -5,8 +5,8 @@
 
 #include "feature_detector/FeaturesFinder.h"
 #include "feature_detector/MessageBridge.h"
-#include "FeaturesMatcher.h"
-#include "mobots_msgs/ImageWithDeltaPoseAndID.h"
+#include "feature_detector/FeaturesMatcher.h"
+#include "mobots_msgs/ImageWithPoseAndID.h"
 #include "mobots_msgs/FeatureSetWithDeltaPoseAndID.h"
 
 
@@ -40,7 +40,7 @@ void findRotationMatrix2D(Point2f center, double angle, Mat& rotMat){
     m[5] = beta*center.x + (1-alpha)*center.y;
 }
 
-void copyMatToImageMSg(const cv::Mat& in, mobots_msgs::ImageWithDeltaPoseAndID& out2){
+void copyMatToImageMSg(const cv::Mat& in, mobots_msgs::ImageWithPoseAndID& out2){
   sensor_msgs::Image* out = &out2.image;
   out->height = in.rows;
   out->width = in.cols;
@@ -103,7 +103,7 @@ void checkResult(){
   imshow("result2", result2);
   
   
-  Mat result3;
+  /*Mat result3;
   Mat result4;
   result3.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
   result4.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
@@ -117,7 +117,7 @@ void checkResult(){
   aff.at<double>(0,2) = delta2.x;
   aff.at<double>(1,2) = delta2.y;*/
 
-  warpAffine(gimage2, result3, affine3, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  /*warpAffine(gimage2, result3, affine3, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
   gimage1.copyTo(outImg3);
   
   gimage1.copyTo(outImg41);
@@ -175,13 +175,13 @@ int main(int argc, char** argv){
   Mat image2Gray;
   cvtColor(gimage1, image1Gray, CV_RGB2GRAY); //FeatureDetecter etc. arbeiten alle auf Graustufenbildern
   cvtColor(gimage2, image2Gray, CV_RGB2GRAY);
-  mobots_msgs::ImageWithDeltaPoseAndID i1;
-  mobots_msgs::ImageWithDeltaPoseAndID i2;
+  mobots_msgs::ImageWithPoseAndID i1;
+  mobots_msgs::ImageWithPoseAndID i2;
   copyMatToImageMSg(image1Gray, i1);
   copyMatToImageMSg(image2Gray, i2);
   ros::NodeHandle nodeHandle;
   ros::Subscriber subscriber = nodeHandle.subscribe("FeatureSetWithDeltaPoseAndID", 2, featuresReceived);
-  ros::Publisher publisher = nodeHandle.advertise<mobots_msgs::ImageWithDeltaPoseAndID>("ImageWithDeltaPoseAndID", 2);
+  ros::Publisher publisher = nodeHandle.advertise<mobots_msgs::ImageWithPoseAndID>("ImageWithDeltaPoseAndID", 2);
   cout << "now sending" << endl;
   sleep(1);
   publisher.publish(i1);

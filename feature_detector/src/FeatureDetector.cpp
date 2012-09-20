@@ -6,7 +6,7 @@
 #include "feature_detector/MessageBridge.h"
 #include "feature_detector/FeaturesFinder.h"
 #include "mobots_msgs/FeatureSetWithDeltaPoseAndID.h"
-#include "mobots_msgs/ImageWithDeltaPoseAndID.h"
+#include "mobots_msgs/ImageWithPoseAndID.h"
 
 using namespace std;
 
@@ -16,7 +16,7 @@ ros::Publisher publisher;
 char* TAG;
 
 
-void processImage(const mobots_msgs::ImageWithDeltaPoseAndID& image){
+void processImage(const mobots_msgs::ImageWithPoseAndID& image){
   ROS_INFO("%s processImage", TAG);
   FeatureSet features;
   cv_bridge::CvImagePtr imagePtr = cv_bridge::toCvCopy(image.image);
@@ -33,7 +33,7 @@ int main(int argc, char** argv){
   ss << "[" << nodeHandle.getNamespace() << "/feature_detector]";
   TAG = new char[ss.str().size()+1];
   strcpy(TAG, ss.str().c_str());
-  ros::Subscriber subscriber = nodeHandle.subscribe("ImageWithDeltaPoseAndID", 100, processImage);
+  ros::Subscriber subscriber = nodeHandle.subscribe("ImageWithPoseAndID", 100, processImage);
   publisher = nodeHandle.advertise<mobots_msgs::FeatureSetWithDeltaPoseAndID>("FeatureSetWithDeltaPoseAndID", 10); 
   //detector = new SurfFeaturesFinder(400, 3, 4, 4, 2, false);
   detector = FeaturesFinder::getDefault();
