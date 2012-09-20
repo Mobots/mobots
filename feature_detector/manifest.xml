@@ -13,7 +13,7 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/feature_detector</url>
   <export>
-    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -Wl,-rpath,${prefix}/lib -lmessageBridge"/>
+    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -Wl,-rpath,${prefix}/lib -lmessageBridge -lfeaturesMatcher"/>
   </export>
 
 </package>

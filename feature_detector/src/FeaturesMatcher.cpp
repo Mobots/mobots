@@ -8,6 +8,7 @@
 #include "ror3.h"
 #include "ror.h"
 #include "profile.h"
+#include "feature_detector/FeaturesMatcher.h"
 
 using namespace std;
 using namespace cv;
@@ -18,6 +19,7 @@ Mat H;
 
 const char CpuFeaturesMatcher::SURF_DEFAULT[] = "FlannBased";
 const char CpuFeaturesMatcher::ORB_DEFAULT[] = "BruteForce-Hamming";
+static const int LENGTHDIFF_THRESHOLD = 2;    //if abs(distance(a) - distance(b)) > => outlier
 
 CpuFeaturesMatcher::CpuFeaturesMatcher(const string& type){
   matcher = DescriptorMatcher::create(type);
@@ -26,33 +28,14 @@ Ptr<FeaturesMatcher> FeaturesMatcher::getDefault(){
   return new CpuFeaturesMatcher(CpuFeaturesMatcher::ORB_DEFAULT);
 }
 
-
-inline double avg(double d1, double d2){
-  return (d1+d2)/2;
-}
-
 inline double toDegree(double rad){
   return rad * 180 / 3.14159265;
-}
-
-void printHMat(const Mat& H, const string title = string("")){
-  cout << "H-Mat: " << title << endl;
-  cout << toDegree(acos(H.at<double>(0,0))) << "° " << toDegree(asin(-H.at<double>(0,1))) << "° "
-  << H.at<double>(0,2) << endl;
-  cout << toDegree(asin(H.at<double>(1,0)))  << "° " << toDegree(acos(H.at<double>(1,1))) << "° " 
-  << H.at<double>(1,2) << endl;
-  cout << H.at<double>(2,0) << "  " << H.at<double>(2,1) << "  " << H.at<double>(2,2) << endl;
-}
-
-void printHMatRaw(const Mat& H, const string title = string("")){
-  cout << "H-Mat: " << title << endl;
-  cout << H << endl;
 }
 
 /*
  * from opencv cookbook
  */
-void symmetryTest(const vector<vector<DMatch> >& matches1, const vector<vector<DMatch> >& matches2, 
+static void symmetryTest(const vector<vector<DMatch> >& matches1, const vector<vector<DMatch> >& matches2, 
 		  vector<DMatch>& symMatches){
   for(vector<vector<DMatch> >::const_iterator matchIterator1 = matches1.begin(); 
       matchIterator1 != matches1.end(); matchIterator1++){
@@ -77,6 +60,39 @@ void symmetryTest(const vector<vector<DMatch> >& matches1, const vector<vector<D
   }
 }
 
+static inline double euclideanDistance(const Point2f& p1, const Point2f& p2){
+  double yDiff = double(p2.y)-double(p1.y);
+  double xDiff = double(p2.x)-double(p1.x);
+  return sqrt(xDiff*xDiff + yDiff*yDiff);
+}
+
+static void planeTest(const vector<Point2f>& points1, const vector<Point2f>& points2, vector<Point2f>& out1, vector<Point2f>& out2){
+  const int p1Size = points1.size();
+  int min = 4;
+  for(int i1 = 0; i1 < p1Size; i1++){
+    int curr = 0;
+    for(int i2 = 0; i2 < p1Size; i2++){
+      Point2f p11 = points1[i1];
+      Point2f p12 = points1[i2];
+      Point2f p21 = points2[i1];
+      Point2f p22 = points2[i2];
+      if(abs(
+	euclideanDistance(p11, p12) 
+	- euclideanDistance(p21, p22)
+	    ) > LENGTHDIFF_THRESHOLD){
+	  //cout << "sorted out " << i1 << "-" << i2 << endl;
+	continue;
+      }
+      curr++;
+      if(curr >= min){
+	out1.push_back(p11);
+	out2.push_back(p21);
+	break;
+      }
+    }
+  }
+}
+
 /*
  * from opencv cookbook
  */
@@ -95,26 +111,10 @@ void ratioTest(vector<vector<DMatch> >& matches, float ratioThreshold){
   cout << "removed: " << removed << endl;
 }
 
-
-/**
- * does the following:
- * if(value > 1)
- * 	value = 1;
- * else if(value < -1)
- * 	value = -1;
- */
-void normalize(double& value){
-  if(value > 1)
-    value = 1;
-  else if(value < -1)
-    value = -1;
-}
-
-Delta delta2;
-Mat affine3;
-bool ror2(const vector<Point2f>& points1, const vector<Point2f>& points2, vector<Point2f>& out1, vector<Point2f>& out2);
+/*Delta delta2;
+Mat affine3;*/
 bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, Delta& delta) const{
-    vector<DMatch> matches;
+  vector<DMatch> matches;
   /*moduleStarted("only ror");
   matcher->match(img1.descriptors, img2.descriptors, matches);
   vector<Point2f> points11;
@@ -153,31 +153,32 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, D
   bool ok = rorAlternative(points1, points2, delta);
   moduleEnded();
   moduleStarted("new");
-  vector<Point2f> a;
-  vector<Point2f> b;
-  ror2(points1, points2, a, b);
-  Mat m = cv::estimateRigidTransform(b, a, false);
+  vector<Point2f> points1Refined;
+  vector<Point2f> points2Refined;
+  planeTest(points1, points2, points1Refined, points2Refined);
+  /*Mat m = estimateRigidTransform(points2Refined, a, false);
   cout << "mega " << endl << m << endl;
   double d1 = atan2(-m.at<double>(0,1), m.at<double>(0,0));
   double d2 = acos(m.at<double>(0,0));
-  cout << "d1 " << d1 << " = " << toDegree(d1) << "° d2 " << d2 << " = " << toDegree(d2) << "°" << endl;
+  cout << "d1 " << d1 << " = " << toDegree(d1) << "° d2 " << d2 << " = " << toDegree(d2) << "°" << endl;*/
   vector<uchar> status;
-  Mat c = findHomography(b, a, CV_RANSAC, 3, status);
-  cout << "new c " << endl << c << endl;
-  vector<Point2f> a2;
-  vector<Point2f> b2;
+  findHomography(points2Refined, points1Refined, CV_RANSAC, 3, status);
+  vector<Point2f> points1Refinedx2;
+  vector<Point2f> points2Refinedx2;
   for(int i = 0; i < status.size(); i++){
     if(status[i]){
-      a2.push_back(a[i]);
-      b2.push_back(b[i]);
+      points1Refinedx2.push_back(points1Refined[i]);
+      points2Refinedx2.push_back(points2Refined[i]);
     }
   }
-  cout << "a2/b2 size " << a2.size() << endl;
-  Mat d = estimateRigidTransform(b, a, false);
-  cout << "new d " << endl << d << endl;
+  Mat d = estimateRigidTransform(points2Refinedx2, points1Refinedx2, false);
+  /*cout << "new d " << endl << d << endl;
   affine3 = d;
-  d = estimateRigidTransform(b, a, true);
-  cout << "new d with true" << endl << d << endl;
+  d = estimateRigidTransform(points2Refined, a, true);
+  cout << "new d with true" << endl << d << endl;*/
+  delta.theta = atan2(-d.at<double>(0,1), d.at<double>(0,0));
+  delta.x = d.at<double>(0,2);
+  delta.y = d.at<double>(1,2);
   moduleEnded();
   /*vector<Point2f> a;
   vector<Point2f> b;
