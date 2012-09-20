@@ -36,32 +36,79 @@
 
 *********************************************************************/    
 
-#ifndef ROR_H
+/********
 
-#define ROR_H
+run_ror.c - a program which shows how to use ror
 
-/* the ror function expects two arrays of this type */
+********/
 
-typedef struct point_st
+#include "ror.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <sys/timeb.h>
+
+#define PNT_FILE "features.dat"
+
+int main()
 {
-  double x,y;
-} point;
+  struct timeb tstruct;
+  int numf;
+  int i;
+  point pnts_frame1[600],pnts_frame2[600]; 
+  FILE *pnt_file;
 
+  int * mask;
 
-/**************************************************************
-  Function Name: ror
-  Description: encapsulates the idinls function 
-               runs idinls numruns times and calculates the 
-			   average mask
-  Parameters:  point pnts_frame1[] - the points of frame 1
-               point pnts_frame2[] - the points of frame 2
-	       int numf - the number of points, features
-	       numruns  - the number of runs 
-  Returns:     int avgmask[] - a mask defining the inliers and outliers
-               1 means a correct match, 0 means a false match.
+  struct timeb tsruct;
 
-***************************************************************/
-int ror(point pnts_frame1[],point pnts_frame2[],
-		int numf,int numruns,int avgmask[]);
+  // random number generator seed
 
-#endif
+  ftime(&tstruct);
+  srand(tstruct.millitm);
+
+  // read list of matching points from file
+
+  if ((pnt_file=fopen(PNT_FILE,"r"))==NULL)
+  {
+    printf("Can't read input file!\n");
+    exit(1);
+  }
+  i=0;
+  while (fscanf(pnt_file,"%lf %lf %lf %lf",
+	            &pnts_frame1[i].x,&pnts_frame1[i].y,
+	            &pnts_frame2[i].x,&pnts_frame2[i].y)>0)
+  {
+	  i++;
+  }
+  numf=i;
+  fclose(pnt_file);
+
+  /********************
+
+     allocate space for the mask which will be the output:
+
+  *********************/
+
+   mask=calloc(numf,sizeof(int));
+
+/*********************
+
+  call the function
+
+*********************/
+	      
+   ror(pnts_frame1,pnts_frame2,numf,10,mask);
+
+// output the resulting mask
+
+  for (i=0;i<numf;i++)
+  {
+	printf("%d\n",mask[i]);
+  }
+  
+
+  return 0;
+
+}
