@@ -45,6 +45,7 @@ int ImageMapVisual::insertImage(
 	const std::string* encoding, int width, int height
 ){
 	// Get the node to which the image shall be assigned to
+	ROS_INFO("Check 1.0");
 	Ogre::SceneNode* imageNode = getNode(sessionID, mobotID, imageID);
 	ROS_INFO("insertImage, image node name: %s", (imageNode->getName()).c_str());
 	static int count = 0;
@@ -266,25 +267,20 @@ void ImageMapVisual::setPose(float poseX, float poseY, float poseTheta, int sess
 	return;
 }
 
-
 /**
  * Searches for the requested Node.
  * @remarks If the node is not found, a the node and its path is created.
  */
 Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID){
-	if(sessionID < 0){
-		return NULL;
-	}
+	ROS_INFO("Check 2.0");
 	std::string name = "s";
 	name += static_cast<std::ostringstream*>( &(std::ostringstream() << sessionID))->str();
 	Ogre::Node* node;
 	try{
 		node = rootNode->getChild(name);
 	} catch(Ogre::Exception& e) {
-		
-	}
-	if(mobotID < 0){
-		return (Ogre::SceneNode*) node;
+		rootNode->createChild(name, Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
+		node = rootNode->getChild(name);
 	}
 	name += "m";
 	name += static_cast<std::ostringstream*>( &(std::ostringstream() << mobotID))->str();
@@ -293,9 +289,6 @@ Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID
 	} catch(Ogre::Exception& e) {
 		node->createChild(name, Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
 		node = node->getChild(name);
-	}
-	if(imageID < 0){
-		return (Ogre::SceneNode*) node;
 	}
 	name += "i";
 	name += static_cast<std::ostringstream*>( &(std::ostringstream() << imageID))->str();
@@ -322,27 +315,29 @@ Ogre::SceneNode* ImageMapVisual::findNode(int sessionID, int mobotID, int imageI
 	try{
 		node = rootNode->getChild(name);
 	} catch(Ogre::Exception& e) {
-		return NULL;
+
 	}
 	if(mobotID < 0){
-		return (Ogre::SceneNode*) node;
+	return (Ogre::SceneNode*) node;
 	}
 	name += "m";
 	name += static_cast<std::ostringstream*>( &(std::ostringstream() << mobotID))->str();
 	try{
-		node = node->getChild(name);
+	node = node->getChild(name);
 	} catch(Ogre::Exception& e) {
-		return NULL;
+	node->createChild(name, Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
+	node = node->getChild(name);
 	}
 	if(imageID < 0){
-		return (Ogre::SceneNode*) node;
+	return (Ogre::SceneNode*) node;
 	}
 	name += "i";
 	name += static_cast<std::ostringstream*>( &(std::ostringstream() << imageID))->str();
 	try{
-		node = node->getChild(name);
+	node = node->getChild(name);
 	} catch(Ogre::Exception& e) {
-		return NULL;
+	node->createChild(name, Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
+	node = node->getChild(name);
 	}
 	return (Ogre::SceneNode*) node;
 }

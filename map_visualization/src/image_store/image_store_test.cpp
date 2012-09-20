@@ -14,7 +14,7 @@
  * This is an example of how to interface with the image_store server.
  */
 void saveRequest(std::string filePath, ros::NodeHandle* handle){
-	ros::Publisher pub = handle->advertise<mobots_msgs::ImageWithPoseAndID>("image_store_save", 10);
+	ros::Publisher pub = handle->advertise<mobots_msgs::ImageWithPoseAndID>("shutter_image_delta_pose", 10);
 	mobots_msgs::ImageWithPoseAndID msg;
 	// Set image info data
 	msg.pose.x = 40.23;
@@ -22,6 +22,7 @@ void saveRequest(std::string filePath, ros::NodeHandle* handle){
 	msg.pose.theta = 30.00;
 	msg.image.encoding = "jpg";
 	msg.id.mobot_id = 3;
+	msg.id.image_id = 0;
 	// Load image data
 	std::ifstream imageFile(filePath.c_str(), std::ios::binary);
 	imageFile.seekg(0, std::ios::end);
@@ -35,17 +36,15 @@ void saveRequest(std::string filePath, ros::NodeHandle* handle){
 	
 	ros::Rate loop_rate(1);
 	
-	int count = 0;
 	while (handle->ok())
 	{
-		ROS_INFO("Sent msg no: %i", count);
+		ROS_INFO("Sent msg no: %i", msg.id.image_id++);
 		pub.publish(msg);
 		ros::spinOnce();
 		loop_rate.sleep();
 		// Change image info data (pose)
 		msg.pose.x++;
 		msg.pose.y++;
-		count++;
 	}
 	return;
 }
