@@ -11,6 +11,7 @@
 #include "image_map_visual.h"
 #include "image_map_display.h"
 
+#include <boost/filesystem.hpp>
 namespace map_visualization{
 	
 ImageMapDisplay::ImageMapDisplay()
@@ -119,6 +120,9 @@ void ImageMapDisplay::createProperties(){
 void ImageMapDisplay::testVisual(ImageMapVisual* visual_, std::string filePath){
 	ROS_INFO("testVisual");
 	std::ifstream imageFile(filePath.c_str(), std::ios::binary);
+	if(!boost::filesystem::exists(filePath.c_str())){
+		ROS_INFO("File not exists");
+	}
 	imageFile.seekg(0, std::ios::end);
 	int length = imageFile.tellg();
 	char buffer[length];
