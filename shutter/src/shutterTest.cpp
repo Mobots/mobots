@@ -50,8 +50,8 @@ void* shutterThread(void* data){
     ss << result << "/testImages/image00" << imageID << ".png";
     cv::Mat img = cv::imread(string(), 0);
     copyMatToImageMSg(img, msg);
-    msg.pose.x = 40 + imageID*rand()/RAND_MAX*100;
-    msg.pose.y = 80 + imageID*rand()/RAND_MAX*100;
+    msg.pose.x = 40 + imageID*rand()/RAND_MAX*30;
+    msg.pose.y = 80 + imageID*rand()/RAND_MAX*30;
     msg.pose.theta = imageID*rand()/RAND_MAX*2;
     pub.publish(msg);
     imageID++;
