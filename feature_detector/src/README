@@ -1,0 +1,166 @@
+
+README file for the ROR source code package - July 20'th 2000
+-------------------------------------------------------------
+
+**********************************************************
+                   General Information
+**********************************************************
+
+These files are a C implementation of the ROR algorithm.
+   
+This implementation was written by Moti Gornshtein, moti@lti.co.il
+
+The algorithm was developed by Amit Adam, amita@tx.technion.ac.il
+(graduate student supervised by Dr. I. Shimshoni and Prof. E. Rivlin).  
+
+The algorithm is described in:
+
+   "ROR: Rejection of Outliers by Rotations in Stereo Matching", A. Adam, E. Rivlin 
+   and I. Shimshoni, Proc. IEEE Conference on Computer Vision and Pattern Recognition
+   (CVPR) 2000, pp. 2-9.
+
+------------------------
+
+Important notice:
+ 
+   Please feel free to use this algorithm for research purposes.
+   Please notify the author (Amit Adam, amita@tx.technion.ac.il) of your
+   experience with it, and include a reference to it in your work.
+
+   Please do not distribute modified versions of these source files. 
+
+   A patent on the algorithm is pending (filed in the US). For uses other than 
+   academic research please contact the author (Amit Adam).
+
+  
+--------------------------
+
+   For additional details please see http://www.cs.technion.ac.il/~amita
+
+
+*********************************************************************    
+Files in the package
+*********************************************************************
+
+1. README - this file
+2. ror.c - the algorithm itself, contains the function ror.
+3. ror.h - definitions to be included in a program which will use ROR
+4. ror_int.h - internal definitions, used only for compiling ror.c
+5. qsrt_bsrch.c - two routines used by ROR.
+6. ror_example.c - an example for usage of the package.
+
+***********************************************************************
+Compilation
+***********************************************************************
+
+The programs are all in standard C.
+
+To create the objects:
+
+gcc -c qsrt_bsrch.c 
+gcc -c ror.c
+
+Creating an executable which uses the ROR function:
+
+gcc -o ror_exe -O3 ror_example.c qsrt_bsrch.o ror.o -lm
+
+
+***********************************************************************
+Use of the function
+***********************************************************************
+
+The function ror accepts as input the following:
+
+1. Two arrays of points in the images (an array for each image).
+   These arrays describe the list of corresponding points
+   between the two images (i.e. the first element in the "left" array corresponds 
+   to the first element in the "right" array etc...).
+2. Number of matches - in other words the length of the arrays
+3. Number of runs to be performed.
+4. An array of integers in which the output mask will be written.
+
+Here is an explanation of each parameter:
+
+The points in the images are passed using the "point" structure which we defined
+(see the code). Each point is described by its x and y coordinates on the screen.
+We assume these are NORMALIZED image coordinates. This means that points on the
+optical axis of the camera are imaged in (0,0). In other words, we assume that
+we use the standard coordinate system where Z is the viewing direction and 
+X,Y is the screen plane, and in this world coordinate system
+the point (X,Y,Z) in 3D space is imaged in (f*X/Z,f*Y/Z).
+The parameter f is defined in ror_int.h (FOCUS). It should be in pixels.
+
+The number of matches is just the length of the arrays.
+
+Number of runs: in each run the algorithm outputs a mask. Since the algorithm
+employs random search, sometimes the masks will change from run to run.
+We reduce this variability in results by running the algorithm more than
+once (say for 10 runs), and reporting the majority vote. For example, if we
+asked for 10 runs, a match will be considered an inlier only if it was an
+inlier in 6 or more runs out of the 10.
+Try 10 runs at first.
+
+Output mask: you pass to ror a pointer to an integer array. The array
+will contain 0's and 1's which describe which are the false and correct
+matches respectively.
+
+
+*******************************************************************************
+Constants to be defined
+*******************************************************************************
+
+In the file ror_int.h there are definitions of various constants which
+are used by ROR.
+
+The most important one is the focal length of your  camera
+which should be in pixels.
+
+The other parameters are related to the algorithm itself.
+You should first try using the default values which we used.
+
+Below are brief explanations of their meaning. You might need to read
+the paper in order to fully understand how these parameters are used.
+ 
+NUMROT and NUMBEST are the number of rotations to be performed, and how many
+"good" rotations should be chosen. We think these numbers should not
+be changed.
+
+If you have an idea of  the percentage of inliers in your input data, you can try
+to change THRESHHOLD accordingly. Otherwise leave it as it is.
+
+The rest of the constants are for the MSM algorithm. You probably won't need
+to change them. 
+
+*******************************************************************
+
+The file ror_example.c is a program which reads the matching pairs
+from a file, and outputs the mask to the screen.
+The input file is in the format
+
+x1 y1 x1' y1'
+x2 y2 x2' y2'
+...
+
+where as noted before, (x,y) are the pixel coordinates on the screen
+, such that (0,0) are the coordinates of the center of the screen.
+
+You can use this example to better understand the usage of the ROR function.
+
+********************************************************************
+
+Please feel free to contact me with any comments,questions or problems
+you might encounter while using this algorithm.
+
+
+Amit Adam
+
+Dept. of Mathematics
+Technion - Israel Institute of Technology
+Haifa, ISRAEL
+
+email: amita@tx.technion.ac.il
+
+URL:   www.cs.technion.ac.il/~amita
+       
+Tel.   +972-4-8292747
+

@@ -40,6 +40,7 @@ void refreshDeltaPoseBuffer(){
  * TODO add support for non-square images
  */
 void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg){
+	ROS_INFO("deltaPose1");
 	imageInfoData infoData{
 		{msg->id.session_id, msg->id.mobot_id, msg->id.image_id},
 		{msg->pose.x, msg->pose.y, msg->pose.theta, 1}, // delta
@@ -47,21 +48,26 @@ void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg)
 		{0,0,0,0}, // absolute
 		{msg->image.width, msg->image.height, msg->image.encoding}
 	};
+	ROS_INFO("deltaPose2");
 	// Check if the correct session is used
 	if(currentSessionID != infoData.id.sessionID){
 		currentSessionID = infoData.id.sessionID;
 		refreshDeltaPoseBuffer();
 	}
+	ROS_INFO("deltaPose3");
 	// All delta poses exept the first one need to be added to the last one.
 	if(infoData.id.imageID != 0){
 		infoData.relPose= infoData.relPose + deltaPoseBuffer[infoData.id.mobotID];
 	}
+	ROS_INFO("deltaPose4");
 	// If the delta pose buffer vector is too small
 	if(infoData.id.mobotID > deltaPoseBuffer.size()){
 		deltaPoseBuffer.resize(infoData.id.mobotID);
 	}
+	ROS_INFO("deltaPose5");
 	deltaPoseBuffer[infoData.id.mobotID] = infoData.relPose;
 	ImageInfo imageInfo(&infoData, msg->image.data);
+	ROS_INFO("deltaPose6");
 	// Relay the image and updated pose to Rviz
 	mobots_msgs::ImageWithPoseAndID relayMsg;
 	relayMsg.pose.x = infoData.relPose.x;
@@ -73,8 +79,10 @@ void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg)
 	relayMsg.image.width = infoData.image.width;
 	relayMsg.image.height = infoData.image.height;
 	relayMsg.image.encoding = infoData.image.encoding;
+	ROS_INFO("deltaPose7");
 	relayMsg.image.data = msg->image.data;
 	relativePub->publish(relayMsg);
+	ROS_INFO("deltaPose8");
 	ros::spinOnce();
 	
 	ROS_INFO("image_store: image saved: %i", msg->id.image_id);
