@@ -23,6 +23,7 @@ public:
   }
   virtual ~FeaturesMatcher(){}
   virtual bool match(const FeatureSet& img1, const FeatureSet& img2, Delta& delta) const = 0;
+  static cv::Ptr<FeaturesMatcher> getDefault();
 };
 
 class CpuFeaturesMatcher : public FeaturesMatcher{

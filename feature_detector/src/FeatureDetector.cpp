@@ -13,9 +13,11 @@ using namespace std;
 cv::Ptr<FeaturesFinder> detector;
 ros::Publisher publisher;
 
+char* TAG;
+
 
 void processImage(const mobots_msgs::ImageWithDeltaPoseAndID& image){
-  cout << "processImage" << endl;
+  ROS_INFO("%s processImage", TAG);
   FeatureSet features;
   cv_bridge::CvImagePtr imagePtr = cv_bridge::toCvCopy(image.image);
   detector->computeFeatureSet(imagePtr->image, features);
@@ -25,15 +27,18 @@ void processImage(const mobots_msgs::ImageWithDeltaPoseAndID& image){
 }
 
 int main(int argc, char** argv){
-  ros::init(argc, argv, "FeatureDetector");
+  ros::init(argc, argv, "feature_detector");
   ros::NodeHandle nodeHandle;
-  nodeHandle.getNamespace();
+  stringstream ss;
+  ss << "[" << nodeHandle.getNamespace() << "/feature_detector]";
+  TAG = new char[ss.str().size()+1];
+  strcpy(TAG, ss.str().c_str());
   ros::Subscriber subscriber = nodeHandle.subscribe("ImageWithDeltaPoseAndID", 100, processImage);
   publisher = nodeHandle.advertise<mobots_msgs::FeatureSetWithDeltaPoseAndID>("FeatureSetWithDeltaPoseAndID", 10); 
   //detector = new SurfFeaturesFinder(400, 3, 4, 4, 2, false);
   detector = FeaturesFinder::getDefault();
   //detector = new FastFeaturesFinder;
-  cout << "now spinning" << endl;
+  ROS_INFO("%s now spinning", TAG);
   ros::spin();
   return 0;
 }

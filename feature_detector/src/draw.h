@@ -7,5 +7,5 @@ namespace drawing{
                   const cv::Mat& img2, const std::vector<cv::KeyPoint>& keypoints2,
                   const std::vector<cv::DMatch>& matches1to2, cv::Mat& outImg,
                   const cv::Scalar& matchColor, const cv::Scalar& singlePointColor,
-                  const std::vector<char>& matchesMask, int flags );
+                  const std::vector<char>& matchesMask, int flags, int maxCount);
 }

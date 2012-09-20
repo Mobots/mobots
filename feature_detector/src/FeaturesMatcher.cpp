@@ -2,8 +2,10 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/video/video.hpp>
 
 #include "draw.h"
+#include "ror3.h"
 #include "ror.h"
 #include "profile.h"
 
@@ -17,12 +19,13 @@ Mat H;
 const char CpuFeaturesMatcher::SURF_DEFAULT[] = "FlannBased";
 const char CpuFeaturesMatcher::ORB_DEFAULT[] = "BruteForce-Hamming";
 
-/**
- * matchers: BruteForce, Bruteforce-L1, BruteForce-Hamming, BruteForce-HammingLUT, FlannBased
- */
 CpuFeaturesMatcher::CpuFeaturesMatcher(const string& type){
   matcher = DescriptorMatcher::create(type);
 }
+Ptr<FeaturesMatcher> FeaturesMatcher::getDefault(){
+  return new CpuFeaturesMatcher(CpuFeaturesMatcher::ORB_DEFAULT);
+}
+
 
 inline double avg(double d1, double d2){
   return (d1+d2)/2;
@@ -53,11 +56,11 @@ void symmetryTest(const vector<vector<DMatch> >& matches1, const vector<vector<D
 		  vector<DMatch>& symMatches){
   for(vector<vector<DMatch> >::const_iterator matchIterator1 = matches1.begin(); 
       matchIterator1 != matches1.end(); matchIterator1++){
-    if(matchIterator1->size() < 2)
+    if(matchIterator1->size() == 0)
       continue;
     for(vector<vector<DMatch> >::const_iterator matchIterator2 = matches2.begin();
 	matchIterator2 != matches2.end(); matchIterator2++){
-      if(matchIterator2->size() < 2)
+      if(matchIterator2->size() == 0)
 	continue;
       if((*matchIterator1)[0].queryIdx ==
 	(*matchIterator2)[0].trainIdx &&
@@ -109,7 +112,7 @@ void normalize(double& value){
 
 Delta delta2;
 Mat affine3;
-
+bool ror2(const vector<Point2f>& points1, const vector<Point2f>& points2, vector<Point2f>& out1, vector<Point2f>& out2);
 bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, Delta& delta) const{
     vector<DMatch> matches;
   /*moduleStarted("only ror");
@@ -149,8 +152,60 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, D
   }
   bool ok = rorAlternative(points1, points2, delta);
   moduleEnded();
+  moduleStarted("new");
+  vector<Point2f> a;
+  vector<Point2f> b;
+  ror2(points1, points2, a, b);
+  Mat m = cv::estimateRigidTransform(b, a, false);
+  cout << "mega " << endl << m << endl;
+  double d1 = atan2(-m.at<double>(0,1), m.at<double>(0,0));
+  double d2 = acos(m.at<double>(0,0));
+  cout << "d1 " << d1 << " = " << toDegree(d1) << "° d2 " << d2 << " = " << toDegree(d2) << "°" << endl;
+  vector<uchar> status;
+  Mat c = findHomography(b, a, CV_RANSAC, 3, status);
+  cout << "new c " << endl << c << endl;
+  vector<Point2f> a2;
+  vector<Point2f> b2;
+  for(int i = 0; i < status.size(); i++){
+    if(status[i]){
+      a2.push_back(a[i]);
+      b2.push_back(b[i]);
+    }
+  }
+  cout << "a2/b2 size " << a2.size() << endl;
+  Mat d = estimateRigidTransform(b, a, false);
+  cout << "new d " << endl << d << endl;
+  affine3 = d;
+  d = estimateRigidTransform(b, a, true);
+  cout << "new d with true" << endl << d << endl;
+  moduleEnded();
+  /*vector<Point2f> a;
+  vector<Point2f> b;
+  point* pa = new point[points1.size()];
+  point* pb = new point[points1.size()];
+  for(int i = 0; i < points1.size(); i++){
+    pa[i].x = points1[i].x;
+    pa[i].y = points1[i].y;
+    pb[i].x = points2[i].x;
+    pb[i].y = points2[i].y;
+  }
+  int* mask = new int[points1.size()];
+  moduleStarted("real ror");
+  ror(pa, pb, points1.size(), 20, mask);
+  moduleEnded();
+  int count = 0;
+  vector<char> mask2;
+  for(int i = 0; i < points1.size(); i++){
+    if(mask[i]){
+      a.push_back(points1[i]);
+      b.push_back(points2[i]);
+      mask2.push_back(1);
+    }else
+      mask2.push_back(0);
+  }
+  //ror2(points1, points2, a, b);
   
-    moduleStarted("cpu matcher, homo + ror");
+  /*  moduleStarted("cpu matcher, homo + ror");
   vector<uchar> mask;
   vector<Point2f> points11;
   vector<Point2f> points22;
@@ -163,13 +218,20 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, D
   }
   cout << "size2: " << points22.size() << endl;
   rorAlternative(points11, points22, delta2);
-  moduleEnded();
-  
-  //Mat H = getAffineTransform(&points2[0], &points1[0]);
-  //aff = H;
-  /*vector<uchar> inliers;
-  H = findHomography(points2, points1, CV_RANSAC, 3, inliers);
-  vector<Point2f> v1;
+  moduleEnded();*/
+  /*if(a.size() > 2){
+  H = getAffineTransform(&b[0], &a[0]);
+  cout << "aff0" << endl << H << endl;
+  //aff = H;*/
+  //vector<uchar> inliers;
+  //H = findHomography(points2, points1, CV_RANSAC);
+  //cout << "H1" << endl << H << endl;
+  //H = findHomography(b, a, CV_RANSAC, 1);
+  //cout << "H2, real ror size from " << points1.size() << " to " << a.size() <<  endl << H << endl;
+  //rorAlternative(a, b, delta2);
+  //}
+    
+  /*vector<Point2f> v1;
   vector<Point2f> v2;
   cout << "inlier " << inliers.size() << endl;
   for(int i = 0; i < inliers.size(); i++){
@@ -207,14 +269,15 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, D
   delta.theta = theta;
   delta.x = H.at<double>(0,2);
   delta.y = H.at<double>(1,2);*/
-  Mat img_matches;
+  /*Mat img_matches;
   drawing::drawMatches(gimage1, img1.keyPoints, gimage2, img2.keyPoints,
                good_matches, img_matches, Scalar::all(-1), Scalar::all(-1),
-               vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+               vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);
   imshow("good Matches", img_matches);
-  /*drawing::drawMatches(gimage1, img1.keyPoints, gimage2, img2.keyPoints,
-               matches, img_matches, Scalar::all(-1), Scalar::all(-1),
-               vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
-  imshow("ror only Matches", img_matches);*/
+  Mat matches3;
+  drawing::drawMatches(gimage1, img1.keyPoints, gimage2, img2.keyPoints,
+               good_matches, matches3, Scalar::all(-1), Scalar::all(-1),
+               mask2, DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);
+  imshow("real ror Matches", matches3);*/
   return ok;
 }

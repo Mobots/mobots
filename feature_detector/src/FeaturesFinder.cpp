@@ -19,17 +19,21 @@ using namespace cv;
 
 Ptr<FeaturesFinder> FeaturesFinder::getDefault(){
   return new OrbFeaturesFinder;
+  //return new SurfFeaturesFinder;
 }
 
 void SurfFeaturesFinder::computeFeatureSet(const Mat& image, FeatureSet& features)const{
   moduleStarted("cpu features finder");
-  (*surf)(image, Mat(), features.keyPoints, features.descriptors, true);
+  surf->operator()(image, Mat(), features.keyPoints, features.descriptors, false);
   moduleEnded();
 }
 
 void OrbFeaturesFinder::computeFeatureSet(const Mat& image, FeatureSet& features)const{
   moduleStarted("cpu features finder");
   (*orb)(image, Mat(), features.keyPoints, features.descriptors, false);
+  /*orb->operator()(image, Mat(), features.keyPoints);
+  FREAK freak;
+  freak.compute(image, features.keyPoints, features.descriptors);*/
   moduleEnded();
 }
 
