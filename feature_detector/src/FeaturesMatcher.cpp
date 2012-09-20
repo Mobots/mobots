@@ -5,8 +5,8 @@
 #include <opencv2/video/video.hpp>
 
 #include "draw.h"
-#include "ror3.h"
-#include "ror.h"
+//#include "ror3.h"
+//#include "ror.h"
 #include "profile.h"
 #include "feature_detector/FeaturesMatcher.h"
 
@@ -150,9 +150,9 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, D
     points1.push_back(img1.keyPoints[good_matches[i].queryIdx].pt);
     points2.push_back(img2.keyPoints[good_matches[i].trainIdx].pt);
   }
-  bool ok = rorAlternative(points1, points2, delta);
+  /*bool ok = rorAlternative(points1, points2, delta);
   moduleEnded();
-  moduleStarted("new");
+  moduleStarted("new");*/
   vector<Point2f> points1Refined;
   vector<Point2f> points2Refined;
   planeTest(points1, points2, points1Refined, points2Refined);
@@ -280,5 +280,5 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, D
                good_matches, matches3, Scalar::all(-1), Scalar::all(-1),
                mask2, DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);
   imshow("real ror Matches", matches3);*/
-  return ok;
+  return true;
 }
