@@ -16,7 +16,7 @@ void copyMatToImageMSg(const cv::Mat& in, mobots_msgs::ImageWithPoseAndID& out2)
   sensor_msgs::Image* out = &out2.image;
   out->height = in.rows;
   out->width = in.cols;
-  out->encoding = "mono8";
+  out->encoding = "rgb";
   out->is_bigendian = 0;
   out->step = in.cols * in.elemSize();
   out->data.resize(in.rows * out->step);
@@ -36,7 +36,7 @@ void copyMatToImageMSg(const cv::Mat& in, mobots_msgs::ImageWithPoseAndID& out2)
 
 void* shutterThread(void* data){
   mobots_msgs::ImageWithPoseAndID msg;
-  int imageID = 0;
+  int imageID = 1;
   int mobotID = 0;
   int sessionID = 0;
   while(ros::ok()){
