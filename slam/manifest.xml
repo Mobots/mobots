@@ -11,7 +11,8 @@
 
   <depend package="roscpp"/>
   <depend package="mobots_msgs"/>
-  <depend package="toro" />
+  <depend package="toro"/>
+  <depend package="feature_detector"/>
 
 </package>
 
