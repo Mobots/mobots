@@ -5,6 +5,7 @@
 #include "mobots_msgs/FeatureSetWithDeltaPoseAndID.h"
 #include <treeoptimizer2.hh>
 #include <vector>
+#include <feature_detector/FeaturesMatcher.h>
 
 /**
  * \class Slam
@@ -31,19 +32,19 @@ private:
     ros::Subscriber subscriber2_;
     ros::Subscriber subscriber3_;
     ros::Publisher publisher_;
-    AISNavigation::TreeOptimizer2 pose_graph_;
 
-    void callback1(const mobots_msgs::FeatureSetWithDeltaPoseAndID::ConstPtr& msg);
-    void callback2(const mobots_msgs::FeatureSetWithDeltaPoseAndID::ConstPtr& msg);
-    void callback3(const mobots_msgs::FeatureSetWithDeltaPoseAndID::ConstPtr& msg);
-    void callback(const mobots_msgs::FeatureSetWithDeltaPoseAndID::ConstPtr& msg, uint mobot_id);
+    AISNavigation::TreeOptimizer2 pose_graph_;
+    std::map<mobots_msgs::ID, mobots_msgs::FeatureSet> feature_sets_;
+    feature_detector::FeaturesMatcher features_matcher_;
 
     static const uint MOBOT_COUNT = 3;
     int last_id_[MOBOT_COUNT];
     int current_id_[MOBOT_COUNT];
 
-    //std::vector<mobots_msgs::FeatureSet> feature_sets_; // lieber eine map verwenden, wenn ich weiß, wie die funktioniert.
-    std::map<mobots_msgs::ID, mobots_msgs::FeatureSet> feature_sets_;
+    void callback1(const mobots_msgs::FeatureSetWithDeltaPoseAndID::ConstPtr& msg);
+    void callback2(const mobots_msgs::FeatureSetWithDeltaPoseAndID::ConstPtr& msg);
+    void callback3(const mobots_msgs::FeatureSetWithDeltaPoseAndID::ConstPtr& msg);
+    void callback(const mobots_msgs::FeatureSetWithDeltaPoseAndID::ConstPtr& msg, uint mobot_id);
 
     int Slam::concatenate(const mobots_msgs::ID::ConstPtr& id);
 };
