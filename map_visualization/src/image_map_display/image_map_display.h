@@ -41,8 +41,10 @@ public:
 	virtual void createProperties();
 
 	// Setter and getter functions for user-editable properties.
-	void setTopic(const std::string& topic);
-	const std::string& getTopic() { return topic_; }
+	void setRelPoseTopic(const std::string& relPoseTopic);
+	const std::string& getRelPoseTopic(){return relPoseTopic;}
+	void setAbsPoseTopic(const std::string& absPoseTopic);
+	const std::string& getAbsPoseTopic(){return absPoseTopic;}
 
 	// Overrides of protected virtual functions from Display.  As much
 	// as possible, when Displays are not enabled, they should not be
@@ -66,6 +68,10 @@ private:
 
 	// A helper to clear this display back to the initial state.
 	void clear();
+	
+	// Subscriber Handlers
+	void imageRelPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg);
+	void absPoseHandler(const mobots_msgs::PoseAndID::ConstPtr& msg);
 
 	// Test
 	void testVisual(ImageMapVisual* visual_, std::string fileName);
@@ -74,9 +80,15 @@ private:
 	Ogre::SceneNode* scene_node_;
 	ImageMapVisual* visual_;
 
+	// Data Input
+	ros::Subscriber* relPoseSub_;
+	ros::Subscriber* absPoseSub_;
+
 	// User-editable property variables.
-	std::string topic_;
-	rviz::ROSTopicStringPropertyWPtr topic_property_;
+	std::string relPoseTopic;
+	std::string absPoseTopic;
+	rviz::ROSTopicStringPropertyWPtr relPoseTopicProperty;
+	rviz::ROSTopicStringPropertyWPtr absPoseTopicProperty;
 	
 };
 

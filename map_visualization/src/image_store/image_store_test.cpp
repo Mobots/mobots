@@ -17,12 +17,15 @@ void saveRequest(std::string filePath, ros::NodeHandle* handle){
 	ros::Publisher pub = handle->advertise<mobots_msgs::ImageWithPoseAndID>("shutter_image_delta_pose", 10);
 	mobots_msgs::ImageWithPoseAndID msg;
 	// Set image info data
-	msg.pose.x = 40.23;
-	msg.pose.y = 42.23;
-	msg.pose.theta = 30.00;
+	msg.pose.x = 1.23;
+	msg.pose.y = 2.23;
+	msg.pose.theta = 0.00;
 	msg.image.encoding = "jpg";
+	msg.id.session_id = 0;
 	msg.id.mobot_id = 3;
 	msg.id.image_id = 0;
+	msg.image.width = 100;
+	msg.image.height = 100;
 	// Load image data
 	std::ifstream imageFile(filePath.c_str(), std::ios::binary);
 	imageFile.seekg(0, std::ios::end);
