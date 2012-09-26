@@ -8,13 +8,15 @@
 #include <fstream>
 
 #include <ros/ros.h>
+
 #include "image_info.cpp"
 #include "map_visualization/GetImageWithPose.h"
 #include "mobots_msgs/ImageWithPoseAndID.h"
 #include "mobots_msgs/PoseAndID.h"
 
 // Saves the last pose of each mobot
-std::vector<poseT> deltaPoseBuffer;
+poseT zeroPose{0,0,0,1};
+std::map<int, poseT> deltaPoseBuffer;
 int currentSessionID = 0;
 ros::Publisher* relativePub;
 ros::Publisher* absolutePub;
@@ -24,13 +26,15 @@ ros::Publisher* absolutePub;
  * pose conversion has to be updated.
  */
 void refreshDeltaPoseBuffer(){
+	ROS_INFO("[refreshDeltaPoseBuffer]");
 	ImageInfo imageInfo;
 	IDT id;
 	deltaPoseBuffer.clear();
 	id.sessionID = currentSessionID;
 	for(id.mobotID = 0; imageInfo.getErrorStatus() == 0; id.mobotID++){
 		imageInfo.loadLast(&id);
-		deltaPoseBuffer.push_back(imageInfo.getRelPose());
+		deltaPoseBuffer[id.mobotID] = imageInfo.getRelPose();
+		ROS_INFO("mobotID: %i", id.mobotID);
 	}
 }
 
@@ -56,15 +60,12 @@ void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg)
 	}
 	ROS_INFO("deltaPose3");
 	// All delta poses exept the first one need to be added to the last one.
-	if(infoData.id.imageID != 0){
-		infoData.relPose= infoData.relPose + deltaPoseBuffer[infoData.id.mobotID];
+	if(deltaPoseBuffer.count(infoData.id.mobotID) != 0){
+		infoData.relPose = infoData.relPose + deltaPoseBuffer[infoData.id.mobotID];
 	}
-	ROS_INFO("deltaPose4");
 	// If the delta pose buffer vector is too small
-	if(infoData.id.mobotID > deltaPoseBuffer.size()){
-		deltaPoseBuffer.resize(infoData.id.mobotID);
-	}
-	ROS_INFO("deltaPose5");
+	ROS_INFO("deltaPose5: image: %i", msg->image.data.size());
+	ROS_INFO("deltaPose5: buffer: %i", deltaPoseBuffer.size());
 	deltaPoseBuffer[infoData.id.mobotID] = infoData.relPose;
 	ImageInfo imageInfo(&infoData, msg->image.data);
 	ROS_INFO("deltaPose6");
@@ -81,6 +82,7 @@ void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg)
 	relayMsg.image.encoding = infoData.image.encoding;
 	ROS_INFO("deltaPose7");
 	relayMsg.image.data = msg->image.data;
+	ROS_INFO("deltaPose7.1");
 	relativePub->publish(relayMsg);
 	ROS_INFO("deltaPose8");
 	ros::spinOnce();

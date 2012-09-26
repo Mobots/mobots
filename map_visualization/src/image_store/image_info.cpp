@@ -179,7 +179,7 @@ int ImageInfo::initWrite(){
 }
 
 /**
- * Loads the loads the most recent info file of a mobot
+ * Loads the most recent info file of a mobot
  */
 void ImageInfo::loadLast(const IDT* id_){
 	infoData.id = *id_;

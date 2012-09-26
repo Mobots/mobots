@@ -31,7 +31,7 @@ ImageMapVisual::~ImageMapVisual()
 	ROS_INFO("~visual");
 	rootNode->removeAndDestroyAllChildren();
 	sceneManager->destroySceneNode(rootNode);
-	sceneManager->destroyAllManualObjects();
+	//sceneManager->destroyAllManualObjects();
 	ROS_INFO("~visual");
 }
 
@@ -63,8 +63,9 @@ int ImageMapVisual::insertImage(
 	std::stringstream ss2;
 	ss2 << "MapTexture" << tex_count++;
 	
-	IplImage* img = cvLoadImage( "/home/moritz/TillEvil.jpg", 1);
-	//cvShowImage("mainWin", img );
+	//IplImage* img = cvLoadImage( "/home/moritz/TillEvil.jpg", 1);
+	cv::Mat mat = cv::imdecode(*imageData, 1);
+	//cvShowImage("mainWin", &mat );
 	
 	// Create the texture
 	ROS_INFO("texture: %s", (ss2.str()).c_str());
@@ -72,7 +73,7 @@ int ImageMapVisual::insertImage(
 		ss2.str(),				// name
 		Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
 		Ogre::TEX_TYPE_2D, 		// type
-		img->width, img->height,// width & height
+		mat.cols, mat.rows,// width & height
 		0,						// No. of mipmaps
 		Ogre::PF_X8R8G8B8,		// PixelFormat
 		Ogre::TU_DEFAULT);
@@ -90,8 +91,8 @@ int ImageMapVisual::insertImage(
 	// Fill in the pixel data.
 	int k = 0;
 	Ogre::uint32 bit32;
-	for (int j = 0; j < img->width * img->height; j++){
-		bit32 = ((img->imageData[k]&0xFF)<<16) | ((img->imageData[k + 1]&0xFF)<<8) | ((img->imageData[k + 2]&0xFF));
+	for (int j = 0; j < mat.cols * mat.rows; j++){
+		bit32 = ((mat.data[k]&0xFF)<<16) | ((mat.data[k + 1]&0xFF)<<8) | ((mat.data[k + 2]&0xFF));
 		*pDest++ = bit32;
 		k += 3;
 	}
@@ -113,7 +114,6 @@ int ImageMapVisual::insertImage(
 	tex_unit_->setTextureName(texture_->getName());
 	tex_unit_->setTextureFiltering( Ogre::TFO_NONE );
 
-
 	static int object_count = 0;	
 	std::stringstream ss3;
 	ss3 << "MapObject" << object_count++;
@@ -121,8 +121,10 @@ int ImageMapVisual::insertImage(
 	manual_object_ = sceneManager->createManualObject(ss3.str());
 	imageNode->attachObject(manual_object_);
 	
-	width_ = 5;
-	height_ = 5;
+	float imageScale = 5;
+	float widthScaled = imageScale;
+	float heightScaled = (mat.rows / mat.cols) * imageScale;
+	std::cout << imageScale << " " << mat.cols << " " << widthScaled << " " << mat.rows << " " << heightScaled;
 	
 	manual_object_->begin(material_->getName(), Ogre::RenderOperation::OT_TRIANGLE_LIST);
 	{
@@ -134,12 +136,12 @@ int ImageMapVisual::insertImage(
 			manual_object_->normal( 0.0f, 0.0f, 1.0f );
 			
 			// Top right
-			manual_object_->position( width_, height_, 0.0f );
+			manual_object_->position( widthScaled, heightScaled, 0.0f );
 			manual_object_->textureCoord(1.0f, 0.0f);
 			manual_object_->normal( 0.0f, 0.0f, 1.0f );
 			
 			// Top left
-			manual_object_->position( 0.0f, height_, 0.0f );
+			manual_object_->position( 0.0f, heightScaled, 0.0f );
 			manual_object_->textureCoord(0.0f, 0.0f);
 			manual_object_->normal( 0.0f, 0.0f, 1.0f );
 		}
@@ -152,12 +154,12 @@ int ImageMapVisual::insertImage(
 			manual_object_->normal( 0.0f, 0.0f, 1.0f );
 			
 			// Bottom right
-			manual_object_->position( width_, 0.0f, 0.0f );
+			manual_object_->position( widthScaled, 0.0f, 0.0f );
 			manual_object_->textureCoord(1.0f, 1.0f);
 			manual_object_->normal( 0.0f, 0.0f, 1.0f );
 			
 			// Top right
-			manual_object_->position( width_, height_, 0.0f );
+			manual_object_->position( widthScaled, heightScaled, 0.0f );
 			manual_object_->textureCoord(1.0f, 0.0f);
 			manual_object_->normal( 0.0f, 0.0f, 1.0f );
 		}
@@ -315,29 +317,30 @@ Ogre::SceneNode* ImageMapVisual::findNode(int sessionID, int mobotID, int imageI
 	try{
 		node = rootNode->getChild(name);
 	} catch(Ogre::Exception& e) {
-
+		rootNode->createChild(name, Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
+		node = rootNode->getChild(name);
 	}
 	if(mobotID < 0){
-	return (Ogre::SceneNode*) node;
+		return (Ogre::SceneNode*) node;
 	}
 	name += "m";
 	name += static_cast<std::ostringstream*>( &(std::ostringstream() << mobotID))->str();
 	try{
-	node = node->getChild(name);
+		node = node->getChild(name);
 	} catch(Ogre::Exception& e) {
-	node->createChild(name, Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
-	node = node->getChild(name);
+		node->createChild(name, Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
+		node = node->getChild(name);
 	}
 	if(imageID < 0){
-	return (Ogre::SceneNode*) node;
+		return (Ogre::SceneNode*) node;
 	}
 	name += "i";
 	name += static_cast<std::ostringstream*>( &(std::ostringstream() << imageID))->str();
 	try{
-	node = node->getChild(name);
+		node = node->getChild(name);
 	} catch(Ogre::Exception& e) {
-	node->createChild(name, Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
-	node = node->getChild(name);
+		node->createChild(name, Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
+		node = node->getChild(name);
 	}
 	return (Ogre::SceneNode*) node;
 }

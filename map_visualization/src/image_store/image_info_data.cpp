@@ -4,8 +4,6 @@
 #include <exception>
 #include <iostream>
 
-#include <geometry_msgs/Pose2D.h>
-
 struct IDT{
 	int sessionID;
 	int mobotID;
@@ -17,7 +15,7 @@ struct poseT{
 	float y;
 	float theta;
 	bool enable;
-	poseT operator+(const poseT&); // TODO test
+	poseT operator+(const poseT&);
 };
 
 struct imageT{
