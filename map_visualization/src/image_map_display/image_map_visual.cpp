@@ -22,7 +22,7 @@ namespace map_visualization
 
 ImageMapVisual::ImageMapVisual( Ogre::SceneManager* sceneManager_, Ogre::SceneNode* parent_node ){
 	sceneManager = sceneManager_;
-	rootNode = parent_node->createChildSceneNode();
+	rootNode = sceneManager->getRootSceneNode()->createChildSceneNode();;
 }
 
 // delete: nodes->objects->textures->materials
@@ -165,6 +165,7 @@ int ImageMapVisual::insertImage(
 		}
 	}
 	manual_object_->end();
+	setPose(poseX, poseY, poseTheta, sessionID, mobotID, imageID);
 	return 0;
 }
 
@@ -184,7 +185,7 @@ int ImageMapVisual::hideImage(int sessionID, int mobotID, int imageID){
 int ImageMapVisual::deleteImage(int sessionID, int mobotID, int imageID){
 	Ogre::SceneNode* imageNode = findNode(sessionID, mobotID, imageID);
 	if(imageNode == NULL){
-		return 0;
+		return 1;
 	}
 	sceneManager->destroyMovableObject(imageNode->getAttachedObject(0));
 	sceneManager->destroySceneNode(imageNode);
@@ -207,7 +208,7 @@ int ImageMapVisual::hideMobot(int sessionID, int mobotID){
 int ImageMapVisual::deleteMobot(int sessionID, int mobotID){
 	Ogre::SceneNode* mobotNode = findNode(sessionID, -1, -1);
 	if(mobotNode == NULL){
-		return 0;
+		return 1;
 	}
 	Ogre::Node::ChildNodeIterator imageIterator = mobotNode->getChildIterator();
 	Ogre::SceneNode* imageNode = static_cast<Ogre::SceneNode*> (imageIterator.getNext());
@@ -236,7 +237,7 @@ int ImageMapVisual::hideSession(int sessionID){
 int ImageMapVisual::deleteSession(int sessionID){
 	Ogre::SceneNode* sessionNode = findNode(sessionID, -1, -1);
 	if(sessionNode == NULL){
-		return 0;
+		return 1;
 	}
 	Ogre::Node::ChildNodeIterator mobotIterator = sessionNode->getChildIterator();
 	Ogre::Node* mobotNode;
@@ -274,33 +275,42 @@ void ImageMapVisual::setPose(float poseX, float poseY, float poseTheta, int sess
  * @remarks If the node is not found, a the node and its path is created.
  */
 Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID){
-	ROS_INFO("Check 2.0");
+	ROS_INFO("Check 2.0: %i:%i:%i", sessionID, mobotID, imageID);
 	std::string name = "s";
 	name += static_cast<std::ostringstream*>( &(std::ostringstream() << sessionID))->str();
 	Ogre::Node* node;
 	try{
+		ROS_INFO("Check 2.1");
 		node = rootNode->getChild(name);
-	} catch(Ogre::Exception& e) {
+		ROS_INFO("Check 2.1");
+	}catch(Ogre::Exception& e){
+		ROS_INFO("Check 2.1-");
 		rootNode->createChild(name, Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
 		node = rootNode->getChild(name);
 	}
 	name += "m";
 	name += static_cast<std::ostringstream*>( &(std::ostringstream() << mobotID))->str();
 	try{
+		ROS_INFO("Check 2.2");
 		node = node->getChild(name);
-	} catch(Ogre::Exception& e) {
+		ROS_INFO("Check 2.2");
+	}catch(Ogre::Exception& e){
+		ROS_INFO("Check 2.2-");
 		node->createChild(name, Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
 		node = node->getChild(name);
 	}
 	name += "i";
 	name += static_cast<std::ostringstream*>( &(std::ostringstream() << imageID))->str();
 	try{
+		ROS_INFO("Check 2.3");
 		node = node->getChild(name);
-	} catch(Ogre::Exception& e) {
+	}catch(Ogre::Exception& e){
+		ROS_INFO("Check 2.3-");
 		node->createChild(name, Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
 		node = node->getChild(name);
 	}
 	return (Ogre::SceneNode*) node;
+	ROS_INFO("Check 2.X");
 }
 
 /**
