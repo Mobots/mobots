@@ -19,7 +19,23 @@ namespace map_visualization{
 ImageMapDisplay::ImageMapDisplay()
   : Display()
   , scene_node_(NULL)
+  , visual_(NULL)
 {
+}
+
+ImageMapDisplay::~ImageMapDisplay(){
+	ROS_INFO("delete");
+	unsubscribe();
+	ROS_INFO("delete");
+}
+
+// Clear the map by deleting image_map_visual object
+void ImageMapDisplay::clear(){
+	ROS_INFO("clear");
+	if(visual_ != NULL){
+		delete visual_;
+	}
+	visual_ = new ImageMapVisual(vis_manager_->getSceneManager(), scene_node_);
 }
 
 // After the parent rviz::Display::initialize() does its own setup, it
@@ -27,42 +43,79 @@ ImageMapDisplay::ImageMapDisplay()
 // instantiate all the workings of the class.
 // TODO implement service
 void ImageMapDisplay::onInitialize(){
-  // Make an Ogre::SceneNode to contain all our visuals.
   	ROS_INFO("[onInitialize]");
-	scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-	visual_ = new ImageMapVisual(vis_manager_->getSceneManager(), scene_node_);
-	relPoseSub_ = NULL;
-	absPoseSub_ = NULL;
+	//absPoseSub_ = NULL;
 	setStatus(rviz::status_levels::Warn, "Topic", "Finished Initializing");
 }
 
-ImageMapDisplay::~ImageMapDisplay(){
-	ROS_INFO("delete");
-	unsubscribe();
-	clear();
-	ROS_INFO("delete");
+void ImageMapDisplay::onEnable(){
+	ROS_INFO("onenable");
+	subscribe();
+	visual_ = new ImageMapVisual(vis_manager_->getSceneManager(), scene_node_);
+	//testVisual(visual_, "/home/moritz/TillEvil.jpg");
+	ROS_INFO("onenable");
 }
 
-// Clear the visuals by deleting their objects.
-void ImageMapDisplay::clear(){
-	ROS_INFO("clear");
-	if(visual_ != NULL){
-		delete visual_;
-		visual_ = NULL;
-	}
-	ROS_INFO("clear");
+void ImageMapDisplay::onDisable(){
+	ROS_INFO("ondisable");
+	unsubscribe();
+	clear();
+	ROS_INFO("ondisable");
 }
+
+void ImageMapDisplay::subscribe(){
+	ROS_INFO("subscribe");
+	if(!isEnabled()){
+		return;
+	}
+	if(!relPoseTopic.empty()){
+		try{
+			ROS_INFO("Subscribing");
+			relPoseSub = update_nh_.subscribe
+				(relPoseTopic, 1, &ImageMapDisplay::relPoseCallback, this);
+			setStatus(rviz::status_levels::Ok, "Topic", "OK");
+		}
+		catch(ros::Exception& e){
+			setStatus(rviz::status_levels::Error, "Topic", std::string
+				("Error subscribing Relative: ") + e.what());
+		}
+	}
+	/*if(!absPoseTopic.empty()){
+		try{
+			ros::Subscriber absPoseSub = update_nh_.subscribe(absPoseTopic, 10,
+				&ImageMapDisplay::absPoseHandler, this);
+			absPoseSub_ = &absPoseSub;
+			setStatus(rviz::status_levels::Ok, "Topic", "OK");
+		}
+		catch(ros::Exception& e){
+		setStatus(rviz::status_levels::Error, "Topic", std::string
+			("Error subscribing: ") + e.what());
+		}
+	}*/
+	ROS_INFO("subscribe");
+}
+
+// Find the equivalent to unsubscribe
+void ImageMapDisplay::unsubscribe(){
+	ROS_INFO("unsubscribe");
+	relPoseSub.shutdown();
+	/*if(absPoseSub_ != NULL){
+		absPoseSub_->shutdown();
+		absPoseSub_ = NULL;	
+	}*/
+}
+
+
 
 void ImageMapDisplay::setRelPoseTopic(const std::string& topic){
 	ROS_INFO("setRelPoseTopic: %s", relPoseTopic.c_str());
 	unsubscribe();
-	clear();
 	relPoseTopic = topic;
 	subscribe();
-
+	clear();
 	// Broadcast the fact that the variable has changed.
 	propertyChanged(relPoseTopicProperty);
-
+	
 	// Make sure rviz renders the next time it gets a chance.
 	causeRender();
 	ROS_INFO("setRelPoseTopic: %s", relPoseTopic.c_str());
@@ -83,69 +136,10 @@ void ImageMapDisplay::setAbsPoseTopic(const std::string& topic){
 	ROS_INFO("setAbsPoseTopic");
 }
 
-void ImageMapDisplay::subscribe(){
-	ROS_INFO("subscribe");
-	if(!isEnabled()){
-		return;
-	}
-	if(!relPoseTopic.empty()){
-		try{
-			ROS_INFO("Subscribing");
-			ros::Subscriber relPoseSub = update_nh_.subscribe(relPoseTopic, 10,
-				&ImageMapDisplay::imageRelPoseHandler, this); 
-			relPoseSub_ = &relPoseSub;
-			setStatus(rviz::status_levels::Ok, "Topic", "OK");
-		}
-		catch(ros::Exception& e){
-		setStatus(rviz::status_levels::Error, "Topic", std::string
-			("Error subscribing Relative: ") + e.what());
-		}
-	}
-	if(!absPoseTopic.empty()){
-		try{
-			ros::Subscriber absPoseSub = update_nh_.subscribe(absPoseTopic, 10,
-				&ImageMapDisplay::absPoseHandler, this);
-			absPoseSub_ = &absPoseSub;
-			setStatus(rviz::status_levels::Ok, "Topic", "OK");
-		}
-		catch(ros::Exception& e){
-		setStatus(rviz::status_levels::Error, "Topic", std::string
-			("Error subscribing: ") + e.what());
-		}
-	}
-	ROS_INFO("subscribe");
-}
 
-// Find the equivalent to unsubscribe
-void ImageMapDisplay::unsubscribe(){
-	ROS_INFO("unsubscribe");
-	if(relPoseSub_ != NULL){
-		relPoseSub_->shutdown();
-		relPoseSub_ = NULL;
-	}
-	if(absPoseSub_ != NULL){
-		absPoseSub_->shutdown();
-		absPoseSub_ = NULL;	
-	}
-}
-
-void ImageMapDisplay::onEnable(){
-	ROS_INFO("onenable");
-	subscribe();
-	visual_ = new ImageMapVisual(vis_manager_->getSceneManager(), scene_node_);
-	testVisual(visual_, "/home/moritz/TillEvil.jpg");
-	ROS_INFO("onenable");
-}
-
-void ImageMapDisplay::onDisable(){
-	ROS_INFO("ondisable");
-	unsubscribe();
-	clear();
-	ROS_INFO("ondisable");
-}
 
 // TODO pass poses to image_map_info
-void ImageMapDisplay::imageRelPoseHandler(
+void ImageMapDisplay::relPoseCallback(
 	const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg){
 	ROS_INFO("[imageRelPoseHandler]");
 	visual_->insertImage(msg->pose.x, msg->pose.y, msg->pose.theta,
@@ -218,7 +212,7 @@ void ImageMapDisplay::testVisual(ImageMapVisual* visual_, std::string filePath){
 	visual_->setPose(1,1,0, 0,0,0);
 }
 
-} // end namespace rviz_plugin_tutorials
+} // end namespace map_visualization
 
 // Tell pluginlib about this class.  It is important to do this in
 // global scope, outside our package's namespace.

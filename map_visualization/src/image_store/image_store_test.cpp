@@ -22,7 +22,7 @@ void saveRequest(std::string filePath, ros::NodeHandle* handle){
 	msg.pose.theta = 0.00;
 	msg.image.encoding = "jpg";
 	msg.id.session_id = 0;
-	msg.id.mobot_id = 3;
+	msg.id.mobot_id = 0;
 	msg.id.image_id = 0;
 	msg.image.width = 100;
 	msg.image.height = 100;
@@ -37,17 +37,18 @@ void saveRequest(std::string filePath, ros::NodeHandle* handle){
 	msg.image.data.assign(buffer, buffer + sizeof(buffer)/sizeof(char));
 	ROS_INFO("data.size: %i", msg.image.data.size());
 	
-	ros::Rate loop_rate(1);
+	ros::Rate loop_rate(0.5);
 	
 	while (handle->ok())
 	{
-		ROS_INFO("Sent msg no: %i", msg.id.image_id++);
+		ROS_INFO("Sent msg no: %i", msg.id.image_id);
 		pub.publish(msg);
 		ros::spinOnce();
 		loop_rate.sleep();
 		// Change image info data (pose)
 		msg.pose.x++;
 		msg.pose.y++;
+		msg.id.image_id++;
 	}
 	return;
 }

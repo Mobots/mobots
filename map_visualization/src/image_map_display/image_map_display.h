@@ -1,6 +1,3 @@
-#include <message_filters/subscriber.h>
-#include <tf/message_filter.h>
-#include <sensor_msgs/Imu.h>
 #include <rviz/display.h>
 
 #include <OGRE/OgreLight.h>
@@ -8,6 +5,9 @@
 #include <OGRE/OgreEntity.h>
 #include <OGRE/OgreMeshManager.h>
 #include <OGRE/OgreMaterialManager.h>
+
+#include "mobots_msgs/ImageWithPoseAndID.h"
+#include "mobots_msgs/PoseAndID.h"
 
 namespace Ogre
 {
@@ -70,7 +70,7 @@ private:
 	void clear();
 	
 	// Subscriber Handlers
-	void imageRelPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg);
+	void relPoseCallback(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg);
 	void absPoseHandler(const mobots_msgs::PoseAndID::ConstPtr& msg);
 
 	// Test
@@ -81,7 +81,7 @@ private:
 	ImageMapVisual* visual_;
 
 	// Data Input
-	ros::Subscriber* relPoseSub_;
+	ros::Subscriber relPoseSub;
 	ros::Subscriber* absPoseSub_;
 
 	// User-editable property variables.
