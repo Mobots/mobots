@@ -26,17 +26,22 @@ public:
 	);
 	int showImage(int sessionID, int mobotID, int imageID);
 	int hideImage(int sessionID, int mobotID, int imageID);
-	int deleteImage(int sessionID, int mobotID, int imageID);
+	int deleteImage(const std::string* nodeName);
 	int showMobot(int sessionID, int mobotID);
 	int hideMobot(int sessionID, int mobotID);
-	int deleteMobot(int sessionID, int mobotID);
+	int deleteMobot(std::string nodeName);
 	int showSession(int sessionID);
 	int hideSession(int sessionID);
-	int deleteSession(int sessionID);
+	int deleteSession(std::string& nodeName);
 	
 	void setPose(float poseX, float poseY, float poseTheta, int sessionID, int mobotID, int imageID);
 	// Updates the orientation of all images belonging to a mobot
 	//void setOrientation(const linkedlist<Ogre::Quaternion>* orientationList, int sessionID, int mobotID);
+	
+	// If the node is not found, a NULL pointer is returned.
+	Ogre::SceneNode* getNode(int sessionID, int mobotID, int imageID);
+	// If the node is not found, a the node and its path is created.
+	Ogre::SceneNode* findNode(int sessionID, int mobotID, int imageID);
 private:
 	Ogre::MaterialPtr material_;
 	Ogre::TexturePtr texture_;
@@ -50,10 +55,6 @@ private:
 	Ogre::SceneManager* sceneManager;
 	std::list<Ogre::ManualObject*> manualObjects;
 
-	// If the node is not found, a NULL pointer is returned.
-	Ogre::SceneNode* getNode(int sessionID, int mobotID, int imageID);
-	// If the node is not found, a the node and its path is created.
-	Ogre::SceneNode* findNode(int sessionID, int mobotID, int imageID);
 	// returns the name of the specified map tile (manual object)
 	std::string getMapObjectName(int sessionID, int mobotID, int imageID);
 };
