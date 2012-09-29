@@ -35,18 +35,18 @@ private:
 
     AISNavigation::TreeOptimizer2 pose_graph_;
     std::map<mobots_msgs::ID, mobots_msgs::FeatureSet> feature_sets_;
-    feature_detector::FeaturesMatcher features_matcher_;
+    CpuFeaturesMatcher features_matcher_;
 
     static const uint MOBOT_COUNT = 3;
     int last_id_[MOBOT_COUNT];
     int current_id_[MOBOT_COUNT];
 
-    void callback1(const mobots_msgs::FeatureSetWithDeltaPoseAndID::ConstPtr& msg);
-    void callback2(const mobots_msgs::FeatureSetWithDeltaPoseAndID::ConstPtr& msg);
-    void callback3(const mobots_msgs::FeatureSetWithDeltaPoseAndID::ConstPtr& msg);
-    void callback(const mobots_msgs::FeatureSetWithDeltaPoseAndID::ConstPtr& msg, uint mobot_id);
+    void callback1(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPoseAndID const>& msg);
+    void callback2(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPoseAndID const>& msg);
+    void callback3(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPoseAndID const>& msg);
+    void callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPoseAndID const>& msg, uint mobot_id);
 
-    int Slam::concatenate(const mobots_msgs::ID::ConstPtr& id);
+    int concatenate(const mobots_msgs::ID::ConstPtr& id);
 };
 
 #endif
