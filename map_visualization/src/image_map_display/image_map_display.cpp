@@ -52,7 +52,7 @@ void ImageMapDisplay::onEnable(){
 	ROS_INFO("onenable");
 	subscribe();
 	visual_ = new ImageMapVisual(vis_manager_->getSceneManager(), scene_node_);
-	//testVisual(visual_, "/home/moritz/TillEvil.jpg");
+	testVisual(visual_, "/home/moritz/TillEvil.jpg");
 	ROS_INFO("onenable");
 }
 
