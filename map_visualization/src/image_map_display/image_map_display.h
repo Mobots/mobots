@@ -54,12 +54,6 @@ public:
 protected:
 	virtual void onEnable();
 	virtual void onDisable();
-
-	Ogre::MovablePlane* mPlane;
-	Ogre::Entity*       mPlaneEnt;
-	Ogre::SceneNode*    mPlaneNode;
-
-	// Function to handle an incoming ROS message.
 private:
 	// Internal helpers which do the work of subscribing and
 	// unsubscribing from the ROS topic.
@@ -71,7 +65,7 @@ private:
 	
 	// Subscriber Handlers
 	void relPoseCallback(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg);
-	void absPoseHandler(const mobots_msgs::PoseAndID::ConstPtr& msg);
+	void absPoseCallback(const mobots_msgs::PoseAndID::ConstPtr& msg);
 
 	// Test
 	void testVisual(ImageMapVisual* visual_, std::string fileName);
@@ -82,7 +76,7 @@ private:
 
 	// Data Input
 	ros::Subscriber relPoseSub;
-	ros::Subscriber* absPoseSub_;
+	ros::Subscriber absPoseSub;
 
 	// User-editable property variables.
 	std::string relPoseTopic;

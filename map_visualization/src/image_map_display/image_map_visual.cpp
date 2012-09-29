@@ -22,14 +22,14 @@ namespace map_visualization
 
 ImageMapVisual::ImageMapVisual( Ogre::SceneManager* sceneManager_, Ogre::SceneNode* parent_node ){
 	sceneManager = sceneManager_;
-	rootNode = sceneManager->getRootSceneNode()->createChildSceneNode();;
+	rootNode = sceneManager->getRootSceneNode()->createChildSceneNode();
 }
 
 // delete: nodes->objects->textures->materials
 ImageMapVisual::~ImageMapVisual()
 {
 	ROS_INFO("~visual");
-	rootNode->removeAndDestroyAllChildren();
+	deleteAllImages();
 	sceneManager->destroySceneNode(rootNode);
 	//sceneManager->destroyAllManualObjects();
 	ROS_INFO("~visual");
@@ -47,6 +47,12 @@ int ImageMapVisual::insertImage(
 	// Get the node to which the image shall be assigned to
 	ROS_INFO("Check 1.0");
 	Ogre::SceneNode* imageNode = getNode(sessionID, mobotID, imageID);
+	// Deleting configuration and resources of a node with the same ID
+	Ogre::SceneNode* parentNode = imageNode->getParentSceneNode();
+	std::string imageNodeName = imageNode->getName();
+	deleteImage(&imageNodeName);
+	imageNode = parentNode->createChildSceneNode(imageNodeName,
+		Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
 	ROS_INFO("insertImage, image node name: %s", (imageNode->getName()).c_str());
 	std::stringstream ss;
 	ss << "MapMaterial-" << imageNode->getName();
@@ -193,10 +199,12 @@ int ImageMapVisual::hideImage(int sessionID, int mobotID, int imageID){
 }
 // Delete an image and its resources.
 int ImageMapVisual::deleteImage(const std::string* nodeName){
+	ROS_INFO("[deleteImage]");
 	sceneManager->destroyManualObject("MapObject-" + *nodeName);
 	Ogre::TextureManager::getSingleton().remove("MapTexture-" + *nodeName);
 	Ogre::MaterialManager::getSingleton().remove("MapMaterial-" + *nodeName);
 	sceneManager->destroySceneNode(*nodeName);
+	ROS_INFO("[deleteImage]");
 	return 0;
 }
 
@@ -213,15 +221,18 @@ int ImageMapVisual::hideMobot(int sessionID, int mobotID){
 	return 0;
 }
 // Delete all images belonging to a mobot
-int ImageMapVisual::deleteMobot(std::string nodeName){
-	Ogre::SceneNode* mobotNode = sceneManager->getSceneNode(nodeName);
+int ImageMapVisual::deleteMobot(const std::string* nodeName){
+	ROS_INFO("[deleteMobot]");
+	Ogre::SceneNode* mobotNode = sceneManager->getSceneNode(*nodeName);
 	Ogre::Node::ChildNodeIterator imageIterator = mobotNode->getChildIterator();
-	Ogre::SceneNode* imageNode = static_cast<Ogre::SceneNode*> (imageIterator.getNext());
+	Ogre::SceneNode* imageNode;
 	while(imageIterator.hasMoreElements()){
-		deleteImage(&imageNode->getName());
+		ROS_INFO("Iterator");
 		imageNode = static_cast<Ogre::SceneNode*> (imageIterator.getNext());
+		deleteImage(&imageNode->getName());
 	}
-	deleteImage(&imageNode->getName());
+	sceneManager->destroySceneNode(*nodeName);
+	ROS_INFO("[deleteMobot]");
 	return 0;
 }
 
@@ -238,15 +249,33 @@ int ImageMapVisual::hideSession(int sessionID){
 	return 0;
 }
 // Delete all images belonging to a session
-int ImageMapVisual::deleteSession(std::string& nodeName){
-	Ogre::SceneNode* sessionNode = sceneManager->getSceneNode(nodeName);
+int ImageMapVisual::deleteSession(const std::string* nodeName){
+	ROS_INFO("[deleteSession]");
+	Ogre::SceneNode* sessionNode = sceneManager->getSceneNode(*nodeName);
 	Ogre::Node::ChildNodeIterator mobotIterator = sessionNode->getChildIterator();
-	Ogre::SceneNode* mobotNode = static_cast<Ogre::SceneNode*> (mobotIterator.getNext());
+	Ogre::SceneNode* mobotNode;
 	while(mobotIterator.hasMoreElements()){
-		deleteMobot(mobotNode->getName());
+		ROS_INFO("Iterator");
 		mobotNode = static_cast<Ogre::SceneNode*> (mobotIterator.getNext());
+		deleteMobot(&mobotNode->getName());
 	}
-	deleteMobot(mobotNode->getName());
+	sceneManager->destroySceneNode(*nodeName);
+	ROS_INFO("[deleteSession]");
+	return 0;
+}
+/**
+ * Deletes all nodes, images, and resources except the rootNode.
+ */
+int ImageMapVisual::deleteAllImages(){
+	ROS_INFO("[deleteAllImages]");
+	Ogre::Node::ChildNodeIterator sessionIterator = rootNode->getChildIterator();
+	Ogre::SceneNode* sessionNode;
+	while(sessionIterator.hasMoreElements()){
+		ROS_INFO("Iterator");
+		sessionNode = static_cast<Ogre::SceneNode*> (sessionIterator.getNext());
+		deleteSession(&sessionNode->getName());
+	}
+	ROS_INFO("[deleteAllImages]");
 	return 0;
 }
 
@@ -265,7 +294,7 @@ void ImageMapVisual::setPose(float poseX, float poseY, float poseTheta,
 }
 
 /**
- * Searches for the requested Node. Creates the path if it does not exist.
+ * Searches for the requested Node. Creates the path if it does not exist. 
  */
 Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID){
 	ROS_INFO("Check 2.0: %i:%i:%i", sessionID, mobotID, imageID);
@@ -278,7 +307,8 @@ Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID
 		ROS_INFO("Check 2.1");
 	}catch(Ogre::Exception& e){
 		ROS_INFO("Check 2.1-");
-		rootNode->createChild(name, Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
+		rootNode->createChildSceneNode(name, Ogre::Vector3::ZERO,
+			Ogre::Quaternion::IDENTITY);
 		node = rootNode->getChild(name);
 	}
 	name += "m";
@@ -289,7 +319,8 @@ Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID
 		ROS_INFO("Check 2.2");
 	}catch(Ogre::Exception& e){
 		ROS_INFO("Check 2.2-");
-		node->createChild(name, Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
+		node->createChild(name, Ogre::Vector3::ZERO,
+			Ogre::Quaternion::IDENTITY);
 		node = node->getChild(name);
 	}
 	name += "i";
@@ -299,7 +330,8 @@ Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID
 		node = node->getChild(name);
 	}catch(Ogre::Exception& e){
 		ROS_INFO("Check 2.3-");
-		node->createChild(name, Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
+		node->createChild(name, Ogre::Vector3::ZERO,
+			Ogre::Quaternion::IDENTITY);
 		node = node->getChild(name);
 	}
 	return (Ogre::SceneNode*) node;
