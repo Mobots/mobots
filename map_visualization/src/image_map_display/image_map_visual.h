@@ -29,10 +29,11 @@ public:
 	int deleteImage(const std::string* nodeName);
 	int showMobot(int sessionID, int mobotID);
 	int hideMobot(int sessionID, int mobotID);
-	int deleteMobot(std::string nodeName);
+	int deleteMobot(const std::string* nodeName);
 	int showSession(int sessionID);
 	int hideSession(int sessionID);
-	int deleteSession(std::string& nodeName);
+	int deleteSession(const std::string* nodeName);
+	int deleteAllImages();
 	
 	void setPose(float poseX, float poseY, float poseTheta, int sessionID, int mobotID, int imageID);
 	// Updates the orientation of all images belonging to a mobot
