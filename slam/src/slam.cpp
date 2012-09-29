@@ -8,13 +8,13 @@ Slam::Slam() :
   subscriber3_(node_handle_.subscribe("/mobot3/FeatureSetWithDeltaPoseAndID", 1000, &Slam::callback3, this)),
   //publisher_(node_handle_.advertise<mobots_msgs::AbsoluteImagePoses>("AbsoluteImagePoses", 1000)),
   pose_graph_(),
-  features_matcher_(FeaturesMatcher.getDefault())
+  features_matcher_(CpuFeaturesMatcher::ORB_DEFAULT)
 {
   pose_graph_.initializeTreeParameters();
   pose_graph_.initializeOnlineOptimization();
 }
 
-void Slam::callback1(const mobots_msgs::FeatureSetWithDeltaPoseAndID::ConstPtr& msg)
+void Slam::callback1(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPoseAndID const>& msg)
 {
   callback(msg, 1);
 }
@@ -29,7 +29,7 @@ void Slam::callback3(const mobots_msgs::FeatureSetWithDeltaPoseAndID::ConstPtr& 
   callback(msg, 3);
 }
 
-void Slam::callback(const mobots_msgs::FeatureSetWithDeltaPoseAndID::ConstPtr& msg, uint bot)
+void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPoseAndID const>& msg, uint bot)
 {
   ROS_INFO("Slam got a FeatureSetWithDeltaPoseAndID from mobot%u!", bot);
 
