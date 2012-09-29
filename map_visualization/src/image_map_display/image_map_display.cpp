@@ -20,7 +20,9 @@ ImageMapDisplay::ImageMapDisplay()
   : Display()
   , scene_node_(NULL)
   , visual_(NULL)
+  , info(NULL)
 {
+    startQT();
 }
 
 ImageMapDisplay::~ImageMapDisplay(){
@@ -34,7 +36,27 @@ ImageMapDisplay::~ImageMapDisplay(){
 void ImageMapDisplay::clear(){
 	ROS_INFO("clear");
 	delete visual_;
+    if(info != NULL){ // reset mobot_info
+        delete info;
+    }
+    if(info_thread != NULL){ // quit the Qt Application if it is started
+        qtApp.quit();
+    }
 	visual_ = new ImageMapVisual(vis_manager_->getSceneManager(), scene_node_);
+    startQT();
+}
+
+// start the Qt Application and launch the qtThread
+void startQT(){
+    qtApp = new QApplication(0, NULL);
+    info = new Mobots_Info(0);
+    info.show();
+    info_thread = new boost::thread(qtThread());
+}
+
+// this Thread will terminatet when the slot quit() is called
+void qtThread(){
+    return qtApp->exec();
 }
 
 // After the parent rviz::Display::initialize() does its own setup, it
@@ -133,17 +155,19 @@ void ImageMapDisplay::setAbsPoseTopic(const std::string& topic){
 // TODO pass poses to image_map_info
 void ImageMapDisplay::relPoseCallback(
 	const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg){
-	ROS_INFO("[imageRelPoseHandler]");
+	ROS_INFO("[imageRelPoseCallback]");
 	visual_->insertImage(msg->pose.x, msg->pose.y, msg->pose.theta,
 		msg->id.session_id, msg->id.mobot_id, msg->id.image_id,
 		&msg->image.data, &msg->image.encoding,
 		msg->image.width, msg->image.height);
+
+    info->addPicture(msg->id.mobot_id); // add picture to the picture counter
 }
 
-// TODO pass poses to image_map_info
+// TODO pass the information about the absolute pose to Mobot_Info
 void ImageMapDisplay::absPoseCallback(
 	const mobots_msgs::PoseAndID::ConstPtr& msg){
-	ROS_INFO("[imageAbsPoseHandler]");
+	ROS_INFO("[imageAbsPoseCallback]");
 	visual_->setPose(msg->id.session_id, msg->id.mobot_id,	msg->id.image_id,
 		msg->pose.x, msg->pose.y, msg->pose.theta);
 }

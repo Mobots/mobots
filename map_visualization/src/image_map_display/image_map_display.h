@@ -1,5 +1,8 @@
 #include <rviz/display.h>
 
+#include <boost/thread.hpp>
+#include <QtGui/QApplication>
+
 #include <OGRE/OgreLight.h>
 #include <OGRE/OgrePlane.h>
 #include <OGRE/OgreEntity.h>
@@ -8,6 +11,8 @@
 
 #include "mobots_msgs/ImageWithPoseAndID.h"
 #include "mobots_msgs/PoseAndID.h"
+
+#include "mobots_info.h"
 
 namespace Ogre
 {
@@ -69,6 +74,13 @@ private:
 
 	// Test
 	void testVisual(ImageMapVisual* visual_, std::string fileName);
+
+    void qtThread(); // Thread function which launches the Qt Event Loop
+    void startQT(); // function to initialise the QtGui
+
+    QApplication qtApp; // the Qt Application
+    Mobots_Info* info;  // the mobot info window
+    boost::thread info_thread;  // thread for the Qt Event loop
 	
 	// A node in the Ogre scene tree to be the parent of all our visuals.
 	Ogre::SceneNode* scene_node_;
