@@ -4,7 +4,6 @@
 #include "ros/ros.h"
 #include "mobots_msgs/FeatureSetWithDeltaPoseAndID.h"
 #include <treeoptimizer2.hh>
-#include <vector>
 #include <feature_detector/FeaturesMatcher.h>
 
 /**
@@ -24,7 +23,7 @@ public:
      * \brief Enable this display
      * @param force If false, does not re-enable if this display is already enabled.  If true, it does.
      */
-    void enable(bool force = false);
+//    void enable(bool force = false);
 
 private:
     ros::NodeHandle node_handle_;
@@ -34,7 +33,7 @@ private:
     ros::Publisher publisher_;
 
     AISNavigation::TreeOptimizer2 pose_graph_;
-    std::map<mobots_msgs::ID, mobots_msgs::FeatureSet> feature_sets_;
+    std::map<uint32_t, mobots_msgs::FeatureSet> feature_sets_;
     CpuFeaturesMatcher features_matcher_;
 
     static const uint MOBOT_COUNT = 3;
@@ -46,7 +45,7 @@ private:
     void callback3(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPoseAndID const>& msg);
     void callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPoseAndID const>& msg, uint mobot_id);
 
-    int concatenate(const mobots_msgs::ID::ConstPtr& id);
+    uint32_t concatenate(mobots_msgs::ID const &id);
 };
 
 #endif
