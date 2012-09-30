@@ -1,5 +1,9 @@
 #include "slam.h"
 #include "std_msgs/String.h"
+#include <boost/foreach.hpp>
+
+ /* Erlaube ich mir, weil darunter sowieso noch der Namespace TreeOptimizer2 liegt. */
+using namespace AISNavigation;
 
 Slam::Slam() :
   node_handle_(),
@@ -19,12 +23,12 @@ void Slam::callback1(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPos
   callback(msg, 1);
 }
 
-void Slam::callback2(const mobots_msgs::FeatureSetWithDeltaPoseAndID::ConstPtr& msg)
+void Slam::callback2(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPoseAndID const>& msg)
 {
   callback(msg, 2);
 }
 
-void Slam::callback3(const mobots_msgs::FeatureSetWithDeltaPoseAndID::ConstPtr& msg)
+void Slam::callback3(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPoseAndID const>& msg)
 {
   callback(msg, 3);
 }
@@ -33,31 +37,31 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPose
 {
   ROS_INFO("Slam got a FeatureSetWithDeltaPoseAndID from mobot%u!", bot);
 
-  /* FeatureSet in Map unter Key (concatenated) ID abspeichern */
-  feature_sets_[msg->id] = msg->features;
-
   /* last_id_ und current_id_ aktualisieren */
   last_id_[bot] = current_id_[bot];
-  current_id_[bot] = concatenate(msg->id->image_id);
+  current_id_[bot] = concatenate(msg->id);
+  
+  /* FeatureSet in Map unter Key (concatenated) ID abspeichern */
+  feature_sets_[current_id_[bot]] = msg->features;
 
   /* Neue current_pose auf Basis von last_pose und DeltaPose schätzen */
-  AISNavigation::TreeOptimizer2::Pose last_pose = pose_graph_.vertex(last_id_[bot])->pose;
-  AISNavigation::TreeOptimizer2::Pose current_pose = new AISNavigation::TreeOptimizer2::Pose(last_pose.x() + msg->delta_pose->x, last_pose.y() + msg->delta_pose->y, last_pose.theta() + msg->delta_pose->theta);
+  TreeOptimizer2::Pose last_pose = pose_graph_.vertex(last_id_[bot])->pose;
+  TreeOptimizer2::Pose current_pose = TreeOptimizer2::Pose(last_pose.x() + msg->delta_pose.x, last_pose.y() + msg->delta_pose.y, last_pose.theta() + msg->delta_pose.theta);
 
   /* Neuen Vertex mit concatenated ID in TORO-Graph einfügen */
   pose_graph_.addVertex(current_id_[bot], current_pose);
 
   /* DeltaPose als Edge zwischen den zwei Vertices einfügen */
 
-  AISNavigation::TreeOptimizer2::Transformation t
-    = AISNavigation::TreeOptimizer2::Transformation(msg->delta_pose->x, msg->delta_pose->y, msg->delta_pose->theta);
+  TreeOptimizer2::Transformation t
+    = TreeOptimizer2::Transformation(msg->delta_pose.x, msg->delta_pose.y, msg->delta_pose.theta);
   
-  AISNavigation::TreeOptimizer2::InformationMatrix m;
-  m.values[0] = {1, 0, 0};
-  m.values[1] = {0, 1, 0};
-  m.values[2] = {0, 0, 1};
+  TreeOptimizer2::InformationMatrix m;
+  m.values[0][0] = 1; m.values[0][1] = 0; m.values[0][2] = 0;
+  m.values[1][0] = 0; m.values[1][1] = 1; m.values[1][2] = 0;
+  m.values[2][0] = 0; m.values[2][1] = 0; m.values[2][2] = 1;
   
-  pose_graph_.addEdge(pose_graph_.vertex(last_id_), pose_graph_.vertex(current_id_), t, m);
+  pose_graph_.addEdge(pose_graph_.vertex(last_id_[bot]), pose_graph_.vertex(current_id_[bot]), t, m);
   
   /*
   4. Eventuell standardmäßig mit letztem FeatureSet matchen und Warnung an Moritz raushauen.
@@ -65,12 +69,28 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPose
      Dazu TORO-Graph durchiterieren und Radien checken. Jeder mit jedem oder nur aktueller mit jedem?
   6. TORO-Algoritmus keine, eine oder mehrere Iterationen laufen lassen.
    */
+  //BOOST_FOREACH(VertexMap::)
+  //pose_graph_.vertices.
+  BOOST_FOREACH(TreeOptimizer2::VertexMap::value_type &v, pose_graph_.vertices)
+  {
+    BOOST_FOREACH(TreeOptimizer2::VertexMap::value_type &w, pose_graph_.vertices)
+    {
+      if (&v == &w)
+        continue;
+      TreeOptimizer2::Pose &pose_v = v.second->pose;
+      TreeOptimizer2::Pose &pose_w = w.second->pose;
+      double norm = TreeOptimizer2::Translation(pose_w.x() - pose_v.x(), pose_w.y() - pose_v.y()).norm2();
+      
+    }
+  }
+
+
 
 }
 
-int Slam::concatenate(const mobots_msgs::ID::ConstPtr& id)
+uint32_t Slam::concatenate(mobots_msgs::ID const &id)
 {
-  return ((uint32_t) id->mobot_id) << 16 | id->image_id;
+  return ((uint32_t) id.mobot_id) << 16 | id.image_id;
 }
 
 /*
