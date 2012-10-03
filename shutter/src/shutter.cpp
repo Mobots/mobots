@@ -61,19 +61,19 @@ void Shutter::publishMessage(double &x, double &y, double &theta, const sensor_m
 int frame = 0;
 
 void Shutter::imageCallback(const sensor_msgs::Image &mobot_image) {
-    double safe = g.checkPicture(dX, dY, dTheta);
+    double currentOverlap = g.checkPicture(dX, dY, dTheta); //entspricht der derzeitigen überlappung
     frame++;
     if(frame == 25){
-      std::cout << "Überlappung: " << safe << "of " << overlap << "  => " << safe/overlap*100 << "%" << std::endl;
+      std::cout << "Überlappung: " << currentOverlap << "of " << overlap << "  => " << currentOverlap/overlap*100 << "%" << std::endl;
       frame = 0;
     }
-    if (safe < overlap) {
-	std::cout << "shuttered" << std::endl;
+    if (currentOverlap < overlap) {
+    std::cout << "shuttered" << std::endl;
         publishMessage(dX, dY, dTheta, mobot_image);
         dX = 0;
         dY = 0;
-        dTheta = 0; // evtl. lock machen
-    } 
+        dTheta = 0;
+    }
 }
 
 void Shutter::mouseCallback(const geometry_msgs::Pose2D &mouse_data) {
