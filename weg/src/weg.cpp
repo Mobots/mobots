@@ -1,7 +1,11 @@
 #include "weg.h"
 
+int main(int argc, char** argv)
+{
+ros::init(argc, argv, "weg");
+}
 
-Weg::Weg(int mobotID):this.mobotID(mobotID) 			//Konstruktor Weg
+Weg::Weg(int mobot_ID):mobotID(mobot_ID) 			//Konstruktor Weg
 {
   argc = 0;
   std::stringstream s;
@@ -19,23 +23,25 @@ void Weg::startWeg()
 {
   ROS_INFO("Mobot %d: Weg angeben",mobotID);
   nextPose_sub = nh.subscribe("mobot_pose/waypoint", 30, &Weg::poseCallback, this);
+  mousePose_sub = nh.subscribe("mouse/pose", 100, &Weg::mouseCallback, this);
   pose2D_pub = nh.advertise<geometry_msgs::Pose2D>("mobot_pose/globalPose", 5);
   sollV_pub = nh.advertise<geometry_msgs::Pose2D>("driver/sollV", 2);
 
+
   //Services
-  //ros::ServiceClient = nh.serviceClient<shutter::delta>("mobot_pose/getDelta");
-  ros::ServiceCenter service = nh.advertiseService("mobot_pose/changeGlobalPose", changeGlobalPose);
+    client = nh.serviceClient<shutter::delta>("mobot_pose/getDelta");
+    service = nh.advertiseService("mobot_pose/changeGlobalPose", &Weg::changeGlobalPose,this);
 
   //Parameter übernehmen
   ros::param::param<double>("sBrems",sBrems,0.2);
   ros::param::param<double>("rootParam",rootParam,2.0);
-  ros::param::param<double>("rootParam",bParam,0,06);   //calculate: bParam=vMax/4/(desired start-to-break-point in degrees)*180/pi/radius
-  // ros::param::param<double>("vFac",vFac,1);  //anderes Konzept
-  //vFac ist der zusammenhang: Vmaximal/1000 zwischen promilledaten und realität
+  //ros::param::param<double>("bParam",bParam,0.06);   //calculate: bParam=vMax/4/(desired start-to-break-point in degrees)*180/pi/radius
   ros::param::param<double>("rad",rad,0.14); //TODO, genauer Radius, messen Mitte- Räder-Bodenkontakt
   ros::param::param<double>("vMax",vMax,0.15); //theoretisch maximal 0.18, weniger, um nicht mit maximum zu laufen
   ros::param::param<double>("minS",minS,0.02);	//Toleranz für erreichten Wegpunkt
   ros::param::param<double>("minDegree",minDegree,1); //Toleranz für erreichte Drehrichtung
+  // ros::param::param<double>("vFac",vFac,1);  //anderes Konzept
+  //vFac ist der zusammenhang: Vmaximal/1000 zwischen promilledaten und realität
 
 
   bParam=pow(vMax,rootParam)/sBrems;
@@ -45,7 +51,11 @@ void Weg::startWeg()
 
 void Weg::poseCallback(const mobots_msgs::Pose2DPrio &next_pose)
 {
-  listManage({ next_pose.x, next_pose.y, next_pose.theta}, next_pose.prio);
+    double x=next_pose.pose.x;
+    double y=next_pose.pose.y;
+    double theta=next_pose.pose.theta;
+    Pose p={x,y,theta};
+    listManage(p, next_pose.prio);
 }
 
 
@@ -53,44 +63,36 @@ void Weg::poseCallback(const mobots_msgs::Pose2DPrio &next_pose)
   * prio== -2: der erste eintrag wird gelöscht (zB erledigt)
   * prio== -1: gesamte liste löschen, pose alleine einfügen
   * prio== 0 : pose vor alle anderen einfügen
-  * prio== 1 : pose am ende der liste einfügen
+  * prio>= 1 : pose am ende der liste einfügen
   * prio== sonst: pose an der prio-position einfügen
   */
-void Weg::listManage(pose next, int prio)
+void Weg::listManage(Pose next, int prio)
 {
   bool flag = false;
   switch(prio)
   {
     case -2:
-      list::pop_front();
+      list.pop_front();
       flag = true;
       break;
     case -1:
-      list::clear();
-      list::push_front(globalPose);
+      list.clear();
+      list.push_front(globalPose);
       flag = true;
     break;
     case 0:
-      list::push_front(next);
+      list.push_front(next);
       flag = true;
     break;
-    case 1:
-      list::push_back(next);
-      if (list.size() < 2) {     flag = true; }
-    break;
     default:
-    if (list.size() > prio) {
-      list::insert(prio, next);
-    } else {
-      list::push_back(next);
+      list.push_back(next);
       if (list.size() < 2) {     flag = true; }
-    }
     break;
   }
 
   if (flag)  {
     //Fall: Nr0 oder Nr1 aktualisiert, Nr1 wegen Bremsvermeidung.
-    sollS = list::front();
+    sollS = list.front();
   }
 }
 
@@ -105,7 +107,8 @@ void Weg::listManage(pose next, int prio)
  * Node überprüft werden, der dann auch das Delta vom shutter besorgen  und bereits
  * aufadiert an diesen Node weitergeben sollte
  *****************************************************************************************/
-bool weg::changeGlobalPose(weg::poseChange::Request &req, weg::poseChange::Response &res)
+bool Weg::changeGlobalPose(weg::ChangeGlobalPose::Request &req,
+                           weg::ChangeGlobalPose::Response &res)
 {
   shutter::delta srv;
   if (client.call(srv))
@@ -154,10 +157,11 @@ void Weg::regel()
  double eX =  sollS.x - globalPose.x;
  double eY =  sollS.y - globalPose.y;
  double eTheta =  sollS.theta - globalPose.theta;
- if (eX < minS && eY < minS && eTheta*rad < minDegree*(M_Pi * rad / 180)) { //Ziel erreicht
-   listManage(NULL,-2);
+ if (eX < minS && eY < minS && eTheta*rad < minDegree*(M_PI * rad / 180)) { //Ziel erreicht
+     Pose p={0,0,0};
+     listManage(p,-2);
  }
- if (wayType == STIFF) || (wayType == FAST) //TODO
+ if ((wayType == STIFF) || (wayType == FAST)) //TODO
  {
    geometry_msgs::Pose2D sollV;
    sollV.x=regelFkt(sollS.x);
@@ -187,7 +191,7 @@ double Weg::regelFkt(double e)
    d=d/vParam;
    return (d<-vMax) ? -vMax :d;
  }
-
+    return 0;
 }
 
   /*
