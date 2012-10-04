@@ -1,12 +1,14 @@
 #include <cstdio>
 #include <iostream>
+#include <list>
 #include <ros/ros.h>
 #include <mobots_msgs/Pose2DPrio.h>
 #include <geometry_msgs/Pose2D.h>
-//#include <mobots/shutter/delta.h>
+#include "shutter/delta.h"
+#include "weg/ChangeGlobalPose.h"
 #include <math.h>
 #define _USE_MATH_DEFINES
-#define int vFac=0,00018025   //(Maximalgeschwindigkeit(0,18025 eines Rades/1000 in Meter! (wg. Promille)
+const double vFac = 0.00018025;   //(Maximalgeschwindigkeit(0,18025 eines Rades/1000 in Meter! (wg. Promille)
 
 
 
@@ -34,50 +36,58 @@
  * */
 
 typedef struct{
-  float x,y,theta;
-} pose;
+  double x,y,theta;
+} Pose;
 typedef enum{STIFF,FAST} way;
 
-class Weg{
 
+
+class Weg {
 
 public:
-    Weg(int mobotID);
+    Weg(int mobot_ID);
     ~Weg();
-    ros::Subscriber nextPose_sub;
 
 
+    //Subscriber
+    void poseCallback(const mobots_msgs::Pose2DPrio &next_pose);
+    void mouseCallback(const geometry_msgs::Pose2D &mouse_data);
+
+  // TODO potentielles Laufzeitproblem: TORO-Laufzeit länger als ein "Shutter"==> getdelta bezieht sich auf ein falsches Bild
+
+    //Service
+    bool changeGlobalPose(weg::ChangeGlobalPose::Request &req, weg::ChangeGlobalPose::Response &res);
+
+    //Publisher
+    void publishGlobalPose(const geometry_msgs::Pose2D &pose2D);
+    void publishSollV(const geometry_msgs::Pose2D &sollV_Pose2D);
 
 private:
-  pose globalPose, sollS;
-  pose next,best;
-  way wayType;
-  double sBrems,bParam,rootParam, rad, vMax, minS, minDegree;
 
-  std::list<pose> list;
-  int argc, mobotID;
-  char argv;
-  ros::NodeHandle nh;
-  shutter::delta srv;
+    ros::NodeHandle nh;
+    ros::Subscriber nextPose_sub;
+    ros::Subscriber mousePose_sub;
 
+    ros::Publisher pose2D_pub;
+    ros::Publisher sollV_pub;
 
-
-  //Subscriber
-  void poseCallback(const mobots_msgs::Pose2DPrio &next_pose);
-  void mouseCallback(const geometry_msgs::Pose2D &mouse_data);
-
-// TODO potentielles Laufzeitproblem: TORO-Laufzeit länger als ein "Shutter"==> getdelta bezieht sich auf ein falsches Bild
-
-  //Service
-  bool changeGlobalPose(weg::changeGlobalPose::Request &req, weg::changeGlobalPose::Response &res);
-
-  //Publisher
-  void publishGlobalPose(const geometry_msgs::Pose2D &pose2D);
-  void publishSollV(const geometry_msgs::Pose2D &sollV_Pose2D);
+    ros::ServiceClient client;
+    ros::ServiceServer service;
+    shutter::delta srv;
 
 
-  void listManage(pose next, int prio);
-  double regelFkt(double e);
-  double regelFktDreh(double e);
-  void startWeg();
-}
+      Pose globalPose, sollS;
+      Pose next,best;
+      std::list<Pose> list;
+      way wayType;
+      double sBrems,bParam,vParam,dParam,rootParam, rad, vMax, minS, minDegree;
+
+      int argc, mobotID;
+      char argv;
+
+      double regelFkt(double e);
+      double regelFktDreh(double e);
+      void listManage(Pose next, int prio);
+      void startWeg();
+      void regel();
+};
