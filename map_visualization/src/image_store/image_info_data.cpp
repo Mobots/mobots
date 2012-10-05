@@ -21,6 +21,7 @@ struct poseT{
 struct imageT{
 	int width;
 	int height;
+	
 	std::string encoding;
 };
 
@@ -42,6 +43,9 @@ struct imageInfoData{
 	void save(const std::string &filename);
 };
 
+/**
+ * Loads the xml data from the filename
+ */
 void imageInfoData::load(const std::string &filename){
 	// Create empty property tree object
 	using boost::property_tree::ptree;
@@ -73,18 +77,17 @@ void imageInfoData::load(const std::string &filename){
 	image.encoding = pt.get<std::string>("imageInfo.image.encoding");
 }
 
-// Saves the debug_settings structure to the specified XML file
+// Saves the data to the specified XML file
 void imageInfoData::save(const std::string &filename_){
 	// Create an empty property tree object
 	using boost::property_tree::ptree;
 	ptree pt;
 	
-	// Put log filename in property tree
+	// Populate the property_tree with data
 	pt.put("imageInfo.image.width", image.width);
 	pt.put("imageInfo.image.height", image.height);
 	pt.put("imageInfo.image.encoding", image.encoding);
 
-	// Put debug level in property tree
 	pt.put("imageInfo.id.sessionID", id.sessionID);
 	pt.put("imageInfo.id.mobotID", id.mobotID);
 	pt.put("imageInfo.id.imageID", id.imageID);

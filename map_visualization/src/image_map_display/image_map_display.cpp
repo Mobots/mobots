@@ -12,7 +12,7 @@
 
 #include "image_map_visual.h"
 #include "image_map_display.h"
-#include "image_map_info.h"
+#include "mobots_info.h"
 
 namespace map_visualization{
 	
@@ -21,6 +21,7 @@ ImageMapDisplay::ImageMapDisplay()
   , scene_node_(NULL)
   , visual_(NULL)
   , info(NULL)
+  , qtApp(NULL)
 {
     startQT();
 }
@@ -40,23 +41,25 @@ void ImageMapDisplay::clear(){
         delete info;
     }
     if(info_thread != NULL){ // quit the Qt Application if it is started
-        qtApp.quit();
+        qtApp->quit();
     }
-	visual_ = new ImageMapVisual(vis_manager_->getSceneManager(), scene_node_);
+	visual_ = new ImageMapVisual(vis_manager_->getSceneManager());
     startQT();
 }
 
 // start the Qt Application and launch the qtThread
-void startQT(){
+void ImageMapDisplay::startQT(){
     qtApp = new QApplication(0, NULL);
     info = new Mobots_Info(0);
-    info.show();
-    info_thread = new boost::thread(qtThread());
+    info->show();
+    boost::thread info_thread_(qtApp->exec);
+    info_thread = &info_thread_;
+    return;
 }
 
 // this Thread will terminatet when the slot quit() is called
-void qtThread(){
-    return qtApp->exec();
+void ImageMapDisplay::qtThread(){
+	qtApp->exec(); 
 }
 
 // After the parent rviz::Display::initialize() does its own setup, it
@@ -72,7 +75,7 @@ void ImageMapDisplay::onInitialize(){
 void ImageMapDisplay::onEnable(){
 	ROS_INFO("onenable");
 	subscribe();
-	visual_ = new ImageMapVisual(vis_manager_->getSceneManager(), scene_node_);
+	visual_ = new ImageMapVisual(vis_manager_->getSceneManager());
 	testVisual(visual_, "/home/moritz/TillEvil.jpg");
 	ROS_INFO("onenable");
 }
