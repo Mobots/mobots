@@ -45,6 +45,10 @@ public:
 	std::string getEncoding(){return infoData.image.encoding;}
 	void setEncoding(const std::string* encoding)
 		{infoData.image.encoding = *encoding;}
+	int getWidth(){return infoData.image.width}
+	void setWidth(int width){infoData.image.width = width;}
+	int getHeight(){return infoData.image.height}
+	void setHeight(int height){infoData.image.height = height;}
 	
 	std::vector<unsigned char> getImageData();
 	void loadLast(const IDT* id_);
@@ -70,8 +74,8 @@ ImageInfo::ImageInfo(){
 }
 
 /**
- * Constructor to access the image/info.
- * The image is loaded only when it is requested.
+ * Constructor to access a saved image, its properties, and poses. The image
+ * is loaded with the get request.
  */
 ImageInfo::ImageInfo(const IDT* id_){
 	errorStatus = 0;
@@ -88,8 +92,8 @@ ImageInfo::ImageInfo(const IDT* id_){
 }
 
 /**
- * Constructor to update the infoData.
- * If a pose is not 'enabled', it will not be overwritten.
+ * Constructor to update the infoData. If a pose is not 'enabled', it will not
+ * be overwritten.
  */
 ImageInfo::ImageInfo(const imageInfoData* infoData_){
 	errorStatus = 0;
@@ -97,13 +101,13 @@ ImageInfo::ImageInfo(const imageInfoData* infoData_){
 	infoPath = concPath(infoEnding.c_str());
 	try{
 		infoData.load(infoPath);
-		if(infoData_->delPose.enable != 0){
+		if(infoData_->delPose.enable == 1){
 			infoData.delPose = infoData_->delPose;
 		}
-		if(infoData_->relPose.enable != 0){
+		if(infoData_->relPose.enable == 1){
 			infoData.relPose = infoData_->relPose;
 		}
-		if(infoData_->absPose.enable != 0){
+		if(infoData_->absPose.enable == 1){
 			infoData.absPose = infoData_->absPose;
 		}
 		infoData.save(infoPath);
@@ -114,7 +118,7 @@ ImageInfo::ImageInfo(const imageInfoData* infoData_){
 }
 
 /**
- * Constructor to store the image/info
+ * Constructor to store an image, its properties, and poses.
  */
 ImageInfo::ImageInfo(const imageInfoData* infoData_, const std::vector<unsigned char> imageData_){
 	errorStatus = 0;
@@ -151,7 +155,7 @@ int ImageInfo::initReadImage(){
 }
 
 /**
- * Save an image and its info file.
+ * Save an image and its info file to disk.
  */
 int ImageInfo::initWrite(){
 	// Create the directory
@@ -228,6 +232,9 @@ char* ImageInfo::concPath(){
 	return path;
 }
 
+/**
+ * If the image is not loaded, it will be loaded from the disk.
+ */
 std::vector<unsigned char> ImageInfo::getImageData(){
 	if(imageData.size() == 0){
 		if(initReadImage() == 0){

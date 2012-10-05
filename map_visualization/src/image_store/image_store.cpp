@@ -1,6 +1,6 @@
 /**
  * For further information: http://pc3.bime.de/dokuwiki/doku.php?id=mobots:software:gui
- * Writen by Moritz Ulmer, Uni Bremen
+ * Writen by Moritz Ulmer, Hauke  Uni Bremen
  */
 
 #include <boost/filesystem.hpp>
@@ -14,8 +14,9 @@
 #include "mobots_msgs/ImageWithPoseAndID.h"
 #include "mobots_msgs/PoseAndID.h"
 
-// Saves the last pose of each mobot
+// The NULL pose
 poseT zeroPose{0,0,0,1};
+// Saves the last pose of each mobot
 std::map<int, poseT> deltaPoseBuffer;
 int currentSessionID = 0;
 ros::Publisher* relativePub;
@@ -39,17 +40,17 @@ void refreshDeltaPoseBuffer(){
 }
 
 /**
- * This Method saves incoming messages.
- * TODO check if a session is already has images
- * TODO add support for non-square images
+ * Callback to save the image and its poses, calculate the relative pose,
+ * and relay the image with the relative pose. 
+ * TODO check if a session already has images
  */
 void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg){
 	ROS_INFO("deltaPose1");
 	imageInfoData infoData{
 		{msg->id.session_id, msg->id.mobot_id, msg->id.image_id},
-		{msg->pose.x, msg->pose.y, msg->pose.theta, 1}, // delta
-		{msg->pose.x, msg->pose.y, msg->pose.theta, 1}, // relative
-		{0,0,0,0}, // absolute
+		{msg->pose.x, msg->pose.y, msg->pose.theta, 1}, // delPose (relative)
+		{0,0,0,0}, // relPose (relative)
+		{0,0,0,0}, // absPose (absolute)
 		{msg->image.width, msg->image.height, msg->image.encoding}
 	};
 	ROS_INFO("deltaPose2");
@@ -61,7 +62,7 @@ void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg)
 	ROS_INFO("deltaPose3");
 	// All delta poses exept the first one need to be added to the last one.
 	if(deltaPoseBuffer.count(infoData.id.mobotID) != 0){
-		infoData.relPose = infoData.relPose + deltaPoseBuffer[infoData.id.mobotID];
+		infoData.relPose = infoData.delPose + deltaPoseBuffer[infoData.id.mobotID];
 	}
 	// If the delta pose buffer vector is too small
 	ROS_INFO("deltaPose5: image: %i", msg->image.data.size());
@@ -80,16 +81,17 @@ void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg)
 	relayMsg.image.width = infoData.image.width;
 	relayMsg.image.height = infoData.image.height;
 	relayMsg.image.encoding = infoData.image.encoding;
-	ROS_INFO("deltaPose7");
 	relayMsg.image.data = msg->image.data;
-	ROS_INFO("deltaPose7.1");
 	relativePub->publish(relayMsg);
-	ROS_INFO("deltaPose8");
+	// Send message
 	ros::spinOnce();
 	
 	ROS_INFO("image_store: image saved: %i", msg->id.image_id);
 }
 
+/**
+ * Callback to save the absolute the pose, and relay it to all Rviz instances
+ */
 void absolutePoseHandler(const mobots_msgs::PoseAndID::ConstPtr& msg){
 	imageInfoData infoData{
 		{msg->id.session_id, msg->id.mobot_id, msg->id.image_id},
@@ -105,8 +107,7 @@ void absolutePoseHandler(const mobots_msgs::PoseAndID::ConstPtr& msg){
 }
 
 /**
- * This Method returns an image and its info upon a valid request.
- * TODO return relPose and absPose
+ * Callback to send an image and/or its poses
  */
 bool imageHandlerOut(map_visualization::GetImageWithPose::Request &req, map_visualization::GetImageWithPose::Response &res){
 	IDT id{req.id.session_id, req.id.mobot_id, req.id.image_id};
@@ -118,6 +119,9 @@ bool imageHandlerOut(map_visualization::GetImageWithPose::Request &req, map_visu
 	// 0 - Both, 1 - Image, 2 - Pose
 	if(req.type != 2){
 		res.image.data = info.getImageData();
+		res.image.encoding = info.getEncoding();
+		res.image.width = info.getWidth();
+		res.image.height = info.getHeight();
 	}
 	if(req.type != 1){
 		poseT delPose = info.getDelPose();

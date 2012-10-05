@@ -20,22 +20,30 @@
 namespace map_visualization
 {
 
-ImageMapVisual::ImageMapVisual( Ogre::SceneManager* sceneManager_, Ogre::SceneNode* parent_node ){
+/**
+ * Creates the root node. Images are placed into a tree hierarchy.
+ * root -> sessions -> mobots -> images
+ */
+ImageMapVisual::ImageMapVisual( Ogre::SceneManager* sceneManager_){
 	sceneManager = sceneManager_;
+	// The root of the node tree containing all image nodes 
 	rootNode = sceneManager->getRootSceneNode()->createChildSceneNode();
 }
 
-// delete: nodes->objects->textures->materials
+/**
+ * All resources(nodes, textures, material) are deleted.
+ */
 ImageMapVisual::~ImageMapVisual()
 {
 	ROS_INFO("~visual");
 	deleteAllImages();
 	sceneManager->destroySceneNode(rootNode);
-	//sceneManager->destroyAllManualObjects();
 	ROS_INFO("~visual");
 }
 
 /**
+ * Insert an image into Rviz and set the pose.
+ * @Notes All resources are named;enabling a clean deletion
  * TODO variable image resolution
  */
 int ImageMapVisual::insertImage(
@@ -44,7 +52,7 @@ int ImageMapVisual::insertImage(
 	const std::vector<unsigned char>* imageData,
 	const std::string* encoding, int width, int height
 ){
-	// Get the node to which the image shall be assigned to
+	// Get the node to which the image is assigned to
 	ROS_INFO("Check 1.0");
 	Ogre::SceneNode* imageNode = getNode(sessionID, mobotID, imageID);
 	// Deleting configuration and resources of a node with the same ID
@@ -53,16 +61,22 @@ int ImageMapVisual::insertImage(
 	deleteImage(&imageNodeName);
 	imageNode = parentNode->createChildSceneNode(imageNodeName,
 		Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
-	ROS_INFO("insertImage, image node name: %s", (imageNode->getName()).c_str());
+	ROS_INFO("insertImage, imageNode: %s", (imageNode->getName()).c_str());
+	
+	// Decode the [png/jpg] image to RGB encoding
+	cv::Mat mat = cv::imdecode(*imageData, 1);
+	cv::namedWindow("window_title", 1);
+	cv::imshow("window_title", mat);
+	
+	// Create the material
 	std::stringstream ss;
 	ss << "MapMaterial-" << imageNode->getName();
-	// Create the material
-	ROS_INFO("material: %s", (ss.str()).c_str());
+	ROS_INFO("%s", (ss.str()).c_str());
 	try{
 		material_ = Ogre::MaterialManager::getSingleton().create(ss.str(),
 			Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	} catch(Ogre::Exception& e) {
-		ROS_INFO("[Visual] material: %s", e.what());
+		ROS_INFO("[Visual] %s", e.what());
 		Ogre::MaterialManager::getSingleton().remove(ss.str());
 		material_ = Ogre::MaterialManager::getSingleton().create(ss.str(),
 			Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
@@ -73,34 +87,28 @@ int ImageMapVisual::insertImage(
 	material_->setCullingMode(Ogre::CULL_NONE);
 	material_->setDepthWriteEnabled(false);
 	
-	cv::Mat mat = cv::imdecode(*imageData, 1);
-	cv::namedWindow("window_title", 1);
-	cv::imshow("window_title", mat);
-	
-	static int tex_count = 0;
-	std::stringstream ss2;
-	ss2 << "MapTexture-" << tex_count++;
 	// Create the texture
-	ROS_INFO("texture: %s", (ss2.str()).c_str());
+	std::stringstream ss2;
+	ss2 << "MapTexture-" << imageNode->getName();
+	ROS_INFO("%s", (ss2.str()).c_str());
 	try{
 		texture_ = Ogre::TextureManager::getSingleton().createManual(
 			ss2.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
 			Ogre::TEX_TYPE_2D, mat.cols, mat.rows, 0, Ogre::PF_X8R8G8B8,
 			Ogre::TU_DEFAULT);
 	} catch(Ogre::Exception& e) {
-		ROS_INFO("[Visual] texture: %s", e.what());
+		ROS_INFO("[Visual] %s", e.what());
 		Ogre::TextureManager::getSingleton().remove(ss2.str());
 		texture_ = Ogre::TextureManager::getSingleton().createManual(
 			ss2.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
 			Ogre::TEX_TYPE_2D, mat.cols, mat.rows, 0, Ogre::PF_X8R8G8B8,
 			Ogre::TU_DEFAULT);
 	}
-	// Get the pixel buffer
+	
+	// Get pixel buffer
 	Ogre::HardwarePixelBufferSharedPtr pixelBuffer = texture_->getBuffer();
-	// Lock the pixel buffer and get a pixel box
 	pixelBuffer->lock(Ogre::HardwareBuffer::HBL_NORMAL); // for best performance use HBL_DISCARD!
 	const Ogre::PixelBox& pixelBox = pixelBuffer->getCurrentLock();
-	
 	Ogre::uint32* pDest = static_cast<Ogre::uint32*>(pixelBox.data);
 	
 	// Fill in the pixel data.
@@ -111,7 +119,6 @@ int ImageMapVisual::insertImage(
 		*pDest++ = bit32;
 		k += 3;
 	}
-	// Unlock the pixel buffer
 	pixelBuffer->unlock();
 	
 	// Get the current pass from the material
@@ -123,7 +130,8 @@ int ImageMapVisual::insertImage(
 	}
 	tex_unit_->setTextureName(texture_->getName());
 	tex_unit_->setTextureFiltering( Ogre::TFO_NONE );
-
+	
+	// Create the manual object
 	std::stringstream ss3;
 	ss3 << "MapObject-" << imageNode->getName();
 	ROS_INFO("object: %s", ss3.str().c_str());
@@ -136,11 +144,13 @@ int ImageMapVisual::insertImage(
 	}
 	imageNode->attachObject(manual_object_);
 	
+	// Normalize the image size
 	float imageScale = 5;
 	float widthScaled = imageScale;
 	float heightScaled = (mat.rows / mat.cols) * imageScale;
 	std::cout << imageScale << " " << mat.cols << " " << widthScaled << " " << mat.rows << " " << heightScaled << std::endl;
 	
+	// Define the manual object as a rectangle
 	manual_object_->begin(material_->getName(),
 		Ogre::RenderOperation::OT_TRIANGLE_LIST);
 	{
@@ -150,30 +160,25 @@ int ImageMapVisual::insertImage(
 			manual_object_->position( 0.0f, 0.0f, 0.0f );
 			manual_object_->textureCoord(0.0f, 1.0f);
 			manual_object_->normal( 0.0f, 0.0f, 1.0f );
-			
 			// Top right
 			manual_object_->position( widthScaled, heightScaled, 0.0f );
 			manual_object_->textureCoord(1.0f, 0.0f);
 			manual_object_->normal( 0.0f, 0.0f, 1.0f );
-			
 			// Top left
 			manual_object_->position( 0.0f, heightScaled, 0.0f );
 			manual_object_->textureCoord(0.0f, 0.0f);
 			manual_object_->normal( 0.0f, 0.0f, 1.0f );
 		}
-		
 		// Second triangle
 		{
 			// Bottom left
 			manual_object_->position( 0.0f, 0.0f, 0.0f );
 			manual_object_->textureCoord(0.0f, 1.0f);
 			manual_object_->normal( 0.0f, 0.0f, 1.0f );
-			
 			// Bottom right
 			manual_object_->position( widthScaled, 0.0f, 0.0f );
 			manual_object_->textureCoord(1.0f, 1.0f);
 			manual_object_->normal( 0.0f, 0.0f, 1.0f );
-			
 			// Top right
 			manual_object_->position( widthScaled, heightScaled, 0.0f );
 			manual_object_->textureCoord(1.0f, 0.0f);
@@ -298,6 +303,7 @@ void ImageMapVisual::setPose(float poseX, float poseY, float poseTheta,
  */
 Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID){
 	ROS_INFO("Check 2.0: %i:%i:%i", sessionID, mobotID, imageID);
+	// Get the specified session node
 	std::string name = "s";
 	name += boost::lexical_cast<std::string>(sessionID);
 	Ogre::Node* node;
@@ -311,6 +317,7 @@ Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID
 			Ogre::Quaternion::IDENTITY);
 		node = rootNode->getChild(name);
 	}
+	// Get the specified mobot node
 	name += "m";
 	name += boost::lexical_cast<std::string>(mobotID);
 	try{
@@ -323,6 +330,7 @@ Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID
 			Ogre::Quaternion::IDENTITY);
 		node = node->getChild(name);
 	}
+	// Get the specified image node
 	name += "i";
 	name += boost::lexical_cast<std::string>(imageID);
 	try{
@@ -335,13 +343,13 @@ Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID
 		node = node->getChild(name);
 	}
 	return (Ogre::SceneNode*) node;
-	ROS_INFO("Check 2.X");
 }
 
 /**
  * Searches for the requested Node. Returns NULL pointer if node is not found. 
  */
 Ogre::SceneNode* ImageMapVisual::findNode(int sessionID, int mobotID, int imageID){
+	// Get the specified session node
 	if(sessionID < 0){
 		return NULL;
 	}
@@ -353,6 +361,7 @@ Ogre::SceneNode* ImageMapVisual::findNode(int sessionID, int mobotID, int imageI
 	} catch(Ogre::Exception& e) {
 		return NULL;
 	}
+	// Get the specified mobot node
 	if(mobotID < 0){
 		return (Ogre::SceneNode*) node;
 	}
@@ -363,6 +372,7 @@ Ogre::SceneNode* ImageMapVisual::findNode(int sessionID, int mobotID, int imageI
 	} catch(Ogre::Exception& e) {
 		return NULL;
 	}
+	// Get the specified image node
 	if(imageID < 0){
 		return (Ogre::SceneNode*) node;
 	}
@@ -376,11 +386,4 @@ Ogre::SceneNode* ImageMapVisual::findNode(int sessionID, int mobotID, int imageI
 	return (Ogre::SceneNode*) node;
 }
 
-std::string ImageMapVisual::getMapObjectName(int sessionID, int mobotID, int imageID){
-	std::stringstream ss;
-	ss << "MapObject:s" << sessionID << "m" << mobotID << "i" << imageID;
-	return ss.str();
 }
-
-}
-

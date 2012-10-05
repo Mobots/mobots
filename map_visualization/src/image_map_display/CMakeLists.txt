@@ -1,7 +1,6 @@
 rosbuild_add_library(${PROJECT_NAME}
 		image_map_display.cpp
 		image_map_visual.cpp
-		image_map_info.cpp
 		mobots_info.cpp
 		)
 
