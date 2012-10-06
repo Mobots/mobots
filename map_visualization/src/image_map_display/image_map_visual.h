@@ -13,11 +13,9 @@ class ImageMapVisual{
 public:
 	// Creates the root node. Images are placed into a tree hierarchy.
 	// root -> sessions -> mobots -> images
-	ImageMapVisual(Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node);
+	ImageMapVisual(Ogre::SceneManager* scene_manager);
 	virtual ~ImageMapVisual();
 
-	// Add an image to the scene. The path is created and its loaded status is
-	// the same as the previous image.
 	int insertImage(
 		float poseX, float poseY, float poseTheta,
 		int sessionID, int mobotID, int imageID,
@@ -27,12 +25,15 @@ public:
 	int showImage(int sessionID, int mobotID, int imageID);
 	int hideImage(int sessionID, int mobotID, int imageID);
 	int deleteImage(const std::string* nodeName);
+	
 	int showMobot(int sessionID, int mobotID);
 	int hideMobot(int sessionID, int mobotID);
 	int deleteMobot(const std::string* nodeName);
+	
 	int showSession(int sessionID);
 	int hideSession(int sessionID);
 	int deleteSession(const std::string* nodeName);
+	
 	int deleteAllImages();
 	
 	void setPose(float poseX, float poseY, float poseTheta, int sessionID, int mobotID, int imageID);
