@@ -45,9 +45,9 @@ public:
 	std::string getEncoding(){return infoData.image.encoding;}
 	void setEncoding(const std::string* encoding)
 		{infoData.image.encoding = *encoding;}
-	int getWidth(){return infoData.image.width}
+	int getWidth(){return infoData.image.width;}
 	void setWidth(int width){infoData.image.width = width;}
-	int getHeight(){return infoData.image.height}
+	int getHeight(){return infoData.image.height;}
 	void setHeight(int height){infoData.image.height = height;}
 	
 	std::vector<unsigned char> getImageData();
