@@ -1,3 +1,8 @@
+/**
+ * For further information: http://pc3.bime.de/dokuwiki/doku.php?id=mobots:software:gui
+ * Writen by Moritz Ulmer, Hauke Hansen, Uni Bremen
+ */
+
 #include <rviz/display.h>
 
 #include <boost/thread.hpp>
@@ -78,9 +83,9 @@ private:
     void qtThread(); // Thread function which launches the Qt Event Loop
     void startQT(); // function to initialise the QtGui
 
-    QApplication qtApp; // the Qt Application
+    QApplication* qtApp; // the Qt Application
     Mobots_Info* info;  // the mobot info window
-    boost::thread info_thread;  // thread for the Qt Event loop
+    boost::thread* info_thread;  // thread for the Qt Event loop
 	
 	// A node in the Ogre scene tree to be the parent of all our visuals.
 	Ogre::SceneNode* scene_node_;
