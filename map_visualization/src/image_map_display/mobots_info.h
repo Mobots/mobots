@@ -25,7 +25,7 @@ public:
     void toogleMobotState(int id);
     void poseAbsolute(int id);
 
-public slots:
+//public slots:
     void refresh();
 
 private:
