@@ -14,6 +14,7 @@
   <depend package="sensor_msgs"/>
   <depend package="mobots_msgs"/>
 	<depend package="opencv2"/>
+	<depend package="usb_cam"/>
  <export>
     <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib/libgeometry.a"/>
   </export>

@@ -73,7 +73,7 @@ int main(int argc, char **argv){
 
 void* singleMouseReader(void* data){
   ros::Rate rate(mouseFrequency);
-  ros::Publisher pub = nh->advertise<geometry_msgs::Pose2D>("mouse/pose", 2);
+  ros::Publisher pub = nh->advertise<geometry_msgs::Pose2D>("mouse", 2);  //needs remapping
   geometry_msgs::Pose2D deltaPose;
   char data1[3];
   while(ros::ok()){
@@ -90,7 +90,7 @@ void* dualMouseReader(void* data){
   char data1[3];
   char data2[3];
   ros::Rate rate(mouseFrequency);
-  ros::Publisher pub = nh->advertise<geometry_msgs::Pose2D>("mouse/pose", 2);
+  ros::Publisher pub = nh->advertise<geometry_msgs::Pose2D>("mouse", 2); //needs remapping
   geometry_msgs::Pose2D deltaPose;
   while(ros::ok()){
     char xAvg = 0;

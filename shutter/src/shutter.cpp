@@ -5,13 +5,8 @@ ros::init(argc, argv, "shutter");
 //Shutter shutter(0,1.06805,0.80104); //l/b für Simulator: 1.06805,0.80104
 Shutter shutter(0, 3000.06805, 2500.80104);
 }
-Shutter::Shutter(int mobot_ID,double l, double b):id(mobot_ID),g(l,b) //Instanzierung von Geometry
+Shutter::Shutter(double l, double b):g(l,b) //Instanzierung von Geometry
 {
-    argc = 0;
-    std::stringstream s;
-    s << "shutter_" << mobot_ID;
-    ros::init(argc, (char**)argv, s.str());
-    ros::NodeHandle nh;
     Shutter::startShutter(); 
 }
 
@@ -20,15 +15,18 @@ Shutter::~Shutter() {
 
 void Shutter::startShutter()
 {
-    ROS_INFO("Mobot %d: Shutterfunktion gestartet.", id);
-    poseImage_pub = nh.advertise<mobots_msgs::ImageWithPoseAndID>("ImageWithPoseAndID", 2);
+    ROS_INFO("%s Mobot %d: Shutterfunktion gestartet.", TAG, mobotID);
+    poseImage_pub = nh.advertise<mobots_msgs::ImageWithPoseAndID>("image_pose_id", 2);
 
     image_sub = nh.subscribe("usb_cam/image_raw", 5, &Shutter::imageCallback, this);
-    pose_sub = nh.subscribe("mouse/pose", 100, &Shutter::mouseCallback, this);
+    pose_sub = nh.subscribe("mouse", 100, &Shutter::mouseCallback, this);
 
-    ros::ServiceServer service = nh.advertiseService("mobot_pose/getDelta", &Shutter::getDelta, this);
+    ros::ServiceServer service = nh.advertiseService("getDelta", &Shutter::getDelta, this);
     
-    ros::param::param<double>("overlap",overlap, 0.3);
+    ros::param::param<double>("overlap", overlap, 0.3);
+	 if(!ros::param::get("sessionID", sessionID))
+		ROS_ERROR("%s sessionID or gtfo, sessionID set to 0", TAG);
+	 mobotID = 0; //TODO
     dX = 0;
     dY = 0;
     dTheta = 0;
@@ -46,7 +44,6 @@ bool Shutter::getDelta(shutter::delta::Request &req, shutter::delta::Response &r
 }
 
 void Shutter::publishMessage(double &x, double &y, double &theta, const sensor_msgs::Image &image) {
-    ipid.id.mobot_id = id;
     ipid.image = image;
 
     geometry_msgs::Pose2D pose;
@@ -55,7 +52,11 @@ void Shutter::publishMessage(double &x, double &y, double &theta, const sensor_m
     pose.theta = theta;
 
     ipid.pose = pose;
+	 ipid.ID.mobotID = mobotID;
+	 ipid.ID.sessionID = sessionID;
+	 ipid.ID.imageID = imageID;
     poseImage_pub.publish(ipid);
+	 imageID++;
 }
 
 int frame = 0;
@@ -81,6 +82,3 @@ void Shutter::mouseCallback(const geometry_msgs::Pose2D &mouse_data) {
     dY += mouse_data.y;
     dTheta += mouse_data.theta;
 }
-
-
-

@@ -7,7 +7,7 @@
 #include "feature_detector/MessageBridge.h"
 #include "feature_detector/FeaturesMatcher.h"
 #include "mobots_msgs/ImageWithPoseAndID.h"
-#include "mobots_msgs/FeatureSetWithDeltaPoseAndID.h"
+#include "mobots_msgs/FeatureSetWithPoseAndID.h"
 
 
 
@@ -148,7 +148,7 @@ void checkResult(){
   waitKey(0);
 }
 
-void featuresReceived(const mobots_msgs::FeatureSetWithDeltaPoseAndID& featuresMsg){
+void featuresReceived(const mobots_msgs::FeatureSetWithPoseAndID& featuresMsg){
   cout << "received features" << endl;
   FeatureSet* features;
   if(pos++ == 0){
@@ -180,8 +180,8 @@ int main(int argc, char** argv){
   copyMatToImageMSg(image1Gray, i1);
   copyMatToImageMSg(image2Gray, i2);
   ros::NodeHandle nodeHandle;
-  ros::Subscriber subscriber = nodeHandle.subscribe("FeatureSetWithDeltaPoseAndID", 2, featuresReceived);
-  ros::Publisher publisher = nodeHandle.advertise<mobots_msgs::ImageWithPoseAndID>("ImageWithDeltaPoseAndID", 2);
+  ros::Subscriber subscriber = nodeHandle.subscribe("featureset_pose_id", 2, featuresReceived);
+  ros::Publisher publisher = nodeHandle.advertise<mobots_msgs::ImageWithPoseAndID>("image_pose_id", 2);
   cout << "now sending" << endl;
   sleep(1);
   publisher.publish(i1);
