@@ -1,38 +1,35 @@
-#include "weg.h"
+#include "path_controller.h"
 
 int main(int argc, char** argv)
 {
-ros::init(argc, argv, "weg");
-Weg weg(0);
+ros::init(argc, argv, "path_controller");
+path_controller weg(0);
 }
 
-Weg::Weg(int mobot_ID):mobotID(mobot_ID) 			//Konstruktor Weg
+path_controller::Weg(int mobot_ID):mobotID(mobot_ID) 			//Konstruktor Weg
 {
-  /*argc = 0;
-  std::stringstream s;
-  s << "weg_" << mobot_ID;
-  ros::init(argc, NULL, s.str());*/ //weg läuft bereits im /mobotX/.. namespace
   nh = new ros::NodeHandle;
-  Weg::startWeg();
+  path_controller::startWeg();
 }
 
-Weg::~Weg()				//Destruktor
+path_controller::~Weg()				//Destruktor
 {
   delete nh;
 }
 
-void Weg::startWeg()
+void path_controller::startWeg()
 {
-  ROS_INFO("Mobot %d: Weg angeben",mobotID);
-  nextPose_sub = nh->subscribe("waypoint", 30, &Weg::poseCallback, this);
-  mousePose_sub = nh->subscribe("mouse", 100, &Weg::mouseCallback, this);
+  ROS_INFO("Mobot %d: Weg angeben", mobotID);
+  nextPose_sub = nh->subscribe("waypoint", 30, &path_controller::poseCallback, this);
+  nextStampedPose_sub = nh->subscribe("waypointStamped", 2, &path_controller::poseStampedCallback, this);
+  mousePose_sub = nh->subscribe("mouse", 100, &path_controller::mouseCallback, this);
   pose2D_pub = nh->advertise<geometry_msgs::Pose2D>("globalPose", 5);
   sollV_pub = nh->advertise<geometry_msgs::Pose2D>("velocity", 2);
 
 
   //Services
     client = nh->serviceClient<shutter::delta>("getDelta");
-    service = nh->advertiseService("setGlobalPose", &Weg::changeGlobalPose,this);
+    service = nh->advertiseService("setGlobalPose", &path_controller::changeGlobalPose,this);
 
   //Parameter übernehmen
   ros::param::param<double>("sBrems",sBrems,0.2);
@@ -53,13 +50,21 @@ void Weg::startWeg()
   ros::spin();
 }
 
-void Weg::poseCallback(const mobots_msgs::Pose2DPrio &next_pose)
+void path_controller::poseCallback(const mobots_msgs::Pose2DPrio &next_pose)
 {
     double x=next_pose.pose.x;
     double y=next_pose.pose.y;
     double theta=next_pose.pose.theta;
     Pose p={x,y,theta};
     listManage(p, next_pose.prio);
+}
+
+void path_controller::poseStampedCallback(const geometry_msgs::PoseStamped& next_pose){
+    double x = next_pose.pose.position.x;
+    double y = next_pose.pose.position.y;
+    double theta = 2*acos(next_pose.pose.orientation.w);
+    Pose p = {x,y,theta};
+    listManage(p, -1);
 }
 
 
@@ -70,7 +75,7 @@ void Weg::poseCallback(const mobots_msgs::Pose2DPrio &next_pose)
   * prio>= 1 : pose am ende der liste einfügen
   * prio== sonst: pose an der prio-position einfügen
   */
-void Weg::listManage(Pose next, int prio)
+void path_controller::listManage(Pose next, int prio)
 {
   bool flag = false;
   switch(prio)
@@ -111,8 +116,8 @@ void Weg::listManage(Pose next, int prio)
  * Node überprüft werden, der dann auch das Delta vom shutter besorgen  und bereits
  * aufadiert an diesen Node weitergeben sollte
  *****************************************************************************************/
-bool Weg::changeGlobalPose(weg::ChangeGlobalPose::Request &req,
-                           weg::ChangeGlobalPose::Response &res)
+bool path_controller::changeGlobalPose(path_controller::ChangeGlobalPose::Request &req,
+                           path_controller::ChangeGlobalPose::Response &res)
 {
   shutter::delta srv;
   if (client.call(srv))
@@ -138,7 +143,7 @@ bool Weg::changeGlobalPose(weg::ChangeGlobalPose::Request &req,
  * Diese wird als Globalpose gepublisht.
  * Für jeden Callback-Aufruf (Driver sollte 100Hz durchziehen) wird geregelt
  ***********************************************************************************/
-void Weg::mouseCallback(const geometry_msgs::Pose2D &mouse_data) {
+void path_controller::mouseCallback(const geometry_msgs::Pose2D &mouse_data) {
   globalPose.x+= mouse_data.x;
   globalPose.y+= mouse_data.y;
   globalPose.theta += mouse_data.theta;
@@ -156,7 +161,7 @@ void Weg::mouseCallback(const geometry_msgs::Pose2D &mouse_data) {
  *
  *
  **************************************************************************************/
-void Weg::regel()
+void path_controller::regel()
 {
  double eX =  sollS.x - globalPose.x;
  double eY =  sollS.y - globalPose.y;
@@ -183,7 +188,7 @@ void Weg::regel()
  * bParam skaliert auf den gewünschten Bremsweg hoch, dieser kann durch bmax begrenzt werden.
  * V wird metrisch verrechnet.
  */
-double Weg::regelFkt(double e)
+double path_controller::regelFkt(double e)
 {
  if (e>0) {
    double d = pow(e*bParam, 1.0/rootParam);
@@ -201,12 +206,8 @@ double Weg::regelFkt(double e)
   /*
    * Linear steigende Regelfunktion, Steigung dParam.
    * */
-double Weg::regelFktDreh(double e)
+double path_controller::regelFktDreh(double e)
 {
    double d = e*dParam*rad;		//von bogenmaß auf bahngeschwindigkeit
    return (d>(vMax/4.0)) ? vMax/4.0 : ((d<(-(vMax/4.0))) ? -vMax/4.0 :d);
 }
-
-
-
-
