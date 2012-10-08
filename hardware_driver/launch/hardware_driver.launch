@@ -4,6 +4,6 @@
 	<param name="miceCount" value="1" />
 	<param name="path1" value="/dev/input/mouse0" />
 	<param name="path2" value="/dev/input/mouse1" />
-	<remap from="hardware_driver/mouse/pose" to="mouse/pose" />
+	<remap from="hardware_driver/mouse" to="mouse" />
 </node>
 </launch>

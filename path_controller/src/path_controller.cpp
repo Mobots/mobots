@@ -20,8 +20,8 @@ path_controller::~Weg()				//Destruktor
 void path_controller::startWeg()
 {
   ROS_INFO("Mobot %d: Weg angeben", mobotID);
-  nextPose_sub = nh->subscribe("waypoint", 30, &path_controller::poseCallback, this);
-  nextStampedPose_sub = nh->subscribe("waypointStamped", 2, &path_controller::poseStampedCallback, this);
+  nextPose_sub = nh->subscribe("waypoint_prioritized", 30, &path_controller::poseCallback, this);
+  nextStampedPose_sub = nh->subscribe("waypoint", 2, &path_controller::poseStampedCallback, this);
   mousePose_sub = nh->subscribe("mouse", 100, &path_controller::mouseCallback, this);
   pose2D_pub = nh->advertise<geometry_msgs::Pose2D>("globalPose", 5);
   sollV_pub = nh->advertise<geometry_msgs::Pose2D>("velocity", 2);

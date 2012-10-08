@@ -12,7 +12,7 @@ class Shutter {
 
 
 public:
-    Shutter(int mobot_ID, double l,double b);
+    Shutter(double l, double b);
     ~Shutter();
     void imageCallback(const sensor_msgs::Image &mobot_image);
     void mouseCallback(const geometry_msgs::Pose2D &mouse_data);
@@ -24,13 +24,16 @@ public:
 
 
 private:
+	 const char* TAG = "[shutter] ";
     ros::Subscriber pose_sub;
     ros::Subscriber image_sub;
     ros::Publisher poseImage_pub;
     mobots_msgs::ImageWithPoseAndID ipid;
     
+	 int sessionID;
+	 int imageID;
+	 int mobotID;
 
-    int id;
     Geometry g;
     double overlap, dX, dY, dTheta;
     int argc;

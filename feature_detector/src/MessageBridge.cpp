@@ -5,7 +5,7 @@
 using namespace std;
 using namespace cv;
 
-void MessageBridge::copyToRosMessage(const FeatureSet& in, mobots_msgs::FeatureSetWithDeltaPoseAndID& out){
+void MessageBridge::copyToRosMessage(const FeatureSet& in, mobots_msgs::FeatureSetWithPoseAndID& out){
   const int N = in.keyPoints.size();
   out.features.keyPoints.resize(N);
 
@@ -46,7 +46,7 @@ void MessageBridge::copyToRosMessage(const FeatureSet& in, mobots_msgs::FeatureS
   }
 }
 
-void MessageBridge::copyToCvStruct(const mobots_msgs::FeatureSetWithDeltaPoseAndID& in, FeatureSet& out){
+void MessageBridge::copyToCvStruct(const mobots_msgs::FeatureSetWithPoseAndID& in, FeatureSet& out){
   const int N = in.features.keyPoints.size();
   out.keyPoints.resize(N);
   
