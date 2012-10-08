@@ -27,12 +27,12 @@ void Weg::startWeg()
   nextPose_sub = nh->subscribe("waypoint", 30, &Weg::poseCallback, this);
   mousePose_sub = nh->subscribe("mouse", 100, &Weg::mouseCallback, this);
   pose2D_pub = nh->advertise<geometry_msgs::Pose2D>("globalPose", 5);
-  sollV_pub = nh->advertise<geometry_msgs::Pose2D>("driver/sollV", 2);
+  sollV_pub = nh->advertise<geometry_msgs::Pose2D>("velocity", 2);
 
 
   //Services
-    client = nh->serviceClient<shutter::delta>("mobot_pose/getDelta");
-    service = nh->advertiseService("mobot_pose/changeGlobalPose", &Weg::changeGlobalPose,this);
+    client = nh->serviceClient<shutter::delta>("getDelta");
+    service = nh->advertiseService("setGlobalPose", &Weg::changeGlobalPose,this);
 
   //Parameter übernehmen
   ros::param::param<double>("sBrems",sBrems,0.2);
