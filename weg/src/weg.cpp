@@ -3,34 +3,36 @@
 int main(int argc, char** argv)
 {
 ros::init(argc, argv, "weg");
+Weg weg(0);
 }
 
 Weg::Weg(int mobot_ID):mobotID(mobot_ID) 			//Konstruktor Weg
 {
-  argc = 0;
+  /*argc = 0;
   std::stringstream s;
   s << "weg_" << mobot_ID;
-  ros::init(argc, (char**)argv, s.str());
-  ros::NodeHandle nh;
+  ros::init(argc, NULL, s.str());*/ //weg läuft bereits im /mobotX/.. namespace
+  nh = new ros::NodeHandle;
   Weg::startWeg();
 }
 
 Weg::~Weg()				//Destruktor
 {
+  delete nh;
 }
 
 void Weg::startWeg()
 {
   ROS_INFO("Mobot %d: Weg angeben",mobotID);
-  nextPose_sub = nh.subscribe("mobot_pose/waypoint", 30, &Weg::poseCallback, this);
-  mousePose_sub = nh.subscribe("mouse/pose", 100, &Weg::mouseCallback, this);
-  pose2D_pub = nh.advertise<geometry_msgs::Pose2D>("mobot_pose/globalPose", 5);
-  sollV_pub = nh.advertise<geometry_msgs::Pose2D>("driver/sollV", 2);
+  nextPose_sub = nh->subscribe("mobot_pose/waypoint", 30, &Weg::poseCallback, this);
+  mousePose_sub = nh->subscribe("mouse/pose", 100, &Weg::mouseCallback, this);
+  pose2D_pub = nh->advertise<geometry_msgs::Pose2D>("mobot_pose/globalPose", 5);
+  sollV_pub = nh->advertise<geometry_msgs::Pose2D>("driver/sollV", 2);
 
 
   //Services
-    client = nh.serviceClient<shutter::delta>("mobot_pose/getDelta");
-    service = nh.advertiseService("mobot_pose/changeGlobalPose", &Weg::changeGlobalPose,this);
+    client = nh->serviceClient<shutter::delta>("mobot_pose/getDelta");
+    service = nh->advertiseService("mobot_pose/changeGlobalPose", &Weg::changeGlobalPose,this);
 
   //Parameter übernehmen
   ros::param::param<double>("sBrems",sBrems,0.2);
@@ -45,6 +47,8 @@ void Weg::startWeg()
 
 
   bParam=pow(vMax,rootParam)/sBrems;
+  
+  ros::param::param<double>("vParam", vParam, 1); //?? den hast du vergessen /Jonas
 
   ros::spin();
 }
@@ -161,12 +165,12 @@ void Weg::regel()
      Pose p={0,0,0};
      listManage(p,-2);
  }
- if ((wayType == STIFF) || (wayType == FAST)) //TODO
+ if (true || (wayType == STIFF) || (wayType == FAST)) //TODO
  {
    geometry_msgs::Pose2D sollV;
-   sollV.x=regelFkt(sollS.x);
-   sollV.y=regelFkt(sollS.y);
-   sollV.theta=regelFktDreh(sollS.theta); //Weitergabe Regeldifferenz im Bogenmaß
+   sollV.x=regelFkt(eX); //hier war wohl n typo /Jonas
+   sollV.y=regelFkt(eY);
+   sollV.theta=regelFktDreh(eTheta); //Weitergabe Regeldifferenz im Bogenmaß
    sollV_pub.publish(sollV);
  }
 }

@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <iostream>
+#include <fstream>
 #include <stdlib.h>
 #include <fstream>
 #include <ros/ros.h>
@@ -9,6 +10,7 @@
 #include <mobots_msgs/Pose2DPrio.h>
 #include <geometry_msgs/Pose2D.h>
 
+void* threadHelper(void*);
 
 class WegTest {
 
@@ -23,6 +25,7 @@ public:
     //Publisher
     void mousePublish(const geometry_msgs::Pose2D &pose2D);
     void publishTargetPose(const mobots_msgs::Pose2DPrio &target_Pose2DPrio);
+	 void pubFunction();
 
 
 private:
@@ -36,7 +39,6 @@ private:
       char argv;
 
       void startWegTest();
-      void pubFunction();
       void sollCallback(const geometry_msgs::Pose2D &soll_data);
 
 };
