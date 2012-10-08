@@ -26,7 +26,7 @@ void Shutter::startShutter()
     image_sub = nh.subscribe("usb_cam/image_raw", 5, &Shutter::imageCallback, this);
     pose_sub = nh.subscribe("mouse/pose", 100, &Shutter::mouseCallback, this);
 
-    //ros::ServiceServer service = nh.advertiseService("mobot_pose/getDelta", &Shutter::getDelta, this);
+    ros::ServiceServer service = nh.advertiseService("mobot_pose/getDelta", &Shutter::getDelta, this);
     
     ros::param::param<double>("overlap",overlap, 0.3);
     dX = 0;
@@ -37,13 +37,13 @@ void Shutter::startShutter()
 
 }
 
-/*bool Shutter::getDelta(shutter::delta::Request &req, shutter::delta::Response &res)
+bool Shutter::getDelta(shutter::delta::Request &req, shutter::delta::Response &res)
 {
   res.x = dX;
   res.y = dY;
   res.theta = dTheta;
   return true;
-}*/
+}
 
 void Shutter::publishMessage(double &x, double &y, double &theta, const sensor_msgs::Image &image) {
     ipid.id.mobot_id = id;
@@ -61,19 +61,19 @@ void Shutter::publishMessage(double &x, double &y, double &theta, const sensor_m
 int frame = 0;
 
 void Shutter::imageCallback(const sensor_msgs::Image &mobot_image) {
-    double safe = g.checkPicture(dX, dY, dTheta);
+    double currentOverlap = g.checkPicture(dX, dY, dTheta); //entspricht der derzeitigen überlappung
     frame++;
     if(frame == 25){
-      std::cout << "Überlappung: " << safe << "of " << overlap << "  => " << safe/overlap*100 << "%" << std::endl;
+      std::cout << "Überlappung: " << currentOverlap << "of " << overlap << "  => " << currentOverlap/overlap*100 << "%" << std::endl;
       frame = 0;
     }
-    if (safe < overlap) {
-	std::cout << "shuttered" << std::endl;
+    if (currentOverlap < overlap) {
+    std::cout << "shuttered" << std::endl;
         publishMessage(dX, dY, dTheta, mobot_image);
         dX = 0;
         dY = 0;
-        dTheta = 0; // evtl. lock machen
-    } 
+        dTheta = 0;
+    }
 }
 
 void Shutter::mouseCallback(const geometry_msgs::Pose2D &mouse_data) {
