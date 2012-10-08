@@ -24,9 +24,9 @@ Weg::~Weg()				//Destruktor
 void Weg::startWeg()
 {
   ROS_INFO("Mobot %d: Weg angeben",mobotID);
-  nextPose_sub = nh->subscribe("mobot_pose/waypoint", 30, &Weg::poseCallback, this);
-  mousePose_sub = nh->subscribe("mouse/pose", 100, &Weg::mouseCallback, this);
-  pose2D_pub = nh->advertise<geometry_msgs::Pose2D>("mobot_pose/globalPose", 5);
+  nextPose_sub = nh->subscribe("waypoint", 30, &Weg::poseCallback, this);
+  mousePose_sub = nh->subscribe("mouse", 100, &Weg::mouseCallback, this);
+  pose2D_pub = nh->advertise<geometry_msgs::Pose2D>("globalPose", 5);
   sollV_pub = nh->advertise<geometry_msgs::Pose2D>("driver/sollV", 2);
 
 
