@@ -63,8 +63,11 @@ public:
     void publishSollV(const geometry_msgs::Pose2D &sollV_Pose2D);
 
 private:
-
-    ros::NodeHandle nh;
+  /* Auf dem Stack allokieren geht nicht, weil dann wird es vor ros::init erzeugt,
+	* Achtung: wird das letzte NodeHandle deallokiert, wird der Node heruntergefahren, 
+	* die Benutzung von publisher/subscriber führt dann zu nicht nachvollziehbaren SegFaults. -_- */
+	 ros::NodeHandle* nh;
+	 
     ros::Subscriber nextPose_sub;
     ros::Subscriber mousePose_sub;
 
