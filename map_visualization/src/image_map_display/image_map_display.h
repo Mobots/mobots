@@ -1,4 +1,12 @@
+/**
+ * For further information: http://pc3.bime.de/dokuwiki/doku.php?id=mobots:software:gui
+ * Writen by Moritz Ulmer, Hauke Hansen, Uni Bremen
+ */
+
 #include <rviz/display.h>
+
+#include <boost/thread.hpp>
+#include <QtGui/QApplication>
 
 #include <OGRE/OgreLight.h>
 #include <OGRE/OgrePlane.h>
@@ -8,6 +16,8 @@
 
 #include "mobots_msgs/ImageWithPoseAndID.h"
 #include "mobots_msgs/PoseAndID.h"
+
+#include "mobots_info.h"
 
 namespace Ogre
 {
@@ -54,12 +64,6 @@ public:
 protected:
 	virtual void onEnable();
 	virtual void onDisable();
-
-	Ogre::MovablePlane* mPlane;
-	Ogre::Entity*       mPlaneEnt;
-	Ogre::SceneNode*    mPlaneNode;
-
-	// Function to handle an incoming ROS message.
 private:
 	// Internal helpers which do the work of subscribing and
 	// unsubscribing from the ROS topic.
@@ -71,10 +75,17 @@ private:
 	
 	// Subscriber Handlers
 	void relPoseCallback(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg);
-	void absPoseHandler(const mobots_msgs::PoseAndID::ConstPtr& msg);
+	void absPoseCallback(const mobots_msgs::PoseAndID::ConstPtr& msg);
 
 	// Test
 	void testVisual(ImageMapVisual* visual_, std::string fileName);
+
+    void qtThread(); // Thread function which launches the Qt Event Loop
+    void startQT(); // function to initialise the QtGui
+
+    QApplication* qtApp; // the Qt Application
+    Mobots_Info* info;  // the mobot info window
+    boost::thread* info_thread;  // thread for the Qt Event loop
 	
 	// A node in the Ogre scene tree to be the parent of all our visuals.
 	Ogre::SceneNode* scene_node_;
@@ -82,7 +93,7 @@ private:
 
 	// Data Input
 	ros::Subscriber relPoseSub;
-	ros::Subscriber* absPoseSub_;
+	ros::Subscriber absPoseSub;
 
 	// User-editable property variables.
 	std::string relPoseTopic;

@@ -11,7 +11,11 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mobots_info.cpp
+        mobots_info.cpp \
+    image_map_visual.cpp \
+    image_map_test.cpp \
+    image_map_info.cpp \
+    image_map_display.cpp
 
 HEADERS  += mobots_info.h
 

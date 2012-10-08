@@ -120,11 +120,23 @@ void Mobots_Info::refresh(){
 void Mobots_Info::addPicture(int id){
     switch(id)
     {
-    case 1: mobot1.pictures++;
+    case 1:
+        if(mobot1.pictures == 0) {
+            toogleMobotState(1);
+        }
+        mobot1.pictures++;
         break;
-    case 2: mobot2.pictures++;
+    case 2:
+        if(mobot2.pictures == 0) {
+            toogleMobotState(2);
+        }
+        mobot2.pictures++;
         break;
-    case 3: mobot3.pictures++;
+    case 3:
+        if(mobot3.pictures == 0) {
+            toogleMobotState(3);
+        }
+        mobot3.pictures++;
         break;
     default:
         break;
