@@ -1,4 +1,4 @@
-mobots_msgs/Point2f pt
+mobots_msgs/CvPoint2f pt
 float32 size
 float32 angle
 float32 response
