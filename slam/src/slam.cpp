@@ -7,15 +7,23 @@ using namespace AISNavigation;
 
 Slam::Slam() :
   node_handle_(),
-  subscriber1_(node_handle_.subscribe("/mobot1/FeatureSetWithPoseAndID", 1000, &Slam::callback1, this)),
-  subscriber2_(node_handle_.subscribe("/mobot2/FeatureSetWithPoseAndID", 1000, &Slam::callback2, this)),
-  subscriber3_(node_handle_.subscribe("/mobot3/FeatureSetWithPoseAndID", 1000, &Slam::callback3, this)),
+  subscriber1_(node_handle_.subscribe("/featureset_pose_id", 1000, &Slam::callback1, this)),
+  subscriber2_(node_handle_.subscribe("/mobot2/featureset_pose_id", 1000, &Slam::callback2, this)),
+  subscriber3_(node_handle_.subscribe("/mobot3/featureset_pose_id", 1000, &Slam::callback3, this)),
   //publisher_(node_handle_.advertise<mobots_msgs::AbsoluteImagePoses>("AbsoluteImagePoses", 1000)),
   pose_graph_(),
   features_matcher_(CpuFeaturesMatcher::ORB_DEFAULT)
 {
-  pose_graph_.initializeTreeParameters();
-  pose_graph_.initializeOnlineOptimization();
+  //pose_graph_.initializeTreeParameters(); //Use of uninitialised value of size 8    ==14818==    at 0x42A363: AISNavigation::ParameterPropagator::perform(AISNavigation::TreePoseGraph<Operations2D<double> >::Vertex*) (treeoptimizer2.cpp:59)
+  //pose_graph_.initializeOnlineOptimization(); //Conditional jump or move depends on uninitialised value(s)
+
+  for(int bot = 0; bot < MOBOT_COUNT; ++bot)
+  {
+    last_id_[bot] = -1;
+    current_id_[bot] = 0;
+    TreeOptimizer2::Pose initial_pose = TreeOptimizer2::Pose(0, 0, 0);
+    pose_graph_.addVertex(current_id_[bot], initial_pose);
+  }
 }
 
 void Slam::callback1(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg)
@@ -105,6 +113,8 @@ int main(int argc, char* argv[])
 
   Slam slam_instance = Slam();
 
+  ROS_INFO("Slam is spinning now!");
+  
   ros::spin();
 
   return 0;
