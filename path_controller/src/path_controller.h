@@ -43,11 +43,11 @@ typedef enum{STIFF,FAST} way;
 
 
 
-class path_controller {
+class PathController{
 
 public:
-    path_controller(int mobot_ID);
-    ~path_controller();
+    PathController(int mobot_ID);
+    ~PathController();
 
 
     //Subscriber
