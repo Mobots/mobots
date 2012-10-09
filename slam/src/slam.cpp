@@ -7,9 +7,9 @@ using namespace AISNavigation;
 
 Slam::Slam() :
   node_handle_(),
-  subscriber1_(node_handle_.subscribe("/mobot1/FeatureSetWithDeltaPoseAndID", 1000, &Slam::callback1, this)),
-  subscriber2_(node_handle_.subscribe("/mobot2/FeatureSetWithDeltaPoseAndID", 1000, &Slam::callback2, this)),
-  subscriber3_(node_handle_.subscribe("/mobot3/FeatureSetWithDeltaPoseAndID", 1000, &Slam::callback3, this)),
+  subscriber1_(node_handle_.subscribe("/mobot1/FeatureSetWithPoseAndID", 1000, &Slam::callback1, this)),
+  subscriber2_(node_handle_.subscribe("/mobot2/FeatureSetWithPoseAndID", 1000, &Slam::callback2, this)),
+  subscriber3_(node_handle_.subscribe("/mobot3/FeatureSetWithPoseAndID", 1000, &Slam::callback3, this)),
   //publisher_(node_handle_.advertise<mobots_msgs::AbsoluteImagePoses>("AbsoluteImagePoses", 1000)),
   pose_graph_(),
   features_matcher_(CpuFeaturesMatcher::ORB_DEFAULT)
@@ -18,24 +18,24 @@ Slam::Slam() :
   pose_graph_.initializeOnlineOptimization();
 }
 
-void Slam::callback1(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPoseAndID const>& msg)
+void Slam::callback1(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg)
 {
   callback(msg, 1);
 }
 
-void Slam::callback2(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPoseAndID const>& msg)
+void Slam::callback2(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg)
 {
   callback(msg, 2);
 }
 
-void Slam::callback3(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPoseAndID const>& msg)
+void Slam::callback3(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg)
 {
   callback(msg, 3);
 }
 
-void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPoseAndID const>& msg, uint bot)
+void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg, uint bot)
 {
-  ROS_INFO("Slam got a FeatureSetWithDeltaPoseAndID from mobot%u!", bot);
+  ROS_INFO("Slam got a FeatureSetWithPoseAndID from mobot%u!", bot);
 
   /* last_id_ und current_id_ aktualisieren */
   last_id_[bot] = current_id_[bot];
@@ -46,7 +46,7 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPose
 
   /* Neue current_pose auf Basis von last_pose und DeltaPose schätzen */
   TreeOptimizer2::Pose last_pose = pose_graph_.vertex(last_id_[bot])->pose;
-  TreeOptimizer2::Pose current_pose = TreeOptimizer2::Pose(last_pose.x() + msg->delta_pose.x, last_pose.y() + msg->delta_pose.y, last_pose.theta() + msg->delta_pose.theta);
+  TreeOptimizer2::Pose current_pose = TreeOptimizer2::Pose(last_pose.x() + msg->pose.x, last_pose.y() + msg->pose.y, last_pose.theta() + msg->pose.theta);
 
   /* Neuen Vertex mit concatenated ID in TORO-Graph einfügen */
   pose_graph_.addVertex(current_id_[bot], current_pose);
@@ -54,7 +54,7 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPose
   /* DeltaPose als Edge zwischen den zwei Vertices einfügen */
 
   TreeOptimizer2::Transformation t
-    = TreeOptimizer2::Transformation(msg->delta_pose.x, msg->delta_pose.y, msg->delta_pose.theta);
+    = TreeOptimizer2::Transformation(msg->pose.x, msg->pose.y, msg->pose.theta);
   
   TreeOptimizer2::InformationMatrix m;
   m.values[0][0] = 1; m.values[0][1] = 0; m.values[0][2] = 0;

@@ -2,7 +2,7 @@
 #define MOBOTS_SLAM_H
 
 #include "ros/ros.h"
-#include "mobots_msgs/FeatureSetWithDeltaPoseAndID.h"
+#include "mobots_msgs/FeatureSetWithPoseAndID.h"
 #include <treeoptimizer2.hh>
 #include <feature_detector/FeaturesMatcher.h>
 
@@ -40,10 +40,10 @@ private:
     int last_id_[MOBOT_COUNT];
     int current_id_[MOBOT_COUNT];
 
-    void callback1(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPoseAndID const>& msg);
-    void callback2(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPoseAndID const>& msg);
-    void callback3(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPoseAndID const>& msg);
-    void callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithDeltaPoseAndID const>& msg, uint mobot_id);
+    void callback1(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg);
+    void callback2(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg);
+    void callback3(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg);
+    void callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg, uint mobot_id);
 
     uint32_t concatenate(mobots_msgs::ID const &id);
 };
