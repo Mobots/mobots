@@ -6,9 +6,9 @@
 namespace util{
   
 /**
- * parses the namespace and returns the mobotID
- * e.g. "/mobot1/camera" returns 1
- * returns -1 if the namespace cannot be parsed
+ * parses the mobotID from the given namespace 
+ * e.g. "/mobot1/camera" results in 1
+ * returns false if the namespace cannot be parsed
  */
 bool parseNamespace(const std::string& nspace, int& mobotID){
   std::string mobot("mobot");
