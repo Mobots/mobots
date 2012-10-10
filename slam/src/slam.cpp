@@ -1,6 +1,7 @@
 #include "slam.h"
 #include "std_msgs/String.h"
 #include <boost/foreach.hpp>
+#include <math.h>
 
  /* Erlaube ich mir, weil darunter sowieso noch der Namespace TreeOptimizer2 liegt. */
 using namespace AISNavigation;
@@ -17,10 +18,16 @@ Slam::Slam() :
   //pose_graph_.initializeTreeParameters(); //Use of uninitialised value of size 8    ==14818==    at 0x42A363: AISNavigation::ParameterPropagator::perform(AISNavigation::TreePoseGraph<Operations2D<double> >::Vertex*) (treeoptimizer2.cpp:59)
   //pose_graph_.initializeOnlineOptimization(); //Conditional jump or move depends on uninitialised value(s)
 
-  for(int bot = 0; bot < MOBOT_COUNT; ++bot)
+  for(uint bot = 1; bot <= 1; ++bot) //TODO: 1 durch MOBOT_COUNT ersetzten
   {
-    last_id_[bot] = -1;
-    current_id_[bot] = 0;
+    last_id_[bot] = 0;
+    
+    mobots_msgs::ID id;
+    id.session_id = 0;
+    id.mobot_id = bot;
+    id.image_id = 0;
+    current_id_[bot] = merge(id);
+    
     TreeOptimizer2::Pose initial_pose = TreeOptimizer2::Pose(0, 0, 0);
     pose_graph_.addVertex(current_id_[bot], initial_pose);
   }
@@ -47,7 +54,7 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
 
   /* last_id_ und current_id_ aktualisieren */
   last_id_[bot] = current_id_[bot];
-  current_id_[bot] = concatenate(msg->id);
+  current_id_[bot] = merge(msg->id);
   
   /* FeatureSet in Map unter Key (concatenated) ID abspeichern */
   feature_sets_[current_id_[bot]] = msg->features;
@@ -58,7 +65,8 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
 
   /* Neuen Vertex mit concatenated ID in TORO-Graph einfügen */
   pose_graph_.addVertex(current_id_[bot], current_pose);
-
+  ROS_INFO_STREAM("Map-size: " << pose_graph_.vertices.size());
+    
   /* DeltaPose als Edge zwischen den zwei Vertices einfügen */
 
   TreeOptimizer2::Transformation t
@@ -88,17 +96,24 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
       TreeOptimizer2::Pose &pose_v = v.second->pose;
       TreeOptimizer2::Pose &pose_w = w.second->pose;
       double norm = TreeOptimizer2::Translation(pose_w.x() - pose_v.x(), pose_w.y() - pose_v.y()).norm2();
+      ROS_INFO_STREAM("Distance between image " << split(v.second->id).image_id << " and " << split(w.second->id).image_id << " is " << sqrt(norm));
       
     }
   }
-
-
-
 }
 
-uint32_t Slam::concatenate(mobots_msgs::ID const &id)
+uint32_t Slam::merge(mobots_msgs::ID const &id)
 {
   return ((uint32_t) id.mobot_id) << 16 | id.image_id;
+}
+
+mobots_msgs::ID Slam::split(uint32_t id)
+{
+  mobots_msgs::ID result;
+  result.session_id = -1;
+  result.mobot_id = id >> 16;
+  result.image_id = (uint16_t) id;
+  return result;
 }
 
 /*
