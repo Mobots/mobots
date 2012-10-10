@@ -93,11 +93,11 @@ void checkResult(){
   Mat outImg1 = result(Rect(0, 0, gimage1.cols, gimage1.rows));
   Mat outImg21 = result2(Rect(0, 0, gimage1.cols, gimage1.rows));
 
-  warpAffine(gimage2, result, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  warpAffine(gimage2, result, affine3, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
   gimage1.copyTo(outImg1);
   
   gimage1.copyTo(outImg21);
-  warpAffine(gimage2, result2, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  warpAffine(gimage2, result2, affine3, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
   
   imshow("result", result);
   imshow("result2", result2);
