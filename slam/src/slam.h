@@ -6,6 +6,19 @@
 #include <treeoptimizer2.hh>
 #include <feature_detector/FeaturesMatcher.h>
 
+struct classcomp {
+  bool operator() (const mobots_msgs::ID& lhs, const mobots_msgs::ID& rhs) const
+  {
+    if (lhs.session_id != rhs.session_id)
+      return lhs.session_id < rhs.session_id;
+    
+    if (lhs.mobot_id != rhs.mobot_id)
+      return lhs.mobot_id < rhs.mobot_id;
+    
+    return lhs.image_id < rhs.image_id;
+  }
+};
+
 /**
  * \class Slam
  * \brief ROS-Interface zum SLAM-System
@@ -33,19 +46,21 @@ private:
     ros::Publisher publisher_;
 
     AISNavigation::TreeOptimizer2 pose_graph_;
+
     std::map<uint32_t, mobots_msgs::FeatureSet> feature_sets_;
     CpuFeaturesMatcher features_matcher_;
 
     static const uint MOBOT_COUNT = 3;
-    int last_id_[MOBOT_COUNT];
-    int current_id_[MOBOT_COUNT];
+    uint32_t last_id_[MOBOT_COUNT];
+    uint32_t current_id_[MOBOT_COUNT];
 
     void callback1(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg);
     void callback2(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg);
     void callback3(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg);
     void callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg, uint mobot_id);
 
-    uint32_t concatenate(mobots_msgs::ID const &id);
+    uint32_t merge(mobots_msgs::ID const &id);
+    mobots_msgs::ID split(uint32_t id);
 };
 
 #endif
