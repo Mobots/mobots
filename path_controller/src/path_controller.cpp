@@ -1,4 +1,5 @@
 #include "path_controller.h"
+#include "../../util/util.h"
 
 int main(int argc, char** argv)
 {
@@ -9,6 +10,8 @@ PathController weg(0);
 PathController::PathController(int mobot_ID):mobotID(mobot_ID) 			//Konstruktor Weg
 {
   nh = new ros::NodeHandle;
+  if(!util::parseNamespace(nh->getNamespace(), mobotID))
+    ROS_ERROR("%s mobotID cannot be parsed from namespace: %s", "path_controller", nh->getNamespace().c_str());
   PathController::startWeg();
 }
 
@@ -20,9 +23,9 @@ PathController::~PathController()				//Destruktor
 void PathController::startWeg()
 {
   ROS_INFO("Mobot %d: Weg angeben", mobotID);
-  nextPose_sub = nh->subscribe("waypoint_prioritized", 30, &path_controller::poseCallback, this);
-  nextStampedPose_sub = nh->subscribe("waypoint", 2, &path_controller::poseStampedCallback, this);
-  mousePose_sub = nh->subscribe("mouse", 100, &path_controller::mouseCallback, this);
+  nextPose_sub = nh->subscribe("waypoint_prioritized", 30, &PathController::poseCallback, this);
+  nextStampedPose_sub = nh->subscribe("waypoint", 2, &PathController::poseStampedCallback, this);
+  mousePose_sub = nh->subscribe("mouse", 100, &PathController::mouseCallback, this);
   pose2D_pub = nh->advertise<geometry_msgs::Pose2D>("globalPose", 5);
   sollV_pub = nh->advertise<geometry_msgs::Pose2D>("velocity", 2);
 

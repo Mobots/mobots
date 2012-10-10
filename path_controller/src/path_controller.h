@@ -56,7 +56,7 @@ public:
     void mouseCallback(const geometry_msgs::Pose2D &mouse_data);
 
   // TODO potentielles Laufzeitproblem: TORO-Laufzeit länger als ein "Shutter"==> getdelta bezieht sich auf ein falsches Bild
-
+  
     //Service
     bool changeGlobalPose(path_controller::ChangeGlobalPose::Request &req, path_controller::ChangeGlobalPose::Response &res);
 
