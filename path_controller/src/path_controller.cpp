@@ -1,5 +1,5 @@
 #include "path_controller.h"
-#include "../../util/util.h"
+#include "util/util.h"
 
 int main(int argc, char** argv)
 {

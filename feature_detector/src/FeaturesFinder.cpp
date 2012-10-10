@@ -7,19 +7,43 @@
 using namespace std;
 using namespace cv;
 
-/*void assertGpu(){
-  int cudaCnt = cv::gpu::getCudaEnabledDeviceCount();
-  if(cudaCnt < 1){
-    stringstream ss;
-    ss << "[GPU] cuda card count " << cudaCnt;
-    cerr << ss.str() << endl;
-    exit(1);
-  }
-}*/
-
 Ptr<FeaturesFinder> FeaturesFinder::getDefault(){
-  return new OrbFeaturesFinder;
+  return new OrbFeaturesFinder(800, 1);
   //return new SurfFeaturesFinder;
+}
+
+OrbFeaturesFinder::OrbFeaturesFinder(int nfeatures, int sliceCount)
+  :sliceCount(sliceCount){
+    orb = new cv::ORB(nfeatures);
+	 extractor = cv::DescriptorExtractor::create("ORB");
+  }
+
+void OrbFeaturesFinder::computeFeatureSet(const Mat& image, FeatureSet& features)const{
+  moduleStarted("cpu features finder");
+  for(int i = 0; i < sliceCount; i++){
+	 vector<KeyPoint> tmp;
+	 Rect roiRect(i*image.cols/sliceCount, 0, image.cols/sliceCount, image.rows);
+	 Mat roi(image, roiRect);
+	 orb->detect(roi, tmp);
+	 if(i > 0){
+		for(int i2 = tmp.size()-1; i2 >= 0; i2--){
+		  tmp[i2].pt.x += i*image.cols/sliceCount;
+		}
+	 }
+	 features.keyPoints.insert(features.keyPoints.end(), tmp.begin(), tmp.end());
+	 cout << "size " << features.keyPoints.size() << endl;
+  }
+  extractor->compute(image, features.keyPoints, features.descriptors);
+
+  moduleEnded();
+}
+
+
+/*
+ * == unused classes: GPU methods, SURF, FAST, etc. ==
+ */
+/*GpuFeaturesFinder::GpuFeaturesFinder(){
+  assertGpu();
 }
 
 void SurfFeaturesFinder::computeFeatureSet(const Mat& image, FeatureSet& features)const{
@@ -28,23 +52,10 @@ void SurfFeaturesFinder::computeFeatureSet(const Mat& image, FeatureSet& feature
   moduleEnded();
 }
 
-void OrbFeaturesFinder::computeFeatureSet(const Mat& image, FeatureSet& features)const{
-  moduleStarted("cpu features finder");
-  (*orb)(image, Mat(), features.keyPoints, features.descriptors, false);
-  /*orb->operator()(image, Mat(), features.keyPoints);
-  FREAK freak;
-  freak.compute(image, features.keyPoints, features.descriptors);*/
-  moduleEnded();
-}
-
 void FastFeaturesFinder::computeFeatureSet(const Mat& image, FeatureSet& features)const{
   moduleStarted("cpu features finder");
   FAST(image, features.keyPoints, threshold, nonmaxSuppression);
   moduleEnded();
-}
-
-/*GpuFeaturesFinder::GpuFeaturesFinder(){
-  assertGpu();
 }
 
 void SurfGpuFeaturesFinder::findFeatures(const cv::Mat& image, ImageFeatures& features)const{
@@ -77,7 +88,12 @@ SurfFeaturesFinder(double hessianThreshold = 400, int octaves = 3, int octaveLay
       new SurfDescriptorExtractor(nOctaves, nOctaveLayers, extended));
 }*/
 
-
-
-
-
+/*void assertGpu(){
+  int cudaCnt = cv::gpu::getCudaEnabledDeviceCount();
+  if(cudaCnt < 1){
+    stringstream ss;
+    ss << "[GPU] cuda card count " << cudaCnt;
+    cerr << ss.str() << endl;
+    exit(1);
+  }
+}*/

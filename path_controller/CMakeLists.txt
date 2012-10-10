@@ -25,6 +25,8 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)
+EXEC_PROGRAM("rosstack find mobots" OUTPUT_VARIABLE MOBOT_PATH)
+include_directories(${MOBOT_PATH}/util/include/)
 rosbuild_add_executable(path_controller src/path_controller.cpp)
 rosbuild_add_executable(test src/test.cpp)
 #target_link_libraries(example ${PROJECT_NAME})

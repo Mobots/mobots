@@ -12,17 +12,13 @@ typedef struct{
 } Delta;
 
 class FeaturesMatcher{
-protected:
-  float ratioThreshold;
 public:
-  FeaturesMatcher(){
-    this->ratioThreshold = 1; //0.6 seems to be good..
-  }
-  void setRatioThreshold(float ratioThreshold){
-    this->ratioThreshold = ratioThreshold;
-  }
+  FeaturesMatcher(){}
   virtual ~FeaturesMatcher(){}
   virtual bool match(const FeatureSet& img1, const FeatureSet& img2, Delta& delta) const = 0;
+  /**
+  * Use this method to retrieve the currently best matcher
+  */
   static cv::Ptr<FeaturesMatcher> getDefault();
 };
 
