@@ -1,4 +1,5 @@
 #include "shutter.h"
+#include "../../util/util.h"
 
 int main(int argc, char** argv){
 ros::init(argc, argv, "shutter");
@@ -8,6 +9,8 @@ Shutter shutter(0, 3000.06805, 2500.80104);
 Shutter::Shutter(double l, double b):g(l,b) //Instanzierung von Geometry
 {
     Shutter::startShutter(); 
+    if(!util::parseNamespace(nh.getNamespace(), mobotID))
+      ROS_ERROR("%s mobotID cannot be parsed from namespace: %s", TAG, nh.getNamespace().c_str());
 }
 
 Shutter::~Shutter() {
@@ -24,9 +27,8 @@ void Shutter::startShutter()
     ros::ServiceServer service = nh.advertiseService("getDelta", &Shutter::getDelta, this);
     
     ros::param::param<double>("overlap", overlap, 0.3);
-	 if(!ros::param::get("sessionID", sessionID))
-		ROS_ERROR("%s sessionID or gtfo, sessionID set to 0", TAG);
-	 mobotID = 0; //TODO
+    if(!ros::param::get("sessionID", sessionID))
+      ROS_ERROR("%s sessionID or gtfo, sessionID set to 0", TAG);
     dX = 0;
     dY = 0;
     dTheta = 0;
