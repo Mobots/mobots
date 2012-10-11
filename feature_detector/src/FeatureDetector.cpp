@@ -22,7 +22,7 @@ void processImage(const mobots_msgs::ImageWithPoseAndID& image){
   cv_bridge::CvImagePtr imagePtr = cv_bridge::toCvCopy(image.image);
   detector->computeFeatureSet(imagePtr->image, features);
   mobots_msgs::FeatureSetWithPoseAndID result;
-  MessageBridge::copyToRosMessage(features, result);
+  MessageBridge::copyToRosMessage(features, result.features);
   result.pose = image.pose;
   result.id = image.id;
   publisher.publish(result);
