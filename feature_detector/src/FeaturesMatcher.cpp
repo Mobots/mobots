@@ -101,6 +101,8 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, g
   vector<Point2f> points1Refined;
   vector<Point2f> points2Refined;
   
+  cout << img1.keyPoints.size() << " " << img1.descriptors.size << cout << img2.keyPoints.size() << " " << img2.descriptors.size << endl;
+  
   
   matcher->match(img1.descriptors, img2.descriptors, matches1);
   matcher->match(img2.descriptors, img1.descriptors, matches2);
@@ -248,7 +250,7 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, g
   delta.theta = theta;
   delta.x = H.at<double>(0,2);
   delta.y = H.at<double>(1,2);*/
-  /*Mat img_matches;
+  Mat img_matches;
   drawing::drawMatches2(gimage1, points1, gimage2, points2,
                img_matches, Scalar::all(-1), Scalar::all(-1),
                DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);
