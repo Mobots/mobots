@@ -2,13 +2,14 @@
 #include "std_msgs/String.h"
 #include <boost/foreach.hpp>
 #include <math.h>
+#include <feature_detector/MessageBridge.h>
 
  /* Erlaube ich mir, weil darunter sowieso noch der Namespace TreeOptimizer2 liegt. */
 using namespace AISNavigation;
 
 Slam::Slam() :
   node_handle_(),
-  subscriber1_(node_handle_.subscribe("/featureset_pose_id", 1000, &Slam::callback1, this)),
+  subscriber1_(node_handle_.subscribe("/mobot1/featureset_pose_id", 1000, &Slam::callback1, this)),
   subscriber2_(node_handle_.subscribe("/mobot2/featureset_pose_id", 1000, &Slam::callback2, this)),
   subscriber3_(node_handle_.subscribe("/mobot3/featureset_pose_id", 1000, &Slam::callback3, this)),
   //publisher_(node_handle_.advertise<mobots_msgs::AbsoluteImagePoses>("AbsoluteImagePoses", 1000)),
@@ -57,7 +58,10 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
   current_id_[bot] = merge(msg->id);
   
   /* FeatureSet in Map unter Key (concatenated) ID abspeichern */
-  feature_sets_[current_id_[bot]] = msg->features;
+  FeatureSet bla;
+  MessageBridge::copyToCvStruct( msg->features, bla );
+  feature_sets_[current_id_[bot]] = bla;
+  ROS_INFO_STREAM(feature_sets_[current_id_[bot]].keyPoints.size() << " " << feature_sets_[current_id_[bot]].descriptors.rows);
 
   /* Neue current_pose auf Basis von last_pose und DeltaPose schätzen */
   TreeOptimizer2::Pose last_pose = pose_graph_.vertex(last_id_[bot])->pose;
@@ -92,12 +96,31 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
     BOOST_FOREACH(TreeOptimizer2::VertexMap::value_type &w, pose_graph_.vertices)
     {
       if (&v == &w)
-        continue;
+        break;
       TreeOptimizer2::Pose &pose_v = v.second->pose;
       TreeOptimizer2::Pose &pose_w = w.second->pose;
-      double norm = TreeOptimizer2::Translation(pose_w.x() - pose_v.x(), pose_w.y() - pose_v.y()).norm2();
-      ROS_INFO_STREAM("Distance between image " << split(v.second->id).image_id << " and " << split(w.second->id).image_id << " is " << sqrt(norm));
-      
+      double norm = sqrt( TreeOptimizer2::Translation(pose_w.x() - pose_v.x(), pose_w.y() - pose_v.y()).norm2() );
+      ROS_INFO_STREAM("Distance between image " << split(v.second->id).image_id << " and " << split(w.second->id).image_id << " is " << norm);
+      if (norm < 480)
+      {
+        geometry_msgs::Pose2D delta;
+        ROS_INFO_STREAM(feature_sets_[v.first].keyPoints.size() << "v" << feature_sets_[v.first].descriptors.rows);
+        ROS_INFO_STREAM(feature_sets_[w.first].keyPoints.size() << "w" << feature_sets_[w.first].descriptors.rows);
+        if ( features_matcher_.match(feature_sets_[v.first], feature_sets_[w.first], delta) )
+        {
+          /* Matching-Ergebnis als Edge zwischen den zwei Vertices einfügen */
+          TreeOptimizer2::Transformation t2 = convert(delta);
+          
+          ROS_INFO_STREAM(t2.translation().x() << " " << t2.translation().y() << " " << t2.rotation());
+
+          TreeOptimizer2::InformationMatrix m2;
+          m.values[0][0] = 1; m.values[0][1] = 0; m.values[0][2] = 0;
+          m.values[1][0] = 0; m.values[1][1] = 1; m.values[1][2] = 0;
+          m.values[2][0] = 0; m.values[2][1] = 0; m.values[2][2] = 1;
+
+          pose_graph_.addEdge(pose_graph_.vertex(last_id_[bot]), pose_graph_.vertex(current_id_[bot]), t2, m2);
+        }
+      }
     }
   }
 }
@@ -114,6 +137,11 @@ mobots_msgs::ID Slam::split(uint32_t id)
   result.mobot_id = id >> 16;
   result.image_id = (uint16_t) id;
   return result;
+}
+
+TreeOptimizer2::Transformation Slam::convert(geometry_msgs::Pose2D pose)
+{
+  return TreeOptimizer2::Transformation(pose.x, pose.y, pose.theta);
 }
 
 /*
