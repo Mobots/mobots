@@ -4,7 +4,7 @@
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/video/video.hpp>
 
-
+#include <geometry_msgs/Pose2D.h>
 
 #include "draw.h"
 #include "profile.h"
@@ -92,7 +92,7 @@ static void planeTest(const vector<Point2f>& points1, const vector<Point2f>& poi
 }
 
 Mat affine3;
-bool CpuFeaturesMatcher::match(const mobots_msgs::FeatureSet& img1, const mobots_msgs::FeatureSet& img2, geometry_msgs::Pose2D& delta) const{  
+bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, geometry_msgs::Pose2D& delta) const{  
   moduleStarted("cpu matcher + get transform");
   vector<DMatch> matches1;
   vector<DMatch> matches2;

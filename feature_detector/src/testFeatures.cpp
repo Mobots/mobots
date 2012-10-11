@@ -67,11 +67,10 @@ inline double toDegree(double rad){
   return rad * 180 / M_PI;
 }
 
-extern Delta delta2;
 extern Mat affine3;
 
 void checkResult(){
-  Delta delta;
+  geometry_msgs::Pose2D delta;
   Ptr<FeaturesMatcher> matcher = FeaturesMatcher::getDefault();
   bool matchResult = matcher->match(features1, features2, delta);
   if(!matchResult){
@@ -156,7 +155,7 @@ void featuresReceived(const mobots_msgs::FeatureSetWithPoseAndID& featuresMsg){
   }else{
     features = &features2;
   }
-  MessageBridge::copyToCvStruct(featuresMsg, *features); 
+  MessageBridge::copyToCvStruct(featuresMsg.features, *features); 
   if(pos == 2){
     cout << "meh" << endl;
     checkResult();
