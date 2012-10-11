@@ -4,8 +4,11 @@
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/video/video.hpp>
 
+
+
 #include "draw.h"
 #include "profile.h"
+#include "mobots_msgs/FeatureSet.h"
 #include "feature_detector/FeaturesMatcher.h"
 
 using namespace std;
@@ -88,27 +91,8 @@ static void planeTest(const vector<Point2f>& points1, const vector<Point2f>& poi
   }
 }
 
-/*
- * from opencv cookbook
- */
-void ratioTest(vector<vector<DMatch> >& matches, float ratioThreshold){
-  int removed = 0;
-  for(vector<vector<DMatch> >::iterator matchIterator = matches.begin(); matchIterator != matches.end(); matchIterator++){
-    if(matchIterator->size() < 2)
-      matchIterator->clear();
-    else{
-      if((*matchIterator)[0].distance / (*matchIterator)[1].distance > ratioThreshold){
-	matchIterator->clear();
-	removed++;
-      }
-    }
-  }
-  cout << "removed: " << removed << endl;
-}
-
-Delta delta2;
 Mat affine3;
-bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, Delta& delta) const{  
+bool CpuFeaturesMatcher::match(const mobots_msgs::FeatureSet& img1, const mobots_msgs::FeatureSet& img2, geometry_msgs::Pose2D& delta) const{  
   moduleStarted("cpu matcher + get transform");
   vector<DMatch> matches1;
   vector<DMatch> matches2;
@@ -264,7 +248,7 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, D
   delta.theta = theta;
   delta.x = H.at<double>(0,2);
   delta.y = H.at<double>(1,2);*/
-  Mat img_matches;
+  /*Mat img_matches;
   drawing::drawMatches2(gimage1, points1, gimage2, points2,
                img_matches, Scalar::all(-1), Scalar::all(-1),
                DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);
@@ -279,3 +263,21 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, D
 
 /*
  * == unused old == */
+
+/*
+ * from opencv cookbook
+ *//*
+void ratioTest(vector<vector<DMatch> >& matches, float ratioThreshold){
+  int removed = 0;
+  for(vector<vector<DMatch> >::iterator matchIterator = matches.begin(); matchIterator != matches.end(); matchIterator++){
+    if(matchIterator->size() < 2)
+      matchIterator->clear();
+    else{
+      if((*matchIterator)[0].distance / (*matchIterator)[1].distance > ratioThreshold){
+	matchIterator->clear();
+	removed++;
+      }
+    }
+  }
+  cout << "removed: " << removed << endl;
+}*/
