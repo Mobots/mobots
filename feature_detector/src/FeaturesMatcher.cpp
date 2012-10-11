@@ -18,7 +18,7 @@ Mat H;
 const char CpuFeaturesMatcher::SURF_DEFAULT[] = "FlannBased";
 const char CpuFeaturesMatcher::ORB_DEFAULT[] = "BruteForce-Hamming";
 static const double LENGTHDIFF_THRESHOLD = 1.2;    //if abs(distance(a) - distance(b)) > => outlier
-static const double MAX_ALLOWED_MATCH_DISTANCE = 600;
+static const double MAX_ALLOWED_MATCH_DISTANCE = 60;
 static const char* TAG = "[FeaturesMatcher] ";
 
 CpuFeaturesMatcher::CpuFeaturesMatcher(const string& type){
@@ -156,19 +156,19 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, D
       points2Refinedx2.push_back(points2Refined[i]);
     }
   }
-  Mat d = estimateRigidTransform(points2Refinedx2, points1Refinedx2, false);
+  Mat d = estimateRigidTransform(points2Refined, points1Refined, false);
   cout << "size after homo " << points1Refinedx2.size() << endl;
   affine3 = d;
   /*cout << "new d " << endl << d << endl;
   affine3 = d;
   d = estimateRigidTransform(points2Refined, a, true);
   cout << "new d with true" << endl << d << endl;*/
-  if(d.at<double>(0,0) > 2*M_PI
-	 || d.at<double>(0,1) > 2*M_PI
-	 || d.at<double>(1,0) > 2*M_PI
-	 || d.at<double>(1,1) > 2*M_PI){
+  if(abs(d.at<double>(0,0)) > 2
+	 || abs(d.at<double>(0,1)) > 2
+	 || abs(d.at<double>(1,0)) > 2
+	 || abs(d.at<double>(1,1)) > 2){
 		cerr << "faulty matrix detected!! : " << endl << d << endl;
-		return false;
+		//return false;
 	 }
   delta.theta = -atan2(-d.at<double>(0,1), d.at<double>(0,0));
   delta.x = d.at<double>(0,2);
@@ -264,12 +264,12 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, D
   delta.theta = theta;
   delta.x = H.at<double>(0,2);
   delta.y = H.at<double>(1,2);*/
-  /*Mat img_matches;
-  drawing::drawMatches(gimage1, img1.keyPoints, gimage2, img2.keyPoints,
-               good_matches, img_matches, Scalar::all(-1), Scalar::all(-1),
-               vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);
+  Mat img_matches;
+  drawing::drawMatches2(gimage1, points1, gimage2, points2,
+               img_matches, Scalar::all(-1), Scalar::all(-1),
+               DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);
   imshow("good Matches", img_matches);
-  Mat matches3;
+  /*Mat matches3;
   drawing::drawMatches(gimage1, img1.keyPoints, gimage2, img2.keyPoints,
                good_matches, matches3, Scalar::all(-1), Scalar::all(-1),
                mask2, DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);
