@@ -24,7 +24,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #common commands for building c++ executables and libraries
 #include_directories(include/)
 rosbuild_add_library(messageBridge src/MessageBridge.cpp)
-rosbuild_add_library(featuresMatcher src/FeaturesMatcher.cpp)
+rosbuild_add_library(featuresMatcher src/FeaturesMatcher.cpp src/draw.cpp)
 #rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 rosbuild_add_executable(feature_detector src/FeatureDetector.cpp src/FeaturesFinder.cpp)
