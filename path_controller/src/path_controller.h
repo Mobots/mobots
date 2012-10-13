@@ -2,10 +2,11 @@
 #include <iostream>
 #include <list>
 #include <ros/ros.h>
+#include <geometry_msgs/PoseStamped.h>
 #include <mobots_msgs/Pose2DPrio.h>
 #include <geometry_msgs/Pose2D.h>
 #include "shutter/delta.h"
-#include "weg/ChangeGlobalPose.h"
+#include "path_controller/ChangeGlobalPose.h"
 #include <math.h>
 #define _USE_MATH_DEFINES
 const double vFac = 0.00018025;   //(Maximalgeschwindigkeit(0,18025 eines Rades/1000 in Meter! (wg. Promille)
@@ -42,30 +43,35 @@ typedef enum{STIFF,FAST} way;
 
 
 
-class Weg {
+class PathController{
 
 public:
-    Weg(int mobot_ID);
-    ~Weg();
+    PathController(int mobot_ID);
+    ~PathController();
 
 
     //Subscriber
     void poseCallback(const mobots_msgs::Pose2DPrio &next_pose);
+    void poseStampedCallback(const geometry_msgs::PoseStamped& next_pose);
     void mouseCallback(const geometry_msgs::Pose2D &mouse_data);
 
   // TODO potentielles Laufzeitproblem: TORO-Laufzeit länger als ein "Shutter"==> getdelta bezieht sich auf ein falsches Bild
-
+  
     //Service
-    bool changeGlobalPose(weg::ChangeGlobalPose::Request &req, weg::ChangeGlobalPose::Response &res);
+    bool changeGlobalPose(path_controller::ChangeGlobalPose::Request &req, path_controller::ChangeGlobalPose::Response &res);
 
     //Publisher
     void publishGlobalPose(const geometry_msgs::Pose2D &pose2D);
     void publishSollV(const geometry_msgs::Pose2D &sollV_Pose2D);
 
 private:
-
-    ros::NodeHandle nh;
+  /* Auf dem Stack allokieren geht nicht, weil dann wird es vor ros::init erzeugt,
+	* Achtung: wird das letzte NodeHandle deallokiert, wird der Node heruntergefahren, 
+	* die Benutzung von publisher/subscriber führt dann zu nicht nachvollziehbaren SegFaults. -_- */
+    ros::NodeHandle* nh;
+	 
     ros::Subscriber nextPose_sub;
+    ros::Subscriber nextStampedPose_sub;
     ros::Subscriber mousePose_sub;
 
     ros::Publisher pose2D_pub;
@@ -82,8 +88,7 @@ private:
       way wayType;
       double sBrems,bParam,vParam,dParam,rootParam, rad, vMax, minS, minDegree;
 
-      int argc, mobotID;
-      char argv;
+      int mobotID;
 
       double regelFkt(double e);
       double regelFktDreh(double e);

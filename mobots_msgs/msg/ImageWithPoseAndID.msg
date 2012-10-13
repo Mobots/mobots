@@ -2,4 +2,4 @@
 
 sensor_msgs/Image image
 geometry_msgs/Pose2D pose
-ID id
+mobots_msgs/ID id

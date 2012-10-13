@@ -4,10 +4,11 @@
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/video/video.hpp>
 
+#include <geometry_msgs/Pose2D.h>
+
 #include "draw.h"
-//#include "ror3.h"
-//#include "ror.h"
 #include "profile.h"
+#include "mobots_msgs/FeatureSet.h"
 #include "feature_detector/FeaturesMatcher.h"
 
 using namespace std;
@@ -19,7 +20,9 @@ Mat H;
 
 const char CpuFeaturesMatcher::SURF_DEFAULT[] = "FlannBased";
 const char CpuFeaturesMatcher::ORB_DEFAULT[] = "BruteForce-Hamming";
-static const int LENGTHDIFF_THRESHOLD = 2;    //if abs(distance(a) - distance(b)) > => outlier
+static const double LENGTHDIFF_THRESHOLD = 1.2;    //if abs(distance(a) - distance(b)) > => outlier
+static const double MAX_ALLOWED_MATCH_DISTANCE = 60;
+static const char* TAG = "[FeaturesMatcher] ";
 
 CpuFeaturesMatcher::CpuFeaturesMatcher(const string& type){
   matcher = DescriptorMatcher::create(type);
@@ -32,43 +35,37 @@ inline double toDegree(double rad){
   return rad * 180 / 3.14159265;
 }
 
-/*
- * from opencv cookbook
- */
-static void symmetryTest(const vector<vector<DMatch> >& matches1, const vector<vector<DMatch> >& matches2, 
-		  vector<DMatch>& symMatches){
-  for(vector<vector<DMatch> >::const_iterator matchIterator1 = matches1.begin(); 
-      matchIterator1 != matches1.end(); matchIterator1++){
-    if(matchIterator1->size() == 0)
-      continue;
-    for(vector<vector<DMatch> >::const_iterator matchIterator2 = matches2.begin();
-	matchIterator2 != matches2.end(); matchIterator2++){
-      if(matchIterator2->size() == 0)
-	continue;
-      if((*matchIterator1)[0].queryIdx ==
-	(*matchIterator2)[0].trainIdx &&
-	(*matchIterator2)[0].queryIdx ==
-	(*matchIterator1)[0].trainIdx){
-	symMatches.push_back(
-		      DMatch((*matchIterator1)[0].queryIdx,
-			    (*matchIterator1)[0].trainIdx,
-			    (*matchIterator1)[0].distance)
-			    );
-	break;
-      }
-    }
-  }
-}
-
 static inline double euclideanDistance(const Point2f& p1, const Point2f& p2){
   double yDiff = double(p2.y)-double(p1.y);
   double xDiff = double(p2.x)-double(p1.x);
   return sqrt(xDiff*xDiff + yDiff*yDiff);
 }
 
-static void planeTest(const vector<Point2f>& points1, const vector<Point2f>& points2, vector<Point2f>& out1, vector<Point2f>& out2){
+/**
+ * derived from opencv cookbook
+ */
+static void symmetryTest(const vector<DMatch>& matches1, const vector<DMatch>& matches2, 
+		  const vector<KeyPoint>& kpoints1, const vector<KeyPoint>& kpoints2,
+		  vector<Point2f>& points1, vector<Point2f>& points2){
+  for(int i1 = 0; i1 < matches1.size(); i1++){
+    for(int i2 = 0; i2 < matches2.size(); i2++){
+		if(matches1[i1].queryIdx ==
+		  matches2[i2].trainIdx &&
+		  matches2[i2].queryIdx ==
+		  matches1[i1].trainIdx &&
+		  matches1[i1].distance < MAX_ALLOWED_MATCH_DISTANCE){
+			 //cout << matches1[i1].distance << " | " <<  matches2[i2].distance << endl;
+			 points1.push_back(kpoints1[matches1[i1].queryIdx].pt);
+			 points2.push_back(kpoints2[matches1[i1].trainIdx].pt);
+		  break;
+      }
+    }
+  }
+}
+
+static void planeTest(const vector<Point2f>& points1, const vector<Point2f>& points2, 
+							 vector<Point2f>& out1, vector<Point2f>& out2, int threshold){
   const int p1Size = points1.size();
-  int min = 4;
   for(int i1 = 0; i1 < p1Size; i1++){
     int curr = 0;
     for(int i2 = 0; i2 < p1Size; i2++){
@@ -77,85 +74,59 @@ static void planeTest(const vector<Point2f>& points1, const vector<Point2f>& poi
       Point2f p21 = points2[i1];
       Point2f p22 = points2[i2];
       if(abs(
-	euclideanDistance(p11, p12) 
-	- euclideanDistance(p21, p22)
-	    ) > LENGTHDIFF_THRESHOLD){
-	  //cout << "sorted out " << i1 << "-" << i2 << endl;
-	continue;
+		  euclideanDistance(p11, p12) 
+		  - euclideanDistance(p21, p22)
+				) > LENGTHDIFF_THRESHOLD){
+		  continue;
       }
+      if(i2 == i1)
+		  continue;
       curr++;
-      if(curr >= min){
-	out1.push_back(p11);
-	out2.push_back(p21);
-	break;
+      if(curr >= threshold){
+		  out1.push_back(p11);
+		  out2.push_back(p21);
+		  break;
       }
     }
   }
 }
 
-/*
- * from opencv cookbook
- */
-void ratioTest(vector<vector<DMatch> >& matches, float ratioThreshold){
-  int removed = 0;
-  for(vector<vector<DMatch> >::iterator matchIterator = matches.begin(); matchIterator != matches.end(); matchIterator++){
-    if(matchIterator->size() < 2)
-      matchIterator->clear();
-    else{
-      if((*matchIterator)[0].distance / (*matchIterator)[1].distance > ratioThreshold){
-	matchIterator->clear();
-	removed++;
-      }
-    }
-  }
-  cout << "removed: " << removed << endl;
-}
-
-/*Delta delta2;
-Mat affine3;*/
-bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, Delta& delta) const{
-  vector<DMatch> matches;
-  /*moduleStarted("only ror");
-  matcher->match(img1.descriptors, img2.descriptors, matches);
-  vector<Point2f> points11;
-  vector<Point2f> points22;
-  for(int i = 0; i < matches.size(); i++){
-    points11.push_back(img1.keyPoints[matches[i].queryIdx].pt);
-    points22.push_back(img2.keyPoints[matches[i].trainIdx].pt);
-  }
-  rorAlternative(points11, points22, delta2);
-  moduleEnded();*/
-  
+Mat affine3;
+bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, geometry_msgs::Pose2D& delta) const{  
   moduleStarted("cpu matcher + get transform");
-  vector<vector<DMatch> > matches1;
-  vector<vector<DMatch> > matches2;
-  matcher->knnMatch(img1.descriptors, img2.descriptors, matches1, 2);
-  matcher->knnMatch(img2.descriptors, img1.descriptors, matches2, 2);
-  cout << "matches: " << matches1.size() << endl;
-  ratioTest(matches1, ratioThreshold);
-  ratioTest(matches2, ratioThreshold);
-  vector<DMatch> good_matches;
-  symmetryTest(matches1, matches2, good_matches);
-  /*for(int i = 0; i < matches1.size(); i++){
-    if(matches1[i].size() > 0)
-      good_matches.push_back(matches1[i][0]);
-  }*/
-  cout << "symmetric matches: " << good_matches.size() << endl;
-  /*if(good_matches.size() < 5){
-    return false;
-  }*/
+  vector<DMatch> matches1;
+  vector<DMatch> matches2;
   vector<Point2f> points1;
   vector<Point2f> points2;
-  for(int i = 0; i < good_matches.size(); i++){
-    points1.push_back(img1.keyPoints[good_matches[i].queryIdx].pt);
-    points2.push_back(img2.keyPoints[good_matches[i].trainIdx].pt);
-  }
-  /*bool ok = rorAlternative(points1, points2, delta);
-  moduleEnded();
-  moduleStarted("new");*/
   vector<Point2f> points1Refined;
   vector<Point2f> points2Refined;
-  planeTest(points1, points2, points1Refined, points2Refined);
+  
+  cout << img1.keyPoints.size() << " " << img1.descriptors.size << cout << img2.keyPoints.size() << " " << img2.descriptors.size << endl;
+  
+  
+  matcher->match(img1.descriptors, img2.descriptors, matches1);
+  matcher->match(img2.descriptors, img1.descriptors, matches2);
+  cout << "matches: " << matches1.size() << endl;
+  symmetryTest(matches1, matches2, img1.keyPoints, img2.keyPoints, points1, points2);
+  cout << "symmetric matches: " << points1.size() << endl;
+  
+  int threshold = 4;
+  int lastSize = -1;
+  for(int i = 0; true; i++){
+	 cout << "round " << i << "size " << points1.size() << endl;
+	 planeTest(points1, points2, points1Refined, points2Refined, threshold);
+	 int size = points1.size();
+	 if(size == lastSize)
+		break;
+	 if(size < 3)
+		return false;
+	 lastSize = size;
+	 points1 = points1Refined;
+	 points2 = points2Refined;
+	 points1Refined.clear();
+	 points2Refined.clear();
+  }
+
   /*Mat m = estimateRigidTransform(points2Refined, a, false);
   cout << "mega " << endl << m << endl;
   double d1 = atan2(-m.at<double>(0,1), m.at<double>(0,0));
@@ -171,12 +142,21 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, D
       points2Refinedx2.push_back(points2Refined[i]);
     }
   }
-  Mat d = estimateRigidTransform(points2Refinedx2, points1Refinedx2, false);
+  Mat d = estimateRigidTransform(points2Refined, points1Refined, false);
+  cout << "size after homo " << points1Refinedx2.size() << endl;
+  affine3 = d;
   /*cout << "new d " << endl << d << endl;
   affine3 = d;
   d = estimateRigidTransform(points2Refined, a, true);
   cout << "new d with true" << endl << d << endl;*/
-  delta.theta = atan2(-d.at<double>(0,1), d.at<double>(0,0));
+  if(abs(d.at<double>(0,0)) > 2
+	 || abs(d.at<double>(0,1)) > 2
+	 || abs(d.at<double>(1,0)) > 2
+	 || abs(d.at<double>(1,1)) > 2){
+		cerr << "faulty matrix detected!! : " << endl << d << endl;
+		//return false;
+	 }
+  delta.theta = -atan2(-d.at<double>(0,1), d.at<double>(0,0));
   delta.x = d.at<double>(0,2);
   delta.y = d.at<double>(1,2);
   moduleEnded();
@@ -270,15 +250,36 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, D
   delta.theta = theta;
   delta.x = H.at<double>(0,2);
   delta.y = H.at<double>(1,2);*/
-  /*Mat img_matches;
-  drawing::drawMatches(gimage1, img1.keyPoints, gimage2, img2.keyPoints,
-               good_matches, img_matches, Scalar::all(-1), Scalar::all(-1),
-               vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);
+  Mat img_matches;
+  drawing::drawMatches2(gimage1, points1, gimage2, points2,
+               img_matches, Scalar::all(-1), Scalar::all(-1),
+               DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);
   imshow("good Matches", img_matches);
-  Mat matches3;
+  /*Mat matches3;
   drawing::drawMatches(gimage1, img1.keyPoints, gimage2, img2.keyPoints,
                good_matches, matches3, Scalar::all(-1), Scalar::all(-1),
                mask2, DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);
   imshow("real ror Matches", matches3);*/
   return true;
 }
+
+/*
+ * == unused old == */
+
+/*
+ * from opencv cookbook
+ *//*
+void ratioTest(vector<vector<DMatch> >& matches, float ratioThreshold){
+  int removed = 0;
+  for(vector<vector<DMatch> >::iterator matchIterator = matches.begin(); matchIterator != matches.end(); matchIterator++){
+    if(matchIterator->size() < 2)
+      matchIterator->clear();
+    else{
+      if((*matchIterator)[0].distance / (*matchIterator)[1].distance > ratioThreshold){
+	matchIterator->clear();
+	removed++;
+      }
+    }
+  }
+  cout << "removed: " << removed << endl;
+}*/
