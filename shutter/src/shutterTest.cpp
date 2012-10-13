@@ -43,12 +43,12 @@ void* shutterThread(void* data){
     cin.ignore(std::numeric_limits<streamsize>::max(),'\n');
     FILE* fp;
     char result [1000];
-    fp = popen("rospack find feature_detector","r");
+    fp = popen("rospack find slam","r");
     fread(result, 1, sizeof(result), fp);
     pclose(fp);
     stringstream ss;
     result[strlen(result)-1] = '\0';
-    ss << result << "/testImages/image00" << imageID << ".png";
+    ss << result << "/pics/" << imageID << ".png";
     cv::Mat img = cv::imread(string(), 0);
     copyMatToImageMSg(img, msg);
     msg.pose.x = 40 + imageID*rand()/RAND_MAX*30;

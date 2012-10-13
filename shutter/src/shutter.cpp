@@ -1,16 +1,21 @@
 #include "shutter.h"
 #include "util/util.h"
 
+static const char TAG[] = "[shutter] ";
+
 int main(int argc, char** argv){
 ros::init(argc, argv, "shutter");
+ros::NodeHandle nh;
+int mobotID = 0;
+if(!util::parseNamespace(nh.getNamespace(), mobotID))
+  ROS_ERROR("%s mobotID cannot be parsed from namespace: %s", TAG, nh.getNamespace().c_str());
+
 //Shutter shutter(0,1.06805,0.80104); //l/b für Simulator: 1.06805,0.80104
-Shutter shutter(0, 3000.06805, 2500.80104);
+Shutter shutter(mobotID, 3000.06805, 2500.80104);
 }
-Shutter::Shutter(double l, double b):g(l,b) //Instanzierung von Geometry
+Shutter::Shutter(int mobotID, double l, double b): mobotID(mobotID), g(l,b) //Instanzierung von Geometry
 {
     Shutter::startShutter(); 
-    if(!util::parseNamespace(nh.getNamespace(), mobotID))
-      ROS_ERROR("%s mobotID cannot be parsed from namespace: %s", TAG, nh.getNamespace().c_str());
 }
 
 Shutter::~Shutter() {
@@ -54,9 +59,9 @@ void Shutter::publishMessage(double &x, double &y, double &theta, const sensor_m
     pose.theta = theta;
 
     ipid.pose = pose;
-	 ipid.ID.mobotID = mobotID;
-	 ipid.ID.sessionID = sessionID;
-	 ipid.ID.imageID = imageID;
+	 ipid.id.mobot_id = mobotID;
+	 ipid.id.session_id = sessionID;
+	 ipid.id.image_id = imageID;
     poseImage_pub.publish(ipid);
 	 imageID++;
 }

@@ -12,7 +12,7 @@ class Shutter {
 
 
 public:
-    Shutter(double l, double b);
+    Shutter(int mobotID, double l, double b);
     ~Shutter();
     void imageCallback(const sensor_msgs::Image &mobot_image);
     void mouseCallback(const geometry_msgs::Pose2D &mouse_data);
@@ -22,9 +22,7 @@ public:
     bool getDelta(shutter::delta::Request &req, shutter::delta::Response &res);
     double checkPicture(double x, double y, double theta);
 
-
 private:
-	 const char* TAG = "[shutter] ";
     ros::Subscriber pose_sub;
     ros::Subscriber image_sub;
     ros::Publisher poseImage_pub;
@@ -36,8 +34,6 @@ private:
 
     Geometry g;
     double overlap, dX, dY, dTheta;
-    int argc;
-    char argv;	
     ros::NodeHandle nh;
 
 };
