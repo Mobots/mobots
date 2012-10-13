@@ -5,12 +5,12 @@
 using namespace std;
 using namespace cv;
 
-void MessageBridge::copyToRosMessage(const FeatureSet& in, mobots_msgs::FeatureSetWithDeltaPoseAndID& out){
+void MessageBridge::copyToRosMessage(const FeatureSet& in, mobots_msgs::FeatureSet& out){
   const int N = in.keyPoints.size();
-  out.features.keyPoints.resize(N);
+  out.keyPoints.resize(N);
 
   for(int i = 0; i < N; i++){
-    mobots_msgs::CvKeyPoint& outKeyPoint = out.features.keyPoints[i];
+    mobots_msgs::CvKeyPoint& outKeyPoint = out.keyPoints[i];
     const KeyPoint& inKeyPoint = in.keyPoints[i];
     outKeyPoint.pt.x = inKeyPoint.pt.x;
     outKeyPoint.pt.y = inKeyPoint.pt.y;
@@ -21,7 +21,7 @@ void MessageBridge::copyToRosMessage(const FeatureSet& in, mobots_msgs::FeatureS
     outKeyPoint.class_id = inKeyPoint.class_id;
   }
   
-  mobots_msgs::CvMat& descriptors = out.features.descriptors; //alias
+  mobots_msgs::CvMat& descriptors = out.descriptors; //alias
   
   //from cv_bridge
   descriptors.rows = in.descriptors.rows;
@@ -46,13 +46,13 @@ void MessageBridge::copyToRosMessage(const FeatureSet& in, mobots_msgs::FeatureS
   }
 }
 
-void MessageBridge::copyToCvStruct(const mobots_msgs::FeatureSetWithDeltaPoseAndID& in, FeatureSet& out){
-  const int N = in.features.keyPoints.size();
+void MessageBridge::copyToCvStruct(const mobots_msgs::FeatureSet& in, FeatureSet& out){
+  const int N = in.keyPoints.size();
   out.keyPoints.resize(N);
   
   for(int i = 0; i < N; i++){
     KeyPoint& outFeaturePoint = out.keyPoints[i];
-    const mobots_msgs::CvKeyPoint& inFeaturePoint = in.features.keyPoints[i];
+    const mobots_msgs::CvKeyPoint& inFeaturePoint = in.keyPoints[i];
     outFeaturePoint.pt.x = inFeaturePoint.pt.x;
     outFeaturePoint.pt.y = inFeaturePoint.pt.y;
     outFeaturePoint.size = inFeaturePoint.size;
@@ -62,7 +62,7 @@ void MessageBridge::copyToCvStruct(const mobots_msgs::FeatureSetWithDeltaPoseAnd
     outFeaturePoint.class_id = inFeaturePoint.class_id;
   }
   
-  const mobots_msgs::CvMat& inDescriptors = in.features.descriptors; //alias
+  const mobots_msgs::CvMat& inDescriptors = in.descriptors; //alias
   out.descriptors.create(inDescriptors.rows, inDescriptors.cols, inDescriptors.type);
   memcpy(out.descriptors.data, &inDescriptors.data[0], 
 	 inDescriptors.rows * inDescriptors.cols * inDescriptors.elemSize);

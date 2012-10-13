@@ -7,7 +7,7 @@
 #include "feature_detector/MessageBridge.h"
 #include "feature_detector/FeaturesMatcher.h"
 #include "mobots_msgs/ImageWithPoseAndID.h"
-#include "mobots_msgs/FeatureSetWithDeltaPoseAndID.h"
+#include "mobots_msgs/FeatureSetWithPoseAndID.h"
 
 
 
@@ -67,11 +67,10 @@ inline double toDegree(double rad){
   return rad * 180 / M_PI;
 }
 
-extern Delta delta2;
 extern Mat affine3;
 
 void checkResult(){
-  Delta delta;
+  geometry_msgs::Pose2D delta;
   Ptr<FeaturesMatcher> matcher = FeaturesMatcher::getDefault();
   bool matchResult = matcher->match(features1, features2, delta);
   if(!matchResult){
@@ -93,11 +92,11 @@ void checkResult(){
   Mat outImg1 = result(Rect(0, 0, gimage1.cols, gimage1.rows));
   Mat outImg21 = result2(Rect(0, 0, gimage1.cols, gimage1.rows));
 
-  warpAffine(gimage2, result, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  warpAffine(gimage2, result, affine3, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
   gimage1.copyTo(outImg1);
   
   gimage1.copyTo(outImg21);
-  warpAffine(gimage2, result2, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  warpAffine(gimage2, result2, affine3, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
   
   imshow("result", result);
   imshow("result2", result2);
@@ -148,7 +147,7 @@ void checkResult(){
   waitKey(0);
 }
 
-void featuresReceived(const mobots_msgs::FeatureSetWithDeltaPoseAndID& featuresMsg){
+void featuresReceived(const mobots_msgs::FeatureSetWithPoseAndID& featuresMsg){
   cout << "received features" << endl;
   FeatureSet* features;
   if(pos++ == 0){
@@ -156,7 +155,7 @@ void featuresReceived(const mobots_msgs::FeatureSetWithDeltaPoseAndID& featuresM
   }else{
     features = &features2;
   }
-  MessageBridge::copyToCvStruct(featuresMsg, *features); 
+  MessageBridge::copyToCvStruct(featuresMsg.features, *features); 
   if(pos == 2){
     cout << "meh" << endl;
     checkResult();
@@ -180,8 +179,8 @@ int main(int argc, char** argv){
   copyMatToImageMSg(image1Gray, i1);
   copyMatToImageMSg(image2Gray, i2);
   ros::NodeHandle nodeHandle;
-  ros::Subscriber subscriber = nodeHandle.subscribe("FeatureSetWithDeltaPoseAndID", 2, featuresReceived);
-  ros::Publisher publisher = nodeHandle.advertise<mobots_msgs::ImageWithPoseAndID>("ImageWithDeltaPoseAndID", 2);
+  ros::Subscriber subscriber = nodeHandle.subscribe("featureset_pose_id", 2, featuresReceived);
+  ros::Publisher publisher = nodeHandle.advertise<mobots_msgs::ImageWithPoseAndID>("image_pose_id", 2);
   cout << "now sending" << endl;
   sleep(1);
   publisher.publish(i1);
