@@ -1,2 +1,5 @@
-add_subdirectory(image_map_display)
-add_subdirectory(image_store)
+rosbuild_add_executable(image_store image_store.cpp)
+rosbuild_add_executable(image_store_test image_store_test.cpp)
+
+rosbuild_link_boost(image_store filesystem system)
+#rosbuild_link_boost(default_plugin thread signals filesystem system program_options)
