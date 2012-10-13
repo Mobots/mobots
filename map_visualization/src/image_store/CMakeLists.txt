@@ -1,2 +1,0 @@
-rosbuild_add_executable(image_store image_store.cpp)
-rosbuild_add_executable(image_store_test image_store_test.cpp)
