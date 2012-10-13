@@ -3,21 +3,20 @@
  * Writen by Moritz Ulmer, Hauke Hansen, Uni Bremen
  */
 
+#include <boost/filesystem.hpp>
+
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
+
 #include <rviz/display.h>
-
-#include <boost/thread.hpp>
-#include <QtGui/QApplication>
-
-#include <OGRE/OgreLight.h>
-#include <OGRE/OgrePlane.h>
-#include <OGRE/OgreEntity.h>
-#include <OGRE/OgreMeshManager.h>
-#include <OGRE/OgreMaterialManager.h>
+#include <rviz/visualization_manager.h>
+#include <rviz/properties/property.h>
+#include <rviz/properties/property_manager.h>
 
 #include "mobots_msgs/ImageWithPoseAndID.h"
 #include "mobots_msgs/PoseAndID.h"
 
-#include "mobots_info.h"
+#include "image_map_visual.h"
 
 namespace Ogre
 {
@@ -26,7 +25,7 @@ class SceneNode;
 
 // All the source in this plugin is in its own namespace.  This is not
 // required but is good practice.
-namespace map_visualization
+namespace rviz_plugin_display
 {
 class ImageMapVisual;
 
@@ -42,7 +41,7 @@ class ImageMapDisplay: public rviz::Display
 {
 public:
 	// Constructor.
-	ImageMapDisplay();
+    ImageMapDisplay();
 	virtual ~ImageMapDisplay();
 
 	// Overrides of public virtual functions from the Display class.
@@ -79,13 +78,6 @@ private:
 
 	// Test
 	void testVisual(ImageMapVisual* visual_, std::string fileName);
-
-    void qtThread(); // Thread function which launches the Qt Event Loop
-    void startQT(); // function to initialise the QtGui
-
-    QApplication* qtApp; // the Qt Application
-    Mobots_Info* info;  // the mobot info window
-    boost::thread* info_thread;  // thread for the Qt Event loop
 	
 	// A node in the Ogre scene tree to be the parent of all our visuals.
 	Ogre::SceneNode* scene_node_;

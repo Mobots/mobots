@@ -7,3 +7,9 @@ All mobot specific msgs should be placed in mobots_msgs
 #####################
 
 Required: libogre-dev (Development Files)
+
+Compile Qt file (map_visualization::mobots_info):
+qmake -project
+qmake
+(rosmake)
+

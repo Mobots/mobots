@@ -2,6 +2,7 @@
 #define MOBOTS_INFO_H
 
 #include <QMainWindow>
+#include <QWidget>
 #include <QLCDNumber>
 #include <QLabel>
 #include <QIcon>
@@ -10,22 +11,20 @@
 #include <QTimer>
 
 
-namespace Ui {
-class Mobots_Info;
-}
+namespace Ui{
 
 class Mobots_Info : public QMainWindow
 {
     Q_OBJECT
     
 public:
-    explicit Mobots_Info(QWidget *parent = 0);
-    ~Mobots_Info();
+    Mobots_Info(QWidget *parent = 0);
+    virtual ~Mobots_Info();
     void addPicture(int id);
     void toogleMobotState(int id);
     void poseAbsolute(int id);
 
-//public slots:
+public Q_SLOTS:
     void refresh();
 
 private:
@@ -64,4 +63,5 @@ private:
 
 };
 
+}
 #endif // MOBOTS_INFO_H

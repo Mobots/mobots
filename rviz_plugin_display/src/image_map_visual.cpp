@@ -1,23 +1,6 @@
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreMeshManager.h>
-#include <OGRE/OgreManualObject.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreDataStream.h>
-#include <OGRE/OgreHardwarePixelBuffer.h>
-
-#include <iostream>
-#include <fstream>
-#include <list>
-
-#include <opencv/cv.h>
-#include <opencv/cvaux.h>
-#include <opencv/highgui.h>
-
 #include "image_map_visual.h"
 
-namespace map_visualization
+namespace rviz_plugin_display
 {
 
 /**
@@ -53,7 +36,6 @@ int ImageMapVisual::insertImage(
 	const std::string* encoding, int width, int height
 ){
 	// Get the node to which the image is assigned to
-	ROS_INFO("Check 1.0");
 	Ogre::SceneNode* imageNode = getNode(sessionID, mobotID, imageID);
 	// Deleting configuration and resources of a node with the same ID
 	Ogre::SceneNode* parentNode = imageNode->getParentSceneNode();
@@ -130,7 +112,7 @@ int ImageMapVisual::insertImage(
 	}
 	tex_unit_->setTextureName(texture_->getName());
 	tex_unit_->setTextureFiltering( Ogre::TFO_NONE );
-	
+
 	// Create the manual object
 	std::stringstream ss3;
 	ss3 << "MapObject-" << imageNode->getName();
@@ -147,7 +129,9 @@ int ImageMapVisual::insertImage(
 	// Normalize the image size
 	float imageScale = 5;
 	float widthScaled = imageScale;
-	float heightScaled = (mat.rows / mat.cols) * imageScale;
+  float rows = mat.rows;
+  float cols = mat.cols;
+	float heightScaled = (rows / cols) * imageScale;
 	std::cout << imageScale << " " << mat.cols << " " << widthScaled << " " << mat.rows << " " << heightScaled << std::endl;
 	
 	// Define the manual object as a rectangle
@@ -158,11 +142,11 @@ int ImageMapVisual::insertImage(
 		{
 			// Bottom left
 			manual_object_->position( 0.0f, 0.0f, 0.0f );
-			manual_object_->textureCoord(0.0f, 1.0f);
+      manual_object_->textureCoord(0.0f, 1.0f);
 			manual_object_->normal( 0.0f, 0.0f, 1.0f );
 			// Top right
 			manual_object_->position( widthScaled, heightScaled, 0.0f );
-			manual_object_->textureCoord(1.0f, 0.0f);
+      manual_object_->textureCoord(1.0f, 0.0f);
 			manual_object_->normal( 0.0f, 0.0f, 1.0f );
 			// Top left
 			manual_object_->position( 0.0f, heightScaled, 0.0f );
@@ -173,15 +157,15 @@ int ImageMapVisual::insertImage(
 		{
 			// Bottom left
 			manual_object_->position( 0.0f, 0.0f, 0.0f );
-			manual_object_->textureCoord(0.0f, 1.0f);
+      manual_object_->textureCoord(0.0f, 1.0f);
 			manual_object_->normal( 0.0f, 0.0f, 1.0f );
 			// Bottom right
 			manual_object_->position( widthScaled, 0.0f, 0.0f );
-			manual_object_->textureCoord(1.0f, 1.0f);
+      manual_object_->textureCoord(1.0f, 1.0f);
 			manual_object_->normal( 0.0f, 0.0f, 1.0f );
 			// Top right
 			manual_object_->position( widthScaled, heightScaled, 0.0f );
-			manual_object_->textureCoord(1.0f, 0.0f);
+      manual_object_->textureCoord(1.0f, 0.0f);
 			manual_object_->normal( 0.0f, 0.0f, 1.0f );
 		}
 	}
@@ -302,17 +286,13 @@ void ImageMapVisual::setPose(float poseX, float poseY, float poseTheta,
  * Searches for the requested Node. Creates the path if it does not exist. 
  */
 Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID){
-	ROS_INFO("Check 2.0: %i:%i:%i", sessionID, mobotID, imageID);
 	// Get the specified session node
 	std::string name = "s";
 	name += boost::lexical_cast<std::string>(sessionID);
 	Ogre::Node* node;
 	try{
-		ROS_INFO("Check 2.1");
 		node = rootNode->getChild(name);
-		ROS_INFO("Check 2.1");
 	}catch(Ogre::Exception& e){
-		ROS_INFO("Check 2.1-");
 		rootNode->createChildSceneNode(name, Ogre::Vector3::ZERO,
 			Ogre::Quaternion::IDENTITY);
 		node = rootNode->getChild(name);
@@ -321,11 +301,8 @@ Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID
 	name += "m";
 	name += boost::lexical_cast<std::string>(mobotID);
 	try{
-		ROS_INFO("Check 2.2");
 		node = node->getChild(name);
-		ROS_INFO("Check 2.2");
 	}catch(Ogre::Exception& e){
-		ROS_INFO("Check 2.2-");
 		node->createChild(name, Ogre::Vector3::ZERO,
 			Ogre::Quaternion::IDENTITY);
 		node = node->getChild(name);
@@ -334,10 +311,8 @@ Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID
 	name += "i";
 	name += boost::lexical_cast<std::string>(imageID);
 	try{
-		ROS_INFO("Check 2.3");
 		node = node->getChild(name);
 	}catch(Ogre::Exception& e){
-		ROS_INFO("Check 2.3-");
 		node->createChild(name, Ogre::Vector3::ZERO,
 			Ogre::Quaternion::IDENTITY);
 		node = node->getChild(name);

@@ -1,5 +1,5 @@
 <package>
-  <description brief="Map Visualization">
+  <description brief="Rviz Plugin Display">
 
     image_map_display: tiles with map image plugin for rviz
 
@@ -12,11 +12,14 @@
   <url>http://ros.org/wiki/visualization</url>
   <depend package="std_msgs"/>
   <depend package="mobots_msgs"/>
+  <depend package="nav_msgs"/>
+  <depend package="image_transport"/>
   <depend package="opencv2"/>
   <depend package="cv_bridge"/>
-  <depend package="image_transport"/>
+  <depend package="rviz"/>
   <export>
     <rosdoc config="${prefix}/rosdoc.yaml"/>
+    <rviz plugin="${prefix}/plugin_description.xml"/>
   </export>
   <platform os="ubuntu" version="9.04"/>
   <platform os="ubuntu" version="9.10"/>
