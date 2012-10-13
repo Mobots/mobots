@@ -1,13 +1,30 @@
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreMeshManager.h>
+#include <OGRE/OgreManualObject.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreDataStream.h>
+#include <OGRE/OgreHardwarePixelBuffer.h>
+
+#include <iostream>
+#include <fstream>
+#include <list>
+
+#include <opencv/cv.h>
+#include <opencv/cvaux.h>
+#include <opencv/highgui.h>
+
 #include <ros/ros.h>
 
 namespace Ogre
 {
 class Vector3;
 class Quaternion;
-class Plane;
+class Rectangle2D;
 }
 
-namespace map_visualization{
+namespace rviz_plugin_display{
 	
 class ImageMapVisual{
 public:
@@ -49,6 +66,7 @@ private:
 	Ogre::TexturePtr texture_;
 	Ogre::TextureUnitState* tex_unit_;
 	Ogre::ManualObject* manual_object_;
+  Ogre::Rectangle2D* rectangle_;
 
 	int width_;
 	int height_;

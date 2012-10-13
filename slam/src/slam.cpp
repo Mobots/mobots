@@ -61,7 +61,6 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
   FeatureSet bla;
   MessageBridge::copyToCvStruct( msg->features, bla );
   feature_sets_[current_id_[bot]] = bla;
-  ROS_INFO_STREAM(feature_sets_[current_id_[bot]].keyPoints.size() << " " << feature_sets_[current_id_[bot]].descriptors.rows);
 
   /* Neue current_pose auf Basis von last_pose und DeltaPose schätzen */
   TreeOptimizer2::Pose last_pose = pose_graph_.vertex(last_id_[bot])->pose;
@@ -69,9 +68,11 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
 
   /* Neuen Vertex mit concatenated ID in TORO-Graph einfügen */
   pose_graph_.addVertex(current_id_[bot], current_pose);
-  ROS_INFO_STREAM("Map-size: " << pose_graph_.vertices.size());
-    
-  /* DeltaPose als Edge zwischen den zwei Vertices einfügen */
+  ROS_INFO_STREAM("map size: " << pose_graph_.vertices.size());
+
+  
+#if 0 // Zwischen zwei Vertices kann anscheinend nur eine Edge je Richtung gesetzt werden...
+   /* DeltaPose als Edge zwischen den zwei Vertices einfügen */
 
   TreeOptimizer2::Transformation t
     = TreeOptimizer2::Transformation(msg->pose.x, msg->pose.y, msg->pose.theta);
@@ -82,6 +83,7 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
   m.values[2][0] = 0; m.values[2][1] = 0; m.values[2][2] = 1;
   
   pose_graph_.addEdge(pose_graph_.vertex(last_id_[bot]), pose_graph_.vertex(current_id_[bot]), t, m);
+#endif
   
   /*
   4. Eventuell standardmäßig mit letztem FeatureSet matchen und Warnung an Moritz raushauen.
@@ -89,37 +91,59 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
      Dazu TORO-Graph durchiterieren und Radien checken. Jeder mit jedem oder nur aktueller mit jedem?
   6. TORO-Algoritmus keine, eine oder mehrere Iterationen laufen lassen.
    */
-  //BOOST_FOREACH(VertexMap::)
-  //pose_graph_.vertices.
+
   BOOST_FOREACH(TreeOptimizer2::VertexMap::value_type &v, pose_graph_.vertices)
   {
     BOOST_FOREACH(TreeOptimizer2::VertexMap::value_type &w, pose_graph_.vertices)
     {
+      /* Jede Kombination nur einmal bilden. */
       if (&v == &w)
         break;
-      TreeOptimizer2::Pose &pose_v = v.second->pose;
-      TreeOptimizer2::Pose &pose_w = w.second->pose;
-      double norm = sqrt( TreeOptimizer2::Translation(pose_w.x() - pose_v.x(), pose_w.y() - pose_v.y()).norm2() );
+      
+      /* Zum nullten Vertex gibt es kein FeatureSet. */
+      if (split(v.first).image_id == 0 || split(w.first).image_id == 0)
+        continue;
+      
+      /* Nur matchen, wenn die Bildmittelpunkte ausreichend nah beieinander liegen. */
+      double norm = sqrt( TreeOptimizer2::Translation(w.second->pose.x() - v.second->pose.x(), w.second->pose.y() - v.second->pose.y()).norm2() );
       ROS_INFO_STREAM("Distance between image " << split(v.second->id).image_id << " and " << split(w.second->id).image_id << " is " << norm);
-      if (norm < 480)
+      if (norm > 480)
+        continue;
+      
+      uint edge_count = 0;
+      for ( TreeOptimizer2::EdgeList::iterator v_itr = v.second->edges.begin(); v_itr != v.second->edges.end(); ++v_itr )
       {
-        geometry_msgs::Pose2D delta;
-        ROS_INFO_STREAM(feature_sets_[v.first].keyPoints.size() << "v" << feature_sets_[v.first].descriptors.rows);
-        ROS_INFO_STREAM(feature_sets_[w.first].keyPoints.size() << "w" << feature_sets_[w.first].descriptors.rows);
-        if ( features_matcher_.match(feature_sets_[v.first], feature_sets_[w.first], delta) )
+        for ( TreeOptimizer2::EdgeList::iterator w_itr = v.second->edges.begin(); w_itr != v.second->edges.end(); ++w_itr )
         {
-          /* Matching-Ergebnis als Edge zwischen den zwei Vertices einfügen */
-          TreeOptimizer2::Transformation t2 = convert(delta);
-          
-          ROS_INFO_STREAM(t2.translation().x() << " " << t2.translation().y() << " " << t2.rotation());
-
-          TreeOptimizer2::InformationMatrix m2;
-          m.values[0][0] = 1; m.values[0][1] = 0; m.values[0][2] = 0;
-          m.values[1][0] = 0; m.values[1][1] = 1; m.values[1][2] = 0;
-          m.values[2][0] = 0; m.values[2][1] = 0; m.values[2][2] = 1;
-
-          pose_graph_.addEdge(pose_graph_.vertex(last_id_[bot]), pose_graph_.vertex(current_id_[bot]), t2, m2);
+          if ( v_itr == w_itr )
+            ++edge_count;
+          // hier is noch n bug
         }
+      }
+      ROS_INFO_STREAM("edge_count = " << edge_count);
+      
+      if (edge_count) {
+        continue;
+      }
+      
+      /*ROS_INFO_STREAM(feature_sets_[v.first].keyPoints.size() << "v" << feature_sets_[v.first].descriptors.rows);
+      ROS_INFO_STREAM(feature_sets_[w.first].keyPoints.size() << "w" << feature_sets_[w.first].descriptors.rows);*/
+
+      geometry_msgs::Pose2D delta;        
+      if ( features_matcher_.match(feature_sets_[v.first], feature_sets_[w.first], delta) )
+      {
+        /* Matching-Ergebnis als Edge zwischen den zwei Vertices einfügen */
+        TreeOptimizer2::Transformation t = convert(delta);
+
+        ROS_INFO_STREAM("matching result: x = " << t.translation().x() << ", y = " << t.translation().y() << ", theta = " << t.rotation());
+
+        TreeOptimizer2::InformationMatrix m;
+        m.values[0][0] = 1; m.values[0][1] = 0; m.values[0][2] = 0;
+        m.values[1][0] = 0; m.values[1][1] = 1; m.values[1][2] = 0;
+        m.values[2][0] = 0; m.values[2][1] = 0; m.values[2][2] = 1;
+
+        ROS_INFO_STREAM("huhu" << pose_graph_.addEdge(pose_graph_.vertex(last_id_[bot]), pose_graph_.vertex(current_id_[bot]), t, m) );
+
       }
     }
   }

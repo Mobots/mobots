@@ -1,29 +1,12 @@
-#include <boost/filesystem.hpp>
-
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
-
-#include <rviz/visualization_manager.h>
-#include <rviz/properties/property.h>
-#include <rviz/properties/property_manager.h>
-
-#include "mobots_msgs/ImageWithPoseAndID.h"
-#include "mobots_msgs/PoseAndID.h"
-
-#include "image_map_visual.h"
 #include "image_map_display.h"
-#include "mobots_info.h"
 
-namespace map_visualization{
+namespace rviz_plugin_display{
 	
 ImageMapDisplay::ImageMapDisplay()
   : Display()
   , scene_node_(NULL)
   , visual_(NULL)
-  , info(NULL)
-  , qtApp(NULL)
 {
-    startQT();
 }
 
 ImageMapDisplay::~ImageMapDisplay(){
@@ -37,29 +20,7 @@ ImageMapDisplay::~ImageMapDisplay(){
 void ImageMapDisplay::clear(){
 	ROS_INFO("clear");
 	delete visual_;
-	if(info != NULL){ // reset mobot_info
-		delete info;
-	}
-	if(info_thread != NULL){ // quit the Qt Application if it is started
-		qtApp->quit();
-	}
 	visual_ = new ImageMapVisual(vis_manager_->getSceneManager());
-	startQT();
-}
-
-// start the Qt Application and launch the qtThread
-void ImageMapDisplay::startQT(){
-	qtApp = new QApplication(0, NULL);
-	info = new Mobots_Info(0);
-	info->show();
-	boost::thread info_thread_(qtApp->exec);
-	info_thread = &info_thread_;
-	return;
-}
-
-// this Thread will terminatet when the slot quit() is called
-void ImageMapDisplay::qtThread(){
-	qtApp->exec(); 
 }
 
 // After the parent rviz::Display::initialize() does its own setup, it
@@ -68,15 +29,14 @@ void ImageMapDisplay::qtThread(){
 // TODO implement service
 void ImageMapDisplay::onInitialize(){
 	ROS_INFO("[onInitialize]");
-	//absPoseSub_ = NULL;
 	setStatus(rviz::status_levels::Warn, "Topic", "Finished Initializing");
 }
 
 void ImageMapDisplay::onEnable(){
 	ROS_INFO("onenable");
 	subscribe();
-	visual_ = new ImageMapVisual(vis_manager_->getSceneManager());
-	testVisual(visual_, "/home/moritz/TillEvil.jpg");
+    visual_ = new ImageMapVisual(vis_manager_->getSceneManager());
+    testVisual(visual_, "/home/moritz/TillEvil.jpg");
 	ROS_INFO("onenable");
 }
 
@@ -84,7 +44,7 @@ void ImageMapDisplay::onDisable(){
 	ROS_INFO("[onDisable]");
 	unsubscribe();
 	delete visual_;
-	visual_ = NULL;
+    visual_ = NULL;
 	ROS_INFO("[onDisable]");
 }
 
@@ -163,8 +123,6 @@ void ImageMapDisplay::relPoseCallback(
 		msg->id.session_id, msg->id.mobot_id, msg->id.image_id,
 		&msg->image.data, &msg->image.encoding,
 		msg->image.width, msg->image.height);
-
-	info->addPicture(msg->id.mobot_id); // add picture to the picture counter
 }
 
 // TODO pass the information about the absolute pose to Mobot_Info
@@ -231,10 +189,10 @@ void ImageMapDisplay::testVisual(ImageMapVisual* visual_, std::string filePath){
 	visual_->setPose(1,1,0, 0,0,0);
 }
 
-} // end namespace map_visualization
+} // end namespace rviz_plugin_display
 
 // Tell pluginlib about this class.  It is important to do this in
 // global scope, outside our package's namespace.
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(map_visualization, ImageMap,
-	map_visualization::ImageMapDisplay, rviz::Display)
+PLUGINLIB_DECLARE_CLASS(rviz_plugin_display, ImageMapDisplay,
+    rviz_plugin_display::ImageMapDisplay, rviz::Display)

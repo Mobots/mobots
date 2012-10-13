@@ -6,6 +6,7 @@ Mobots_Info::Mobots_Info(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::Mobots_Info)
 {
+	ROS_INFO("[Mobots_Info]");
     ui->setupUi(this); // User Inteface wird initialisiert
 
     // Die drei Mobots werden in ihre Grundzustände versetzt
@@ -75,7 +76,7 @@ Mobots_Info::Mobots_Info(QWidget *parent) :
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(refresh()));
     timer->start(2000);
-
+	ROS_INFO("[Mobots_Info]");
 
 }
 
