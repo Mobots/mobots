@@ -50,7 +50,16 @@ void* shutterThread(void* data){
     result[strlen(result)-1] = '\0';
     ss << result << "/pics/" << imageID << ".png";
     cv::Mat img = cv::imread(string(), 0);
-    copyMatToImageMSg(img, msg);
+    //copyMatToImageMSg(img, msg);
+	 vector<uchar> data;
+	 string encoding("png");
+	 imencode(encoding, img, data);
+	 msg.image.data = data;
+	 msg.image.height = img.rows;
+	 msg.image.width = img.cols;
+	 msg.image.encoding = "png";
+	 msg.image.is_bigendian = 0;
+	 msg.image.step = img.cols * img.elemSize();
     msg.pose.x = 40 + imageID*rand()/RAND_MAX*30;
     msg.pose.y = 80 + imageID*rand()/RAND_MAX*30;
     msg.pose.theta = imageID*rand()/RAND_MAX*2;
