@@ -42,7 +42,7 @@ namespace map_visualization
 // The DriveWidget constructor does the normal Qt thing of
 // passing the parent widget to the superclass constructor, then
 // initializing the member variables.
-ImageMapWidget::ImageMapWidget( QWidget* parent )
+DriveWidget::DriveWidget( QWidget* parent )
   : QWidget( parent )
   , linear_velocity_( 0 )
   , angular_velocity_( 0 )
@@ -55,7 +55,7 @@ ImageMapWidget::ImageMapWidget( QWidget* parent )
 // arc-arrows representing wheel motion.  It is not particularly
 // relevant to learning how to make an RViz plugin, so I will kind of
 // skim it.
-void ImageMapWidget::paintEvent( QPaintEvent* event )
+void DriveWidget::paintEvent( QPaintEvent* event )
 {
   // The background color and crosshair lines are drawn differently
   // depending on whether this widget is enabled or not.  This gives a
@@ -189,13 +189,13 @@ void ImageMapWidget::paintEvent( QPaintEvent* event )
 // Every mouse move event received here sends a velocity because Qt
 // only sends us mouse move events if there was previously a
 // mouse-press event while in the widget.
-void ImageMapWidget::mouseMoveEvent( QMouseEvent* event )
+void DriveWidget::mouseMoveEvent( QMouseEvent* event )
 {
   sendVelocitiesFromMouse( event->x(), event->y(), width(), height() );
 }
 
 // Mouse-press events should send the velocities too, of course.
-void ImageMapWidget::mousePressEvent( QMouseEvent* event )
+void DriveWidget::mousePressEvent( QMouseEvent* event )
 {
   sendVelocitiesFromMouse( event->x(), event->y(), width(), height() );
 }
@@ -207,20 +207,20 @@ void ImageMapWidget::mousePressEvent( QMouseEvent* event )
 // window-manager things happen), we will get a leaveEvent() but not a
 // mouseReleaseEvent().  Without catching this event you can have a
 // robot stuck "on" without the user controlling it.
-void ImageMapWidget::leaveEvent( QEvent* event )
+void DriveWidget::leaveEvent( QEvent* event )
 {
   stop();
 }
 
 // The ordinary way to stop: let go of the mouse button.
-void ImageMapWidget::mouseReleaseEvent( QMouseEvent* event )
+void DriveWidget::mouseReleaseEvent( QMouseEvent* event )
 {
   stop();
 }
 
 // Compute and emit linear and angular velocities based on Y and X
 // mouse positions relative to the central square.
-void ImageMapWidget::sendVelocitiesFromMouse( int x, int y, int width, int height )
+void DriveWidget::sendVelocitiesFromMouse( int x, int y, int width, int height )
 {  
   int size = (( width > height ) ? height : width );
   int hpad = ( width - size ) / 2;
@@ -238,7 +238,7 @@ void ImageMapWidget::sendVelocitiesFromMouse( int x, int y, int width, int heigh
 }
 
 // How to stop: emit velocities of 0!
-void ImageMapWidget::stop()
+void DriveWidget::stop()
 {
   linear_velocity_ = 0;
   angular_velocity_ = 0;

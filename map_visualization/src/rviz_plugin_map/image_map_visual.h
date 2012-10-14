@@ -1,3 +1,6 @@
+#ifndef IMAGE_MAP_VISUAL_H
+#define IMAGE_MAP_VISUAL_H
+
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
@@ -75,3 +78,4 @@ private:
 };
 
 }
+#endif //IMAGE_MAP_VISUAL_H

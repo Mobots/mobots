@@ -8,12 +8,10 @@ include(${QT_USE_FILE})
 add_definitions(-DQT_NO_KEYWORDS)
 set(qt_srcs
   image_map_display.cpp
-  image_map_info.cpp
-  image_map_widget.cpp)
+  image_map_info.cpp)
 set(qt_hdrs
   image_map_display.h
-  image_map_info.h
-  image_map_widget.h)
+  image_map_info.h)
 qt4_automoc(${qt_srcs})
 QT4_WRAP_CPP(qt_moc_srcs ${qt_hdrs})
 QT4_WRAP_UI(uis_h image_map_info.ui)
@@ -27,4 +25,3 @@ rosbuild_add_library(${PROJECT_NAME}
 )
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_LIBRARIES})
 rosbuild_add_executable(image_map_test image_map_test.cpp)
-#--------------------------------------

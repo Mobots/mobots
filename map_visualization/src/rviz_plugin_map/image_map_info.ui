@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Mobots_Info</class>
- <widget class="QMainWindow" name="Mobots_Info">
+ <class>ImageMapInfo</class>
+ <widget class="QMainWindow" name="ImageMapInfo">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -22,14 +22,8 @@
     <height>320</height>
    </size>
   </property>
-  <property name="maximumSize">
-   <size>
-    <width>670</width>
-    <height>320</height>
-   </size>
-  </property>
   <property name="windowTitle">
-   <string>Mobots_Info</string>
+   <string>Map Info</string>
   </property>
   <property name="iconSize">
    <size>
@@ -44,323 +38,8 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
-   <widget class="QTableWidget" name="mobotTable">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>280</y>
-      <width>650</width>
-      <height>240</height>
-     </rect>
-    </property>
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>650</width>
-      <height>240</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>650</width>
-      <height>240</height>
-     </size>
-    </property>
-    <property name="focusPolicy">
-     <enum>Qt::NoFocus</enum>
-    </property>
-    <property name="layoutDirection">
-     <enum>Qt::LeftToRight</enum>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
-    </property>
-    <property name="frameShadow">
-     <enum>QFrame::Plain</enum>
-    </property>
-    <property name="verticalScrollBarPolicy">
-     <enum>Qt::ScrollBarAsNeeded</enum>
-    </property>
-    <property name="editTriggers">
-     <set>QAbstractItemView::NoEditTriggers</set>
-    </property>
-    <property name="showDropIndicator" stdset="0">
-     <bool>false</bool>
-    </property>
-    <property name="dragDropOverwriteMode">
-     <bool>false</bool>
-    </property>
-    <property name="iconSize">
-     <size>
-      <width>40</width>
-      <height>40</height>
-     </size>
-    </property>
-    <property name="textElideMode">
-     <enum>Qt::ElideMiddle</enum>
-    </property>
-    <property name="showGrid">
-     <bool>true</bool>
-    </property>
-    <property name="gridStyle">
-     <enum>Qt::SolidLine</enum>
-    </property>
-    <property name="sortingEnabled">
-     <bool>false</bool>
-    </property>
-    <property name="wordWrap">
-     <bool>true</bool>
-    </property>
-    <property name="cornerButtonEnabled">
-     <bool>true</bool>
-    </property>
-    <attribute name="horizontalHeaderVisible">
-     <bool>true</bool>
-    </attribute>
-    <attribute name="horizontalHeaderCascadingSectionResizes">
-     <bool>false</bool>
-    </attribute>
-    <attribute name="horizontalHeaderDefaultSectionSize">
-     <number>110</number>
-    </attribute>
-    <attribute name="horizontalHeaderHighlightSections">
-     <bool>true</bool>
-    </attribute>
-    <attribute name="horizontalHeaderMinimumSectionSize">
-     <number>110</number>
-    </attribute>
-    <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
-     <bool>false</bool>
-    </attribute>
-    <attribute name="horizontalHeaderStretchLastSection">
-     <bool>true</bool>
-    </attribute>
-    <attribute name="verticalHeaderVisible">
-     <bool>false</bool>
-    </attribute>
-    <attribute name="verticalHeaderCascadingSectionResizes">
-     <bool>false</bool>
-    </attribute>
-    <attribute name="verticalHeaderDefaultSectionSize">
-     <number>40</number>
-    </attribute>
-    <attribute name="verticalHeaderHighlightSections">
-     <bool>true</bool>
-    </attribute>
-    <attribute name="verticalHeaderMinimumSectionSize">
-     <number>40</number>
-    </attribute>
-    <attribute name="verticalHeaderShowSortIndicator" stdset="0">
-     <bool>false</bool>
-    </attribute>
-    <attribute name="verticalHeaderStretchLastSection">
-     <bool>false</bool>
-    </attribute>
-    <row>
-     <property name="text">
-      <string>Mobot 1</string>
-     </property>
-    </row>
-    <row>
-     <property name="text">
-      <string>Mobot 2</string>
-     </property>
-    </row>
-    <row>
-     <property name="text">
-      <string>Mobot 3</string>
-     </property>
-    </row>
-    <column>
-     <property name="text">
-      <string>Mobot ID</string>
-     </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>Enabled</string>
-     </property>
-     <property name="textAlignment">
-      <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-     </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>Images</string>
-     </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>Absolute Pose</string>
-     </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>Coordinate System</string>
-     </property>
-    </column>
-    <item row="0" column="0">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="flags">
-      <set>ItemIsEnabled</set>
-     </property>
-    </item>
-    <item row="0" column="1">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="textAlignment">
-      <set>AlignLeft|AlignVCenter</set>
-     </property>
-     <property name="flags">
-      <set>ItemIsEnabled</set>
-     </property>
-    </item>
-    <item row="0" column="2">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="flags">
-      <set>ItemIsEnabled</set>
-     </property>
-    </item>
-    <item row="0" column="3">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="flags">
-      <set>ItemIsEnabled</set>
-     </property>
-    </item>
-    <item row="0" column="4">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="textAlignment">
-      <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-     </property>
-     <property name="flags">
-      <set>ItemIsEnabled</set>
-     </property>
-    </item>
-    <item row="1" column="0">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="flags">
-      <set>ItemIsEnabled</set>
-     </property>
-    </item>
-    <item row="1" column="1">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="flags">
-      <set>ItemIsEnabled</set>
-     </property>
-    </item>
-    <item row="1" column="2">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="flags">
-      <set>ItemIsEnabled</set>
-     </property>
-    </item>
-    <item row="1" column="3">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="flags">
-      <set>ItemIsEnabled</set>
-     </property>
-    </item>
-    <item row="1" column="4">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="textAlignment">
-      <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-     </property>
-     <property name="flags">
-      <set>ItemIsEnabled</set>
-     </property>
-    </item>
-    <item row="2" column="0">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="flags">
-      <set>ItemIsEnabled</set>
-     </property>
-    </item>
-    <item row="2" column="1">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="flags">
-      <set>ItemIsEnabled</set>
-     </property>
-    </item>
-    <item row="2" column="2">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="flags">
-      <set>ItemIsEnabled</set>
-     </property>
-    </item>
-    <item row="2" column="3">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="flags">
-      <set>ItemIsEnabled</set>
-     </property>
-    </item>
-    <item row="2" column="4">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="textAlignment">
-      <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-     </property>
-     <property name="flags">
-      <set>ItemIsEnabled</set>
-     </property>
-    </item>
-   </widget>
-   <widget class="QGroupBox" name="sessionSelection">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>651</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="accessibleName">
-     <string/>
-    </property>
-    <property name="title">
-     <string>Session Selection</string>
-    </property>
-    <widget class="QWidget" name="horizontalLayoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>17</y>
-       <width>631</width>
-       <height>41</height>
-      </rect>
-     </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QLabel" name="sessionLabel">
@@ -371,6 +50,29 @@
       </item>
       <item>
        <widget class="QComboBox" name="sessionCombo"/>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Control Mobot</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="comboBox"/>
       </item>
       <item>
        <spacer name="sessionSpacer">
@@ -386,31 +88,21 @@
        </spacer>
       </item>
      </layout>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="horizontalLayoutWidget_2">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>70</y>
-      <width>651</width>
-      <height>211</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <item>
-      <widget class="QTableView" name="mobotInfoTable"/>
-     </item>
-     <item>
-      <widget class="QSlider" name="verticalSlider">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <widget class="QTableView" name="mobotInfoTable">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
+  <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>
