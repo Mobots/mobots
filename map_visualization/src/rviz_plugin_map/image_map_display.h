@@ -10,6 +10,7 @@
 
 #include <rviz/display.h>
 #include <rviz/visualization_manager.h>
+#include <rviz/window_manager_interface.h>
 #include <rviz/properties/property.h>
 #include <rviz/properties/property_manager.h>
 
@@ -17,16 +18,21 @@
 #include "mobots_msgs/PoseAndID.h"
 
 #include "image_map_visual.h"
+#include "image_map_info.h"
 
 namespace Ogre
 {
 class SceneNode;
 }
 
+namespace rviz
+{
+class PanelDockWidget;
+}
+
 // All the source in this plugin is in its own namespace.  This is not
 // required but is good practice.
-namespace rviz_plugin_display
-{
+namespace map_visualization{
 class ImageMapVisual;
 
 // BEGIN_TUTORIAL
@@ -37,8 +43,8 @@ class ImageMapVisual;
 // The ImageMapDisplay class itself just implements the buffer,
 // editable parameters, and Display subclass machinery.  The visuals
 // themselves are represented by a separate class, ImageMapVisual.
-class ImageMapDisplay: public rviz::Display
-{
+class ImageMapDisplay: public rviz::Display{
+Q_OBJECT
 public:
 	// Constructor.
     ImageMapDisplay();
@@ -63,6 +69,11 @@ public:
 protected:
 	virtual void onEnable();
 	virtual void onDisable();
+  
+//protected Q_SLOTS:
+  // Enables or disables this display via its DisplayWrapper.
+  //void setWrapperEnabled( bool enabled );
+  
 private:
 	// Internal helpers which do the work of subscribing and
 	// unsubscribing from the ROS topic.
@@ -79,10 +90,16 @@ private:
 	// Test
 	void testVisual(ImageMapVisual* visual_, std::string fileName);
 	
-	// A node in the Ogre scene tree to be the parent of all our visuals.
+	// 3D Scene
 	Ogre::SceneNode* scene_node_;
 	ImageMapVisual* visual_;
 
+  // QT Widget
+  void qtEnable();
+  void qtDisable();
+  rviz::PanelDockWidget* panel_container_;
+  DriveWidget* widget_;
+  
 	// Data Input
 	ros::Subscriber relPoseSub;
 	ros::Subscriber absPoseSub;
