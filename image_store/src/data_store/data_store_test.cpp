@@ -1,6 +1,7 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include "mobots_msgs/ImageWithPoseAndID.h"
+#include "mobots_msgs/FeatureSetWithPoseAndID.h"
 #include "map_visualization/GetImageWithPose.h"
 #include "image_transport/image_transport.h"
 #include "opencv/cvwimage.h"
@@ -9,6 +10,10 @@
 #include <string>
 #include "fstream"
 #include "vector"
+
+#include "image_info_data_types.h"
+#include "feature_store.cpp"
+#include <assert.h>
 
 /**
  * This is an example of how to interface with the image_store server.
@@ -73,11 +78,102 @@ void getRequest(int sessionID, int mobotID, int imageID, ros::NodeHandle* handle
 }
 
 /**
+ * Here the actual feature_store test is performed
+ */
+void featuresReceived(const mobots_msgs::FeatureSetWithPoseAndID& msg){
+  std::cout << "feature_store test received features" << std::endl;
+  IDT id;
+  id.imageID = msg.id.image_id;
+  id.mobotID = msg.id.mobot_id;
+  id.sessionID = msg.id.session_id;
+  std::cout << "feature_store test saving features" << std::endl;
+  saveFeatureSet(msg);
+  std::cout << "feature_store test saved features" << std::endl;
+  mobots_msgs::FeatureSetWithPoseAndID msg2;
+  std::cout << "feature_store test loading features" << std::endl;
+  loadFeatureSet(id, msg2);
+  std::cout << "feature_store test loaded features" << std::endl;
+  assert(msg.id.image_id == msg2.id.image_id);
+  assert(msg.id.mobot_id == msg2.id.mobot_id);
+  assert(msg.id.session_id == msg2.id.session_id);
+  assert(msg.pose.x == msg2.pose.x);
+  assert(msg.pose.y == msg2.pose.y);
+  assert(msg.pose.theta == msg2.pose.theta);
+  assert(msg.features.keyPoints.size() == msg2.features.keyPoints.size());
+  for(int i = 0; i < msg.features.keyPoints.size(); i++){
+	 assert(msg.features.keyPoints[i].angle == msg2.features.keyPoints[i].angle);
+	 assert(msg.features.keyPoints[i].class_id == msg2.features.keyPoints[i].class_id);
+	 assert(msg.features.keyPoints[i].octave == msg2.features.keyPoints[i].octave);
+	 assert(msg.features.keyPoints[i].pt.x == msg2.features.keyPoints[i].pt.x);
+	 assert(msg.features.keyPoints[i].size == msg2.features.keyPoints[i].size);	 
+  }
+}
+
+//for feature_store test
+ros::Subscriber featureSub;
+ros::Publisher publisher;
+ros::NodeHandle* nh;
+
+/**
+ * Helper method for feature_store test
+ */
+void copyMatToImageMSg(const cv::Mat& in, mobots_msgs::ImageWithPoseAndID& out2){
+  sensor_msgs::Image* out = &out2.image;
+  out->height = in.rows;
+  out->width = in.cols;
+  out->encoding = "mono8";
+  out->is_bigendian = 0;
+  out->step = in.cols * in.elemSize();
+  out->data.resize(in.rows * out->step);
+  if(in.isContinuous()){
+    memcpy(&out->data[0], in.data, in.rows * out->step);
+  }else{
+    // Copy row by row
+    uchar* ros_data_ptr = (uchar*)(&out->data[0]);
+    uchar* cv_data_ptr = in.data;
+    for (int i = 0; i < in.rows; i++){
+      memcpy(ros_data_ptr, cv_data_ptr, out->step);
+      ros_data_ptr += out->step;
+      cv_data_ptr += in.step;
+    }
+  }
+}
+
+void testFeatureStore(){  
+  //obtain featureset
+  //first read image and send it to feature_detector
+  mobots_msgs::ImageWithPoseAndID i;
+  i.id.image_id = 0xDEADBEEF;
+  i.id.mobot_id = -1;
+  i.pose.theta = 5;
+  i.pose.x = 1;
+  FILE* fp;
+  char result [1000];
+  fp = popen("rospack find slam","r");
+  fread(result, 1, sizeof(result), fp);
+  pclose(fp);
+  std::stringstream ss;
+  result[strlen(result)-1] = '\0';
+  ss << "/home/jonas/mobots/slam" << "/pics/" << 1 << ".png";
+  cv::Mat img = cv::imread(ss.str(), 1);
+  std::cout << "using " << ss.str() << std::endl;
+  nh = new ros::NodeHandle;
+  copyMatToImageMSg(img, i);
+  featureSub = nh->subscribe("featureset_pose_id", 2, featuresReceived);
+  publisher = nh->advertise<mobots_msgs::ImageWithPoseAndID>("image_pose_id", 2);
+  sleep(1);
+  publisher.publish(i);
+}
+
+/**
  * This server is used to check if the toro_client.cpp works.
  * The ImagePoseID msg is tested.
  */
 int main(int argc, char **argv)
 {
+  ros::init(argc, argv, "image_store_test");
+  testFeatureStore();
+  ros::spin();
 	if(argc < 2){
 		ROS_INFO("Need more arguments");
 		return 0;
