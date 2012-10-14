@@ -1,5 +1,0 @@
-rosbuild_add_executable(data_store data_store.cpp)
-rosbuild_add_executable(data_store_test data_store_test.cpp)
-
-rosbuild_link_boost(data_store filesystem system)
-#rosbuild_link_boost(default_plugin thread signals filesystem system program_options)
