@@ -194,6 +194,7 @@ void ImageMapDisplay::testVisual(ImageMapVisual* visual_, std::string filePath){
 	std::ifstream imageFile(filePath.c_str(), std::ios::binary);
 	if(!boost::filesystem::exists(filePath.c_str())){
 		ROS_INFO("File not exists");
+        return;
 	}
 	imageFile.seekg(0, std::ios::end);
 	int length = imageFile.tellg();
