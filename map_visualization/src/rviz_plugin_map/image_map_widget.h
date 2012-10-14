@@ -42,13 +42,13 @@ namespace map_visualization
 // interaction and display inside its widget.  It does not make any
 // ROS or RViz calls.  It communicates its data to the outside just
 // via Qt signals.
-class ImageMapWidget: public QWidget
+class DriveWidget: public QWidget
 {
 Q_OBJECT
 public:
   // This class is not instantiated by pluginlib::ClassLoader, so the
   // constructor has no restrictions.
-  ImageMapWidget( QWidget* parent = 0 );
+  DriveWidget( QWidget* parent = 0 );
 
   // We override QWidget::paintEvent() to do custom painting.
   virtual void paintEvent( QPaintEvent* event );

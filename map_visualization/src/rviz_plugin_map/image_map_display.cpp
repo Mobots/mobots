@@ -45,25 +45,26 @@ void ImageMapDisplay::onDisable(){
 	ROS_INFO("[onDisable]");
 	unsubscribe();
 	delete visual_;
-  visual_ = NULL;
-  qtEnable();
+    visual_ = NULL;
+    qtEnable();
 	ROS_INFO("[onDisable]");
 }
 
 void ImageMapDisplay::qtEnable(){
-  ROS_INFO("[qtEnable]");
-  widget_ = new DriveWidget(0);
-  rviz::WindowManagerInterface* wm = vis_manager_->getWindowManager();
-  if(wm){
-    panel_container_ = wm->addPane(name_, widget_);
-  }
-  ROS_INFO("[qtEnable]");
+    ROS_INFO("[qtEnable]");
+    //widget_ = new DriveWidget(0);
+    info_ = new ImageMapInfo(0);
+    rviz::WindowManagerInterface* wm = vis_manager_->getWindowManager();
+    if(wm){
+        panel_container_ = wm->addPane(name_, info_);
+    }
+    ROS_INFO("[qtEnable]");
 }
 
 void ImageMapDisplay::qtDisable(){
   ROS_INFO("[qtDisable]");
   delete panel_container_;
-  delete widget_;
+  delete info_;
   ROS_INFO("[qtDisable]");
 }
 
