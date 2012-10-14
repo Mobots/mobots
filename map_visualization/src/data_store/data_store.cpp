@@ -150,14 +150,14 @@ bool imageHandlerOut(map_visualization::GetImageWithPose::Request &req, map_visu
  */
 int main(int argc, char **argv){
 	// The node is called image_store_server
-	ros::init(argc, argv, "image_store_server");
+	ros::init(argc, argv, "image_store");
 	ros::NodeHandle n;
 	// To save images: image_store_save
 	// To get images: image_store_get
 	ros::Subscriber deltaSub = n.subscribe
-		("shutter_image_delta_pose", 10, imageDeltaPoseHandler);
+		("image_pose_id", 10, imageDeltaPoseHandler);
 	ros::Subscriber absoluteSub = n.subscribe
-		("slam_absolute_pose", 10, absolutePoseHandler);
+		("slam/abs_pose", 10, absolutePoseHandler);
 	ros::Publisher relPub = n.advertise<mobots_msgs::ImageWithPoseAndID>("image_store_rel_pose", 10);
 	relativePub = &relPub;
 	ros::Publisher absPub = n.advertise<mobots_msgs::PoseAndID> ("image_store_abs_pose", 10);

@@ -12,7 +12,7 @@
 #include "image_info_data.cpp"
 
 // Filename ending for the files
-std::string savePathRoot("/home/moritz/"); // save path root
+std::string savePathRoot("~/"); // save path root
 std::string fileConvention("mobotID%i-%i.%s"); // mobotID2-12.jpg
 std::string folderConvention("%ssession-%i/"); // /home/john/session-1/
 std::string infoEnding("info");
@@ -110,7 +110,7 @@ ImageInfo::ImageInfo(const imageInfoData* infoData_){
 		if(infoData_->absPose.enable == 1){
 			infoData.absPose = infoData_->absPose;
 		}
-		infoData.save(infoPath);
+		infoData.save(infoPath);/home/moritz
 	}catch (std::exception &e){
 		ROS_INFO("Error: %s", e.what());
 		errorStatus = 102;
