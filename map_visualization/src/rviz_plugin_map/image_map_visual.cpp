@@ -1,6 +1,6 @@
 #include "image_map_visual.h"
 
-namespace rviz_plugin_display
+namespace map_visualization
 {
 
 /**

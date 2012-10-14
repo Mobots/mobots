@@ -1,6 +1,6 @@
 #include "image_map_display.h"
 
-namespace rviz_plugin_display{
+namespace map_visualization{
 	
 ImageMapDisplay::ImageMapDisplay()
   : Display()
@@ -35,8 +35,9 @@ void ImageMapDisplay::onInitialize(){
 void ImageMapDisplay::onEnable(){
 	ROS_INFO("onenable");
 	subscribe();
-    visual_ = new ImageMapVisual(vis_manager_->getSceneManager());
-    testVisual(visual_, "/home/moritz/TillEvil.jpg");
+  visual_ = new ImageMapVisual(vis_manager_->getSceneManager());
+  testVisual(visual_, "/home/moritz/TillEvil.jpg");
+  qtEnable();
 	ROS_INFO("onenable");
 }
 
@@ -44,8 +45,26 @@ void ImageMapDisplay::onDisable(){
 	ROS_INFO("[onDisable]");
 	unsubscribe();
 	delete visual_;
-    visual_ = NULL;
+  visual_ = NULL;
+  qtEnable();
 	ROS_INFO("[onDisable]");
+}
+
+void ImageMapDisplay::qtEnable(){
+  ROS_INFO("[qtEnable]");
+  widget_ = new DriveWidget(0);
+  rviz::WindowManagerInterface* wm = vis_manager_->getWindowManager();
+  if(wm){
+    panel_container_ = wm->addPane(name_, widget_);
+  }
+  ROS_INFO("[qtEnable]");
+}
+
+void ImageMapDisplay::qtDisable(){
+  ROS_INFO("[qtDisable]");
+  delete panel_container_;
+  delete widget_;
+  ROS_INFO("[qtDisable]");
 }
 
 void ImageMapDisplay::subscribe(){
@@ -194,5 +213,5 @@ void ImageMapDisplay::testVisual(ImageMapVisual* visual_, std::string filePath){
 // Tell pluginlib about this class.  It is important to do this in
 // global scope, outside our package's namespace.
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(rviz_plugin_display, ImageMapDisplay,
-    rviz_plugin_display::ImageMapDisplay, rviz::Display)
+PLUGINLIB_DECLARE_CLASS(map_visualization, ImageMapDisplay,
+  map_visualization::ImageMapDisplay, rviz::Display)
