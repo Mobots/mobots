@@ -24,4 +24,4 @@ rosbuild_add_library(${PROJECT_NAME}
   ${uis_h} ${qt_srcs} ${qt_moc_srcs}
 )
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_LIBRARIES})
-rosbuild_add_executable(image_map_test image_map_test.cpp)
+#rosbuild_add_executable(image_map_test image_map_test.cpp)
