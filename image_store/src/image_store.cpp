@@ -158,6 +158,11 @@ int main(int argc, char **argv){
   const int mobotCount = 3;
 	// The node is called image_store_server
 	ros::init(argc, argv, "image_store");
+	if(!ros::param::get("/sessionID", currentSessionID))
+		ROS_ERROR("%s /sessionID is not set, sessionID set to 0", __FILE__);
+	std::stringstream stream;
+	stream << "mkdir ~/session-" << currentSessionID;
+	system(stream.str().c_str());
 	ros::NodeHandle n;
 	// To save images: image_store_save
 	// To get images: image_store_get
