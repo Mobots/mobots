@@ -3,7 +3,7 @@
 #include "mobots_msgs/ImageWithPoseAndID.h"
 #include "mobots_msgs/FeatureSetWithPoseAndID.h"
 #include "map_visualization/GetImageWithPose.h"
-#include "image_transport/image_transport.h"
+//#include "image_transport/image_transport.h"
 #include "opencv/cvwimage.h"
 #include "opencv/highgui.h"
 #include "iostream"
@@ -12,7 +12,7 @@
 #include "vector"
 
 #include "image_pose_data_types.h"
-#include "feature.cpp"
+#include "feature.h"
 #include <assert.h>
 
 /**
@@ -86,10 +86,14 @@ void featuresReceived(const mobots_msgs::FeatureSetWithPoseAndID& msg){
   id.imageID = msg.id.image_id;
   id.mobotID = msg.id.mobot_id;
   id.sessionID = msg.id.session_id;
-  FeatureStore::saveFeatureSet(msg);
+  if(!FeatureStore::saveFeatureSet(msg))
+	 ROS_ERROR("%s| Error writing feature set to disk: session_id: %i, mobot_id: %i, image_id: %i", __PRETTY_FUNCTION__, 
+			 msg.id.session_id, msg.id.mobot_id, msg.id.image_id);
   std::cout << "feature_store test saved features" << std::endl;
   mobots_msgs::FeatureSetWithPoseAndID msg2;
-  FeatureStore::loadFeatureSet(id, msg2);
+  if(!FeatureStore::loadFeatureSet(id, msg2))
+	 ROS_ERROR("%s| Error loading feature set from disk: session_id: %i, mobot_id: %i, image_id: %i", __PRETTY_FUNCTION__, 
+			 msg.id.session_id, msg.id.mobot_id, msg.id.image_id);
   std::cout << "feature_store test loaded features" << std::endl;
   assert(msg.id.image_id == msg2.id.image_id);
   assert(msg.id.mobot_id == msg2.id.mobot_id);
@@ -152,13 +156,13 @@ void testFeatureStore(){
   i.pose.theta = 5;
   i.pose.x = 1;
   FILE* fp;
-  char result [1000];
+  char* result = (char*) calloc(200, 1);
   fp = popen("rospack find slam","r");
-  fread(result, 1, sizeof(result), fp);
+  fread(result, 1, 200, fp);
   pclose(fp);
   std::stringstream ss;
   result[strlen(result)-1] = '\0';
-  ss << "/home/jonas/mobots/slam" << "/pics/" << 1 << ".png";
+  ss << result << "/pics/" << 1 << ".png";
   cv::Mat img = cv::imread(ss.str(), 1);
   std::cout << "using " << ss.str() << std::endl;
   nh = new ros::NodeHandle;
@@ -175,11 +179,13 @@ void testFeatureStore(){
  */
 int main(int argc, char **argv)
 {
+  /** feature_store test completes successfully 
 	//==== feature_store test ==== 
   ros::init(argc, argv, "image_store_test");
   testFeatureStore();
   ros::spin();
 	//==== end feature store test
+	*/
 	if(argc < 2){
 		ROS_INFO("Need more arguments");
 		return 0;
