@@ -77,14 +77,15 @@ void checkResult(){
     cout << "images do not overlap at all" << endl;
     return;
   }
-  cout << "deltaX " << delta.x << endl;
+  /*cout << "deltaX " << delta.x << endl;
   cout << "deltaY " << delta.y << endl;
   cout << "theta " << delta.theta << " rad = " << toDegree(delta.theta) << "°" << endl;
   Mat aff;
   
   findRotationMatrix2D(Point2f(gimage2.cols/2, gimage2.rows/2), delta.theta, aff);
   aff.at<double>(0,2) = delta.x;
-  aff.at<double>(1,2) = delta.y;
+  aff.at<double>(1,2) = delta.y;*/
+  cout << affine3 << endl;
   Mat result;
   Mat result2;
   result2.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
