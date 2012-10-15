@@ -49,10 +49,10 @@ void* shutterThread(void* data){
     stringstream ss;
     result[strlen(result)-1] = '\0';
     ss << result << "/pics/" << imageID << ".png";
-    cv::Mat img = cv::imread(string(), 0);
+    cv::Mat img = cv::imread(ss.str(), 1);
     //copyMatToImageMSg(img, msg);
 	 vector<uchar> data;
-	 string encoding("png");
+	 string encoding(".png");
 	 imencode(encoding, img, data);
 	 msg.image.data = data;
 	 msg.image.height = img.rows;

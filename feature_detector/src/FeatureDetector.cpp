@@ -2,6 +2,7 @@
 #include "ros/ros.h"
 #include "cv_bridge/cv_bridge.h"
 #include <iostream>
+#include <fstream>
 
 #include "feature_detector/MessageBridge.h"
 #include "feature_detector/FeaturesFinder.h"
@@ -19,7 +20,7 @@ char* TAG;
 void processImage(const mobots_msgs::ImageWithPoseAndID& image){
   ROS_INFO("%s processImage", TAG);
   FeatureSet features;
-  cv_bridge::CvImagePtr imagePtr = cv_bridge::toCvCopy(image.image);
+  cv_bridge::CvImagePtr imagePtr = cv_bridge::toCvCopy(image.image, "mono8");
   detector->computeFeatureSet(imagePtr->image, features);
   mobots_msgs::FeatureSetWithPoseAndID result;
   MessageBridge::copyToRosMessage(features, result.features);

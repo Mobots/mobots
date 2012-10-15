@@ -4,6 +4,7 @@
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/video/video.hpp>
 
+#include <ros/console.h>
 #include <geometry_msgs/Pose2D.h>
 
 #include "draw.h"
@@ -20,7 +21,7 @@ Mat H;
 
 const char CpuFeaturesMatcher::SURF_DEFAULT[] = "FlannBased";
 const char CpuFeaturesMatcher::ORB_DEFAULT[] = "BruteForce-Hamming";
-static const double LENGTHDIFF_THRESHOLD = 1.2;    //if abs(distance(a) - distance(b)) > => outlier
+static const double LENGTHDIFF_THRESHOLD = 0.1;    //if abs(distance(a) - distance(b)) > => outlier
 static const double MAX_ALLOWED_MATCH_DISTANCE = 60;
 static const char* TAG = "[FeaturesMatcher] ";
 
@@ -101,7 +102,7 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, g
   vector<Point2f> points1Refined;
   vector<Point2f> points2Refined;
   
-  cout << img1.keyPoints.size() << " " << img1.descriptors.size << cout << img2.keyPoints.size() << " " << img2.descriptors.size << endl;
+  //cout << img1.keyPoints.size() << " " << img1.descriptors.size() << cout << img2.keyPoints.size() << " " << img2.descriptors.size() << endl;
   
   
   matcher->match(img1.descriptors, img2.descriptors, matches1);
@@ -112,6 +113,24 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, g
   
   int threshold = 4;
   int lastSize = -1;
+  for(int i = 0; true; i++){
+	 cout << "round " << i << "size " << points1.size() << endl;
+	 planeTest(points1, points2, points1Refined, points2Refined, threshold);
+	 int size = points1.size();
+	 if(size == lastSize)
+		break;
+	 if(size < 3)
+		return false;
+	 lastSize = size;
+	 points1 = points1Refined;
+	 points2 = points2Refined;
+	 points1Refined.clear();
+	 points2Refined.clear();
+  }
+	/* points1Refined.clear();
+	 points2Refined.clear();
+  threshold = 20;
+  lastSize = -1;
   for(int i = 0; true; i++){
 	 cout << "round " << i << "size " << points1.size() << endl;
 	 planeTest(points1, points2, points1Refined, points2Refined, threshold);
@@ -153,8 +172,8 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, g
 	 || abs(d.at<double>(0,1)) > 2
 	 || abs(d.at<double>(1,0)) > 2
 	 || abs(d.at<double>(1,1)) > 2){
-		cerr << "faulty matrix detected!! : " << endl << d << endl;
-		//return false;
+	 ROS_ERROR_STREAM(__PRETTY_FUNCTION__ << ": faulty matrix detected (&rejected)!! : \n" << d);
+		return false;
 	 }
   delta.theta = -atan2(-d.at<double>(0,1), d.at<double>(0,0));
   delta.x = d.at<double>(0,2);
