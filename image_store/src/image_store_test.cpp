@@ -11,8 +11,8 @@
 #include "fstream"
 #include "vector"
 
-#include "image_info_data_types.h"
-#include "feature_store.cpp"
+#include "image_pose_data_types.h"
+#include "feature.cpp"
 #include <assert.h>
 
 /**
