@@ -1,7 +1,7 @@
 #include <fstream>
 
 #include "mobots_msgs/FeatureSetWithPoseAndID.h"
-#include "image_info_data_types.h"
+#include "image_pose_data_types.h"
 
 namespace ser = ros::serialization;
 
