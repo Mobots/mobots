@@ -143,7 +143,7 @@ bool imageHandlerOut(map_visualization::GetImageWithPose::Request &req, map_visu
 }
 
 void featureSetHandler(const mobots_msgs::FeatureSetWithPoseAndID& msg){
-  
+  FeatureStore::saveFeatureSet(msg);
 }
 
 /**

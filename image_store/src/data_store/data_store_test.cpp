@@ -86,12 +86,10 @@ void featuresReceived(const mobots_msgs::FeatureSetWithPoseAndID& msg){
   id.imageID = msg.id.image_id;
   id.mobotID = msg.id.mobot_id;
   id.sessionID = msg.id.session_id;
-  std::cout << "feature_store test saving features" << std::endl;
-  saveFeatureSet(msg);
+  FeatureStore::saveFeatureSet(msg);
   std::cout << "feature_store test saved features" << std::endl;
   mobots_msgs::FeatureSetWithPoseAndID msg2;
-  std::cout << "feature_store test loading features" << std::endl;
-  loadFeatureSet(id, msg2);
+  FeatureStore::loadFeatureSet(id, msg2);
   std::cout << "feature_store test loaded features" << std::endl;
   assert(msg.id.image_id == msg2.id.image_id);
   assert(msg.id.mobot_id == msg2.id.mobot_id);
@@ -107,6 +105,9 @@ void featuresReceived(const mobots_msgs::FeatureSetWithPoseAndID& msg){
 	 assert(msg.features.keyPoints[i].pt.x == msg2.features.keyPoints[i].pt.x);
 	 assert(msg.features.keyPoints[i].size == msg2.features.keyPoints[i].size);	 
   }
+	assert(msg.features.descriptors.data == msg2.features.descriptors.data);
+  int somethingWentWrong;
+	assert(somethingWentWrong);
 }
 
 //for feature_store test
@@ -139,6 +140,9 @@ void copyMatToImageMSg(const cv::Mat& in, mobots_msgs::ImageWithPoseAndID& out2)
   }
 }
 
+/**
+ * tests the feature store
+ */
 void testFeatureStore(){  
   //obtain featureset
   //first read image and send it to feature_detector
@@ -171,9 +175,11 @@ void testFeatureStore(){
  */
 int main(int argc, char **argv)
 {
+	//==== feature_store test ==== 
   ros::init(argc, argv, "image_store_test");
   testFeatureStore();
   ros::spin();
+	//==== end feature store test
 	if(argc < 2){
 		ROS_INFO("Need more arguments");
 		return 0;
