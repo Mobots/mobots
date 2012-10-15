@@ -9,8 +9,10 @@
 
 #include <ros/ros.h>
 
-#include "image_pose.cpp"
-#include "feature.cpp"
+#include "image_pose_data_types.h"
+#include "image_pose.h"
+#include "feature.h"
+
 #include "map_visualization/GetImageWithPose.h"
 #include "mobots_msgs/ImageWithPoseAndID.h"
 #include "mobots_msgs/PoseAndID.h"
@@ -143,7 +145,9 @@ bool imageHandlerOut(map_visualization::GetImageWithPose::Request &req, map_visu
 }
 
 void featureSetHandler(const mobots_msgs::FeatureSetWithPoseAndID& msg){
-  FeatureStore::saveFeatureSet(msg);
+  if(!FeatureStore::saveFeatureSet(msg))
+	 ROS_ERROR("%s: Error writing feature set to disk: session_id: %i, mobot_id: %i, image_id: %i", __PRETTY_FUNCTION__, 
+				  msg.id.session_id, msg.id.mobot_id, msg.id.image_id);
 }
 
 /**

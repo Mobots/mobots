@@ -11,7 +11,13 @@ struct poseT{
 	float y;
 	float theta;
 	bool enable;
-	poseT operator+(const poseT&);
+	//das muss hier direkt in die klasse, ansonsten kriegt gcc das nicht geschissen
+	poseT operator+(const poseT& other){
+	 float resultX = x + other.x;
+	 float resultY = y + other.y;
+	 float resultTheta = theta + other.theta;
+	 return poseT{resultX, resultY, resultTheta, 1};
+  }
 };
 
 struct imageT{
@@ -20,14 +26,6 @@ struct imageT{
 	
 	std::string encoding;
 };
-
-poseT poseT::operator+(const poseT& other)
-{
-	float resultX = x + other.x;
-	float resultY = y + other.y;
-	float resultTheta = theta + other.theta;
-	return poseT{resultX, resultY, resultTheta, 1};
-}
 
 struct imagePoseData{
 	IDT id;
