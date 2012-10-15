@@ -9,7 +9,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
-#include "image_info_data.cpp"
+#include "image_pose_data_types.cpp"
 
 // Filename ending for the files
 std::string savePathRoot("~/"); // save path root
@@ -21,12 +21,12 @@ std::string infoEnding("info");
  * Saves an image and its infos in a file or loads the image and infos.
  * TODO calculate imagePath size
  */
-class ImageInfo{
+class ImagePose{
 public:
-	ImageInfo();
-	ImageInfo(const IDT* id);
-	ImageInfo(const imageInfoData* infoData_);
-	ImageInfo(const imageInfoData* infoData_, const std::vector<unsigned char>);
+	ImagePose();
+	ImagePose(const IDT* id);
+	ImagePose(const imagePoseData* infoData_);
+	ImagePose(const imagePoseData* infoData_, const std::vector<unsigned char>);
 
 	int getErrorStatus(){return errorStatus;}
 	
@@ -57,7 +57,7 @@ private:
 	int errorStatus;
 	
 	std::string infoPath;
-	imageInfoData infoData;
+	imagePoseData infoData;
 	
 	std::string imagePath;
 	std::vector<unsigned char> imageData;
@@ -68,7 +68,7 @@ private:
 	int initWrite();
 };
 
-ImageInfo::ImageInfo(){
+ImagePose::ImagePose(){
 	savePath = savePathRoot;
 	errorStatus = 0;
 }
@@ -77,7 +77,7 @@ ImageInfo::ImageInfo(){
  * Constructor to access a saved image, its properties, and poses. The image
  * is loaded with the get request.
  */
-ImageInfo::ImageInfo(const IDT* id_){
+ImagePose::ImagePose(const IDT* id_){
 	errorStatus = 0;
 	savePath = savePathRoot;
 	infoData.id = *id_;
@@ -95,7 +95,7 @@ ImageInfo::ImageInfo(const IDT* id_){
  * Constructor to update the infoData. If a pose is not 'enabled', it will not
  * be overwritten.
  */
-ImageInfo::ImageInfo(const imageInfoData* infoData_){
+ImagePose::ImagePose(const imagePoseData* infoData_){
 	errorStatus = 0;
 	infoData.id = infoData_->id;
 	infoPath = concPath(infoEnding.c_str());
@@ -120,7 +120,7 @@ ImageInfo::ImageInfo(const imageInfoData* infoData_){
 /**
  * Constructor to store an image, its properties, and poses.
  */
-ImageInfo::ImageInfo(const imageInfoData* infoData_, const std::vector<unsigned char> imageData_){
+ImagePose::ImagePose(const imagePoseData* infoData_, const std::vector<unsigned char> imageData_){
 	errorStatus = 0;
 	savePath = savePathRoot;
 	infoData = *infoData_;
@@ -134,7 +134,7 @@ ImageInfo::ImageInfo(const imageInfoData* infoData_, const std::vector<unsigned 
  * Loads the image data.
  * @return if fail, return 1. Else return 0.
  */
-int ImageInfo::initReadImage(){
+int ImagePose::initReadImage(){
 	std::ifstream imageFile(imagePath.c_str(), std::ios::binary);
 	if(imageFile.is_open()){
 		// Get filesize, create buffer, reset file pointer
@@ -157,7 +157,7 @@ int ImageInfo::initReadImage(){
 /**
  * Save an image and its info file to disk.
  */
-int ImageInfo::initWrite(){
+int ImagePose::initWrite(){
 	// Create the directory
 	char* infoFolderPath = concPath();
 	boost::filesystem::create_directories(infoFolderPath);
@@ -176,7 +176,7 @@ int ImageInfo::initWrite(){
 		imageFile.write((const char*) &imageData[0], imageData.size() * sizeof(unsigned char));
 		imageFile.close();
 	} else {
-		ROS_INFO("ImageInfo:%s: Can't save image", imagePath.c_str());
+		ROS_INFO("ImagePose:%s: Can't save image", imagePath.c_str());
 		return 1;
 	}
 	return 0;
@@ -185,7 +185,7 @@ int ImageInfo::initWrite(){
 /**
  * Loads the most recent info file of a mobot
  */
-void ImageInfo::loadLast(const IDT* id_){
+void ImagePose::loadLast(const IDT* id_){
 	infoData.id = *id_;
 	infoData.id.imageID = 0;
 	infoPath = concPath(infoEnding.c_str());
@@ -214,7 +214,7 @@ void ImageInfo::loadLast(const IDT* id_){
  * into a filepath.
  * TODO calculate pathlength
  */
-char* ImageInfo::concPath(const char* ending){
+char* ImagePose::concPath(const char* ending){
 	char* path = new char[1000];
 	std::string pathConvention = folderConvention + fileConvention;
 	sprintf(path, pathConvention.c_str(), savePath.c_str(), infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ending);
@@ -226,7 +226,7 @@ char* ImageInfo::concPath(const char* ending){
  * into a filepath.
  * TODO calculate pathlength
  */
-char* ImageInfo::concPath(){
+char* ImagePose::concPath(){
 	char* path = new char[1000];
 	sprintf(path, folderConvention.c_str(), savePath.c_str(), infoData.id.sessionID);
 	return path;
@@ -235,7 +235,7 @@ char* ImageInfo::concPath(){
 /**
  * If the image is not loaded, it will be loaded from the disk.
  */
-std::vector<unsigned char> ImageInfo::getImageData(){
+std::vector<unsigned char> ImagePose::getImageData(){
 	if(imageData.size() == 0){
 		if(initReadImage() == 0){
 			ROS_INFO("initImageRead: Success:%s", imagePath.c_str());

@@ -29,7 +29,7 @@ poseT poseT::operator+(const poseT& other)
 	return poseT{resultX, resultY, resultTheta, 1};
 }
 
-struct imageInfoData{
+struct imagePoseData{
 	IDT id;
 	poseT delPose; // delta_pose
 	poseT relPose; // relative_pose

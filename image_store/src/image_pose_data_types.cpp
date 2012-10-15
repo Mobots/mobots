@@ -4,12 +4,12 @@
 #include <exception>
 #include <iostream>
 
-#include "image_info_data_types.h"
+#include "image_pose_data_types.h"
 
 /**
  * Loads the xml data from the filename
  */
-void imageInfoData::load(const std::string &filename){
+void imagePoseData::load(const std::string &filename){
 	// Create empty property tree object
 	using boost::property_tree::ptree;
 	ptree pt;
@@ -41,7 +41,7 @@ void imageInfoData::load(const std::string &filename){
 }
 
 // Saves the data to the specified XML file
-void imageInfoData::save(const std::string &filename_){
+void imagePoseData::save(const std::string &filename_){
 	// Create an empty property tree object
 	using boost::property_tree::ptree;
 	ptree pt;

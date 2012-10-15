@@ -9,8 +9,8 @@
 
 #include <ros/ros.h>
 
-#include "image_info.cpp"
-#include "feature_store.cpp"
+#include "image_pose.cpp"
+#include "feature.cpp"
 #include "map_visualization/GetImageWithPose.h"
 #include "mobots_msgs/ImageWithPoseAndID.h"
 #include "mobots_msgs/PoseAndID.h"
@@ -30,13 +30,13 @@ ros::Publisher* absolutePub;
  */
 void refreshDeltaPoseBuffer(){
 	ROS_INFO("[refreshDeltaPoseBuffer]");
-	ImageInfo imageInfo;
+	ImagePose imagePose;
 	IDT id;
 	deltaPoseBuffer.clear();
 	id.sessionID = currentSessionID;
-	for(id.mobotID = 0; imageInfo.getErrorStatus() == 0; id.mobotID++){
-		imageInfo.loadLast(&id);
-		deltaPoseBuffer[id.mobotID] = imageInfo.getRelPose();
+	for(id.mobotID = 0; imagePose.getErrorStatus() == 0; id.mobotID++){
+		imagePose.loadLast(&id);
+		deltaPoseBuffer[id.mobotID] = imagePose.getRelPose();
 		ROS_INFO("mobotID: %i", id.mobotID);
 	}
 }
@@ -48,7 +48,7 @@ void refreshDeltaPoseBuffer(){
  */
 void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg){
 	ROS_INFO("deltaPose1");
-	imageInfoData infoData{
+	imagePoseData infoData{
 		{msg->id.session_id, msg->id.mobot_id, msg->id.image_id},
 		{msg->pose.x, msg->pose.y, msg->pose.theta, 1}, // delPose (relative)
 		{0,0,0,0}, // relPose (relative)
@@ -70,7 +70,7 @@ void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg)
 	ROS_INFO("deltaPose5: image: %i", msg->image.data.size());
 	ROS_INFO("deltaPose5: buffer: %i", deltaPoseBuffer.size());
 	deltaPoseBuffer[infoData.id.mobotID] = infoData.relPose;
-	ImageInfo imageInfo(&infoData, msg->image.data);
+	ImagePose imagePose(&infoData, msg->image.data);
 	ROS_INFO("deltaPose6");
 	// Relay the image and updated pose to Rviz
 	mobots_msgs::ImageWithPoseAndID relayMsg;
@@ -95,14 +95,14 @@ void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg)
  * Callback to save the absolute the pose, and relay it to all Rviz instances
  */
 void absolutePoseHandler(const mobots_msgs::PoseAndID::ConstPtr& msg){
-	imageInfoData infoData{
+	imagePoseData infoData{
 		{msg->id.session_id, msg->id.mobot_id, msg->id.image_id},
 		{0,0,0,0},
 		{0,0,0,0},
 		{msg->pose.x, msg->pose.y, msg->pose.theta, 1},
 		{0,0,0}
 	};
-	ImageInfo info(&infoData);
+	ImagePose imagePose(&infoData);
 	absolutePub->publish(*msg);
 	ros::spinOnce();
 	ROS_INFO("image_store: image saved: %i", msg->id.image_id);
@@ -113,22 +113,22 @@ void absolutePoseHandler(const mobots_msgs::PoseAndID::ConstPtr& msg){
  */
 bool imageHandlerOut(map_visualization::GetImageWithPose::Request &req, map_visualization::GetImageWithPose::Response &res){
 	IDT id{req.id.session_id, req.id.mobot_id, req.id.image_id};
-	ImageInfo info(&id);
-	if(info.getErrorStatus() != 0){
-		res.error = info.getErrorStatus();
+	ImagePose imagePose(&id);
+	if(imagePose.getErrorStatus() != 0){
+		res.error = imagePose.getErrorStatus();
 		return true;
 	}
 	// 0 - Both, 1 - Image, 2 - Pose
 	if(req.type != 2){
-		res.image.data = info.getImageData();
-		res.image.encoding = info.getEncoding();
-		res.image.width = info.getWidth();
-		res.image.height = info.getHeight();
+		res.image.data = imagePose.getImageData();
+		res.image.encoding = imagePose.getEncoding();
+		res.image.width = imagePose.getWidth();
+		res.image.height = imagePose.getHeight();
 	}
 	if(req.type != 1){
-		poseT delPose = info.getDelPose();
-		poseT relPose = info.getRelPose();
-		poseT absPose = info.getAbsPose();
+		poseT delPose = imagePose.getDelPose();
+		poseT relPose = imagePose.getRelPose();
+		poseT absPose = imagePose.getAbsPose();
 		res.del_pose.x = delPose.x;
 		res.del_pose.y = delPose.y;
 		res.del_pose.theta = delPose.theta;
