@@ -8,7 +8,6 @@
 
 #include "geometry_msgs/Pose2D.h"
 #include "ImageHandler.h"
-#include <../../opt/ros/electric/stacks/ros_comm/clients/cpp/roscpp/include/ros/init.h>
 
 using namespace std;
 using namespace cv;
