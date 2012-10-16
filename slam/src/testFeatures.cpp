@@ -3,6 +3,8 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
 #include <boost/lexical_cast.hpp>
+#include <stdlib.h>
+#include <ros/package.h>
 
 #include "feature_detector/FeaturesFinder.h"
 #include "feature_detector/MessageBridge.h"
@@ -46,7 +48,13 @@ int main(int argc, char** argv){
   
   for (int i = 1; i <= 13; i++)
   {
-    Mat image = imread("/home/mobots/ros_workspace/mobots/slam/pics/" + boost::lexical_cast<string>(i) + ".png", 1); //1 for colours
+    string slam_path = ros::package::getPath("slam");
+    string filename = slam_path + "/pics/" + boost::lexical_cast<string>(i) + ".png";
+    Mat image = imread(filename, 1); //1 for colours
+    if (image.data == NULL) {
+      cerr << "Error loading pic " << filename << "!" << endl;
+      return EXIT_FAILURE;
+    }
     Mat gray_image;
     cvtColor(image, gray_image, CV_RGB2GRAY); //FeatureDetecter etc. arbeiten alle auf Graustufenbildern
     
