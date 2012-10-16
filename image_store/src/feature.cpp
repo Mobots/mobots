@@ -6,6 +6,7 @@
 
 namespace ser = ros::serialization;
 
+//
 static const char* HOME = getenv("HOME");
 
 static std::string getPathForIDT(const IDT id, const char* fileEnding){
