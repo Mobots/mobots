@@ -1,7 +1,9 @@
 #include "ImageHandler.h"
 #include <pthread.h>
 #include <iostream>
-#include "../../feature_detector/include/feature_detector/FeaturesFinder.h"
+#include "geometry_msgs/Pose2D.h"
+#include "feature_detector/MessageBridge.h"
+#include "feature_detector/FeaturesFinder.h"
 
 using namespace std;
 using namespace cv;
@@ -10,12 +12,11 @@ using namespace cv;
 cv::Mat gimage1;
 cv::Mat gimage2;
 extern Mat H;
-extern Delta delta2;
 
 const char TAG[] = "[ImageHandler] ";
 
 
-void copyMatToImageMSg(const cv::Mat& in, mobots_msgs::ImageWithDeltaPoseAndID& out2){
+void copyMatToImageMSg(const cv::Mat& in, mobots_msgs::ImageWithPoseAndID& out2){
   sensor_msgs::Image* out = &out2.image;
   out->height = in.rows;
   out->width = in.cols;
@@ -63,7 +64,7 @@ ImageHandler::ImageHandler():
   featureSetSubscriber = nh.subscribe("FeatureSetWithDeltaPose", 2, &ImageHandler::featuresCallback, this);
 }
 
-void ImageHandler::shutterCallback(const mobots_msgs::ImageWithDeltaPoseAndID &imageWithPoseAndId){
+void ImageHandler::shutterCallback(const mobots_msgs::ImageWithPoseAndID &imageWithPoseAndId){
   cout << TAG << "shutter" << endl;
   if(shutterPos == 0){
     cv_bridge::CvImagePtr a1 =  cv_bridge::toCvCopy(imageWithPoseAndId.image);
@@ -76,12 +77,12 @@ void ImageHandler::shutterCallback(const mobots_msgs::ImageWithDeltaPoseAndID &i
   shutterPos %= 2;
 }
 
-void ImageHandler::featuresCallback(const mobots_msgs::FeatureSetWithDeltaPoseAndID &featuresMsg){
+void ImageHandler::featuresCallback(const mobots_msgs::FeatureSetWithPoseAndID &featuresMsg){
   if(featurePos == 1){
-    MessageBridge::copyToCvStruct(featuresMsg, features2);
+    MessageBridge::copyToCvStruct(featuresMsg.features, features2);
     featurePos = 0;
       //just ugly copy from testFeatures.cpp
-    Delta delta;
+    geometry_msgs::Pose2D delta;
     Ptr<FeaturesMatcher> matcher = new CpuFeaturesMatcher("BruteForce-Hamming");
     bool matchResult = matcher->match(features1, features2, delta);
     if(matchResult){
@@ -120,7 +121,7 @@ void ImageHandler::featuresCallback(const mobots_msgs::FeatureSetWithDeltaPoseAn
     imshow("result2", result2);
     }
     
-    Mat aff2;
+    /*Mat aff2;
     findRotationMatrix2D(Point2f(0,0), delta2.theta, aff2);
     aff2.at<double>(0,2) = delta2.x;
     aff2.at<double>(1,2) = delta2.y;
@@ -163,7 +164,7 @@ void ImageHandler::featuresCallback(const mobots_msgs::FeatureSetWithDeltaPoseAn
     imshow("result H2", result4);*/
     waitKey(0);
   }else{
-    MessageBridge::copyToCvStruct(featuresMsg, features1);
+    MessageBridge::copyToCvStruct(featuresMsg.features, features1);
     featurePos++;
   }
 }
