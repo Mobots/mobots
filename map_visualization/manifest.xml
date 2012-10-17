@@ -1,10 +1,6 @@
 <package>
   <description brief="Map Visualization">
-
-    image_map_display: tiles with map image plugin for rviz
-
-    image_store: accepts images with pose and robotID information. Returns list of images of a robot with pose.
-
+    Displays map tiles with the image_map_display plugin for rviz
   </description>
   <author>Moritz Ulmer</author>
   <license>BSD</license>

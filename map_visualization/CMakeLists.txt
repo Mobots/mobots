@@ -22,10 +22,12 @@ include(${QT_USE_FILE})
 add_definitions(-DQT_NO_KEYWORDS)
 set(qt_srcs
     src/image_map_display.cpp
-    src/image_map_info.cpp)
+    src/image_map_info.cpp
+    src/image_map_model.cpp)
 set(qt_hdrs
     src/image_map_display.h
-    src/image_map_info.h)
+    src/image_map_info.h
+    src/image_map_model.h)
 qt4_automoc(${qt_srcs})
 QT4_WRAP_CPP(qt_moc_srcs ${qt_hdrs})
 QT4_WRAP_UI(uis_h src/image_map_info.ui)

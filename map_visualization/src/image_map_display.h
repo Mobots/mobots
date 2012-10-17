@@ -21,8 +21,6 @@
 #include "mobots_msgs/PoseAndID.h"
 
 #include "image_map_visual.h"
-#include "image_map_info.h"
-//#include "image_map_widget.h"
 
 namespace Ogre
 {
@@ -89,13 +87,6 @@ private:
     // 3D Scene
     Ogre::SceneNode* scene_node_;
     ImageMapVisual* visual_;
-
-    // QT Panel
-    void qtEnable();
-    void qtDisable();
-    rviz::PanelDockWidget* panel_container_;
-    //DriveWidget* widget_;
-    ImageMapInfo* info_;
 
     // ROS data Input
     ros::Subscriber relPoseSub;
