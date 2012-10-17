@@ -13,7 +13,7 @@ ImageMapDisplay::~ImageMapDisplay(){
 	ROS_INFO("delete");
 	unsubscribe();
 	delete visual_;
-	ROS_INFO("delete");
+    ROS_INFO("delete");
 }
 
 // Clear the map by deleting image_map_visual object
@@ -35,9 +35,8 @@ void ImageMapDisplay::onInitialize(){
 void ImageMapDisplay::onEnable(){
 	ROS_INFO("onenable");
 	subscribe();
-  visual_ = new ImageMapVisual(vis_manager_->getSceneManager());
-  testVisual(visual_, "/home/moritz/TillEvil.jpg");
-  qtEnable();
+    visual_ = new ImageMapVisual(vis_manager_->getSceneManager());
+    testVisual(visual_, "/home/moritz/TillEvil.jpg");
 	ROS_INFO("onenable");
 }
 
@@ -46,26 +45,7 @@ void ImageMapDisplay::onDisable(){
 	unsubscribe();
 	delete visual_;
     visual_ = NULL;
-    qtEnable();
 	ROS_INFO("[onDisable]");
-}
-
-void ImageMapDisplay::qtEnable(){
-    ROS_INFO("[qtEnable]");
-    //widget_ = new DriveWidget(0);
-    info_ = new ImageMapInfo(0);
-    rviz::WindowManagerInterface* wm = vis_manager_->getWindowManager();
-    if(wm){
-        panel_container_ = wm->addPane(name_, info_);
-    }
-    ROS_INFO("[qtEnable]");
-}
-
-void ImageMapDisplay::qtDisable(){
-  ROS_INFO("[qtDisable]");
-  delete panel_container_;
-  delete info_;
-  ROS_INFO("[qtDisable]");
 }
 
 void ImageMapDisplay::subscribe(){

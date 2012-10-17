@@ -1,10 +1,6 @@
 <package>
   <description brief="image_store">
-
-    image_map_display: tiles with map image plugin for rviz
-
-    image_store: accepts images with pose and robotID information. Returns list of images of a robot with pose.
-
+    image_store accepts images with pose and robotID information. Returns list of images of a robot with pose.
   </description>
   <author>Moritz Ulmer</author>
   <license>BSD</license>
@@ -19,7 +15,6 @@
   <depend package="map_visualization"/>
   <export>
     <rosdoc config="${prefix}/rosdoc.yaml"/>
-    <rviz plugin="${prefix}/plugin_description.xml"/>
   </export>
   <platform os="ubuntu" version="9.04"/>
   <platform os="ubuntu" version="9.10"/>

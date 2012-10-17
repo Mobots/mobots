@@ -3,7 +3,7 @@
          type="map_visualization::ImageMapDisplay"
          base_class_type="rviz::Display">
     <description>
-      Displays information about and controls the ImageMapDisplay class
+      Displays the image tiles taken by the mobots, to form a map.
     </description>
   </class>  
 </library>
