@@ -162,30 +162,32 @@ int main(int argc, char **argv){
   const int mobotCount = 3;
 	// The node is called image_store_server
 	ros::init(argc, argv, "image_store");
-	if(!ros::param::get("/sessionID", currentSessionID))
+	if(!ros::param::get("/sessionID", currentSessionID)){
+		currentSessionID = 0;
 		ROS_ERROR("%s /sessionID is not set, sessionID set to 0", __FILE__);
+	}
 	std::stringstream stream;
 	stream << "mkdir ~/session-" << currentSessionID;
 	system(stream.str().c_str());
 	ros::NodeHandle n;
 	// To save images: image_store_save
 	// To get images: image_store_get
-	ros::Subscriber deltaSub = n.subscribe
-		("image_pose_id", 10, imageDeltaPoseHandler);
-	ros::Subscriber absoluteSub = n.subscribe
-		("slam/abs_pose", 10, absolutePoseHandler);
-	 ros::Subscriber* featuresetSubs = new ros::Subscriber[mobotCount];
-	 for(int i = 0; i < mobotCount; i++){
+	ros::Subscriber absoluteSub = n.subscribe("slam/abs_pose", 10, absolutePoseHandler);
+	ros::Subscriber* deltaSubs = new ros::Subscriber[mobotCount];
+	ros::Subscriber* featuresetSubs = new ros::Subscriber[mobotCount];
+	for(int i = 0; i < mobotCount; i++){
 		std::stringstream ss;
-		ss << "mobot" << i << "/featureset_pose_id";
+		ss << "/mobot" << i << "/featureset_pose_id";
 		featuresetSubs[i] = n.subscribe(ss.str(), 10, featureSetHandler);
-	 }
+		ss.clear();
+		ss << "/mobot" << i << "/image_pose_id", 10;
+		deltaSubs[i] = n.subscribe(ss.str(), 10, imageDeltaPoseHandler);
+	}
 	ros::Publisher relPub = n.advertise<mobots_msgs::ImageWithPoseAndID>("image_store_rel_pose", 10);
 	relativePub = &relPub;
 	ros::Publisher absPub = n.advertise<mobots_msgs::PoseAndID> ("image_store_abs_pose", 10);
 	absolutePub = &absPub;
-	ros::ServiceServer service = n.advertiseService
-		("image_store_get", imageHandlerOut);
+	ros::ServiceServer service = n.advertiseService("image_store_get", imageHandlerOut);
 	
 	ROS_INFO("Image_store: Ready");
 	ros::spin();
