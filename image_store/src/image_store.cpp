@@ -144,6 +144,9 @@ bool imageHandlerOut(map_visualization::GetImageWithPose::Request &req, map_visu
 	return true;
 }
 
+/**
+ * Currently only saves the received Feature messages on hdd
+ */
 void featureSetHandler(const mobots_msgs::FeatureSetWithPoseAndID& msg){
   if(!FeatureStore::saveFeatureSet(msg))
 	 ROS_ERROR("%s: Error writing feature set to disk: session_id: %i, mobot_id: %i, image_id: %i", __PRETTY_FUNCTION__, 
