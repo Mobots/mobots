@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<launch>
+
+	<node name="testFeatures" pkg="slam" type="testFeatures" output="screen" ns="mobot1" >
+	</node>
+
+	<node name="feature_detector" pkg="feature_detector" type="feature_detector" output="screen" ns="mobot1" >
+		<remap from="feature_detector/FeatureSetWithDeltaPoseAndID" to="FeatureSetWithDeltaPoseAndID" />
+	</node>
+
+	<node name="slam" pkg="slam" type="slam" output="screen" >
+	</node>
+
+	<node name="rviz" pkg="rviz" type="rviz" output="screen" >
+	</node>
+
+</launch>
