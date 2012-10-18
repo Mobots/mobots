@@ -60,13 +60,14 @@ void* shutterThread(void* data){
 	 msg.image.encoding = "png";
 	 msg.image.is_bigendian = 0;
 	 msg.image.step = img.cols * img.elemSize();
-    msg.pose.x = 0 + imageID*rand()/RAND_MAX*3;
-    msg.pose.y = 0 + imageID*rand()/RAND_MAX*3;
-    msg.pose.theta = imageID*rand()/RAND_MAX*2;
+    msg.pose.x = -0.3 + imageID*(double)((double)rand()/(double)RAND_MAX)*3;
+    msg.pose.y = 0.1 + imageID*(double)((double)rand()/(double)RAND_MAX)*3;
+    msg.pose.theta = imageID*(double)((double)rand()/(double)RAND_MAX)*2;
     pub.publish(msg);
     imageID++;
     msg.id.image_id = imageID;
     cout << TAG << "shuttered  " << ss.str() << endl;
+		cout << "x " << msg.pose.x << " y " << msg.pose.y << " theta " << msg.pose.theta << endl;
   }
 }
 
