@@ -21,16 +21,11 @@ include(${QT_USE_FILE})
 # Run the moc pre-processor on the qt files
 add_definitions(-DQT_NO_KEYWORDS)
 set(qt_srcs
-    src/image_map_display.cpp
-    src/image_map_info.cpp
-    src/image_map_model.cpp)
+    src/image_map_display.cpp)
 set(qt_hdrs
-    src/image_map_display.h
-    src/image_map_info.h
-    src/image_map_model.h)
+    src/image_map_display.h)
 qt4_automoc(${qt_srcs})
 QT4_WRAP_CPP(qt_moc_srcs ${qt_hdrs})
-QT4_WRAP_UI(uis_h src/image_map_info.ui)
 # include this for ui_h
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
