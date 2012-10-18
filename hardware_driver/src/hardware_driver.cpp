@@ -5,27 +5,64 @@
 #include <fcntl.h>
 
 #include "geometry_msgs/Pose2D.h"
+#include "geometry_msgs/PoseStamped.h"
+#include "mobots_msgs/Pose2DPrio.h"
+#include "hardware_driver/ChangeGlobalPose.h"
 
 using namespace std;
 
+//=== constants ===
 const char TAG[] = "[hardware_driver] ";
 
+//=== global variables ===
 // -- values in Hz --
 int mouseFrequency = 10;
 int infraredFrequency = 10;
 
+geometry_msgs::Pose2D globalPose;
+
 ros::NodeHandle *nh;
+ros::Subscriber nextPose_sub, nextPoseStamped_sub;
+ros::Publisher mousePose_pub, globalPose_pub;
+ros::ServiceClient shutterClient;
+ros::ServiceServer setGlobalPoseServer;
+geometry_msgs::PoseStamped currentGlobalTargetPoses;
 int mouse1FD, mouse2FD, infraredFD;
+
+//==== method declarations ====
 
 void* singleMouseReader(void*);
 void* dualMouseReader(void*);
 void* infraredReader(void*);
+/**
+ * Service to be called by slam
+ */
+bool changeGlobalPose(hardware_driver::ChangeGlobalPose::Request& req,
+											hardware_driver::ChangeGlobalPose::Response& res);
+/**
+ * Receives waypoints with a priority 
+ */
+void poseCallback(const mobots_msgs::Pose2DPrio&);
+/**
+ * Receives stamped waypoints from rviz
+ */
+void poseStampedCallback(const geometry_msgs::PoseStamped&);
+
+//== begin methods ==
 
 int main(int argc, char **argv){
   ros::init(argc, argv, "hardware_driver");
-  nh = new ros::NodeHandle("~");
+  nh = new ros::NodeHandle;
+	nextPose_sub = nh->subscribe("waypoint_prioritized", 30, poseCallback, this);
+  nextPoseStamped_sub = nh->subscribe("waypoint", 2, poseStampedCallback, this);
+  mousePose_pub = nh->subscribe("mouse", 100);
+  globalPose_pub = nh->advertise<geometry_msgs::Pose2D>("globalPose", 5);
+	shutterClient = nh->serviceClient<shutter::delta>("getDelta");
+	setGlobalPoseServer = nh->advertiseService("setGlobalPose", changeGlobalPose);
+	
   string mousePath;
   
+	ros::param::get("~path1", mousePath);
   nh->param("path1", mousePath, string("/dev/input/mouse1"));
   mouse1FD = open(mousePath.c_str(), O_RDONLY);
   if(mouse1FD < 0){
@@ -56,9 +93,7 @@ int main(int argc, char **argv){
   }*/
   
   string mouseFrequencyKey("/hardware_driver/mouseFrequency");
-  string infraredFrequencyKey("/hardware_driver/infraredFrequency");
   ros::param::get(mouseFrequencyKey, mouseFrequency);
-  ros::param::get(infraredFrequencyKey, infraredFrequency);
   
   pthread_t thread_t;
   if(miceCount > 1)
@@ -119,4 +154,46 @@ void* infraredReader(void* data){
     pub.publish(XX);
     rate.sleep();
   }*/
+}
+
+void poseCallback(const mobots_msgs::Pose2DPrio &next_pose){
+    double x=next_pose.pose.x;
+    double y=next_pose.pose.y;
+    double theta=next_pose.pose.theta;
+}
+
+void poseStampedCallback(const geometry_msgs::PoseStamped& next_pose){
+    double x = next_pose.pose.position.x;
+    double y = next_pose.pose.position.y;
+    double theta = 2*acos(next_pose.pose.orientation.w);
+}
+
+/***********************************************************************************
+ * changeGlobalPose kann zwecks aktualisierung der jeweiligen globalen mobot-pose
+ * aufgerufen werden. zB durch toro, wenn dieser eine frische fehlerfreiere Position
+ * als die des Maussensor-Integrals errechnet hat. Die Methode besorgt die delta-beträge
+ * vom shutter, da sich die aktualisierte globalpose auf den letzten "shut" bezieht.
+ *
+ * Dieser Ablauf ist eventuell systematisch fehlerbehaftet, falls in der Toro-Rechenzeit ein
+ * erneuter "shut" auftritt. Dieser Fall sollte dann vorm globalPose-AUfruf durch den Toro-
+ * Node überprüft werden, der dann auch das Delta vom shutter besorgen  und bereits
+ * aufadiert an diesen Node weitergeben sollte
+ *****************************************************************************************/
+bool changeGlobalPose(hardware_driver::ChangeGlobalPose::Request& req,
+											hardware_driver::ChangeGlobalPose::Response& res){
+  shutter::delta srv;
+  if (client.call(srv))
+  {						//LOCK ???
+   globalPose.x=srv.response.x+req.x;
+   globalPose.y=srv.response.y+req.y;
+   globalPose.theta=srv.response.theta+req.theta;
+  } else {
+    ROS_ERROR("Failed to call getDelta");
+    //change to request-values, as this is ours best bet
+    globalPose.x=req.x;
+    globalPose.y=req.y;
+    globalPose.theta=req.theta;
+    return false;   //t
+  }
+  return true;
 }
