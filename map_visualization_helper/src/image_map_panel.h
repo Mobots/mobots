@@ -38,7 +38,7 @@
 
 class QLineEdit;
 
-namespace map_visualization
+namespace map_visualization_helper
 {
 
 class ImageMapInfo;

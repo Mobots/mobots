@@ -40,7 +40,7 @@
 
 #include "image_map_panel.h"
 
-namespace map_visualization
+namespace map_visualization_helper
 {
 
 // BEGIN_TUTORIAL
@@ -89,5 +89,5 @@ void ImageMapPanel::loadFromConfig( const std::string& key_prefix, const boost::
 // loadable by pluginlib::ClassLoader must have these two lines
 // compiled in its .cpp file, outside of any namespace scope.
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS( mobots, ImageMapPanel, map_visualization::ImageMapPanel, rviz::Panel )
+PLUGINLIB_DECLARE_CLASS( map_visualization_helper, ImageMapPanel, map_visualization_helper::ImageMapPanel, rviz::Panel )
 // END_TUTORIAL
