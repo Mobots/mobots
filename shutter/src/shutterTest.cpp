@@ -60,8 +60,8 @@ void* shutterThread(void* data){
 	 msg.image.encoding = "png";
 	 msg.image.is_bigendian = 0;
 	 msg.image.step = img.cols * img.elemSize();
-    msg.pose.x = 40 + imageID*rand()/RAND_MAX*30;
-    msg.pose.y = 80 + imageID*rand()/RAND_MAX*30;
+    msg.pose.x = 0 + imageID*rand()/RAND_MAX*3;
+    msg.pose.y = 0 + imageID*rand()/RAND_MAX*3;
     msg.pose.theta = imageID*rand()/RAND_MAX*2;
     pub.publish(msg);
     imageID++;
