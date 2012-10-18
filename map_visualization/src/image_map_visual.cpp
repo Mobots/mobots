@@ -274,7 +274,7 @@ void ImageMapVisual::setPose(float poseX, float poseY, float poseTheta,
 	Ogre::SceneNode* imageNode = findNode(sessionID, mobotID, imageID);
 	// Set the orientation (theta)
 	Ogre::Radian rad(poseTheta);
-	Ogre::Quaternion quat(rad, Ogre::Vector3::UNIT_Y);
+    Ogre::Quaternion quat(rad, Ogre::Vector3::UNIT_Z);
 	imageNode->setOrientation(quat);
 	// Set the position (x and y)
 	Ogre::Vector3 vect(poseX, poseY, 0);

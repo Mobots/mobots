@@ -59,7 +59,7 @@ ImageMapPanel::ImageMapPanel( QWidget* parent )
   : rviz::Panel( parent )
 {
   // Then create the control widget.
-  info_widget_ = new ImageMapInfo;
+    info_widget_ = new ImageMapInfo(0);
 
   // Lay out the topic field above the control widget.
   QVBoxLayout* layout = new QVBoxLayout;
@@ -89,5 +89,5 @@ void ImageMapPanel::loadFromConfig( const std::string& key_prefix, const boost::
 // loadable by pluginlib::ClassLoader must have these two lines
 // compiled in its .cpp file, outside of any namespace scope.
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS( map_visualization, ImageMapPanel, map_visualization::ImageMapPanel, rviz::Panel )
+PLUGINLIB_DECLARE_CLASS( mobots, ImageMapPanel, map_visualization::ImageMapPanel, rviz::Panel )
 // END_TUTORIAL
