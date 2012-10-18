@@ -1,0 +1,9 @@
+<library path="lib/libmap_visualization_helper">
+  <class name="map_visualization_helper/ImageMapPanel"
+         type="map_visualization_helper::ImageMapPanel"
+         base_class_type="rviz::Panel">
+    <description>
+      Displays the image tiles taken by the mobots, to form a map.
+    </description>
+  </class>  
+</library>
