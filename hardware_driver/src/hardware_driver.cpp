@@ -7,6 +7,7 @@
 #include "geometry_msgs/Pose2D.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "mobots_msgs/Pose2DPrio.h"
+#include "mobots_msgs/InfraredScan.h"
 #include "hardware_driver/ChangeGlobalPose.h"
 
 using namespace std;
@@ -19,15 +20,13 @@ const char TAG[] = "[hardware_driver] ";
 int mouseFrequency = 10;
 int infraredFrequency = 10;
 
-geometry_msgs::Pose2D globalPose;
+geometry_msgs::Pose2D globalPose, currentGlobalTargetPose;
 
 ros::NodeHandle *nh;
-ros::Subscriber nextPose_sub;
-ros::Publisher mousePose_pub, globalPose_pub;
+ros::Subscriber nextPoseSubRel, nextPoseSubAbs;
+ros::Publisher mousePosePub, globalPosePub, infraredScanPub;
 ros::ServiceClient shutterClient;
 ros::ServiceServer setGlobalPoseServer;
-geometry_msgs::PoseStamped currentGlobalTargetPoses;
-int mouse1FD, mouse2FD, infraredFD;
 
 //==== method declarations ====
 
@@ -38,57 +37,31 @@ void* infraredReader(void*);
  * Service to be called by slam
  */
 bool changeGlobalPose(hardware_driver::ChangeGlobalPose::Request& req,
-											hardware_driver::ChangeGlobalPose::Response& res);
+							 hardware_driver::ChangeGlobalPose::Response& res);
 /**
- * Receives waypoints with a priority 
+ * Receives (absolute) waypoints with a priority 
  */
-void poseCallback(const mobots_msgs::Pose2DPrio&);
+void absPoseCallback(const mobots_msgs::Pose2DPrio&);
+/**
+ * Receives (relative i.e. delta) waypoints with a priority 
+ */
+void relPoseCallback(const mobots_msgs::Pose2DPrio&);
 
 //== begin methods ==
 
 int main(int argc, char **argv){
   ros::init(argc, argv, "hardware_driver");
   nh = new ros::NodeHandle;
-	nextPose_sub = nh->subscribe("waypoint", 10, poseCallback);
-  mousePose_pub = nh->advertise<geometry_msgs::Pose2D>("mouse", 10);
-  globalPose_pub = nh->advertise<geometry_msgs::Pose2D>("globalPose", 5);
-	shutterClient = nh->serviceClient<shutter::delta>("getDelta");
-	setGlobalPoseServer = nh->advertiseService("setGlobalPose", changeGlobalPose);
-	
-  string mousePath;
   
-	ros::param::get("~path1", mousePath);
-  nh->param("path1", mousePath, string("/dev/input/mouse1"));
-  mouse1FD = open(mousePath.c_str(), O_RDONLY);
-  if(mouse1FD < 0){
-    cerr << TAG << "cannot open " << mousePath << endl;
-	 ROS_ERROR("%s cannot open %s", TAG, mousePath.c_str());
-    exit(1);
-  }
+  nextPoseSubRel = nh->subscribe("waypoint_rel", 5, relPoseCallback);
+  nextPoseSubAbs = nh->subscribe("waypoint_abs", 5, absPoseCallback);
   
-  int miceCount;
-  nh->param("miceCount", miceCount, 1);
-  if(miceCount > 1){
-    nh->param("path2", mousePath, string("/dev/input/mouse2"));
-    int mouse2 = open(mousePath.c_str(), O_RDONLY);
-    if(mouse2 < 0){
-		ROS_ERROR("%s cannot open %s", TAG, mousePath.c_str());
-      cerr << TAG << "cannot open " << mousePath << endl;
-      exit(1);
-    }
-  }
+  mousePosePub = nh->advertise<geometry_msgs::Pose2D>("mouse", 2);
+  globalPosePub = nh->advertise<geometry_msgs::Pose2D>("globalPose", 2);
+  infraredScanPub = nh->advertise<mobots_msgs::InfraredScan>("infrared", 2);
   
-  /*string infraredPath;
-  nh->param("irpath", infraredPath, string("/dev/input/infrared"));
-  infraredFD = open(infraredPath.c_str(), O_RDONLY);
-  if(infraredFD < 0){
-	 cerr << TAG << "cannot open " << infraredPath << endl;
-	 ROS_ERROR("%s cannot open %s", TAG, infraredPath.c_str());
-    exit(1);
-  }*/
-  
-  string mouseFrequencyKey("/hardware_driver/mouseFrequency");
-  ros::param::get(mouseFrequencyKey, mouseFrequency);
+  //shutterClient = nh->serviceClient<shutter::delta>("getDelta");
+  setGlobalPoseServer = nh->advertiseService("setGlobalPose", changeGlobalPose);
   
   pthread_t thread_t;
   if(miceCount > 1)
@@ -151,18 +124,17 @@ void* infraredReader(void* data){
   }*/
 }
 
-void poseCallback(const mobots_msgs::Pose2DPrio &next_pose){
+void absPoseCallback(const mobots_msgs::Pose2DPrio &next_pose){
     double x=next_pose.pose.x;
     double y=next_pose.pose.y;
     double theta=next_pose.pose.theta;
 }
 
-void poseStampedCallback(const geometry_msgs::PoseStamped& next_pose){
-    double x = next_pose.pose.position.x;
-    double y = next_pose.pose.position.y;
-    double theta = 2*acos(next_pose.pose.orientation.w);
+void relPoseCallback(const mobots_msgs::Pose2DPrio &next_pose){
+    double x=next_pose.pose.x;
+    double y=next_pose.pose.y;
+    double theta=next_pose.pose.theta;
 }
-
 /***********************************************************************************
  * changeGlobalPose kann zwecks aktualisierung der jeweiligen globalen mobot-pose
  * aufgerufen werden. zB durch toro, wenn dieser eine frische fehlerfreiere Position
@@ -176,12 +148,13 @@ void poseStampedCallback(const geometry_msgs::PoseStamped& next_pose){
  *****************************************************************************************/
 bool changeGlobalPose(hardware_driver::ChangeGlobalPose::Request& req,
 											hardware_driver::ChangeGlobalPose::Response& res){
-  shutter::delta srv;
-  if (client.call(srv))
+  /*shutter::delta srv;
+  if (1client.call(srv))
   {						//LOCK ???
    globalPose.x=srv.response.x+req.x;
    globalPose.y=srv.response.y+req.y;
-   globalPose.theta=srv.response.theta+req.theta;
+   globalPose.theta=srv.response.theta+req.theta;*/
+  if(false){
   } else {
     ROS_ERROR("Failed to call getDelta");
     //change to request-values, as this is ours best bet
