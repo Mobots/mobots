@@ -62,7 +62,7 @@ int main(int argc, char** argv){
     copyMatToImageMSg(gray_image, mobot_image);
     mobot_image.id.session_id = 0;
     mobot_image.id.mobot_id = 1;
-    mobot_image.id.image_id = i;
+    mobot_image.id.image_id = i-1;
     mobot_image.pose.x = 1*i;
     mobot_image.pose.y = 1*i;
     mobot_image.pose.theta = 0;
