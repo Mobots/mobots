@@ -22,7 +22,7 @@ int infraredFrequency = 10;
 geometry_msgs::Pose2D globalPose;
 
 ros::NodeHandle *nh;
-ros::Subscriber nextPose_sub, nextPoseStamped_sub;
+ros::Subscriber nextPose_sub;
 ros::Publisher mousePose_pub, globalPose_pub;
 ros::ServiceClient shutterClient;
 ros::ServiceServer setGlobalPoseServer;
@@ -43,19 +43,14 @@ bool changeGlobalPose(hardware_driver::ChangeGlobalPose::Request& req,
  * Receives waypoints with a priority 
  */
 void poseCallback(const mobots_msgs::Pose2DPrio&);
-/**
- * Receives stamped waypoints from rviz
- */
-void poseStampedCallback(const geometry_msgs::PoseStamped&);
 
 //== begin methods ==
 
 int main(int argc, char **argv){
   ros::init(argc, argv, "hardware_driver");
   nh = new ros::NodeHandle;
-	nextPose_sub = nh->subscribe("waypoint_prioritized", 30, poseCallback, this);
-  nextPoseStamped_sub = nh->subscribe("waypoint", 2, poseStampedCallback, this);
-  mousePose_pub = nh->subscribe("mouse", 100);
+	nextPose_sub = nh->subscribe("waypoint", 10, poseCallback);
+  mousePose_pub = nh->advertise<geometry_msgs::Pose2D>("mouse", 10);
   globalPose_pub = nh->advertise<geometry_msgs::Pose2D>("globalPose", 5);
 	shutterClient = nh->serviceClient<shutter::delta>("getDelta");
 	setGlobalPoseServer = nh->advertiseService("setGlobalPose", changeGlobalPose);
