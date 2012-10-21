@@ -110,17 +110,16 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
       if (norm > 480)
         continue;
       
+      /* Nur matchen, wenn noch nicht gematcht wurde. */
       uint edge_count = 0;
       for ( TreeOptimizer2::EdgeList::iterator v_itr = v.second->edges.begin(); v_itr != v.second->edges.end(); ++v_itr )
       {
-        for ( TreeOptimizer2::EdgeList::iterator w_itr = v.second->edges.begin(); w_itr != v.second->edges.end(); ++w_itr )
+        for ( TreeOptimizer2::EdgeList::iterator w_itr = w.second->edges.begin(); w_itr != w.second->edges.end(); ++w_itr )
         {
-          if ( v_itr == w_itr )
+          if ( *v_itr == *w_itr )
             ++edge_count;
-          // hier is noch n bug
         }
       }
-      ROS_INFO_STREAM("edge_count = " << edge_count);
       
       if (edge_count) {
         continue;
@@ -142,11 +141,14 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
         m.values[1][0] = 0; m.values[1][1] = 1; m.values[1][2] = 0;
         m.values[2][0] = 0; m.values[2][1] = 0; m.values[2][2] = 1;
 
-        ROS_INFO_STREAM("huhu" << pose_graph_.addEdge(pose_graph_.vertex(last_id_[bot]), pose_graph_.vertex(current_id_[bot]), t, m) );
-
+        ROS_INFO_STREAM("addEdge: " << pose_graph_.addEdge(v.second, w.second, t, m) );
       }
     }
   }
+  
+  /* Lass den TORO laufen! */
+  pose_graph_.buildSimpleTree();
+  pose_graph_.iterate();
 }
 
 uint32_t Slam::merge(mobots_msgs::ID const &id)
