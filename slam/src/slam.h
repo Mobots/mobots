@@ -53,6 +53,8 @@ private:
     static const uint MOBOT_COUNT = 3;
     uint32_t last_id_[MOBOT_COUNT];
     uint32_t current_id_[MOBOT_COUNT];
+    
+    static const uint ITERATIONS_PER_NEW_IMAGE = 30;
 
     void callback1(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg);
     void callback2(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg);
@@ -62,6 +64,7 @@ private:
     uint32_t merge(mobots_msgs::ID const &id);
     mobots_msgs::ID split(uint32_t id);
     AISNavigation::TreeOptimizer2::Transformation convert(geometry_msgs::Pose2D pose);
+    geometry_msgs::Pose2D convert(AISNavigation::TreeOptimizer2::Pose toro_pose);
 };
 
 #endif
