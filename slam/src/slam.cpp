@@ -18,11 +18,14 @@ Slam::Slam() :
 {
   //pose_graph_.initializeTreeParameters(); //Use of uninitialised value of size 8    ==14818==    at 0x42A363: AISNavigation::ParameterPropagator::perform(AISNavigation::TreePoseGraph<Operations2D<double> >::Vertex*) (treeoptimizer2.cpp:59)
   //pose_graph_.initializeOnlineOptimization(); //Conditional jump or move depends on uninitialised value(s)
-
+  pose_graph_.initializeOptimization(); // vllt. auch vor jedem iterate...
+  
   for(uint bot = 1; bot <= 1; ++bot) //TODO: 1 durch MOBOT_COUNT ersetzten
   {
     last_id_[bot] = 0;
+    current_id_[bot] = 0;
     
+#if 0 // Keinen ersten Vertex anlegen...
     mobots_msgs::ID id;
     id.session_id = 0;
     id.mobot_id = bot;
@@ -31,6 +34,7 @@ Slam::Slam() :
     
     TreeOptimizer2::Pose initial_pose = TreeOptimizer2::Pose(0, 0, 0);
     pose_graph_.addVertex(current_id_[bot], initial_pose);
+#endif
   }
 }
 
@@ -62,10 +66,13 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
   MessageBridge::copyToCvStruct( msg->features, bla );
   feature_sets_[current_id_[bot]] = bla;
 
-  /* Neue current_pose auf Basis von last_pose und DeltaPose schätzen */
-  TreeOptimizer2::Pose last_pose = pose_graph_.vertex(last_id_[bot])->pose;
-  TreeOptimizer2::Pose current_pose = TreeOptimizer2::Pose(last_pose.x() + msg->pose.x, last_pose.y() + msg->pose.y, last_pose.theta() + msg->pose.theta);
-
+  TreeOptimizer2::Pose current_pose = TreeOptimizer2::Pose();
+  if (last_id_[bot]) // Nur, wenn wir schon eine letzte Nachricht haben...
+  {
+    /* Neue current_pose auf Basis von last_pose und DeltaPose schätzen */
+    TreeOptimizer2::Pose last_pose = pose_graph_.vertex(last_id_[bot])->pose;
+    current_pose = TreeOptimizer2::Pose(last_pose.x() + msg->pose.x, last_pose.y() + msg->pose.y, last_pose.theta() + msg->pose.theta);
+  }
   /* Neuen Vertex mit concatenated ID in TORO-Graph einfügen */
   pose_graph_.addVertex(current_id_[bot], current_pose);
   ROS_INFO_STREAM("map size: " << pose_graph_.vertices.size());
@@ -100,9 +107,11 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
       if (&v == &w)
         break;
       
+#if 0
       /* Zum nullten Vertex gibt es kein FeatureSet. */
       if (split(v.first).image_id == 0 || split(w.first).image_id == 0)
         continue;
+#endif
       
       /* Nur matchen, wenn die Bildmittelpunkte ausreichend nah beieinander liegen. */
       double norm = sqrt( TreeOptimizer2::Translation(w.second->pose.x() - v.second->pose.x(), w.second->pose.y() - v.second->pose.y()).norm2() );
@@ -146,6 +155,12 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
     }
   }
   
+  for(uint bot = 0; bot < MOBOT_COUNT; ++bot)
+  {
+    /* TORO kann nicht laufen, wenn es Vertexe ohne Kanten gibt. */
+    if (!last_id_[bot])
+      return;
+  }
   /* Lass den TORO laufen! */
   pose_graph_.buildSimpleTree();
   pose_graph_.iterate();
