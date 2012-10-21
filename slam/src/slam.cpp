@@ -17,30 +17,12 @@ Slam::Slam() :
   pose_graph_(),
   features_matcher_(CpuFeaturesMatcher::ORB_DEFAULT)
 {
-  //pose_graph_.initializeTreeParameters(); //Use of uninitialised value of size 8    ==14818==    at 0x42A363: AISNavigation::ParameterPropagator::perform(AISNavigation::TreePoseGraph<Operations2D<double> >::Vertex*) (treeoptimizer2.cpp:59)
-  //pose_graph_.initializeOnlineOptimization(); //Conditional jump or move depends on uninitialised value(s)
-  //pose_graph_.initializeOptimization(); // vllt. auch vor jedem iterate...
   pose_graph_.verboseLevel = 0;
-  
-  //pose_graph_.buildSimpleTree();
-  //pose_graph_.initializeTreeParameters();
-  //pose_graph_.initializeOptimization();
   
   for(uint bot = 1; bot <= 1; ++bot) //TODO: 1 durch MOBOT_COUNT ersetzten
   {
     last_id_[bot] = 0;
     current_id_[bot] = 0;
-    
-#if 0 // Keinen ersten Vertex anlegen...
-    mobots_msgs::ID id;
-    id.session_id = 0;
-    id.mobot_id = bot;
-    id.image_id = 0;
-    current_id_[bot] = merge(id);
-    
-    TreeOptimizer2::Pose initial_pose = TreeOptimizer2::Pose(0, 0, 0);
-    pose_graph_.addVertex(current_id_[bot], initial_pose);
-#endif
   }
 }
 
@@ -106,12 +88,6 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
       if (&v == &w)
         break;
       
-#if 0
-      /* Zum nullten Vertex gibt es kein FeatureSet. */
-      if (split(v.first).image_id == 0 || split(w.first).image_id == 0)
-        continue;
-#endif
-      
       /* Nur matchen, wenn die Bildmittelpunkte ausreichend nah beieinander liegen. */
       double norm = sqrt( TreeOptimizer2::Translation(w.second->pose.x() - v.second->pose.x(), w.second->pose.y() - v.second->pose.y()).norm2() );
       ROS_INFO_STREAM("Distance between image " << split(v.second->id).image_id << " and " << split(w.second->id).image_id << " is " << norm);
@@ -130,24 +106,23 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
             ++edge_count;
         }
       }
-      
       if (edge_count) {
         ROS_INFO_STREAM("Skipping combination because it has already an edge.");
         continue;
       }
       
-      /*ROS_INFO_STREAM(feature_sets_[v.first].keyPoints.size() << "v" << feature_sets_[v.first].descriptors.rows);
-      ROS_INFO_STREAM(feature_sets_[w.first].keyPoints.size() << "w" << feature_sets_[w.first].descriptors.rows);*/
-
+      /* Jetzt werfen wir Jonas sein Matcher an. */
       geometry_msgs::Pose2D delta;        
       if ( ! features_matcher_.match(feature_sets_[v.first], feature_sets_[w.first], delta) )
       {
         ROS_INFO_STREAM("Skippung combination because of matching error.");
         continue;
       }
+      
       /* Matching-Ergebnis als Edge zwischen den zwei Vertices einfügen */
       TreeOptimizer2::Transformation t = convert(delta);
 
+      /* Lustige Covarianzmatrix */
       TreeOptimizer2::InformationMatrix m;
       m.values[0][0] = 1; m.values[0][1] = 0; m.values[0][2] = 0;
       m.values[1][0] = 0; m.values[1][1] = 1; m.values[1][2] = 0;
@@ -157,6 +132,7 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
     }
   }
   
+  /* TODO: */
   for(uint bot = 0; bot < MOBOT_COUNT; ++bot)
   {
     /* TORO kann nicht laufen, wenn es Vertexe ohne Kanten gibt. */
@@ -167,7 +143,7 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
   /* Lass den TORO laufen! */
   pose_graph_.buildSimpleTree();
   pose_graph_.initializeTreeParameters();
-  pose_graph_.initializeOptimization();
+  pose_graph_.initializeOptimization(); // Es gibt noch eine Online-Variante von der Methode...
   for(uint i = 0; i < ITERATIONS_PER_NEW_IMAGE; ++i)
   {
     pose_graph_.iterate();

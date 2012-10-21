@@ -6,18 +6,6 @@
 #include <treeoptimizer2.hh>
 #include <feature_detector/FeaturesMatcher.h>
 
-struct classcomp {
-  bool operator() (const mobots_msgs::ID& lhs, const mobots_msgs::ID& rhs) const
-  {
-    if (lhs.session_id != rhs.session_id)
-      return lhs.session_id < rhs.session_id;
-    
-    if (lhs.mobot_id != rhs.mobot_id)
-      return lhs.mobot_id < rhs.mobot_id;
-    
-    return lhs.image_id < rhs.image_id;
-  }
-};
 
 /**
  * \class Slam
