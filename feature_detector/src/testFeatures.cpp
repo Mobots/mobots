@@ -68,6 +68,7 @@ inline double toDegree(double rad){
 }
 
 extern Mat affine3;
+extern Mat affine2;
 
 void checkResult(){
   geometry_msgs::Pose2D delta;
@@ -75,6 +76,7 @@ void checkResult(){
   bool matchResult = matcher->match(features1, features2, delta);
   if(!matchResult){
     cout << "images do not overlap at all" << endl;
+	 waitKey(0);
     return;
   }
   /*cout << "deltaX " << delta.x << endl;
@@ -102,30 +104,27 @@ void checkResult(){
   imshow("result", result);
   imshow("result2", result2);
   
-  
-  /*Mat result3;
+  cout << "now affine 2 " << endl << affine2 << endl;
+  Mat result3;
   Mat result4;
   result3.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
   result4.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
   Mat outImg3 = result3(Rect(0, 0, gimage1.cols, gimage1.rows));
   Mat outImg41 = result4(Rect(0, 0, gimage1.cols, gimage1.rows));
   
-  cout << "deltaX2 " << delta2.x << endl;
-  cout << "deltaY2 " << delta2.y << endl;
-  cout << "theta2 " << delta2.theta << " rad = " << toDegree(delta2.theta) << "°" << endl;
   /*findRotationMatrix2D(Point2f(gimage2.cols/2, gimage2.rows/2), delta2.theta, aff);
   aff.at<double>(0,2) = delta2.x;
   aff.at<double>(1,2) = delta2.y;*/
 
-  /*warpAffine(gimage2, result3, affine3, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  warpAffine(gimage2, result3, affine2, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
   gimage1.copyTo(outImg3);
   
   gimage1.copyTo(outImg41);
-  warpAffine(gimage2, result4, affine3, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  warpAffine(gimage2, result4, affine2, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
   
   
-  imshow("result aff2", result3);
-  imshow("result 2 aff2", result4);
+  imshow("result with ransac", result3);
+  imshow("result 2 with ransac", result4);
   
   /*Mat result3;
   Mat result4;
