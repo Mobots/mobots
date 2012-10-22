@@ -20,7 +20,8 @@ const char TAG[] = "[hardware_driver] ";
 int mouseFrequency = 10;
 int infraredFrequency = 10;
 
-geometry_msgs::Pose2D globalPose, currentGlobalTargetPose;
+geometry_msgs::Pose2D globalPose, currentTargetPose;
+list<geometry_msgs::Pose2D> targetPoses;
 
 ros::NodeHandle *nh;
 ros::Subscriber nextPoseSubRel, nextPoseSubAbs;
@@ -57,11 +58,11 @@ int main(int argc, char **argv){
   nextPoseSubAbs = nh->subscribe("waypoint_abs", 5, absPoseCallback);
   
   mousePosePub = nh->advertise<geometry_msgs::Pose2D>("mouse", 2);
-  globalPosePub = nh->advertise<geometry_msgs::Pose2D>("globalPose", 2);
+  globalPosePub = nh->advertise<geometry_msgs::Pose2D>("pose", 2);
   infraredScanPub = nh->advertise<mobots_msgs::InfraredScan>("infrared", 2);
   
   //shutterClient = nh->serviceClient<shutter::delta>("getDelta");
-  setGlobalPoseServer = nh->advertiseService("setGlobalPose", changeGlobalPose);
+  setGlobalPoseServer = nh->advertiseService("set_pose", changeGlobalPose);
   
   pthread_t thread_t;
   if(miceCount > 1)
@@ -124,16 +125,45 @@ void* infraredReader(void* data){
   }*/
 }
 
+/**
+ *# prio == 0: pose vor allen anderen einfügen, rest verwerfen (default)
+  # prio == -1: pose vor allen anderen einfügen
+  # prio == -2: pose am ende der liste einfügen
+  # prio == sonst: pose an der prio-position einfügen
+*/
 void absPoseCallback(const mobots_msgs::Pose2DPrio &next_pose){
-    double x=next_pose.pose.x;
-    double y=next_pose.pose.y;
-    double theta=next_pose.pose.theta;
+  switch(next_pose.prio){
+	 case -2: 
+		targetPoses.push_back(next_pose.pose);
+		break;
+	 case -1:
+		targetPoses.push_front(next_pose.pose);
+		currentTargetPose = next_pose.pose;
+		break;
+	 case 0:
+		targetPoses.clear();
+		targetPoses.push_back(next_pose.pose);
+		currentTargetPose = next_pose.pose;
+		break;
+	 default:
+		list<geometry_msgs::Pose2D>::iterator it;
+		int prio = next_pose.prio;
+		if(prio > targetPoses.size())
+		  prio = targetPoses.size();
+		it = it+6;
+		targetPoses.insert(it, next_pose.pose);
+		break;		
+  }
+  
 }
 
-void relPoseCallback(const mobots_msgs::Pose2DPrio &next_pose){
-    double x=next_pose.pose.x;
-    double y=next_pose.pose.y;
-    double theta=next_pose.pose.theta;
+void relPoseCallback(mobots_msgs::Pose2DPrio &next_pose){
+  //make a copy to prevent inconsistencies with multithreading
+  geometry_msgs::Pose2D current = globalPose;
+  next_pose.pose.x += current.x;
+  next_pose.pose.y += current.y;
+  next_pose.pose.theta += current.theta;
+  absPoseCallback(next_pose);
 }
 /***********************************************************************************
  * changeGlobalPose kann zwecks aktualisierung der jeweiligen globalen mobot-pose
@@ -147,7 +177,7 @@ void relPoseCallback(const mobots_msgs::Pose2DPrio &next_pose){
  * aufadiert an diesen Node weitergeben sollte
  *****************************************************************************************/
 bool changeGlobalPose(hardware_driver::ChangeGlobalPose::Request& req,
-											hardware_driver::ChangeGlobalPose::Response& res){
+							 hardware_driver::ChangeGlobalPose::Response& res){
   /*shutter::delta srv;
   if (1client.call(srv))
   {						//LOCK ???
