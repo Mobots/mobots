@@ -8,9 +8,11 @@
 #include <QTime>
 #include <QTimer>
 
+#include <vector>
+
 #include <ros/ros.h>
 
-namespace map_visualization_helper{
+namespace map_visualization{
 
 class ImageMapModel : public QAbstractTableModel
 {
@@ -20,9 +22,9 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const ;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-    QTimer* timer;
-private Q_SLOTS:
-    void timerHit();
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+private:
+    std::vector< std::vector<int> > tableData;
 };
 
 }
