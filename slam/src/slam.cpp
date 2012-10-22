@@ -45,14 +45,32 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
 {
   ROS_INFO("Slam got a FeatureSetWithPoseAndID from mobot%u!", bot);
 
+  addNewVertexToGraph(msg, bot);
+
+  findEdgesBruteforce();
+  
+  /* TODO: Nachfolgender Hack oder ähnliches wird auch nötig, wenn ein Bild reinkommt, das mit keinem gematcht wreden kann */
+  for(uint bot = 0; bot < MOBOT_COUNT; ++bot)
+  {
+    /* TORO kann nicht laufen, wenn es Vertexe ohne Kanten gibt. */
+    if (!last_id_[bot])
+      return;
+  }
+  
+  runToro();
+  
+  publishOptimizedPoses();
+
+}
+
+void Slam::addNewVertexToGraph(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg, uint bot)
+{
   /* last_id_ und current_id_ aktualisieren */
   last_id_[bot] = current_id_[bot];
   current_id_[bot] = merge(msg->id);
   
   /* FeatureSet in Map unter Key (concatenated) ID abspeichern */
-  FeatureSet bla;
-  MessageBridge::copyToCvStruct( msg->features, bla );
-  feature_sets_[current_id_[bot]] = bla;
+  MessageBridge::copyToCvStruct( msg->features, feature_sets_[current_id_[bot]] );
 
   TreeOptimizer2::Pose current_pose = TreeOptimizer2::Pose();
   if (last_id_[bot]) // Nur, wenn wir schon eine letzte Nachricht haben...
@@ -79,7 +97,10 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
   
   pose_graph_.addEdge(pose_graph_.vertex(last_id_[bot]), pose_graph_.vertex(current_id_[bot]), t, m);
 #endif
+}
 
+void Slam::findEdgesBruteforce()
+{
   BOOST_FOREACH(TreeOptimizer2::VertexMap::value_type &v, pose_graph_.vertices)
   {
     BOOST_FOREACH(TreeOptimizer2::VertexMap::value_type &w, pose_graph_.vertices)
@@ -120,9 +141,10 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
       }
       
       /* Matching-Ergebnis als Edge zwischen den zwei Vertices einfügen */
+      
       TreeOptimizer2::Transformation t = convert(delta);
 
-      /* Lustige Covarianzmatrix */
+      // Lustige Covarianzmatrix
       TreeOptimizer2::InformationMatrix m;
       m.values[0][0] = 1; m.values[0][1] = 0; m.values[0][2] = 0;
       m.values[1][0] = 0; m.values[1][1] = 1; m.values[1][2] = 0;
@@ -131,15 +153,10 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
       ROS_INFO_STREAM("Adding edge with x = " << t.translation().x() << ", y = " << t.translation().y() << ", theta = " << t.rotation() << ". Result: " << pose_graph_.addEdge(v.second, w.second, t, m) );
     }
   }
-  
-  /* TODO: */
-  for(uint bot = 0; bot < MOBOT_COUNT; ++bot)
-  {
-    /* TORO kann nicht laufen, wenn es Vertexe ohne Kanten gibt. */
-    if (!last_id_[bot])
-      return;
-  }
-  
+}
+
+void Slam::runToro()
+{
   /* Lass den TORO laufen! */
   pose_graph_.buildSimpleTree();
   pose_graph_.initializeTreeParameters();
@@ -149,7 +166,10 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
     pose_graph_.iterate();
     ROS_INFO_STREAM("Iterated once. Error: " << pose_graph_.error() );
   }
-  
+}
+
+void Slam::publishOptimizedPoses()
+{  
   /* (Hoffentlich) optimierte Image-Poses rausschicken. */
   BOOST_FOREACH(TreeOptimizer2::VertexMap::value_type &v, pose_graph_.vertices)
   {
