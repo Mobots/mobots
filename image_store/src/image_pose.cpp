@@ -112,7 +112,7 @@ int ImagePose::initWrite(){
 	// Create the directory
 	char* infoFolderPath = concPath();
 	boost::filesystem::create_directories(infoFolderPath);
-	delete infoFolderPath;
+	delete[] infoFolderPath;
 	// Save info to disk
 	try{
 		infoData.save(infoPath);
