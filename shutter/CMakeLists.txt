@@ -25,7 +25,8 @@ SET_TARGET_PROPERTIES(geometry PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR
 endif()
 
 EXEC_PROGRAM("rosstack find mobots" OUTPUT_VARIABLE MOBOT_PATH)
-include_directories(${MOBOT_PATH}/util/include/)
+#include_directories(${MOBOT_PATH}/util/include/)
+include_directories(../util/include/)
 rosbuild_add_executable(shutter src/shutter.cpp)
 #rosbuild_add_executable(manualShutter src/manualShutter.cpp)
 rosbuild_add_executable(shutterTest src/shutterTest.cpp)
