@@ -3,14 +3,21 @@
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/video/video.hpp>
-
+#include "opencv2/imgproc/imgproc.hpp"
 #include <ros/console.h>
 #include <geometry_msgs/Pose2D.h>
+
+#include <boost/geometry.hpp> //for intersection calculation
+#include <boost/geometry/geometries/polygon.hpp>
+#include <boost/geometry/geometries/point_xy.hpp>
+#include <boost/geometry/geometries/adapted/c_array.hpp>
+#include <boost/assign.hpp>
 
 #include "draw.h"
 #include "profile.h"
 #include "mobots_msgs/FeatureSet.h"
 #include "feature_detector/FeaturesMatcher.h"
+#include "feature_detector/FeaturesFinder.h"
 
 using namespace std;
 using namespace cv;
@@ -21,9 +28,10 @@ Mat H;
 
 const char CpuFeaturesMatcher::SURF_DEFAULT[] = "FlannBased";
 const char CpuFeaturesMatcher::ORB_DEFAULT[] = "BruteForce-Hamming";
-static const double LENGTHDIFF_THRESHOLD = 0.1;    //if abs(distance(a) - distance(b)) > => outlier
+static const double LENGTHDIFF_THRESHOLD = 1.0;    //if abs(distance(a) - distance(b)) > => outlier
 static const double MAX_ALLOWED_MATCH_DISTANCE = 60;
 static const char* TAG = "[FeaturesMatcher] ";
+
 
 CpuFeaturesMatcher::CpuFeaturesMatcher(const string& type){
   matcher = DescriptorMatcher::create(type);
@@ -93,6 +101,8 @@ static void planeTest(const vector<Point2f>& points1, const vector<Point2f>& poi
 }
 
 Mat affine3;
+Mat affine2;
+bool getIntersectionRois(const geometry_msgs::Pose2D&, Mat&, Mat&);
 bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, geometry_msgs::Pose2D& delta) const{  
   moduleStarted("cpu matcher + get transform");
   vector<DMatch> matches1;
@@ -101,7 +111,6 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, g
   vector<Point2f> points2;
   vector<Point2f> points1Refined;
   vector<Point2f> points2Refined;
-  
   //cout << img1.keyPoints.size() << " " << img1.descriptors.size() << cout << img2.keyPoints.size() << " " << img2.descriptors.size() << endl;
   
   
@@ -110,6 +119,12 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, g
   cout << "matches: " << matches1.size() << endl;
   symmetryTest(matches1, matches2, img1.keyPoints, img2.keyPoints, points1, points2);
   cout << "symmetric matches: " << points1.size() << endl;
+  
+  Mat img_matches;
+  cv::drawKeypoints(gimage1, img1.keyPoints, img_matches);
+  imshow("keypoints 1", img_matches);
+  cv::drawKeypoints(gimage2, img2.keyPoints, img_matches);
+  imshow("keypoints 2", img_matches);
   
   int threshold = 4;
   int lastSize = -1;
@@ -121,6 +136,7 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, g
 		break;
 	 if(size < 3)
 		return false;
+	 //if(i == 1 ) break;
 	 lastSize = size;
 	 points1 = points1Refined;
 	 points2 = points2Refined;
@@ -164,122 +180,172 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, g
   Mat d = estimateRigidTransform(points2Refined, points1Refined, false);
   cout << "size after homo " << points1Refinedx2.size() << endl;
   affine3 = d;
+  affine2 = estimateRigidTransform(points2Refinedx2, points1Refinedx2, false);
   /*cout << "new d " << endl << d << endl;
   affine3 = d;
   d = estimateRigidTransform(points2Refined, a, true);
   cout << "new d with true" << endl << d << endl;*/
-  if(abs(d.at<double>(0,0)) > 2
-	 || abs(d.at<double>(0,1)) > 2
-	 || abs(d.at<double>(1,0)) > 2
-	 || abs(d.at<double>(1,1)) > 2){
+  if(abs(d.at<double>(0,0)) > 1.1
+	 || abs(d.at<double>(0,1)) > 1.1
+	 || abs(d.at<double>(1,0)) > 1.1
+	 || abs(d.at<double>(1,1)) > 1.1){
 	 ROS_ERROR_STREAM(__PRETTY_FUNCTION__ << ": faulty matrix detected (&rejected)!! : \n" << d);
-		return false;
-	 }
+		//return false;
+  }
   delta.theta = -atan2(-d.at<double>(0,1), d.at<double>(0,0));
   delta.x = d.at<double>(0,2);
   delta.y = d.at<double>(1,2);
-  moduleEnded();
-  /*vector<Point2f> a;
-  vector<Point2f> b;
-  point* pa = new point[points1.size()];
-  point* pb = new point[points1.size()];
-  for(int i = 0; i < points1.size(); i++){
-    pa[i].x = points1[i].x;
-    pa[i].y = points1[i].y;
-    pb[i].x = points2[i].x;
-    pb[i].y = points2[i].y;
-  }
-  int* mask = new int[points1.size()];
-  moduleStarted("real ror");
-  ror(pa, pb, points1.size(), 20, mask);
-  moduleEnded();
-  int count = 0;
-  vector<char> mask2;
-  for(int i = 0; i < points1.size(); i++){
-    if(mask[i]){
-      a.push_back(points1[i]);
-      b.push_back(points2[i]);
-      mask2.push_back(1);
-    }else
-      mask2.push_back(0);
-  }
-  //ror2(points1, points2, a, b);
   
-  /*  moduleStarted("cpu matcher, homo + ror");
-  vector<uchar> mask;
-  vector<Point2f> points11;
-  vector<Point2f> points22;
-  findHomography(points1, points2, CV_RANSAC, 3, mask);
-  for(int i = 0; i < mask.size(); i++){
-    if(mask[i]){
-      points11.push_back(points1[i]);
-      points22.push_back(points2[i]);
-    }
-  }
-  cout << "size2: " << points22.size() << endl;
-  rorAlternative(points11, points22, delta2);
-  moduleEnded();*/
-  /*if(a.size() > 2){
-  H = getAffineTransform(&b[0], &a[0]);
-  cout << "aff0" << endl << H << endl;
-  //aff = H;*/
-  //vector<uchar> inliers;
-  //H = findHomography(points2, points1, CV_RANSAC);
-  //cout << "H1" << endl << H << endl;
-  //H = findHomography(b, a, CV_RANSAC, 1);
-  //cout << "H2, real ror size from " << points1.size() << " to " << a.size() <<  endl << H << endl;
-  //rorAlternative(a, b, delta2);
-  //}
-    
-  /*vector<Point2f> v1;
-  vector<Point2f> v2;
-  cout << "inlier " << inliers.size() << endl;
-  for(int i = 0; i < inliers.size(); i++){
-    if(v1.size() == 3)
-      break;
-    if(!inliers[i]){
-      v1.push_back(points1[i]);
-      v2.push_back(points2[i]);
-    }
-  }
-  cout << "v1 size " << v1.size() << endl;
-  cout << "H" << endl << H << endl;
-  if(v1.size() == 3){
-  affine3 = getAffineTransform(v1, v2);
-  //correctMatches() ?
-  cout << "affine3" << endl << affine3 << endl;
-  }
-  //aff = H;
-  /* Matrix form:
-   * cos(theta)  -sin(theta) deltaX
-   * sin(theta)   cos(theta) deltaY
-   *    0             0        1
-   */
-  /*printHMat(H);
-  printHMatRaw(H, "raw");
-  double mainDiag = avg(  H.at<double>(0,0), H.at<double>(1,1));
-  double minorDiag = avg(-H.at<double>(0,1), H.at<double>(1,0));
-  normalize(mainDiag);
-  normalize(minorDiag);
-  mainDiag = acos(mainDiag);
-  minorDiag = asin(minorDiag);
-  //acos nimmt nur positive werte an
-  mainDiag *= sgn(minorDiag);
-  double theta = avg(mainDiag, minorDiag);
-  delta.theta = theta;
-  delta.x = H.at<double>(0,2);
-  delta.y = H.at<double>(1,2);*/
-  /*Mat img_matches;
-  drawing::drawMatches2(gimage1, points1, gimage2, points2,
+  Mat roi1;
+  Mat roi2;
+  getIntersectionRois(delta, roi1, roi2);
+  
+  Mat hsv1;
+  Mat hsv2;
+  MatND hist1, hist2, hist3, hist4;
+  cvtColor(gimage1, hsv1, CV_BGR2HSV);
+  cvtColor(gimage2, hsv2, CV_BGR2HSV);
+  // Using 30 bins for hue and 32 for saturation
+  int h_bins = 50; int s_bins = 60;
+  int histSize[] = { h_bins, s_bins };
+  // hue varies from 0 to 256, saturation from 0 to 180
+  float h_ranges[] = { 0, 256 };
+  float s_ranges[] = { 0, 180 };
+
+  const float* ranges[] = { h_ranges, s_ranges };
+  // Use the o-th and 1-st channels
+  int channels[] = { 0, 1 };
+  calcHist( &hsv1, 1, channels, roi1, hist1, 2, histSize, ranges, true, false );
+  normalize( hist1, hist1, 0, 1, NORM_MINMAX, -1, Mat() );
+  calcHist( &hsv2, 1, channels, roi2, hist2, 2, histSize, ranges, true, false );
+  normalize( hist2, hist2, 0, 1, NORM_MINMAX, -1, Mat() );
+  double base_base = compareHist( hist1, hist2, 0 );
+  cout << "histogram similarity with rois: " << base_base << endl;
+  calcHist( &hsv1, 1, channels, Mat(), hist3, 2, histSize, ranges, true, false );
+  normalize( hist1, hist1, 0, 1, NORM_MINMAX, -1, Mat() );
+  calcHist( &hsv2, 1, channels, Mat(), hist4, 2, histSize, ranges, true, false );
+  normalize( hist2, hist2, 0, 1, NORM_MINMAX, -1, Mat() );
+  double base_base2 = compareHist( hist3, hist4, 0 );
+  cout << "histogram similarity without rois: " << base_base2 << endl;
+  moduleEnded();
+  
+  drawing::drawMatches2(gimage1, points1Refined, gimage2, points2Refined,
                img_matches, Scalar::all(-1), Scalar::all(-1),
                DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);
   imshow("good Matches", img_matches);
+  drawing::drawMatches2(gimage1, points1Refinedx2, gimage2, points2Refinedx2,
+               img_matches, Scalar::all(-1), Scalar::all(-1),
+               DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);
+  imshow("good Matches with ransac", img_matches);
   /*Mat matches3;
   drawing::drawMatches(gimage1, img1.keyPoints, gimage2, img2.keyPoints,
                good_matches, matches3, Scalar::all(-1), Scalar::all(-1),
                mask2, DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);
   imshow("real ror Matches", matches3);*/
   return true;
+}
+
+using namespace boost::assign;
+
+typedef boost::geometry::model::d2::point_xy<double> point;
+typedef boost::geometry::model::polygon<point > polygon;
+typedef boost::geometry::model::ring<boost::geometry::model::d2::point_xy<double> > ring;
+void cvBoxPoints(Point2d center, double width, double height, double angle, ring&);
+bool getIntersectionRois(const geometry_msgs::Pose2D& delta, Mat& roi1, Mat& roi2){
+  point vertices[5];
+  polygon poly1, poly2;
+  
+
+  boost::geometry::model::ring<boost::geometry::model::d2::point_xy<double> > ring1, ring2;
+  //ring1 += point(0, 0), point(gimage1.cols, 0), point(gimage1.cols, gimage1.rows), point(0, gimage1.rows), point(0,0);
+  ring1 += point(0, 0), point(0, gimage1.rows), point(gimage1.cols, gimage1.rows), point(gimage1.cols, 0), point(0,0);
+  /*vertices[0][0] = 0;
+  vertices[0][1] = 0;
+  vertices[4][0] = 0;
+  vertices[4][1] = 0;
+  
+  vertices[1][0] = gimage1.cols;
+  vertices[1][1] = 0;
+  
+  vertices[2][0] = gimage1.cols;
+  vertices[2][1] = gimage1.rows;
+  
+  vertices[3][0] = 0;
+  vertices[3][1] = gimage1.rows;*/
+  //double a[5][2];
+  //boost::geometry::assign(poly1, a);
+  
+  cvBoxPoints(Point2d(gimage1.cols/2+delta.x, gimage1.rows/2+delta.y), gimage1.rows, gimage1.cols, delta.theta, ring2);
+  //vertices[4][0] = vertices[0][0];
+  //vertices[4][1] = vertices[0][1];
+  //boost::geometry::append(poly2, vertices);
+  //boost::geometry::correct(ring1);
+  //boost::geometry::correct(ring2);
+  std::deque<polygon > resultList;
+  boost::geometry::intersection(ring1, ring2, resultList);
+  if(resultList.empty()){
+	 cout << "empty list " << endl;
+	 return false;
+  }
+  roi1 = Mat::zeros(gimage1.size(), CV_8UC1);
+  roi2 = Mat::zeros(gimage1.size(), CV_8UC1);
+  polygon result = resultList.front();
+  vector<point> points = result.outer();
+  cv::Point* cvPoints = new cv::Point[points.size()];
+  cv::Point* cvPoints2 = new cv::Point[points.size()];
+  double cost = cos(delta.theta);
+  double sint = sin(delta.theta);
+  for(int i = 0; i < points.size(); i++){
+	 cvPoints[i].x = boost::geometry::get<0>(points[i]);
+	 cvPoints[i].y = boost::geometry::get<1>(points[i]);
+	 
+	 cvPoints2[i].x = boost::geometry::get<0>(points[i])*cost + boost::geometry::get<1>(points[i])*sint - delta.x;
+	 cvPoints2[i].y = -boost::geometry::get<0>(points[i])*sint + boost::geometry::get<1>(points[i])*cost - delta.y;
+	 //cvPoints2[i].x = boost::geometry::get<0>(points[i]) - delta.x;
+	 //cvPoints2[i].y = boost::geometry::get<1>(points[i]) - delta.y;
+	 cout << "x " << cvPoints2[i].x << " y " << cvPoints2[i].y << endl;
+  }
+  cv::fillConvexPoly(roi1, cvPoints, points.size(), cv::Scalar(1));
+  cv::fillConvexPoly(roi2, cvPoints2, points.size(), cv::Scalar(1));
+  Mat m1 = gimage1.clone();
+  Mat m2 = gimage2.clone();
+  cv::fillConvexPoly(m1, cvPoints, points.size(), cv::Scalar(1));
+  cv::fillConvexPoly(m2, cvPoints2, points.size(), cv::Scalar(1));
+  imshow("m1", m1);
+  imshow("m2", m2);
+  return true;
+}
+
+/**
+ * copied from old opencv
+ */
+void cvBoxPoints(Point2d center, double width, double height, double angle, ring& ring){
+    float a = (float)cos(angle)*0.5f;
+    float b = (float)sin(angle)*0.5f;
+	 double x0 = center.x - a*height - b*width;
+	 double y0 = center.y + b*height - a*width;
+	 double x1 = center.x + a*height - b*width;
+	 double y1 = center.y - b*height - a*width;
+	 
+	 /*ring += point(x0, y0);
+	 ring += point(x1, y1);
+	 ring += point(2*center.x - x0, 2*center.y - y0);
+	 ring += point(2*center.x - x1, 2*center.y - y1);
+	 ring += point(x0, y0);*/
+	 ring += point(x0, y0);
+	 ring += point(2*center.x - x1, 2*center.y - y1);
+	 ring += point(2*center.x - x0, 2*center.y - y0);
+	 ring += point(x1, y1);
+	 ring += point(x0, y0);
+	 
+	 /*pt[0][0] = center.x - a*height - b*width;
+    pt[0][1] = center.y + b*height - a*width;
+    pt[1][0] = center.x + a*height - b*width;
+    pt[1][1] = center.y - b*height - a*width;
+    pt[2][0] = 2*center.x - pt[0][0];
+    pt[2][1] = 2*center.y - pt[0][1];
+    pt[3][0] = 2*center.x - pt[1][0];
+    pt[3][1] = 2*center.y - pt[1][1];*/
 }
 
 /*
