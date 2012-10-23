@@ -274,9 +274,12 @@ int ImageMapVisual::deleteAllImages(){
 }
 
 // Position and orientation are passed through to the SceneNode.
-void ImageMapVisual::setPose(float poseX, float poseY, float poseTheta,
+int ImageMapVisual::setPose(float poseX, float poseY, float poseTheta,
 									int sessionID, int mobotID, int imageID){
 	Ogre::SceneNode* imageNode = findNode(sessionID, mobotID, imageID);
+    if(imageNode == NULL){
+        return;
+    }
 	// Set the orientation (theta)
 	Ogre::Radian rad(poseTheta);
     Ogre::Quaternion quat(rad, Ogre::Vector3::UNIT_Z);
