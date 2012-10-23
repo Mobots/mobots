@@ -23,6 +23,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 #common commands for building c++ executables and libraries
 #include_directories(include/)
+include_directories(/opt/boost_1_51_0/)
 rosbuild_add_library(messageBridge src/MessageBridge.cpp)
 rosbuild_add_library(featuresMatcher src/FeaturesMatcher.cpp src/draw.cpp)
 #rosbuild_add_boost_directories()
