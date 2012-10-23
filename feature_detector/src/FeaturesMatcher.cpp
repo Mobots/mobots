@@ -102,8 +102,15 @@ static void planeTest(const vector<Point2f>& points1, const vector<Point2f>& poi
 
 Mat affine3;
 Mat affine2;
+static Mat gimage1;
+static Mat gimage2;
+Mat kpoints1;
+Mat kpoints2;
+Mat good_matches;
+Mat good_matches_r;
+
 bool getIntersectionRois(const geometry_msgs::Pose2D&, Mat&, Mat&, int, int);
-bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, geometry_msgs::Pose2D& delta, Mat image1, Mat image2) const{  
+bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, geometry_msgs::Pose2D& delta/*, Mat& image1, Mat& image2*/) const{  
   moduleStarted("cpu matcher + get transform");
   vector<DMatch> matches1;
   vector<DMatch> matches2;
@@ -119,12 +126,10 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, g
   cout << "matches: " << matches1.size() << endl;
   symmetryTest(matches1, matches2, img1.keyPoints, img2.keyPoints, points1, points2);
   cout << "symmetric matches: " << points1.size() << endl;
-  
-  /*Mat img_matches;
-  cv::drawKeypoints(image1, img1.keyPoints, img_matches);
-  imshow("keypoints 1", img_matches);
-  cv::drawKeypoints(image2, img2.keyPoints, img_matches);
-  imshow("keypoints 2", img_matches);*/
+  /*gimage1 = image1;
+	gimage2 = image2;
+  cv::drawKeypoints(image1, img1.keyPoints, kpoints1);
+  cv::drawKeypoints(image2, img2.keyPoints, kpoints2);*/
   
   int threshold = 4;
   int lastSize = -1;
@@ -143,37 +148,43 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, g
 	 points1Refined.clear();
 	 points2Refined.clear();
   }
-
-  vector<uchar> status;
-  findHomography(points2Refined, points1Refined, CV_RANSAC, 3, status);
-  vector<Point2f> points1Refinedx2;
-  vector<Point2f> points2Refinedx2;
-  for(int i = 0; i < status.size(); i++){
-    if(status[i]){
-      points1Refinedx2.push_back(points1Refined[i]);
-      points2Refinedx2.push_back(points2Refined[i]);
-    }
-  }
-  Mat d = estimateRigidTransform(points2Refined, points1Refined, false);
-  cout << "size after homo " << points1Refinedx2.size() << endl;
-  affine3 = d;
-  affine2 = estimateRigidTransform(points2Refinedx2, points1Refinedx2, false);
+  Mat transformMatrix;
+	if(points1Refined.size() >= 7){
+		vector<uchar> status;
+		findHomography(points2Refined, points1Refined, CV_RANSAC, 3, status);
+		vector<Point2f> points1Refinedx2;
+		vector<Point2f> points2Refinedx2;
+		for(int i = 0; i < status.size(); i++){
+			if(status[i]){
+				points1Refinedx2.push_back(points1Refined[i]);
+				points2Refinedx2.push_back(points2Refined[i]);
+			}
+		}
+		transformMatrix = estimateRigidTransform(points2Refinedx2, points1Refinedx2, false);
+		cout << "size after homo " << points1Refinedx2.size() << endl;		
+		  /*drawing::drawMatches2(gimage1, points1Refinedx2, gimage2, points2Refinedx2,
+               good_matches_r, Scalar::all(-1), Scalar::all(-1),
+               DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);*/
+	}else{
+		transformMatrix = estimateRigidTransform(points2Refined, points1Refined, false);
+	}
   /*cout << "new d " << endl << d << endl;
   affine3 = d;
   d = estimateRigidTransform(points2Refined, a, true);
   cout << "new d with true" << endl << d << endl;*/
-  if(abs(d.at<double>(0,0)) > 1.1
-	 || abs(d.at<double>(0,1)) > 1.1
-	 || abs(d.at<double>(1,0)) > 1.1
-	 || abs(d.at<double>(1,1)) > 1.1){
-	 ROS_ERROR_STREAM(__PRETTY_FUNCTION__ << ": faulty matrix detected (&rejected)!! : \n" << d);
+  if(abs(transformMatrix.at<double>(0,0)) > 1.1
+	 || abs(transformMatrix.at<double>(0,1)) > 1.1
+	 || abs(transformMatrix.at<double>(1,0)) > 1.1
+	 || abs(transformMatrix.at<double>(1,1)) > 1.1){
+	 ROS_ERROR_STREAM(__PRETTY_FUNCTION__ << ": faulty matrix detected (&rejected)!! : \n" << transformMatrix);
 		//return false;
   }
-  delta.theta = -atan2(-d.at<double>(0,1), d.at<double>(0,0));
-  delta.x = d.at<double>(0,2);
-  delta.y = d.at<double>(1,2);
+  delta.theta = -atan2(-transformMatrix.at<double>(0,1), transformMatrix.at<double>(0,0));
+  delta.x = transformMatrix.at<double>(0,2);
+  delta.y = transformMatrix.at<double>(1,2);
+	moduleEnded();
   
-  Mat roi1;
+  /*Mat roi1;
   Mat roi2;
   getIntersectionRois(delta, roi1, roi2, image1.cols, image1.rows);
   
@@ -206,34 +217,29 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, g
   cout << "histogram similarity without rois: " << base_base2 << endl;
   moduleEnded();
   
-  /*drawing::drawMatches2(gimage1, points1Refined, gimage2, points2Refined,
-               img_matches, Scalar::all(-1), Scalar::all(-1),
-               DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);
-  imshow("good Matches", img_matches);
-  drawing::drawMatches2(gimage1, points1Refinedx2, gimage2, points2Refinedx2,
-               img_matches, Scalar::all(-1), Scalar::all(-1),
-               DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);
-  imshow("good Matches with ransac", img_matches);
-  /*Mat matches3;
-  drawing::drawMatches(gimage1, img1.keyPoints, gimage2, img2.keyPoints,
-               good_matches, matches3, Scalar::all(-1), Scalar::all(-1),
-               mask2, DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);
-  imshow("real ror Matches", matches3);*/
+  drawing::drawMatches2(image1, points1Refined, gimage2, points2Refined,
+               good_matches, Scalar::all(-1), Scalar::all(-1),
+               DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);*/
+
+
+
   return true;
 }
+
+Mat mm1, mm2;
 
 using namespace boost::assign;
 
 typedef boost::geometry::model::d2::point_xy<double> point;
 typedef boost::geometry::model::polygon<point > polygon;
-typedef boost::geometry::model::ring<boost::geometry::model::d2::point_xy<double> > ring;
-void cvBoxPoints(Point2d center, double width, double height, double angle, ring&);
+typedef boost::geometry::model::ring<boost::geometry::model::d2::point_xy<double> > boost_ring;
+void cvBoxPoints(Point2d center, double width, double height, double angle, boost_ring&);
 bool getIntersectionRois(const geometry_msgs::Pose2D& delta, Mat& roi1, Mat& roi2, int rows, int cols){
   point vertices[5];
   polygon poly1, poly2;
   
 
-  boost::geometry::model::ring<boost::geometry::model::d2::point_xy<double> > ring1, ring2;
+  boost_ring ring1, ring2;
   //ring1 += point(0, 0), point(gimage1.cols, 0), point(gimage1.cols, gimage1.rows), point(0, gimage1.rows), point(0,0);
   ring1 += point(0, 0), point(0, rows), point(cols, rows), point(cols, 0), point(0,0);
   /*vertices[0][0] = 0;
@@ -264,57 +270,43 @@ bool getIntersectionRois(const geometry_msgs::Pose2D& delta, Mat& roi1, Mat& roi
 	 cout << "empty list " << endl;
 	 return false;
   }
-  roi1 = Mat::zeros(rows, cols, CV_8UC1);
-  roi2 = Mat::zeros(rows, cols, CV_8UC1);
+  roi1 = Mat::zeros(gimage1.size(), CV_8UC1);
+  roi2 = Mat::zeros(gimage1.size(), CV_8UC1);
   polygon result = resultList.front();
-  vector<point> points = result.outer();
+  const vector<point> points = result.outer();
   cv::Point* cvPoints = new cv::Point[points.size()];
   cv::Point* cvPoints2 = new cv::Point[points.size()];
   double cost = cos(delta.theta);
   double sint = sin(delta.theta);
   for(int i = 0; i < points.size(); i++){
-	 cvPoints[i].x = boost::geometry::get<0>(points[i]);
-	 cvPoints[i].y = boost::geometry::get<1>(points[i]);
+	 cvPoints[i].x = points[i].x();
+	 cvPoints[i].y = points[i].y();
 	 
-	 cvPoints2[i].x = boost::geometry::get<0>(points[i])*cost + boost::geometry::get<1>(points[i])*sint - delta.x;
-	 cvPoints2[i].y = -boost::geometry::get<0>(points[i])*sint + boost::geometry::get<1>(points[i])*cost - delta.y;
-	 //cvPoints2[i].x = boost::geometry::get<0>(points[i]) - delta.x;
-	 //cvPoints2[i].y = boost::geometry::get<1>(points[i]) - delta.y;
+	 cvPoints2[i].x = points[i].x()*cost + points[i].y()*sint - delta.x;
+	 cvPoints2[i].y = -points[i].x()*sint + points[i].y()*cost - delta.y;
 	 cout << "x1 " << cvPoints[i].x << " y1 " << cvPoints[i].y << endl;
   }
 	for(int i = 0; i < points.size(); i++){
-	 cvPoints[i].x = boost::geometry::get<0>(points[i]);
-	 cvPoints[i].y = boost::geometry::get<1>(points[i]);
+	 cvPoints[i].x = points[i].x();
+	 cvPoints[i].y = points[i].y();
 	 
-	 cvPoints2[i].x = boost::geometry::get<0>(points[i])*cost + boost::geometry::get<1>(points[i])*sint - delta.x;
-	 cvPoints2[i].y = -boost::geometry::get<0>(points[i])*sint + boost::geometry::get<1>(points[i])*cost - delta.y;
-	 if(cvPoints2[i].x < 0)
-		 cvPoints2[i].x = 0;
-	 	 if(cvPoints2[i].x > 640)
-		 cvPoints2[i].x = 640;
-	 	 if(cvPoints2[i].y < 0)
-		 cvPoints2[i].y = 0;
-	 	 if(cvPoints2[i].y > 480)
-		 cvPoints2[i].y = 480;
-	 //cvPoints2[i].x = boost::geometry::get<0>(points[i]) - delta.x;
-	 //cvPoints2[i].y = boost::geometry::get<1>(points[i]) - delta.y;
+	 cvPoints2[i].x = points[i].x()*cost + points[i].y()*sint - delta.x;
+	 cvPoints2[i].y = -points[i].x()*sint + points[i].y()*cost - delta.y;
 	 cout << "x2 " << cvPoints2[i].x << " y2 " << cvPoints2[i].y << endl;
   }
   cv::fillConvexPoly(roi1, cvPoints, points.size(), cv::Scalar(1));
   cv::fillConvexPoly(roi2, cvPoints2, points.size(), cv::Scalar(1));
-  /*Mat m1 = gimage1.clone();
-  Mat m2 = gimage2.clone();
-  cv::fillConvexPoly(m1, cvPoints, points.size(), cv::Scalar(1));
-  cv::fillConvexPoly(m2, cvPoints2, points.size(), cv::Scalar(1));
-  imshow("m1", m1);
-  imshow("m2", m2);*/
+  mm1 = gimage1.clone();
+  mm2 = gimage2.clone();
+  cv::fillConvexPoly(mm1, cvPoints, points.size(), cv::Scalar(1));
+  cv::fillConvexPoly(mm2, cvPoints2, points.size(), cv::Scalar(1));
   return true;
 }
 
 /**
  * copied from old opencv
  */
-void cvBoxPoints(Point2d center, double width, double height, double angle, ring& ring){
+void cvBoxPoints(Point2d center, double width, double height, double angle, boost_ring& ring){
     float a = (float)cos(angle)*0.5f;
     float b = (float)sin(angle)*0.5f;
 	 double x0 = center.x - a*height - b*width;

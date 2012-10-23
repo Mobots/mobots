@@ -9,8 +9,7 @@ class FeaturesMatcher{
 public:
   FeaturesMatcher(){}
   virtual ~FeaturesMatcher(){}
-  virtual bool match(const FeatureSet& img1, const FeatureSet& img2, geometry_msgs::Pose2D& delta, 
-										 cv::Mat image1, cv::Mat image2) const = 0;
+  virtual bool match(const FeatureSet& img1, const FeatureSet& img2, geometry_msgs::Pose2D& delta) const = 0;
   /**
   * Use this method to retrieve the currently best matcher
   */
@@ -23,8 +22,7 @@ private:
 public:
   virtual ~CpuFeaturesMatcher(){}
   CpuFeaturesMatcher(const std::string& type);
-  virtual bool match(const FeatureSet& img1, const FeatureSet& img2, geometry_msgs::Pose2D& delta, 
-										 cv::Mat image1, cv::Mat image2) const;
+  virtual bool match(const FeatureSet& img1, const FeatureSet& img2, geometry_msgs::Pose2D& delta) const;
   
   static const char SURF_DEFAULT[];
   static const char ORB_DEFAULT[];
@@ -34,8 +32,7 @@ class GpuFeaturesMatcher : public FeaturesMatcher{
 public:
   virtual ~GpuFeaturesMatcher(){}
   GpuFeaturesMatcher(){}
-  virtual bool match(const FeatureSet& img1, const FeatureSet& img2, geometry_msgs::Pose2D& delta, 
-										 cv::Mat image1, cv::Mat image2) const{
+  virtual bool match(const FeatureSet& img1, const FeatureSet& img2, geometry_msgs::Pose2D& delta) const{
     return false;
   }
 };
