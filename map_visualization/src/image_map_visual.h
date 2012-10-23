@@ -52,11 +52,11 @@ public:
 	
 	int showSession(int sessionID);
 	int hideSession(int sessionID);
-	int deleteSession(const std::string* nodeName);
+    int deleteSession(const std::string* nodeName);
 	
 	int deleteAllImages();
 	
-	void setPose(float poseX, float poseY, float poseTheta, int sessionID, int mobotID, int imageID);
+    int setPose(float poseX, float poseY, float poseTheta, int sessionID, int mobotID, int imageID);
 
   // If the node is not found, a the node and its path is created.
 	Ogre::SceneNode* getNode(int sessionID, int mobotID, int imageID);

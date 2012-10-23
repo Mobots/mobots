@@ -48,35 +48,51 @@ void ImageMapDisplay::onDisable(){
     //ROS_INFO("[onDisable]");
 }
 
+void ImageMapDisplay::reset(){
+    //ROS_INFO("reset");
+    Display::reset();
+    clear();
+    //ROS_INFO("reset");
+}
+
 void ImageMapDisplay::subscribe(){
     //ROS_INFO("[subscribe]");
 	if(!isEnabled()){
 		return;
 	}
+    setStatus(rviz::status_levels::Ok, "Topic", "OK");
 	if(!relPoseTopic.empty()){
 		try{
             //ROS_INFO("Subscribing");
 			relPoseSub = update_nh_.subscribe(relPoseTopic, 3,
 				&ImageMapDisplay::relPoseCallback, this);
-			setStatus(rviz::status_levels::Ok, "Topic", "OK");
 		}
 		catch(ros::Exception& e){
 			setStatus(rviz::status_levels::Error, "Topic", std::string
-				("Error subscribing Relative: ") + e.what());
+                ("Error subscribing relative: ") + e.what());
 		}
 	}
 	if(!absPoseTopic.empty()){
 		try{
             //ROS_INFO("Subscribing");
-			absPoseSub = update_nh_.subscribe(absPoseTopic, 10,
+            absPoseSub = update_nh_.subscribe(absPoseTopic, 1000,
 				&ImageMapDisplay::absPoseCallback, this);
-			setStatus(rviz::status_levels::Ok, "Topic", "OK");
 		}
 		catch(ros::Exception& e){
 			setStatus(rviz::status_levels::Error, "Topic", std::string
-				("Error subscribing Absolute: ") + e.what());
-		}
+                ("Error subscribing absolute: ") + e.what());
+        }
 	}
+    if(!imageStoreTopic.empty()){
+        try{
+            ros::ServiceClient client = n.serviceClient<GetImageWithPose>(imageStoreTopic);
+        }
+        catch(ros::Exception& e){
+            setStatus(rviz::status_levels::Error, "Topic", std::string
+                ("Error connecting to image store: ") + e.what());
+        }
+    }
+    return;
     //ROS_INFO("[subscribe]");
 }
 
@@ -84,6 +100,7 @@ void ImageMapDisplay::unsubscribe(){
     //ROS_INFO("[unsubscribe]");
 	relPoseSub.shutdown();
 	absPoseSub.shutdown();
+    imageStoreClient.shutdown();
     //ROS_INFO("[unsubscribe]");
 }
 
@@ -106,16 +123,23 @@ void ImageMapDisplay::setAbsPoseTopic(const std::string& topic){
 	clear();
 	absPoseTopic = topic;
 	subscribe();
-	// Broadcast the fact that the variable has changed.
 	propertyChanged(absPoseTopicProperty);
-	// Make sure rviz renders the next time it gets a chance.
 	causeRender();
     //ROS_INFO("setAbsPoseTopic");
 }
 
+void ImageMapDisplay::setImageStoreTopic(const std::string& topic){
+    //ROS_INFO("setAbsPoseTopic: %s", topic.c_str());
+    unsubscribe();
+    clear();
+    imageStoreTopic = topic;
+    subscribe();
+    propertyChanged(imageStoreTopicProperty);
+    causeRender();
+    //ROS_INFO("setAbsPoseTopic");
+}
 
-
-// TODO pass poses to image_map_info
+// TODO pass information to image_map_info
 void ImageMapDisplay::relPoseCallback(
 	const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg){
     //ROS_INFO("[imageRelPoseCallback]");
@@ -123,22 +147,48 @@ void ImageMapDisplay::relPoseCallback(
 		msg->id.session_id, msg->id.mobot_id, msg->id.image_id,
 		&msg->image.data, &msg->image.encoding,
 		msg->image.width, msg->image.height);
+    // If the first image is missing(ID=0), get all until the recieved image.
+    if(visual_->findNode(msg->id.session_id, msg->id.mobot_id, 0) == NULL){
+        ROS_INFO("[ImageMapDisplay] Attemting to complete missing image series");
+        retrieveImageSeries(msg->id.session_id, msg->id.mobot_id);
+    }
 }
 
-// TODO pass the information about the absolute pose to Mobot_Info
+// TODO pass information to image_map_info
 void ImageMapDisplay::absPoseCallback(
 	const mobots_msgs::PoseAndID::ConstPtr& msg){
     //ROS_INFO("[imageAbsPoseCallback]");
-	visual_->setPose(msg->id.session_id, msg->id.mobot_id,	msg->id.image_id,
-		msg->pose.x, msg->pose.y, msg->pose.theta);
+    if(visual_->setPose(msg->id.session_id, msg->id.mobot_id, msg->id.image_id,
+        msg->pose.x, msg->pose.y, msg->pose.theta) != 0){
+        ROS_INFO("[imageMapDisplay] No image to assign abs pose to");
+    }
 }
 
-// Override rviz::Display's reset() function to add a call to clear().
-void ImageMapDisplay::reset(){
-    //ROS_INFO("reset");
-	Display::reset();
-	clear();
-    //ROS_INFO("reset");
+// TODO implemented dual pose(rel + abs) storage
+// Long method. Through in thread? -> locking of visual...
+void ImageMapDisplay::retrieveImages(int sessionID, int mobotID){
+    GetImageWithPose srv;
+    srv.request.id.session_id = sessionID;
+    srv.request.id.mobot_id = mobotID;
+    srv.request.id.image_id = 0;
+    srv.request.type = 0;
+    while(imageStoreClient.call(srv)){
+        ROS_INFO("[retrieveImages] calling image store:s%im%ii%i",
+                 srv.request.id.session_id, srv.request.id.mobot_id,
+                 srv.request.id.image_id);
+        // End of images or error. Errors in image_store pkg
+        if(srv.response.error){
+            ROS_INFO("[retrieveImages] error: %i", srv.response.error);
+            return;
+        }
+        visual_->insertImage(srv.response.rel_pose.x, srv.response.rel_pose.y,
+                srv.response.rel_pose.theta, srv.response.id.session_id,
+                srv.response.id.mobot_id, srv.response.id.image_id,
+                srv.response.image.data, srv.response.image.encoding,
+                srv.response.image.width, srv.response.image.height);
+        srv.response.id.image_id++;
+    }
+    return;
 }
 
 // Override createProperties() to build and configure a Property
@@ -157,15 +207,24 @@ void ImageMapDisplay::createProperties(){
 		boost::bind(&ImageMapDisplay::getAbsPoseTopic, this),
 		boost::bind(&ImageMapDisplay::setAbsPoseTopic, this, _1),
 		parent_category_, this );
+    imageStoreTopicProperty = property_manager_->createProperty<rviz::ROSTopicStringProperty>(
+        "ImageStoreTopic", property_prefix_,
+        boost::bind(&ImageMapDisplay::getImageStoreTopic, this),
+        boost::bind(&ImageMapDisplay::setImageStoreTopic, this, _1),
+        parent_category_, this );
 		
-	setPropertyHelpText(relPoseTopicProperty, "Relative pose topic to subscribe to.");
+    setPropertyHelpText(relPoseTopicProperty, "Relative pose topic to subscribe to.");
 	setPropertyHelpText(absPoseTopicProperty, "Absolute pose topic to subscribe to.");
+    setPropertyHelpText(imageStoreTopicProperty, "Image Store topic to connect to.");
 	rviz::ROSTopicStringPropertyPtr relPoseTopicProp = relPoseTopicProperty.lock();
 	rviz::ROSTopicStringPropertyPtr absPoseTopicProp = absPoseTopicProperty.lock();
+    rviz::ROSTopicStringPropertyPtr imageStoreTopicProp = imageStoreTopicProperty.lock();
 	relPoseTopicProp->setMessageType
 		(ros::message_traits::datatype<mobots_msgs::ImageWithPoseAndID>());
 	absPoseTopicProp->setMessageType
-		(ros::message_traits::datatype<mobots_msgs::PoseAndID>());
+        (ros::message_traits::datatype<mobots_msgs::PoseAndID>());
+    imageStoreTopicProp->setMessageType
+        (ros::message_traits::datatype<GetImageWithPose>());
     //ROS_INFO("properties");
 }
 
@@ -173,7 +232,6 @@ void ImageMapDisplay::testVisual(ImageMapVisual* visual_, std::string filePath){
     //ROS_INFO("testVisual");
 	std::ifstream imageFile(filePath.c_str(), std::ios::binary);
 	if(!boost::filesystem::exists(filePath.c_str())){
-        //ROS_INFO("File not exists");
         return;
 	}
 	imageFile.seekg(0, std::ios::end);

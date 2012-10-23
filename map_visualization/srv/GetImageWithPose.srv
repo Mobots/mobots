@@ -1,5 +1,5 @@
 # This srv request specifies an image and a compressed image is returned.
-# type defines which information is requested.(Both - 0, Image - 1, Pose - 2)
+# type defines which information is requested.(Both - 0, Pose - 1)
 # rel_pose - Relative, abs_pose - Absolute, del_pose - delta
 # error codes are found in map_visualization/src/image_store/error_status.cpp
 
