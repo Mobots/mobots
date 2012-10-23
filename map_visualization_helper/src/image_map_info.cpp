@@ -1,6 +1,7 @@
 #include "image_map_info.h"
 
 int main(int argc, char *argv[]){
+    map_visualization::ImageMapWaypoint imageMapWaypoint(0);
     QApplication a(argc, argv);
     map_visualization::ImageMapModel imageMapModel(0);
 

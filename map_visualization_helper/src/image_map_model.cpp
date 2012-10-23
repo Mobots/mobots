@@ -19,7 +19,7 @@ int ImageMapModel::rowCount(const QModelIndex & /*parent*/) const{
 
 int ImageMapModel::columnCount(const QModelIndex & /*parent*/) const
 {
-    return 5;
+    return tableData[0].size();
 }
 
 QVariant ImageMapModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -55,13 +55,23 @@ QVariant ImageMapModel::data(const QModelIndex &index, int role) const
 
     switch(role){
     case Qt::DisplayRole:
+        if (col == 1 || col == 3 || col == 4){
+            if(tableData[row][col] == -1){
+                return QString("Not Available");
+            } else {
+                return QString("Available");
+            }
+        }
         return QString("%1").arg(tableData[row][col]);
         break;
     case Qt::CheckStateRole:
-
-        if (row == 1 && col == 0) //add a checkbox to cell(1,0)
+        if (col == 1 || col == 3 || col == 4)
         {
-            return Qt::Checked;
+            if(tableData[row][col] <= 0){
+                return Qt::Unchecked;
+            } else {
+                return Qt::Checked;
+            }
         }
     }
     return QVariant();
