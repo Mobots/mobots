@@ -3,6 +3,7 @@
 #include <boost/foreach.hpp>
 #include <math.h>
 #include <feature_detector/MessageBridge.h>
+#include "mobots_msgs/PoseAndID.h"
 
  /* Erlaube ich mir, weil darunter sowieso noch der Namespace TreeOptimizer2 liegt. */
 using namespace AISNavigation;
@@ -12,25 +13,16 @@ Slam::Slam() :
   subscriber1_(node_handle_.subscribe("/mobot1/featureset_pose_id", 1000, &Slam::callback1, this)),
   subscriber2_(node_handle_.subscribe("/mobot2/featureset_pose_id", 1000, &Slam::callback2, this)),
   subscriber3_(node_handle_.subscribe("/mobot3/featureset_pose_id", 1000, &Slam::callback3, this)),
-  //publisher_(node_handle_.advertise<mobots_msgs::AbsoluteImagePoses>("AbsoluteImagePoses", 1000)),
+  publisher_(node_handle_.advertise<mobots_msgs::PoseAndID>("slam/abs_pose", 1000)),
   pose_graph_(),
   features_matcher_(CpuFeaturesMatcher::ORB_DEFAULT)
 {
-  //pose_graph_.initializeTreeParameters(); //Use of uninitialised value of size 8    ==14818==    at 0x42A363: AISNavigation::ParameterPropagator::perform(AISNavigation::TreePoseGraph<Operations2D<double> >::Vertex*) (treeoptimizer2.cpp:59)
-  //pose_graph_.initializeOnlineOptimization(); //Conditional jump or move depends on uninitialised value(s)
-
+  pose_graph_.verboseLevel = 0;
+  
   for(uint bot = 1; bot <= 1; ++bot) //TODO: 1 durch MOBOT_COUNT ersetzten
   {
     last_id_[bot] = 0;
-    
-    mobots_msgs::ID id;
-    id.session_id = 0;
-    id.mobot_id = bot;
-    id.image_id = 0;
-    current_id_[bot] = merge(id);
-    
-    TreeOptimizer2::Pose initial_pose = TreeOptimizer2::Pose(0, 0, 0);
-    pose_graph_.addVertex(current_id_[bot], initial_pose);
+    current_id_[bot] = 0;
   }
 }
 
@@ -53,19 +45,40 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
 {
   ROS_INFO("Slam got a FeatureSetWithPoseAndID from mobot%u!", bot);
 
+  addNewVertexToGraph(msg, bot);
+
+  findEdgesBruteforce();
+  
+  /* TODO: Nachfolgender Hack oder ähnliches wird auch nötig, wenn ein Bild reinkommt, das mit keinem gematcht wreden kann */
+  for(uint bot = 0; bot < MOBOT_COUNT; ++bot)
+  {
+    /* TORO kann nicht laufen, wenn es Vertexe ohne Kanten gibt. */
+    if (!last_id_[bot])
+      return;
+  }
+  
+  runToro();
+  
+  publishOptimizedPoses();
+
+}
+
+void Slam::addNewVertexToGraph(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg, uint bot)
+{
   /* last_id_ und current_id_ aktualisieren */
   last_id_[bot] = current_id_[bot];
   current_id_[bot] = merge(msg->id);
   
   /* FeatureSet in Map unter Key (concatenated) ID abspeichern */
-  FeatureSet bla;
-  MessageBridge::copyToCvStruct( msg->features, bla );
-  feature_sets_[current_id_[bot]] = bla;
+  MessageBridge::copyToCvStruct( msg->features, feature_sets_[current_id_[bot]] );
 
-  /* Neue current_pose auf Basis von last_pose und DeltaPose schätzen */
-  TreeOptimizer2::Pose last_pose = pose_graph_.vertex(last_id_[bot])->pose;
-  TreeOptimizer2::Pose current_pose = TreeOptimizer2::Pose(last_pose.x() + msg->pose.x, last_pose.y() + msg->pose.y, last_pose.theta() + msg->pose.theta);
-
+  TreeOptimizer2::Pose current_pose = TreeOptimizer2::Pose();
+  if (last_id_[bot]) // Nur, wenn wir schon eine letzte Nachricht haben...
+  {
+    /* Neue current_pose auf Basis von last_pose und DeltaPose schätzen */
+    TreeOptimizer2::Pose last_pose = pose_graph_.vertex(last_id_[bot])->pose;
+    current_pose = TreeOptimizer2::Pose(last_pose.x() + msg->pose.x, last_pose.y() + msg->pose.y, last_pose.theta() + msg->pose.theta);
+  }
   /* Neuen Vertex mit concatenated ID in TORO-Graph einfügen */
   pose_graph_.addVertex(current_id_[bot], current_pose);
   ROS_INFO_STREAM("map size: " << pose_graph_.vertices.size());
@@ -84,14 +97,10 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
   
   pose_graph_.addEdge(pose_graph_.vertex(last_id_[bot]), pose_graph_.vertex(current_id_[bot]), t, m);
 #endif
-  
-  /*
-  4. Eventuell standardmäßig mit letztem FeatureSet matchen und Warnung an Moritz raushauen.
-  5. FeatureSets finden, die sich zu matchen lohnen.
-     Dazu TORO-Graph durchiterieren und Radien checken. Jeder mit jedem oder nur aktueller mit jedem?
-  6. TORO-Algoritmus keine, eine oder mehrere Iterationen laufen lassen.
-   */
+}
 
+void Slam::findEdgesBruteforce()
+{
   BOOST_FOREACH(TreeOptimizer2::VertexMap::value_type &v, pose_graph_.vertices)
   {
     BOOST_FOREACH(TreeOptimizer2::VertexMap::value_type &w, pose_graph_.vertices)
@@ -100,52 +109,74 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
       if (&v == &w)
         break;
       
-      /* Zum nullten Vertex gibt es kein FeatureSet. */
-      if (split(v.first).image_id == 0 || split(w.first).image_id == 0)
-        continue;
-      
       /* Nur matchen, wenn die Bildmittelpunkte ausreichend nah beieinander liegen. */
       double norm = sqrt( TreeOptimizer2::Translation(w.second->pose.x() - v.second->pose.x(), w.second->pose.y() - v.second->pose.y()).norm2() );
       ROS_INFO_STREAM("Distance between image " << split(v.second->id).image_id << " and " << split(w.second->id).image_id << " is " << norm);
-      if (norm > 480)
+      if (norm > 480) {
+        ROS_INFO_STREAM("Skipping combination because of to big distance.");
         continue;
+      }
       
+      /* Nur matchen, wenn noch nicht gematcht wurde. */
       uint edge_count = 0;
       for ( TreeOptimizer2::EdgeList::iterator v_itr = v.second->edges.begin(); v_itr != v.second->edges.end(); ++v_itr )
       {
-        for ( TreeOptimizer2::EdgeList::iterator w_itr = v.second->edges.begin(); w_itr != v.second->edges.end(); ++w_itr )
+        for ( TreeOptimizer2::EdgeList::iterator w_itr = w.second->edges.begin(); w_itr != w.second->edges.end(); ++w_itr )
         {
-          if ( v_itr == w_itr )
+          if ( *v_itr == *w_itr )
             ++edge_count;
-          // hier is noch n bug
         }
       }
-      ROS_INFO_STREAM("edge_count = " << edge_count);
-      
       if (edge_count) {
+        ROS_INFO_STREAM("Skipping combination because it has already an edge.");
         continue;
       }
       
-      /*ROS_INFO_STREAM(feature_sets_[v.first].keyPoints.size() << "v" << feature_sets_[v.first].descriptors.rows);
-      ROS_INFO_STREAM(feature_sets_[w.first].keyPoints.size() << "w" << feature_sets_[w.first].descriptors.rows);*/
-
+      /* Jetzt werfen wir Jonas sein Matcher an. */
       geometry_msgs::Pose2D delta;        
-      if ( features_matcher_.match(feature_sets_[v.first], feature_sets_[w.first], delta) )
+      if ( ! features_matcher_.match(feature_sets_[v.first], feature_sets_[w.first], delta) )
       {
-        /* Matching-Ergebnis als Edge zwischen den zwei Vertices einfügen */
-        TreeOptimizer2::Transformation t = convert(delta);
-
-        ROS_INFO_STREAM("matching result: x = " << t.translation().x() << ", y = " << t.translation().y() << ", theta = " << t.rotation());
-
-        TreeOptimizer2::InformationMatrix m;
-        m.values[0][0] = 1; m.values[0][1] = 0; m.values[0][2] = 0;
-        m.values[1][0] = 0; m.values[1][1] = 1; m.values[1][2] = 0;
-        m.values[2][0] = 0; m.values[2][1] = 0; m.values[2][2] = 1;
-
-        ROS_INFO_STREAM("huhu" << pose_graph_.addEdge(pose_graph_.vertex(last_id_[bot]), pose_graph_.vertex(current_id_[bot]), t, m) );
-
+        ROS_INFO_STREAM("Skippung combination because of matching error.");
+        continue;
       }
+      
+      /* Matching-Ergebnis als Edge zwischen den zwei Vertices einfügen */
+      
+      TreeOptimizer2::Transformation t = convert(delta);
+
+      // Lustige Covarianzmatrix
+      TreeOptimizer2::InformationMatrix m;
+      m.values[0][0] = 1; m.values[0][1] = 0; m.values[0][2] = 0;
+      m.values[1][0] = 0; m.values[1][1] = 1; m.values[1][2] = 0;
+      m.values[2][0] = 0; m.values[2][1] = 0; m.values[2][2] = 1;
+
+      ROS_INFO_STREAM("Adding edge with x = " << t.translation().x() << ", y = " << t.translation().y() << ", theta = " << t.rotation() << ". Result: " << pose_graph_.addEdge(v.second, w.second, t, m) );
     }
+  }
+}
+
+void Slam::runToro()
+{
+  /* Lass den TORO laufen! */
+  pose_graph_.buildSimpleTree();
+  pose_graph_.initializeTreeParameters();
+  pose_graph_.initializeOptimization(); // Es gibt noch eine Online-Variante von der Methode...
+  for(uint i = 0; i < ITERATIONS_PER_NEW_IMAGE; ++i)
+  {
+    pose_graph_.iterate();
+    ROS_INFO_STREAM("Iterated once. Error: " << pose_graph_.error() );
+  }
+}
+
+void Slam::publishOptimizedPoses()
+{  
+  /* (Hoffentlich) optimierte Image-Poses rausschicken. */
+  BOOST_FOREACH(TreeOptimizer2::VertexMap::value_type &v, pose_graph_.vertices)
+  {
+    mobots_msgs::PoseAndID pai;
+    pai.id = split(v.first);
+    pai.pose = convert(v.second->pose);
+    publisher_.publish(pai);
   }
 }
 
@@ -166,6 +197,15 @@ mobots_msgs::ID Slam::split(uint32_t id)
 TreeOptimizer2::Transformation Slam::convert(geometry_msgs::Pose2D pose)
 {
   return TreeOptimizer2::Transformation(pose.x, pose.y, pose.theta);
+}
+
+geometry_msgs::Pose2D Slam::convert(TreeOptimizer2::Pose toro_pose)
+{
+  geometry_msgs::Pose2D ros_pose;
+  ros_pose.x = toro_pose.x();
+  ros_pose.y = toro_pose.y();
+  ros_pose.theta = toro_pose.theta();
+  return ros_pose;
 }
 
 /*
