@@ -111,7 +111,8 @@ void absolutePoseHandler(const mobots_msgs::PoseAndID::ConstPtr& msg){
 }
 
 /**
- * Callback to send an image and/or its poses
+ * Callback to send an image and/or its poses.
+ * Type: 0 - Image + Pose, 1 - Pose
  */
 bool imageHandlerOut(map_visualization::GetImageWithPose::Request &req, map_visualization::GetImageWithPose::Response &res){
 	IDT id{req.id.session_id, req.id.mobot_id, req.id.image_id};
@@ -120,26 +121,25 @@ bool imageHandlerOut(map_visualization::GetImageWithPose::Request &req, map_visu
 		res.error = imagePose.getErrorStatus();
 		return true;
 	}
-	// 0 - Both, 1 - Image, 2 - Pose
-	if(req.type != 2){
+	// 0 - Both, 1 - Only Pose
+	if(req.type == 0){
 		res.image.data = imagePose.getImageData();
 		res.image.encoding = imagePose.getEncoding();
 		res.image.width = imagePose.getWidth();
 		res.image.height = imagePose.getHeight();
 	}
-	if(req.type != 1){
-		poseT delPose = imagePose.getDelPose();
-		poseT relPose = imagePose.getRelPose();
-		poseT absPose = imagePose.getAbsPose();
-		res.del_pose.x = delPose.x;
-		res.del_pose.y = delPose.y;
-		res.del_pose.theta = delPose.theta;
-		res.rel_pose.x = relPose.x;
-		res.rel_pose.y = relPose.y;
-		res.rel_pose.theta = relPose.theta;
-		res.abs_pose.x = absPose.x;
-		res.abs_pose.y = absPose.y;
-		res.abs_pose.theta = absPose.theta;
+    poseT delPose = imagePose.getDelPose();
+    poseT relPose = imagePose.getRelPose();
+    poseT absPose = imagePose.getAbsPose();
+    res.del_pose.x = delPose.x;
+    res.del_pose.y = delPose.y;
+    res.del_pose.theta = delPose.theta;
+    res.rel_pose.x = relPose.x;
+    res.rel_pose.y = relPose.y;
+    res.rel_pose.theta = relPose.theta;
+    res.abs_pose.x = absPose.x;
+    res.abs_pose.y = absPose.y;
+    res.abs_pose.theta = absPose.theta;
 	}
 	return true;
 }
