@@ -60,14 +60,12 @@ public:
     const std::string& getRelPoseTopic(){return relPoseTopic;}
     void setAbsPoseTopic(const std::string& absPoseTopic);
     const std::string& getAbsPoseTopic(){return absPoseTopic;}
+    void setImageStoreTopic(const std::string& imageStoreTopic);
+    const std::string& getImageStoreTopic(){return imageStoreTopic;}
 
 protected:
     virtual void onEnable();
     virtual void onDisable();
-
-//protected Q_SLOTS:
-    // Enables or disables this display via its DisplayWrapper.
-    //void setWrapperEnabled( bool enabled );
 
 private:
     // Internal helpers which do the work of subscribing and
@@ -75,12 +73,21 @@ private:
     void subscribe();
     void unsubscribe();
 
+    // Get all images in the series upto the specified one
+    void retrieveImageSeries(int sessionID, int mobotID);
+
     // A helper to clear this display back to the initial state.
     void clear();
 
-    // Subscriber Handlers
+    // ROS Subscriber Callbacks/Handlers
     void relPoseCallback(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg);
     void absPoseCallback(const mobots_msgs::PoseAndID::ConstPtr& msg);
+    void retrieveImages(int sessionID, int mobotID);
+
+    // ROS data Input/Output
+    ros::Subscriber relPoseSub;
+    ros::Subscriber absPoseSub;
+    ros::ServiceClient imageStoreClient;
 
     // Test
     void testVisual(ImageMapVisual* visual_, std::string fileName);
@@ -89,15 +96,13 @@ private:
     Ogre::SceneNode* scene_node_;
     ImageMapVisual* visual_;
 
-    // ROS data Input
-    ros::Subscriber relPoseSub;
-    ros::Subscriber absPoseSub;
-
     // User-editable property variables.
     std::string relPoseTopic;
     std::string absPoseTopic;
+    std::string imageStoreTopic;
     rviz::ROSTopicStringPropertyWPtr relPoseTopicProperty;
     rviz::ROSTopicStringPropertyWPtr absPoseTopicProperty;
+    rviz::ROSTopicStringPropertyWPtr imageStoreTopicProperty;
 };
 
 }

@@ -1,0 +1,5 @@
+# Calls up a function on the server node and returns the int return value
+string function
+string operand
+---
+int8 returnValue
