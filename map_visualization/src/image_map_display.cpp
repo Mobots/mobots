@@ -10,15 +10,15 @@ ImageMapDisplay::ImageMapDisplay()
 }
 
 ImageMapDisplay::~ImageMapDisplay(){
-	ROS_INFO("delete");
+    //ROS_INFO("delete");
 	unsubscribe();
 	delete visual_;
-    ROS_INFO("delete");
+    //ROS_INFO("delete");
 }
 
 // Clear the map by deleting image_map_visual object
 void ImageMapDisplay::clear(){
-	ROS_INFO("clear");
+    //ROS_INFO("clear");
 	delete visual_;
 	visual_ = new ImageMapVisual(vis_manager_->getSceneManager());
 }
@@ -28,34 +28,34 @@ void ImageMapDisplay::clear(){
 // instantiate all the workings of the class.
 // TODO implement service
 void ImageMapDisplay::onInitialize(){
-	ROS_INFO("[onInitialize]");
+    //ROS_INFO("[onInitialize]");
 	setStatus(rviz::status_levels::Warn, "Topic", "Finished Initializing");
 }
 
 void ImageMapDisplay::onEnable(){
-	ROS_INFO("onenable");
+    //ROS_INFO("onenable");
 	subscribe();
     visual_ = new ImageMapVisual(vis_manager_->getSceneManager());
     testVisual(visual_, "/home/moritz/TillEvil.jpg");
-	ROS_INFO("onenable");
+    //ROS_INFO("onenable");
 }
 
 void ImageMapDisplay::onDisable(){
-	ROS_INFO("[onDisable]");
+    //ROS_INFO("[onDisable]");
 	unsubscribe();
 	delete visual_;
     visual_ = NULL;
-	ROS_INFO("[onDisable]");
+    //ROS_INFO("[onDisable]");
 }
 
 void ImageMapDisplay::subscribe(){
-	ROS_INFO("[subscribe]");
+    //ROS_INFO("[subscribe]");
 	if(!isEnabled()){
 		return;
 	}
 	if(!relPoseTopic.empty()){
 		try{
-			ROS_INFO("Subscribing");
+            //ROS_INFO("Subscribing");
 			relPoseSub = update_nh_.subscribe(relPoseTopic, 3,
 				&ImageMapDisplay::relPoseCallback, this);
 			setStatus(rviz::status_levels::Ok, "Topic", "OK");
@@ -67,7 +67,7 @@ void ImageMapDisplay::subscribe(){
 	}
 	if(!absPoseTopic.empty()){
 		try{
-			ROS_INFO("Subscribing");
+            //ROS_INFO("Subscribing");
 			absPoseSub = update_nh_.subscribe(absPoseTopic, 10,
 				&ImageMapDisplay::absPoseCallback, this);
 			setStatus(rviz::status_levels::Ok, "Topic", "OK");
@@ -77,18 +77,18 @@ void ImageMapDisplay::subscribe(){
 				("Error subscribing Absolute: ") + e.what());
 		}
 	}
-	ROS_INFO("[subscribe]");
+    //ROS_INFO("[subscribe]");
 }
 
 void ImageMapDisplay::unsubscribe(){
-	ROS_INFO("[unsubscribe]");
+    //ROS_INFO("[unsubscribe]");
 	relPoseSub.shutdown();
 	absPoseSub.shutdown();
-	ROS_INFO("[unsubscribe]");
+    //ROS_INFO("[unsubscribe]");
 }
 
 void ImageMapDisplay::setRelPoseTopic(const std::string& topic){
-	ROS_INFO("setRelPoseTopic: %s", relPoseTopic.c_str());
+    //ROS_INFO("setRelPoseTopic: %s", relPoseTopic.c_str());
 	unsubscribe();
 	clear();
 	relPoseTopic = topic;
@@ -97,11 +97,11 @@ void ImageMapDisplay::setRelPoseTopic(const std::string& topic){
 	propertyChanged(relPoseTopicProperty);
 	// Make sure rviz renders the next time it gets a chance.
 	causeRender();
-	ROS_INFO("setRelPoseTopic: %s", relPoseTopic.c_str());
+    //ROS_INFO("setRelPoseTopic: %s", relPoseTopic.c_str());
 }
 
 void ImageMapDisplay::setAbsPoseTopic(const std::string& topic){
-	ROS_INFO("setAbsPoseTopic: %s", topic.c_str());
+    //ROS_INFO("setAbsPoseTopic: %s", topic.c_str());
 	unsubscribe();
 	clear();
 	absPoseTopic = topic;
@@ -110,7 +110,7 @@ void ImageMapDisplay::setAbsPoseTopic(const std::string& topic){
 	propertyChanged(absPoseTopicProperty);
 	// Make sure rviz renders the next time it gets a chance.
 	causeRender();
-	ROS_INFO("setAbsPoseTopic");
+    //ROS_INFO("setAbsPoseTopic");
 }
 
 
@@ -118,7 +118,7 @@ void ImageMapDisplay::setAbsPoseTopic(const std::string& topic){
 // TODO pass poses to image_map_info
 void ImageMapDisplay::relPoseCallback(
 	const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg){
-	ROS_INFO("[imageRelPoseCallback]");
+    //ROS_INFO("[imageRelPoseCallback]");
 	visual_->insertImage(msg->pose.x, msg->pose.y, msg->pose.theta,
 		msg->id.session_id, msg->id.mobot_id, msg->id.image_id,
 		&msg->image.data, &msg->image.encoding,
@@ -128,17 +128,17 @@ void ImageMapDisplay::relPoseCallback(
 // TODO pass the information about the absolute pose to Mobot_Info
 void ImageMapDisplay::absPoseCallback(
 	const mobots_msgs::PoseAndID::ConstPtr& msg){
-	ROS_INFO("[imageAbsPoseCallback]");
+    //ROS_INFO("[imageAbsPoseCallback]");
 	visual_->setPose(msg->id.session_id, msg->id.mobot_id,	msg->id.image_id,
 		msg->pose.x, msg->pose.y, msg->pose.theta);
 }
 
 // Override rviz::Display's reset() function to add a call to clear().
 void ImageMapDisplay::reset(){
-	ROS_INFO("reset");
+    //ROS_INFO("reset");
 	Display::reset();
 	clear();
-	ROS_INFO("reset");
+    //ROS_INFO("reset");
 }
 
 // Override createProperties() to build and configure a Property
@@ -146,7 +146,7 @@ void ImageMapDisplay::reset(){
 // ``property_prefix_``, and ``parent_category_`` are all initialized before
 // this is called.
 void ImageMapDisplay::createProperties(){
-	ROS_INFO("properties");
+    //ROS_INFO("properties");
 	relPoseTopicProperty = property_manager_->createProperty<rviz::ROSTopicStringProperty>(
 		"RelativePoseTopic", property_prefix_,
 		boost::bind(&ImageMapDisplay::getRelPoseTopic, this),
@@ -166,14 +166,14 @@ void ImageMapDisplay::createProperties(){
 		(ros::message_traits::datatype<mobots_msgs::ImageWithPoseAndID>());
 	absPoseTopicProp->setMessageType
 		(ros::message_traits::datatype<mobots_msgs::PoseAndID>());
-	ROS_INFO("properties");
+    //ROS_INFO("properties");
 }
 
 void ImageMapDisplay::testVisual(ImageMapVisual* visual_, std::string filePath){
-	ROS_INFO("testVisual");
+    //ROS_INFO("testVisual");
 	std::ifstream imageFile(filePath.c_str(), std::ios::binary);
 	if(!boost::filesystem::exists(filePath.c_str())){
-		ROS_INFO("File not exists");
+        //ROS_INFO("File not exists");
         return;
 	}
 	imageFile.seekg(0, std::ios::end);
@@ -186,7 +186,7 @@ void ImageMapDisplay::testVisual(ImageMapVisual* visual_, std::string filePath){
 	float a = 0.0;
 	std::string enc = "jpg";
 	visual_->insertImage(a,a,a, 0,0,0, &imageData, &enc, 4,4);
-	ROS_INFO("testVisual");
+    //ROS_INFO("testVisual");
 	visual_->setPose(1,1,0, 0,0,0);
 }
 

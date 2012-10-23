@@ -38,6 +38,8 @@
 
 #include <boost/thread/thread.hpp>
 #include <ros/ros.h>
+#include <geometry_msgs/Pose2D.h>
+#include "mobots_msgs/Pose2DPrio.h"
 
 
 #define KEYCODE_W 0x77
@@ -53,20 +55,48 @@
 #define KEYCODE_SPACE 0x20
 
 using namespace std;
-using namespace cv;
 
 double linear_vel;
 double angular_vel;
 double linear_vel_fast;
 double angular_vel_fast;
 
+geometry_msgs::Pose2D currentPosition;
+ros::Publisher targetPose_pub;
+ros::Subscriber globalPose_sub;
+ros::NodeHandle* nh;
+
 int kfd = 0;
 struct termios cooked, raw;
 
+void keyboardLoop();
+
+void globalPoseCallback(const geometry_msgs::Pose2D& msg){
+	currentPosition = msg;
+}
+
 
 int main(int argc, char** argv){
-  ros::init(argc, argv, "manualSteerer", ros::init_options::AnonymousName | ros::init_options::NoSigintHandler);
-  
+  ros::init(argc, argv, "mobot_keyboard_teleop", ros::init_options::NoSigintHandler);
+  nh = new ros::NodeHandle;
+	
+	cout << "specify a mobot to control (enter the mobot id): ";
+	int mobotID;
+	cin >> mobotID;
+	cout << endl;
+	string waypointPath;
+	string globalPosePath;
+	stringstream ss;
+	ss << "/mobot" << mobotID << "/waypoint";
+	waypointPath = ss.str();
+	ss.clear();
+	ss.str("");
+	ss << "/mobot" << mobotID << "/mouse";
+	globalPosePath = ss.str();
+  targetPose_pub = nh->advertise<mobots_msgs::Pose2DPrio>("waypoint", 2);
+	globalPose_sub = nh->subscribe(globalPosePath, 2, globalPoseCallback);
+	cout << "paths: " << endl << waypointPath << endl << globalPosePath << endl << endl;
+	
   boost::thread t = boost::thread(keyboardLoop);
   ros::spin();
   
@@ -84,7 +114,6 @@ void keyboardLoop(){
   bool dirty = false;
   int speed = 0;
   int turn = 0;
-  ros::Publisher targetPose_pub = nh.advertise<mobots_msgs::Pose2DPrio>("mobot_pose/waypoint", 2);
   
   // get the console in raw mode
   tcgetattr(kfd, &cooked);
@@ -122,13 +151,11 @@ void keyboardLoop(){
     }
     else{
       if (dirty == true){
-	  stopRobot();
 	  dirty = false;
       }
       continue;
     }
-    getClient.call(getStateRequest);
-    float heading = 2*acos(getStateRequest.response.pose.orientation.w);
+    float heading = currentPosition.theta;
     switch(c){
 	case KEYCODE_W:
 	    max_tv = linear_vel;
@@ -186,9 +213,9 @@ void keyboardLoop(){
 	  break;*/
     }
     mobots_msgs::Pose2DPrio pub_pose;
-    pub_pose.pose.x = sin(heading)*speed*max_tv;
-    pub_pose.pose.y = cos(heading)*speed*max_tv;
-    pub_pose.pose.theta = turn*max_rv;
+    pub_pose.pose.x = currentPosition.x + (heading)*speed*max_tv;
+    pub_pose.pose.y = currentPosition.y + (heading)*speed*max_tv;
+    pub_pose.pose.theta = currentPosition.theta + turn*max_rv;
     pub_pose.prio = 0;
 	 targetPose_pub.publish(pub_pose);
   }

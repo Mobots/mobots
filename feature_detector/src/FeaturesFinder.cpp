@@ -1,6 +1,7 @@
 #include <opencv2/gpu/gpumat.hpp>
 #include <iostream>
 
+#include <opencv2/features2d/features2d.hpp>
 #include "feature_detector/FeaturesFinder.h"
 #include "profile.h"
 
@@ -8,13 +9,13 @@ using namespace std;
 using namespace cv;
 
 Ptr<FeaturesFinder> FeaturesFinder::getDefault(){
-  return new OrbFeaturesFinder(800, 1);
+  return new OrbFeaturesFinder(600, 5);
   //return new SurfFeaturesFinder;
 }
 
 OrbFeaturesFinder::OrbFeaturesFinder(int nfeatures, int sliceCount)
   :sliceCount(sliceCount){
-    orb = new cv::ORB(nfeatures);
+    orb = new cv::ORB(nfeatures, 1.2f, 8, 5, 0, 2, cv::ORB::HARRIS_SCORE, 31);
 	 extractor = cv::DescriptorExtractor::create("ORB");
   }
 

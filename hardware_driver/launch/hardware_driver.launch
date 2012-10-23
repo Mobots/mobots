@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <launch>
-<node name="hardware_driver" pkg="hardware_driver" type="hardware_driver" output="screen" ns="$(env ROS_NAMESPACE)" >
-	<param name="miceCount" value="1" />
-	<param name="path1" value="/dev/input/mouse0" />
-	<param name="path2" value="/dev/input/mouse1" />
+<node name="hardware_driver" pkg="hardware_driver" type="hardware_driver" ns="$(env ROS_NAMESPACE)" >
 	<remap from="hardware_driver/mouse" to="mouse" />
+	<remap from="hardware_driver/globalPose" to="globalPose" />
+	<remap from="hardware_driver/infrared" to="infrared" />
+	<remap from="hardware_driver/setGlobalPose" to="setGlobalPose" />
 </node>
 </launch>

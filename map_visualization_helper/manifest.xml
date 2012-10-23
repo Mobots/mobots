@@ -1,0 +1,18 @@
+<package>
+  <description brief="Map Visualization Helper">
+    Displays map tiles with the image_map_display plugin for rviz
+  </description>
+  <author>Moritz Ulmer</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/visualization</url>
+  <depend package="geometry_msgs"/>
+  <depend package="mobots_msgs"/>
+  <depend package="map_visualization"/>
+  <export>
+    <rosdoc config="${prefix}/rosdoc.yaml"/>
+  </export>
+  <platform os="ubuntu" version="9.04"/>
+  <platform os="ubuntu" version="9.10"/>
+  <platform os="ubuntu" version="10.04"/>
+</package>
