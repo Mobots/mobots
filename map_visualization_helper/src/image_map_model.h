@@ -10,8 +10,6 @@
 
 #include <vector>
 
-#include <ros/ros.h>
-
 namespace map_visualization{
 
 class ImageMapModel : public QAbstractTableModel
@@ -24,6 +22,8 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 private:
+    // TODO support sessions
+    //{mobotID,enabled,images,rel_pose,abs_pose}
     std::vector< std::vector<int> > tableData;
 };
 

@@ -46,7 +46,15 @@ int ImageMapVisual::insertImage(
 //	ROS_INFO("insertImage, imageNode: %s", (imageNode->getName()).c_str());
 	
 	// Decode the [png/jpg] image to RGB encoding
-	cv::Mat mat = cv::imdecode(*imageData, 1);
+    cv::Mat mat;
+    if(encoding->compare("bgr8")){
+        mat.create(height, width, CV_8UC3);
+        memcpy((void*) &mat, (void*) &imageData[0], imageData->size());
+    } else if(encoding->compare("png")){
+        mat = cv::imdecode(*imageData, 1);
+    } else {
+        return 1;
+    }
 	cv::namedWindow("window_title", 1);
 	cv::imshow("window_title", mat);
 	
@@ -78,7 +86,7 @@ int ImageMapVisual::insertImage(
 			ss2.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
 			Ogre::TEX_TYPE_2D, mat.cols, mat.rows, 0, Ogre::PF_X8R8G8B8,
 			Ogre::TU_DEFAULT);
-	} catch(Ogre::Exception& e) {
+    } catch(Ogre::Exception& e) {
 //		ROS_INFO("[Visual] %s", e.what());
 		Ogre::TextureManager::getSingleton().remove(ss2.str());
 		texture_ = Ogre::TextureManager::getSingleton().createManual(
