@@ -73,7 +73,7 @@ extern Mat affine2;
 void checkResult(){
   geometry_msgs::Pose2D delta;
   Ptr<FeaturesMatcher> matcher = FeaturesMatcher::getDefault();
-  bool matchResult = matcher->match(features1, features2, delta);
+  bool matchResult = matcher->match(features1, features2, delta, gimage1, gimage2);
   if(!matchResult){
     cout << "images do not overlap at all" << endl;
 	 waitKey(0);
