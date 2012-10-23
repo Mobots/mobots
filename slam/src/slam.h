@@ -6,18 +6,6 @@
 #include <treeoptimizer2.hh>
 #include <feature_detector/FeaturesMatcher.h>
 
-struct classcomp {
-  bool operator() (const mobots_msgs::ID& lhs, const mobots_msgs::ID& rhs) const
-  {
-    if (lhs.session_id != rhs.session_id)
-      return lhs.session_id < rhs.session_id;
-    
-    if (lhs.mobot_id != rhs.mobot_id)
-      return lhs.mobot_id < rhs.mobot_id;
-    
-    return lhs.image_id < rhs.image_id;
-  }
-};
 
 /**
  * \class Slam
@@ -53,15 +41,22 @@ private:
     static const uint MOBOT_COUNT = 3;
     uint32_t last_id_[MOBOT_COUNT];
     uint32_t current_id_[MOBOT_COUNT];
+    
+    static const uint ITERATIONS_PER_NEW_IMAGE = 7;
 
     void callback1(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg);
     void callback2(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg);
     void callback3(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg);
     void callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg, uint mobot_id);
-
+    void addNewVertexToGraph(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg, uint bot);
+    void findEdgesBruteforce();
+    void publishOptimizedPoses();
+    void runToro();
+    
     uint32_t merge(mobots_msgs::ID const &id);
     mobots_msgs::ID split(uint32_t id);
     AISNavigation::TreeOptimizer2::Transformation convert(geometry_msgs::Pose2D pose);
+    geometry_msgs::Pose2D convert(AISNavigation::TreeOptimizer2::Pose toro_pose);
 };
 
 #endif
