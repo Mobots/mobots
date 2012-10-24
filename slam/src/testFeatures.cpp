@@ -49,7 +49,7 @@ int main(int argc, char** argv){
   for (int i = 1; i <= 13; i++)
   {
     string slam_path = ros::package::getPath("slam");
-    string filename = slam_path + "/pics/" + boost::lexical_cast<string>(i) + ".png";
+    string filename = slam_path + "/pics/karte/" + boost::lexical_cast<string>(i) + ".png";
     Mat image = imread(filename, 1); //1 for colours
     if (image.data == NULL) {
       cerr << "Error loading pic " << filename << "!" << endl;

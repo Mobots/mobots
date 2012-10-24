@@ -47,14 +47,23 @@ int ImageMapVisual::insertImage(
 	
 	// Decode the [png/jpg] image to RGB encoding
     cv::Mat mat;
-    if(encoding->compare("bgr8")){
+    if(encoding->compare("mono8") == 0){
+        ROS_INFO("mono8");
+        mat.create(height, width, CV_8U, (void*) &imageData[0], 0);
+        //mat.create(height, width, CV_8U);
+        //memcpy((void*) &mat, (void*) &imageData[0], sizeof(&mat));
+    } else if(encoding->compare("gbr8") == 0){
+        ROS_INFO("gbr8");
         mat.create(height, width, CV_8UC3);
         memcpy((void*) &mat, (void*) &imageData[0], imageData->size());
-    } else if(encoding->compare("png")){
+    } else if(encoding->compare("png") == 0 || encoding->compare("jpg") == 0){
+        ROS_INFO("png/jpg");
         mat = cv::imdecode(*imageData, 1);
     } else {
+        ROS_INFO("false");
         return 1;
     }
+    ROS_INFO("Mat created");
 	cv::namedWindow("window_title", 1);
 	cv::imshow("window_title", mat);
 	
@@ -273,12 +282,12 @@ int ImageMapVisual::deleteAllImages(){
 	return 0;
 }
 
-// Position and orientation are passed through to the SceneNode.
+// Position and orientation are passed through to the SceneNode
 int ImageMapVisual::setPose(float poseX, float poseY, float poseTheta,
 									int sessionID, int mobotID, int imageID){
 	Ogre::SceneNode* imageNode = findNode(sessionID, mobotID, imageID);
     if(imageNode == NULL){
-        return;
+        return 1;
     }
 	// Set the orientation (theta)
 	Ogre::Radian rad(poseTheta);
@@ -287,13 +296,14 @@ int ImageMapVisual::setPose(float poseX, float poseY, float poseTheta,
 	// Set the position (x and y)
 	Ogre::Vector3 vect(poseX, poseY, 0);
 	imageNode->setPosition(vect);
-	return;
+    return 0;
 }
 
 /**
  * Searches for the requested Node. Creates the path if it does not exist. 
  */
 Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID){
+    ROS_INFO("[Get Node]");
 	// Get the specified session node
 	std::string name = "s";
 	name += boost::lexical_cast<std::string>(sessionID);
@@ -332,6 +342,7 @@ Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID
  * Searches for the requested Node. Returns NULL pointer if node is not found. 
  */
 Ogre::SceneNode* ImageMapVisual::findNode(int sessionID, int mobotID, int imageID){
+    ROS_INFO("[Find Node]");
 	// Get the specified session node
 	if(sessionID < 0){
 		return NULL;

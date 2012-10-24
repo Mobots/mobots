@@ -85,7 +85,7 @@ void ImageMapDisplay::subscribe(){
 	}
     if(!imageStoreTopic.empty()){
         try{
-            ros::ServiceClient client = n.serviceClient<GetImageWithPose>(imageStoreTopic);
+            ros::ServiceClient client = update_nh_.serviceClient<GetImageWithPose>(imageStoreTopic);
         }
         catch(ros::Exception& e){
             setStatus(rviz::status_levels::Error, "Topic", std::string
@@ -182,11 +182,11 @@ void ImageMapDisplay::retrieveImages(int sessionID, int mobotID){
             return;
         }
         visual_->insertImage(srv.response.rel_pose.x, srv.response.rel_pose.y,
-                srv.response.rel_pose.theta, srv.response.id.session_id,
-                srv.response.id.mobot_id, srv.response.id.image_id,
-                srv.response.image.data, srv.response.image.encoding,
+                srv.response.rel_pose.theta, srv.request.id.session_id,
+                srv.request.id.mobot_id, srv.request.id.image_id,
+                &srv.response.image.data, &srv.response.image.encoding,
                 srv.response.image.width, srv.response.image.height);
-        srv.response.id.image_id++;
+        srv.request.id.image_id++;
     }
     return;
 }
@@ -215,16 +215,16 @@ void ImageMapDisplay::createProperties(){
 		
     setPropertyHelpText(relPoseTopicProperty, "Relative pose topic to subscribe to.");
 	setPropertyHelpText(absPoseTopicProperty, "Absolute pose topic to subscribe to.");
-    setPropertyHelpText(imageStoreTopicProperty, "Image Store topic to connect to.");
+    //setPropertyHelpText(imageStoreTopicProperty, "Image Store topic to connect to.");
 	rviz::ROSTopicStringPropertyPtr relPoseTopicProp = relPoseTopicProperty.lock();
 	rviz::ROSTopicStringPropertyPtr absPoseTopicProp = absPoseTopicProperty.lock();
-    rviz::ROSTopicStringPropertyPtr imageStoreTopicProp = imageStoreTopicProperty.lock();
+    //rviz::ROSTopicStringPropertyPtr imageStoreTopicProp = imageStoreTopicProperty.lock();
 	relPoseTopicProp->setMessageType
 		(ros::message_traits::datatype<mobots_msgs::ImageWithPoseAndID>());
 	absPoseTopicProp->setMessageType
         (ros::message_traits::datatype<mobots_msgs::PoseAndID>());
-    imageStoreTopicProp->setMessageType
-        (ros::message_traits::datatype<GetImageWithPose>());
+//    imageStoreTopicProp->setMessageType
+    //    (ros::message_traits::datatype<map_visualization::GetImageWithPose>());
     //ROS_INFO("properties");
 }
 
