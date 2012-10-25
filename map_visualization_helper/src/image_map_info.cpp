@@ -1,8 +1,7 @@
 #include "image_map_info.h"
 
 int main(int argc, char *argv[]){
-    map_visualization::ImageMapWaypoint imageMapWaypoint(0);
-    QApplication a(argc, argv);
+    QApplication app(argc, argv);
     map_visualization::ImageMapModel imageMapModel(0);
 
     QHBoxLayout* headerBox = new QHBoxLayout();
@@ -30,5 +29,10 @@ int main(int argc, char *argv[]){
     window->setWindowTitle("Image Map Info");
     window->show();
 
-    return a.exec();
+    map_visualization::ImageMapWaypoint waypoint;
+    waypoint.start();
+    qDebug() << "hello from GUI thread " << app.thread()->currentThreadId();
+    waypoint.wait();  // do not exit before the thread is completed!
+
+    return app.exec();
 }

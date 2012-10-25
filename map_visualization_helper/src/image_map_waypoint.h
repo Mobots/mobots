@@ -2,6 +2,8 @@
 #define IMAGE_MAP_WAYPOINT_H
 
 #include <QObject>
+#include <QThread>
+#include <QDebug>
 
 #include <ros/ros.h>
 
@@ -11,12 +13,11 @@
 
 namespace map_visualization{
 
-class ImageMapWaypoint : public QObject
+class ImageMapWaypoint : public QThread
 {
     Q_OBJECT
-public:
-    explicit ImageMapWaypoint(QObject *parent = 0);
-    
+protected:
+    void run();
 };
 
 }
