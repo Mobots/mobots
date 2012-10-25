@@ -5,13 +5,7 @@ int main(int argc, char *argv[]){
     map_visualization::ImageMapModel imageMapModel(0);
 
     QHBoxLayout* headerBox = new QHBoxLayout();
-    QLabel* sessionLabel = new QLabel("Session");
-    QComboBox* sessionComboBox = new QComboBox(0);
-    sessionComboBox->setModel(&imageMapModel);
-    headerBox->addWidget(sessionLabel);
-    headerBox->addWidget(sessionComboBox);
-    headerBox->addStretch(0);
-    QLabel* waypointLabel = new QLabel("waypoint for Mobot");
+    QLabel* waypointLabel = new QLabel("Active Mobot");
     QComboBox* waypointComboBox = new QComboBox(0);
     waypointComboBox->setModel(&imageMapModel);
     headerBox->addWidget(waypointLabel);
