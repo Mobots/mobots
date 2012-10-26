@@ -1,6 +1,9 @@
 #ifndef IMAGE_MAP_WAYPOINT_H
 #define IMAGE_MAP_WAYPOINT_H
 
+#include <math.h>
+#define PI 3.14159265
+
 #include <QObject>
 #include <QThread>
 #include <QDebug>
@@ -22,18 +25,19 @@ class ImageMapWaypoint : public QThread
 public:
     ImageMapWaypoint(int argc, char** argv);
     ~ImageMapWaypoint();
-    bool init();
+    //bool init();
 protected:
     void run();
 public Q_SLOTS:
     void setActiveMobot(int mobotID);
-    void poseRelayHandler(const geometry_msgs::PoseStamped::ConstPtr& msg);
+    void poseRelayHandler(const geometry_msgs::PoseStamped::ConstPtr& msgIn);
 private:
     int init_argc;
     char** init_argv;
     int activeMobotID;
-    ros::Subscriber poseRouterSub;
-    ros::Publisher poseRouterPub;
+    ros::Subscriber* poseRelaySub;
+    ros::Publisher* poseRelayPub;
+    ros::NodeHandle *nh;
 };
 
 }
