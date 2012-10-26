@@ -41,7 +41,7 @@ int ImageMapVisual::insertImage(
 	Ogre::SceneNode* parentNode = imageNode->getParentSceneNode();
 	std::string imageNodeName = imageNode->getName();
 	deleteImage(&imageNodeName);
-	imageNode = parentNode->createChildSceneNode(imageNodeName,
+    imageNode = parentNode->createChildSceneNode(imageNodeName,
 		Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
 //	ROS_INFO("insertImage, imageNode: %s", (imageNode->getName()).c_str());
 	
@@ -49,9 +49,8 @@ int ImageMapVisual::insertImage(
     cv::Mat mat;
     if(encoding->compare("mono8") == 0){
         ROS_INFO("mono8");
-        mat.create(height, width, CV_8U, (void*) &imageData[0], 0);
-        //mat.create(height, width, CV_8U);
-        //memcpy((void*) &mat, (void*) &imageData[0], sizeof(&mat));
+        mat.create(height, width, CV_8U);
+        memcpy((void*) &mat, (void*) &imageData[0], imageData->size() / sizeof(char));
     } else if(encoding->compare("gbr8") == 0){
         ROS_INFO("gbr8");
         mat.create(height, width, CV_8UC3);
