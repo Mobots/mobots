@@ -22,7 +22,7 @@ void copyMatToImageMSg(const cv::Mat& in, mobots_msgs::ImageWithPoseAndID& out2)
   sensor_msgs::Image* out = &out2.image;
   out->height = in.rows;
   out->width = in.cols;
-  out->encoding = "mono8";
+  out->encoding = "bgr8";
   out->is_bigendian = 0;
   out->step = in.cols * in.elemSize();
   out->data.resize(in.rows * out->step);
@@ -49,17 +49,17 @@ int main(int argc, char** argv){
   for (int i = 1; i <= 13; i++)
   {
     string slam_path = ros::package::getPath("slam");
-    string filename = slam_path + "/pics/" + boost::lexical_cast<string>(i) + ".png";
+    string filename = slam_path + "/pics/plakat/" + boost::lexical_cast<string>(i) + ".png";
     Mat image = imread(filename, 1); //1 for colours
     if (image.data == NULL) {
       cerr << "Error loading pic " << filename << "!" << endl;
       return EXIT_FAILURE;
     }
-    Mat gray_image;
-    cvtColor(image, gray_image, CV_RGB2GRAY); //FeatureDetecter etc. arbeiten alle auf Graustufenbildern
+    //Mat gray_image;
+    //cvtColor(image, gray_image, CV_RGB2GRAY); //FeatureDetecter etc. arbeiten alle auf Graustufenbildern
     
     mobots_msgs::ImageWithPoseAndID mobot_image;
-    copyMatToImageMSg(gray_image, mobot_image);
+    copyMatToImageMSg(image, mobot_image);
     mobot_image.id.session_id = 0;
     mobot_image.id.mobot_id = 1;
     mobot_image.id.image_id = i-1;
