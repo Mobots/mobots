@@ -140,6 +140,7 @@ void ImageMapDisplay::setImageStoreTopic(const std::string& topic){
 }
 
 // TODO pass information to image_map_info
+// TODO retrieveImageSeries
 void ImageMapDisplay::relPoseCallback(
 	const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg){
     //ROS_INFO("[imageRelPoseCallback]");
@@ -150,7 +151,7 @@ void ImageMapDisplay::relPoseCallback(
     // If the first image is missing(ID=0), get all until the recieved image.
     if(visual_->findNode(msg->id.session_id, msg->id.mobot_id, 0) == NULL){
         ROS_INFO("[ImageMapDisplay] Attemting to complete missing image series");
-        retrieveImageSeries(msg->id.session_id, msg->id.mobot_id);
+        //retrieveImageSeries(msg->id.session_id, msg->id.mobot_id);
     }
 }
 
