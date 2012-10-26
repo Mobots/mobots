@@ -1,22 +1,20 @@
 #include "image_map_info.h"
 
 int main(int argc, char *argv[]){
-    map_visualization::ImageMapWaypoint imageMapWaypoint(0);
-    QApplication a(argc, argv);
+    QApplication app(argc, argv);
     map_visualization::ImageMapModel imageMapModel(0);
 
     QHBoxLayout* headerBox = new QHBoxLayout();
-    QLabel* sessionLabel = new QLabel("Session");
-    QComboBox* sessionComboBox = new QComboBox(0);
-    sessionComboBox->setModel(&imageMapModel);
-    headerBox->addWidget(sessionLabel);
-    headerBox->addWidget(sessionComboBox);
-    headerBox->addStretch(0);
-    QLabel* waypointLabel = new QLabel("waypoint for Mobot");
+    QLabel* waypointLabel = new QLabel("Active Mobot");
     QComboBox* waypointComboBox = new QComboBox(0);
     waypointComboBox->setModel(&imageMapModel);
     headerBox->addWidget(waypointLabel);
     headerBox->addWidget(waypointComboBox);
+    headerBox->addStretch(0);
+    QLabel* replayLabel = new QLabel("Replay Session");
+    QComboBox* replayComboBox = new QComboBox(0);
+    headerBox->addWidget(replayLabel);
+    headerBox->addWidget(replayComboBox);
     headerBox->addStretch(0);
 
     QVBoxLayout* centralWidget = new QVBoxLayout();
@@ -30,5 +28,12 @@ int main(int argc, char *argv[]){
     window->setWindowTitle("Image Map Info");
     window->show();
 
-    return a.exec();
+    map_visualization::ImageMapWaypoint waypoint(argc, argv);
+    waypoint.start();
+    waypoint.init();
+
+    QObject::connect(waypointComboBox, SIGNAL(currentIndexChanged(int)),
+                     &waypoint, SLOT(setActiveMobot(int)));
+
+    return app.exec();
 }

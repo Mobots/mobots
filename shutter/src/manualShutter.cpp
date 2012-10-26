@@ -3,6 +3,8 @@
 #include <ros/ros.h>
 #include <sensor_msgs/fill_image.h>
 #include <usb_cam/usb_cam.h>
+#include <cv_bridge/cv_bridge.h>
+#include <opencv2/highgui/highgui.hpp>
 
 #include "mobots_msgs/ImageWithPoseAndID.h"
 
@@ -29,6 +31,12 @@ void* shutterThread(void* data){
     fillImage(msg.image, "rgb8", camera_image_->height, camera_image_->width, 3 * camera_image_->width, camera_image_->image);
     //msg.image = currentImage;
 	 pub.publish(msg);
+	 cv_bridge::CvImagePtr imagePtr = cv_bridge::toCvCopy(msg.image);
+	 stringstream ss;
+	 ss << msg.id.image_id << ".png" << endl;
+	 vector<uchar> buf;
+	 cv::imencode(".png", imagePtr->image, buf);
+	 cv::imwrite(ss.str(), buf);
 	 msg.id.image_id++;
     cout << TAG << "shuttered" << endl;
   }

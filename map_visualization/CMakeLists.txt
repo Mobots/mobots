@@ -13,7 +13,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 rosbuild_gensrv()
 
 ## Setup the OGRE libraries for image_map_display
-set(CMAKE_MODULE_PATH "/opt/ros/fuerte/stacks/visualization_common/ogre/ogre/lib/OGRE/cmake/;${CMAKE_MODULE_PATH}")
+set(CMAKE_MODULE_PATH "/usr/share/OGRE/cmake/modules;${CMAKE_MODULE_PATH}")
 find_package(OGRE REQUIRED)
 
 find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
