@@ -46,11 +46,17 @@ int ImageMapVisual::insertImage(
 //	ROS_INFO("insertImage, imageNode: %s", (imageNode->getName()).c_str());
 	
 	// Decode the [png/jpg] image to RGB encoding
-    cv::Mat mat;
+    cv::Mat mat(height, width, CV_8U);
     if(encoding->compare("mono8") == 0){
         ROS_INFO("mono8");
         mat.create(height, width, CV_8U);
-        memcpy((void*) &mat, (void*) &imageData[0], imageData->size() / sizeof(char));
+        /*unsigned char *tempImageData = new unsigned char[imageData->size()];
+        memcpy((void*) tempImageData, (void*) imageData, imageData->size());
+        mat.data = tempImageData;
+        ROS_INFO("temp size: %i", sizeof(tempImageData) / sizeof(tempImageData[0]));*/
+        mat.data = (unsigned char*) &(imageData[0]);
+        //mat.create(height, width, CV_8U);
+        //memcpy((void*) &mat, (void*) &imageData[0], imageData->size() / sizeof(char));
     } else if(encoding->compare("gbr8") == 0){
         ROS_INFO("gbr8");
         mat.create(height, width, CV_8UC3);
@@ -62,14 +68,15 @@ int ImageMapVisual::insertImage(
         ROS_INFO("false");
         return 1;
     }
-    ROS_INFO("Mat created");
-	cv::namedWindow("window_title", 1);
-	cv::imshow("window_title", mat);
+    ROS_INFO("Mat created: %i, %i", width, height);
+    ROS_INFO("Size: [vector/mat]:[%i/%i]", sizeof(imageData), sizeof(mat.data));
+    cv::namedWindow("window_title", 1);
+    cv::imshow("window_title", mat);
 	
 	// Create the material
 	std::stringstream ss;
 	ss << "MapMaterial-" << imageNode->getName();
-//	ROS_INFO("%s", (ss.str()).c_str());
+    ROS_INFO("%s", (ss.str()).c_str());
 	try{
 		material_ = Ogre::MaterialManager::getSingleton().create(ss.str(),
 			Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
