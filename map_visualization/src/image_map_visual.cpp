@@ -41,27 +41,47 @@ int ImageMapVisual::insertImage(
 	Ogre::SceneNode* parentNode = imageNode->getParentSceneNode();
 	std::string imageNodeName = imageNode->getName();
 	deleteImage(&imageNodeName);
-	imageNode = parentNode->createChildSceneNode(imageNodeName,
+    imageNode = parentNode->createChildSceneNode(imageNodeName,
 		Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
 //	ROS_INFO("insertImage, imageNode: %s", (imageNode->getName()).c_str());
 	
 	// Decode the [png/jpg] image to RGB encoding
     cv::Mat mat;
-    if(encoding->compare("bgr8")){
+    //IplImage *img = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 1);
+    if(encoding->compare("mono8") == 0){
+        ROS_INFO("mono8");
+        mat.create(cvSize(width, height), CV_8U);
+        mat.data = (unsigned char*) &imageData[0];
+        /*img->imageData = (char*) imageData;
+        mat = cv::Mat(img);*/
+        /*unsigned char *tempImageData = new unsigned char[imageData->size()];
+        memcpy((void*) tempImageData, (void*) imageData, imageData->size());
+        mat.data = tempImageData;
+        ROS_INFO("temp size: %i", sizeof(tempImageData) / sizeof(tempImageData[0]));*/
+        //mat.data = (unsigned char*) &(imageData[0]);
+        //cvConvertImage((const CvArr*) &(imageData[0]), &mat);
+        //mat.create(height, width, CV_8U);
+        //memcpy((void*) &mat, (void*) &imageData[0], imageData->size() / sizeof(char));
+    } else if(encoding->compare("gbr8") == 0){
+        ROS_INFO("gbr8");
         mat.create(height, width, CV_8UC3);
-        memcpy((void*) &mat, (void*) &imageData[0], imageData->size());
-    } else if(encoding->compare("png")){
+        mat.data = (unsigned char*) &(imageData[0]);
+    } else if(encoding->compare("png") == 0 || encoding->compare("jpg") == 0){
+        ROS_INFO("png/jpg");
         mat = cv::imdecode(*imageData, 1);
     } else {
+        ROS_INFO("false");
         return 1;
     }
-	cv::namedWindow("window_title", 1);
-	cv::imshow("window_title", mat);
+    ROS_INFO("Mat created: %i, %i", width, height);
+    ROS_INFO("Size: [vector/mat]:[%i/%i]", sizeof(imageData), sizeof(mat.data));
+    cv::namedWindow("window_title", 1);
+    cv::imshow("window_title", mat);
 	
 	// Create the material
 	std::stringstream ss;
 	ss << "MapMaterial-" << imageNode->getName();
-//	ROS_INFO("%s", (ss.str()).c_str());
+    ROS_INFO("%s", (ss.str()).c_str());
 	try{
 		material_ = Ogre::MaterialManager::getSingleton().create(ss.str(),
 			Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
@@ -273,12 +293,12 @@ int ImageMapVisual::deleteAllImages(){
 	return 0;
 }
 
-// Position and orientation are passed through to the SceneNode.
+// Position and orientation are passed through to the SceneNode
 int ImageMapVisual::setPose(float poseX, float poseY, float poseTheta,
 									int sessionID, int mobotID, int imageID){
 	Ogre::SceneNode* imageNode = findNode(sessionID, mobotID, imageID);
     if(imageNode == NULL){
-        return;
+        return 1;
     }
 	// Set the orientation (theta)
 	Ogre::Radian rad(poseTheta);
@@ -287,13 +307,14 @@ int ImageMapVisual::setPose(float poseX, float poseY, float poseTheta,
 	// Set the position (x and y)
 	Ogre::Vector3 vect(poseX, poseY, 0);
 	imageNode->setPosition(vect);
-	return;
+    return 0;
 }
 
 /**
  * Searches for the requested Node. Creates the path if it does not exist. 
  */
 Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID){
+    ROS_INFO("[Get Node]");
 	// Get the specified session node
 	std::string name = "s";
 	name += boost::lexical_cast<std::string>(sessionID);
@@ -332,6 +353,7 @@ Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID
  * Searches for the requested Node. Returns NULL pointer if node is not found. 
  */
 Ogre::SceneNode* ImageMapVisual::findNode(int sessionID, int mobotID, int imageID){
+    ROS_INFO("[Find Node]");
 	// Get the specified session node
 	if(sessionID < 0){
 		return NULL;
