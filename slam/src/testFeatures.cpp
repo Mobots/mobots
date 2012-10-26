@@ -1,6 +1,9 @@
 #include "ros/ros.h"
 #include "cv_bridge/cv_bridge.h"
-#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/highgui/highgui.hpp>
+#include <opencv/cv.h>
+#include <opencv/cvaux.h>
+#include <opencv/highgui.h>
 #include <iostream>
 #include <boost/lexical_cast.hpp>
 #include <stdlib.h>
@@ -57,6 +60,9 @@ int main(int argc, char** argv){
     }
     //Mat gray_image;
     //cvtColor(image, gray_image, CV_RGB2GRAY); //FeatureDetecter etc. arbeiten alle auf Graustufenbildern
+
+    cv::namedWindow("window", 1);
+    cv::imshow("window", image);
     
     mobots_msgs::ImageWithPoseAndID mobot_image;
     copyMatToImageMSg(image, mobot_image);

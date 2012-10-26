@@ -30,7 +30,7 @@ int main(int argc, char *argv[]){
 
     map_visualization::ImageMapWaypoint waypoint(argc, argv);
     waypoint.start();
-    waypoint.init();
+    //waypoint.init();
 
     QObject::connect(waypointComboBox, SIGNAL(currentIndexChanged(int)),
                      &waypoint, SLOT(setActiveMobot(int)));
