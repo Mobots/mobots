@@ -28,6 +28,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 
 rosbuild_add_executable(image_map_info
-    ${uis_h} ${qt_srcs} ${qt_moc_srcs}
+    ${qt_srcs} ${qt_moc_srcs} #${uis_h}
 )
 target_link_libraries(image_map_info ${QT_LIBRARIES})
+
+#rosbuild_link_boost(image_map_info bind)
