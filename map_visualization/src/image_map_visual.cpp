@@ -30,7 +30,7 @@ ImageMapVisual::~ImageMapVisual()
  * TODO variable image resolution
  */
 int ImageMapVisual::insertImage(float poseX, float poseY, float poseTheta,
-    int sessionID, int mobotID,	int imageID, cv::Mat& mat, int width, int height)
+    int sessionID, int mobotID,	int imageID, cv::Mat mat)
 {
 	// Get the node to which the image is assigned to
 	Ogre::SceneNode* imageNode = getNode(sessionID, mobotID, imageID);
@@ -42,9 +42,8 @@ int ImageMapVisual::insertImage(float poseX, float poseY, float poseTheta,
 		Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
     //	ROS_INFO("insertImage, imageNode: %s", (imageNode->getName()).c_str());
 
-    ROS_INFO("Mat created: %i, %i", width, height);
-    cv::namedWindow("window_title", 1);
-    cv::imshow("window_title", mat);
+    cv::namedWindow("recieved_image", 1);
+    cv::imshow("recieved_image", mat);
 	
 	// Create the material
 	std::stringstream ss;

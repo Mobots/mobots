@@ -36,11 +36,8 @@ public:
 	ImageMapVisual(Ogre::SceneManager* scene_manager);
 	virtual ~ImageMapVisual();
 
-	int insertImage(
-		float poseX, float poseY, float poseTheta,
-		int sessionID, int mobotID, int imageID,
-        cv::Mat& mat, int width, int height
-	);
+    int insertImage(float poseX, float poseY, float poseTheta,
+        int sessionID, int mobotID, int imageID, cv::Mat mat);
 	int showImage(int sessionID, int mobotID, int imageID);
 	int hideImage(int sessionID, int mobotID, int imageID);
 	int deleteImage(const std::string* nodeName);

@@ -153,12 +153,12 @@ void ImageMapDisplay::relPoseCallback(
     }
     visual_->insertImage(msg->pose.x, msg->pose.y, msg->pose.theta,
                          msg->id.session_id, msg->id.mobot_id, msg->id.image_id,
-                         mat, msg->image.width, msg->image.height);
+                         mat);
     // If the first image is missing(ID=0), get all until the recieved image.
-    if(visual_->findNode(msg->id.session_id, msg->id.mobot_id, 0) == NULL){
+    /*if(visual_->findNode(msg->id.session_id, msg->id.mobot_id, 0) == NULL){
         ROS_INFO("[ImageMapDisplay] Attemting to complete missing image series");
-        //retrieveImageSeries(msg->id.session_id, msg->id.mobot_id);
-    }
+        retrieveImageSeries(msg->id.session_id, msg->id.mobot_id);
+    }*/
 }
 
 // TODO pass information to image_map_info
@@ -179,7 +179,7 @@ void ImageMapDisplay::retrieveImages(int sessionID, int mobotID){
     srv.request.id.mobot_id = mobotID;
     srv.request.id.image_id = 0;
     srv.request.type = 0;
-    cv::Mat* mat;
+    cv::Mat mat;
     while(imageStoreClient.call(srv)){
         ROS_INFO("[retrieveImages] calling image store:s%im%ii%i",
                 srv.request.id.session_id, srv.request.id.mobot_id,
@@ -190,16 +190,14 @@ void ImageMapDisplay::retrieveImages(int sessionID, int mobotID){
             return;
         }
         if(srv.response.image.encoding == "jpg" || srv.response.image.encoding == "png"){
-            cv::Mat matTemp = cv::imdecode(srv.response.image.data, 1);
-            mat = &matTemp;
+            mat = cv::imdecode(srv.response.image.data, 1);
         } else {
             cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(srv.response.image, "rgb8");
-            mat = &(cv_ptr->image);
+            mat = cv_ptr->image;
         }
         visual_->insertImage(srv.response.rel_pose.x, srv.response.rel_pose.y,
                 srv.response.rel_pose.theta, srv.request.id.session_id,
-                srv.request.id.mobot_id, srv.request.id.image_id,
-                *mat, srv.response.image.width, srv.response.image.height);
+                srv.request.id.mobot_id, srv.request.id.image_id, mat);
         srv.request.id.image_id++;
     }
     return;
@@ -257,7 +255,7 @@ void ImageMapDisplay::testVisual(ImageMapVisual* visual_, std::string filePath){
 	imageData.assign(buffer, buffer + sizeof(buffer) / sizeof(char));
 	float a = 0.0;
     cv::Mat mat = cv::imdecode(imageData, 1);
-    visual_->insertImage(a,a,a, 0,0,0, mat, 4,4);
+    visual_->insertImage(a,a,a, 0,0,0, mat);
     //ROS_INFO("testVisual");
 	visual_->setPose(1,1,0, 0,0,0);
 }
