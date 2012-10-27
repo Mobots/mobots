@@ -36,39 +36,43 @@ void copyMatToImageMSg(const cv::Mat& in, mobots_msgs::ImageWithPoseAndID& out2)
 
 void* shutterThread(void* data){
   mobots_msgs::ImageWithPoseAndID msg;
-  int imageID = 1;
-  int mobotID = 0;
+  int imageID[4] = {0};
   int sessionID = 0;
+	int mobotCount = 3;
   while(ros::ok()){
     cin.ignore(std::numeric_limits<streamsize>::max(),'\n');
-    FILE* fp;
-    char result [1000];
-    fp = popen("rospack find slam","r");
-    fread(result, 1, sizeof(result), fp);
-    pclose(fp);
-    stringstream ss;
-    result[strlen(result)-1] = '\0';
-    ss << result << "/pics/karte/" << imageID << ".png";
-		cout << "sending " << ss.str() << endl;
-    cv::Mat img = cv::imread(ss.str(), 1);
-    //copyMatToImageMSg(img, msg);
-	 vector<uchar> data;
-	 string encoding(".png");
-	 imencode(encoding, img, data);
-	 msg.image.data = data;
-	 msg.image.height = img.rows;
-	 msg.image.width = img.cols;
-	 msg.image.encoding = "png";
-	 msg.image.is_bigendian = 0;
-	 msg.image.step = img.cols * img.elemSize();
-    msg.pose.x = -0.3 + imageID*(double)((double)rand()/(double)RAND_MAX)*3;
-    msg.pose.y = 0.1 + imageID*(double)((double)rand()/(double)RAND_MAX)*3;
-    msg.pose.theta = imageID*(double)((double)rand()/(double)RAND_MAX)*2;
-    pub.publish(msg);
-    imageID++;
-    msg.id.image_id = imageID;
-    cout << TAG << "shuttered  " << ss.str() << endl;
-		cout << "x " << msg.pose.x << " y " << msg.pose.y << " theta " << msg.pose.theta << endl;
+		for(int i = 1; i <= mobotCount; i++){
+			int mobotID = i;
+			FILE* fp;
+			char result [1000];
+			fp = popen("rospack find slam","r");
+			fread(result, 1, sizeof(result), fp);
+			pclose(fp);
+			stringstream ss;
+			result[strlen(result)-1] = '\0';
+			int pic = ((double)rand())/((double)RAND_MAX)*18 +1;
+			ss << result << "/pics/karte/" << pic << ".png";
+			cout << TAG << "mobot" << mobotID << "shuttered  " << ss.str() << endl;
+			cv::Mat img = cv::imread(ss.str(), 1);
+			//copyMatToImageMSg(img, msg);
+			vector<uchar> data;
+			string encoding(".png");
+			imencode(encoding, img, data);
+			msg.image.data = data;
+			msg.image.height = img.rows;
+			msg.image.width = img.cols;
+			msg.image.encoding = "png";
+			msg.image.is_bigendian = 0;
+			msg.image.step = img.cols * img.elemSize();
+			msg.pose.x = -0.3 + pic*(double)((double)rand()/(double)RAND_MAX)*3;
+			msg.pose.y = 0.1 + pic*(double)((double)rand()/(double)RAND_MAX)*3;
+			msg.pose.theta = pic*(double)((double)rand()/(double)RAND_MAX)*2*M_PI;
+			pub.publish(msg);
+			msg.id.image_id = imageID[i];
+			msg.id.mobot_id = mobotID;
+			imageID[i]++;
+			cout << "x " << msg.pose.x << " y " << msg.pose.y << " theta " << msg.pose.theta << endl;
+		}
   }
 }
 
