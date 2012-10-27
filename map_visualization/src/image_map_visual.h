@@ -39,8 +39,7 @@ public:
 	int insertImage(
 		float poseX, float poseY, float poseTheta,
 		int sessionID, int mobotID, int imageID,
-		const std::vector<unsigned char>* imageData,
-		const std::string* encoding, int width, int height
+        cv::Mat& mat, int width, int height
 	);
 	int showImage(int sessionID, int mobotID, int imageID);
 	int hideImage(int sessionID, int mobotID, int imageID);

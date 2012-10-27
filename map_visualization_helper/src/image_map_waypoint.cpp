@@ -49,6 +49,9 @@ void ImageMapWaypoint::run(){
     poseRelaySub = &poseRelaySub_;
     ros::Publisher poseRelayPub_ = nh->advertise<geometry_msgs::Pose2D>("/mobot1/waypoint_user", 10);
     poseRelayPub = &poseRelayPub_;
+    ros::Subscriber updateInfoSub_ = nh->subscribe("/image_map/update_push", 10,
+                                                   &ImageMapWaypoint::updateInfoHandler, this);
+    updateInfoSub = &updateInfoSub_;
     qDebug() << "hello from worker thread " << thread()->currentThreadId();
     ROS_INFO("I'm alive");
     ros::spin();

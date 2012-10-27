@@ -29,12 +29,9 @@ ImageMapVisual::~ImageMapVisual()
  * @Notes All resources are named;enabling a clean deletion
  * TODO variable image resolution
  */
-int ImageMapVisual::insertImage(
-	float poseX, float poseY, float poseTheta,
-	int sessionID, int mobotID, int imageID,
-	const std::vector<unsigned char>* imageData,
-	const std::string* encoding, int width, int height
-){
+int ImageMapVisual::insertImage(float poseX, float poseY, float poseTheta,
+    int sessionID, int mobotID,	int imageID, cv::Mat& mat, int width, int height)
+{
 	// Get the node to which the image is assigned to
 	Ogre::SceneNode* imageNode = getNode(sessionID, mobotID, imageID);
 	// Deleting configuration and resources of a node with the same ID
@@ -43,38 +40,9 @@ int ImageMapVisual::insertImage(
 	deleteImage(&imageNodeName);
     imageNode = parentNode->createChildSceneNode(imageNodeName,
 		Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
-//	ROS_INFO("insertImage, imageNode: %s", (imageNode->getName()).c_str());
-	
-	// Decode the [png/jpg] image to RGB encoding
-    cv::Mat mat;
-    //IplImage *img = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 1);
-    if(encoding->compare("mono8") == 0){
-        ROS_INFO("mono8");
-        mat.create(cvSize(width, height), CV_8U);
-        mat.data = (unsigned char*) &imageData[0];
-        /*img->imageData = (char*) imageData;
-        mat = cv::Mat(img);*/
-        /*unsigned char *tempImageData = new unsigned char[imageData->size()];
-        memcpy((void*) tempImageData, (void*) imageData, imageData->size());
-        mat.data = tempImageData;
-        ROS_INFO("temp size: %i", sizeof(tempImageData) / sizeof(tempImageData[0]));*/
-        //mat.data = (unsigned char*) &(imageData[0]);
-        //cvConvertImage((const CvArr*) &(imageData[0]), &mat);
-        //mat.create(height, width, CV_8U);
-        //memcpy((void*) &mat, (void*) &imageData[0], imageData->size() / sizeof(char));
-    } else if(encoding->compare("gbr8") == 0){
-        ROS_INFO("gbr8");
-        mat.create(height, width, CV_8UC3);
-        mat.data = (unsigned char*) &(imageData[0]);
-    } else if(encoding->compare("png") == 0 || encoding->compare("jpg") == 0){
-        ROS_INFO("png/jpg");
-        mat = cv::imdecode(*imageData, 1);
-    } else {
-        ROS_INFO("false");
-        return 1;
-    }
+    //	ROS_INFO("insertImage, imageNode: %s", (imageNode->getName()).c_str());
+
     ROS_INFO("Mat created: %i, %i", width, height);
-    ROS_INFO("Size: [vector/mat]:[%i/%i]", sizeof(imageData), sizeof(mat.data));
     cv::namedWindow("window_title", 1);
     cv::imshow("window_title", mat);
 	
