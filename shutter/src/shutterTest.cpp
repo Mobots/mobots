@@ -48,7 +48,8 @@ void* shutterThread(void* data){
     pclose(fp);
     stringstream ss;
     result[strlen(result)-1] = '\0';
-    ss << result << "/pics/" << imageID << ".png";
+    ss << result << "/pics/karte/" << imageID << ".png";
+		cout << "sending " << ss.str() << endl;
     cv::Mat img = cv::imread(ss.str(), 1);
     //copyMatToImageMSg(img, msg);
 	 vector<uchar> data;
@@ -74,7 +75,7 @@ void* shutterThread(void* data){
 int main(int argc, char **argv){
   ros::init(argc, argv, "shutterTest");
   ros::NodeHandle nh;
-  pub = nh.advertise<mobots_msgs::ImageWithPoseAndID>("shutter_image_delta_pose", 2);
+  pub = nh.advertise<mobots_msgs::ImageWithPoseAndID>("/mobot1/image_pose_id", 2);
   pthread_t thread_t;
   pthread_create(&thread_t, 0, shutterThread, 0);
   cout << TAG << "Press [enter] for shutter" << endl;
