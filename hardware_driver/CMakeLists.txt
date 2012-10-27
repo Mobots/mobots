@@ -17,7 +17,7 @@ rosbuild_gensrv()
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-#rosbuild_add_executable(hardware_driver src/hardware_driver.cpp)
+rosbuild_add_executable(hardware_driver src/hardware_driver.cpp)
 rosbuild_add_executable(mobot_keyboard_teleop src/mobot_keyboard_teleop.cpp)
 #uncomment if you have defined messages
 #rosbuild_genmsg()

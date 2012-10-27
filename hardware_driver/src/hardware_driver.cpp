@@ -63,18 +63,19 @@ int main(int argc, char **argv){
   
   //shutterClient = nh->serviceClient<shutter::delta>("getDelta");
   setGlobalPoseServer = nh->advertiseService("set_pose", changeGlobalPose);
-  
+  int miceCount = 2;
   pthread_t thread_t;
-  if(miceCount > 1)
+  /*if(miceCount > 1)
     pthread_create(&thread_t, 0, dualMouseReader, 0);
   else
     pthread_create(&thread_t, 0, singleMouseReader, 0);
     
-  pthread_create(&thread_t, 0, infraredReader, 0);
+  pthread_create(&thread_t, 0, infraredReader, 0);*/
   
   ros::spin();
 }
 
+/*
 void* singleMouseReader(void* data){
   ros::Rate rate(mouseFrequency);
   ros::Publisher pub = nh->advertise<geometry_msgs::Pose2D>("mouse", 2);  //needs remapping
@@ -122,8 +123,8 @@ void* infraredReader(void* data){
     read(infraredFD, XX, X);
     pub.publish(XX);
     rate.sleep();
-  }*/
-}
+  }
+}*/
 
 /**
  *# prio == 0: pose vor allen anderen einfügen, rest verwerfen (default)
@@ -150,20 +151,23 @@ void absPoseCallback(const mobots_msgs::Pose2DPrio& next_pose){
 		int prio = next_pose.prio;
 		if(prio > targetPoses.size())
 		  prio = targetPoses.size();
-		it = it+6;
+		std::advance(it, 6);
 		targetPoses.insert(it, next_pose.pose);
 		break;		
   }
   
 }
 
-void relPoseCallback(mobots_msgs::Pose2DPrio& next_pose){
-  //make a copy to prevent inconsistencies with multithreading
-  geometry_msgs::Pose2D current = globalPose;
-  next_pose.pose.x += current.x;
-  next_pose.pose.y += current.y;
-  next_pose.pose.theta += current.theta;
-  absPoseCallback(next_pose);
+void relPoseCallback(const mobots_msgs::Pose2DPrio& msg){
+  mobots_msgs::Pose2DPrio next;
+  next.pose = globalPose;
+  double cost = cos(next.pose.theta);
+  double sint = sin(next.pose.theta);
+  next.pose.x += cost*msg.pose.x - sint*msg.pose.y;
+  next.pose.y += sint*msg.pose.x + cost*msg.pose.y;
+  next.pose.theta += msg.pose.theta;
+  next.prio = msg.prio;
+  absPoseCallback(next);
 }
 /***********************************************************************************
  * changeGlobalPose kann zwecks aktualisierung der jeweiligen globalen mobot-pose
