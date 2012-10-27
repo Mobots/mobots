@@ -37,6 +37,7 @@ private:
     int activeMobotID;
     ros::Subscriber* poseRelaySub;
     ros::Publisher* poseRelayPub;
+    ros::Subscriber* updateInfoSub;
     ros::NodeHandle *nh;
 };
 

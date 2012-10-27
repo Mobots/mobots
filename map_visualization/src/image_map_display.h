@@ -10,6 +10,8 @@
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 
+#include <cv_bridge/cv_bridge.h>
+
 #include <rviz/display.h>
 #include <rviz/visualization_manager.h>
 #include <rviz/window_manager_interface.h>

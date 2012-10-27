@@ -7,7 +7,7 @@ int main(int argc, char *argv[]){
     QHBoxLayout* headerBox = new QHBoxLayout();
     QLabel* waypointLabel = new QLabel("Active Mobot");
     QComboBox* waypointComboBox = new QComboBox(0);
-    waypointComboBox->setModel(&imageMapModel);
+    //waypointComboBox->setModel(&imageMapModel);
     headerBox->addWidget(waypointLabel);
     headerBox->addWidget(waypointComboBox);
     headerBox->addStretch(0);
@@ -34,6 +34,5 @@ int main(int argc, char *argv[]){
 
     QObject::connect(waypointComboBox, SIGNAL(currentIndexChanged(int)),
                      &waypoint, SLOT(setActiveMobot(int)));
-
     return app.exec();
 }
