@@ -131,7 +131,7 @@ void* infraredReader(void* data){
   # prio == -2: pose am ende der liste einfügen
   # prio == sonst: pose an der prio-position einfügen
 */
-void absPoseCallback(const mobots_msgs::Pose2DPrio &next_pose){
+void absPoseCallback(const mobots_msgs::Pose2DPrio& next_pose){
   switch(next_pose.prio){
 	 case -2: 
 		targetPoses.push_back(next_pose.pose);
@@ -146,7 +146,7 @@ void absPoseCallback(const mobots_msgs::Pose2DPrio &next_pose){
 		currentTargetPose = next_pose.pose;
 		break;
 	 default:
-		list<geometry_msgs::Pose2D>::iterator it;
+		list<geometry_msgs::Pose2D>::iterator it = targetPoses.begin();
 		int prio = next_pose.prio;
 		if(prio > targetPoses.size())
 		  prio = targetPoses.size();
@@ -157,7 +157,7 @@ void absPoseCallback(const mobots_msgs::Pose2DPrio &next_pose){
   
 }
 
-void relPoseCallback(mobots_msgs::Pose2DPrio &next_pose){
+void relPoseCallback(mobots_msgs::Pose2DPrio& next_pose){
   //make a copy to prevent inconsistencies with multithreading
   geometry_msgs::Pose2D current = globalPose;
   next_pose.pose.x += current.x;
