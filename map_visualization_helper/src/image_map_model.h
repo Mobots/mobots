@@ -20,6 +20,12 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
     bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
     Qt::ItemFlags flags(const QModelIndex &index) const;
+
+    void addMobot(int sessionID, int mobotID, bool visible, int images, bool relative, bool absolute);
+    void updateMobot(int sessionID, int mobotID, int visible, int images, int relative, int absolute);
+    void removeMobot(int sessionID, int mobotID);
+    void removeSession(int sessionID);
+    void clear();
 private:
     // TODO support sessions
     //{mobotID,enabled,images,rel_pose,abs_pose}
