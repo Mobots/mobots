@@ -182,7 +182,7 @@ int main(int argc, char **argv){
 		std::stringstream ss;
 		ss << "/mobot" << i << "/featureset_pose_id";
 		featuresetSubs[i] = n.subscribe(ss.str(), 10, featureSetHandler);
-		ss.clear();
+		ss = std::stringstream;
 		ss << "/mobot" << i << "/image_pose_id", 10;
 		deltaSubs[i] = n.subscribe(ss.str(), 10, imageDeltaPoseHandler);
 	}
