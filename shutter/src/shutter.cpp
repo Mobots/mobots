@@ -51,7 +51,7 @@ bool Shutter::getDelta(shutter::delta::Request &req, shutter::delta::Response &r
   return true;
 }
 
-void Shutter::publishMessage(double &x, double &y, double &theta, const sensor_msgs::Image &image) {
+void Shutter::publishMessage(double x, double y, double theta, const sensor_msgs::Image &image) {
     ipid.image = image;
 
     geometry_msgs::Pose2D pose;
