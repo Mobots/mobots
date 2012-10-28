@@ -106,7 +106,7 @@ int main(int argc, char** argv){
 			exit(1);
 		}
 	}else{
-		ROS_WARNING("[%s] No path_planner found", namess.str());
+		ROS_WARN("[%s] No path_planner found", namess.str().c_str());
 	}
 	globalPosePath = ss.str();
   targetPose_pub = nh->advertise<mobots_msgs::Pose2DPrio>(ss.str(), 2);
