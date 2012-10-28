@@ -1,0 +1,17 @@
+<package>
+  <description brief="path_planner">
+
+     path_planner
+
+  </description>
+  <author>Hauke</author>
+  <license>BSD</license>
+  <depend package="roscpp"/>
+  <depend package="mobots_msgs"/>
+  <depend package="geometry_msgs"/>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/path_planner</url>
+
+</package>
+
+
