@@ -1,11 +1,16 @@
 #include "image_map_display.h"
 
+void magic(const geometry_msgs::Pose2D::ConstPtr& msg, int mobot){
+    std::cout << mobot;
+}
+
 namespace map_visualization{
 	
 ImageMapDisplay::ImageMapDisplay()
   : Display()
   , scene_node_(NULL)
   , visual_(NULL)
+  , mobotPoseCount(0)
 {
 }
 
@@ -55,6 +60,14 @@ void ImageMapDisplay::reset(){
     //ROS_INFO("reset");
 }
 
+/**
+ * Subscription to 3 static topics:
+ *  - relative pose with image
+ *  - absolute pose
+ *  - image store get image and pose service
+ * Subscription to each Mobot's topic:
+ *  - pose
+ */
 void ImageMapDisplay::subscribe(){
     //ROS_INFO("[subscribe]");
 	if(!isEnabled()){
@@ -74,7 +87,6 @@ void ImageMapDisplay::subscribe(){
 	}
 	if(!absPoseTopic.empty()){
 		try{
-            //ROS_INFO("Subscribing");
             absPoseSub = update_nh_.subscribe(absPoseTopic, 1000,
 				&ImageMapDisplay::absPoseCallback, this);
 		}
@@ -85,11 +97,32 @@ void ImageMapDisplay::subscribe(){
 	}
     if(!imageStoreTopic.empty()){
         try{
-            ros::ServiceClient client = update_nh_.serviceClient<GetImageWithPose>(imageStoreTopic);
+            imageStoreClient = update_nh_.serviceClient<GetImageWithPose>(imageStoreTopic);
         }
         catch(ros::Exception& e){
             setStatus(rviz::status_levels::Error, "Topic", std::string
                 ("Error connecting to image store: ") + e.what());
+        }
+    }
+    // Subscribe to the pose and image topics of each mobot
+    if(mobotPoseCount > 0){
+        try{
+            ros::Subscriber sub;
+            std::string topic;
+            while(mobotPoseSub.size() < mobotPoseCount){
+                topic = "/mobot" + boost::lexical_cast<std::string>(mobotPoseSub.size() + 1);
+                topic += "/pose";
+
+                boost::function<void(const geometry_msgs::Pose2D::ConstPtr&)> callback =
+                        boost::bind(&ImageMapDisplay::mobotPoseCallback, this,
+                        mobotPoseSub.size() + 1, _1);
+                sub = update_nh_.subscribe<geometry_msgs::Pose2D>(topic, 10, callback);
+                mobotPoseSub.push_back(sub);
+            }
+        }
+        catch(ros::Exception& e){
+            setStatus(rviz::status_levels::Error, "Topic", std::string
+                ("Error connecting to mobot: ") + e.what());
         }
     }
     return;
@@ -139,6 +172,17 @@ void ImageMapDisplay::setImageStoreTopic(const std::string& topic){
     //ROS_INFO("setAbsPoseTopic");
 }
 
+void ImageMapDisplay::setMobotPoseCount(const std::string& topic){
+    //ROS_INFO("setAbsPoseTopic: %s", topic.c_str());
+    unsubscribe();
+    clear();
+    mobotPoseCount = boost::lexical_cast<int>(topic);
+    subscribe();
+    propertyChanged(mobotPoseCountProperty);
+    causeRender();
+    //ROS_INFO("setAbsPoseTopic");
+}
+
 // TODO pass information to image_map_info
 // TODO retrieveImageSeries
 void ImageMapDisplay::relPoseCallback(
@@ -156,7 +200,7 @@ void ImageMapDisplay::relPoseCallback(
                          mat);
     // If the first image is missing(ID=0), get all until the recieved image.
     /*if(visual_->findNode(msg->id.session_id, msg->id.mobot_id, 0) == NULL){
-        ROS_INFO("[ImageMapDisplay] Attemting to complete missing image series");
+        ROS_INFO("[ImageMapDisplay] Attemting to retrieve missing images");
         retrieveImageSeries(msg->id.session_id, msg->id.mobot_id);
     }*/
 }
@@ -165,10 +209,17 @@ void ImageMapDisplay::relPoseCallback(
 void ImageMapDisplay::absPoseCallback(
 	const mobots_msgs::PoseAndID::ConstPtr& msg){
     //ROS_INFO("[imageAbsPoseCallback]");
-    if(visual_->setPose(msg->id.session_id, msg->id.mobot_id, msg->id.image_id,
-        msg->pose.x, msg->pose.y, msg->pose.theta) != 0){
+    if(visual_->setImagePose(msg->id.session_id, msg->id.mobot_id, msg->id.image_id,
+                        msg->pose.x, msg->pose.y, msg->pose.theta) != 0){
         ROS_INFO("[imageMapDisplay] No image to assign abs pose to");
     }
+}
+
+void ImageMapDisplay::mobotPoseCallback(int mobotID,
+        const geometry_msgs::Pose2D::ConstPtr& msg){
+    ROS_INFO("[mobotPoseCallback]");
+    visual_->setMobotModel(mobotID, msg->x, msg->y, msg->theta);
+    ROS_INFO("[mobotPoseCallback]");
 }
 
 // TODO implemented dual pose(rel + abs) storage
@@ -224,10 +275,16 @@ void ImageMapDisplay::createProperties(){
         boost::bind(&ImageMapDisplay::getImageStoreTopic, this),
         boost::bind(&ImageMapDisplay::setImageStoreTopic, this, _1),
         parent_category_, this );
+    mobotPoseCountProperty = property_manager_->createProperty<rviz::ROSTopicStringProperty>(
+        "MobotPoseCount", property_prefix_,
+        boost::bind(&ImageMapDisplay::getImageStoreTopic, this),
+        boost::bind(&ImageMapDisplay::setImageStoreTopic, this, _1),
+        parent_category_, this );
 		
     setPropertyHelpText(relPoseTopicProperty, "Relative pose topic to subscribe to.");
 	setPropertyHelpText(absPoseTopicProperty, "Absolute pose topic to subscribe to.");
-    //setPropertyHelpText(imageStoreTopicProperty, "Image Store topic to connect to.");
+    setPropertyHelpText(imageStoreTopicProperty, "Image Store topic to connect to.");
+    setPropertyHelpText(mobotPoseCountProperty, "Number of mobots to connect to and display thier poses.");
 	rviz::ROSTopicStringPropertyPtr relPoseTopicProp = relPoseTopicProperty.lock();
 	rviz::ROSTopicStringPropertyPtr absPoseTopicProp = absPoseTopicProperty.lock();
     //rviz::ROSTopicStringPropertyPtr imageStoreTopicProp = imageStoreTopicProperty.lock();
@@ -257,7 +314,8 @@ void ImageMapDisplay::testVisual(ImageMapVisual* visual_, std::string filePath){
     cv::Mat mat = cv::imdecode(imageData, 1);
     visual_->insertImage(a,a,a, 0,0,0, mat);
     //ROS_INFO("testVisual");
-	visual_->setPose(1,1,0, 0,0,0);
+    visual_->setImagePose(1,1,0, 0,0,0);
+    visual_->setMobotModel(1,a,a,0);
 }
 
 } // end namespace rviz_plugin_display

@@ -10,7 +10,8 @@ namespace map_visualization
 ImageMapVisual::ImageMapVisual( Ogre::SceneManager* sceneManager_){
 	sceneManager = sceneManager_;
 	// The root of the node tree containing all image nodes 
-	rootNode = sceneManager->getRootSceneNode()->createChildSceneNode();
+    rootImageNode = sceneManager->getRootSceneNode()->createChildSceneNode();
+    rootMobotModelNode = sceneManager->getRootSceneNode()->createChildSceneNode();
 }
 
 /**
@@ -19,8 +20,10 @@ ImageMapVisual::ImageMapVisual( Ogre::SceneManager* sceneManager_){
 ImageMapVisual::~ImageMapVisual()
 {
 //	ROS_INFO("~visual");
-	deleteAllImages();
-	sceneManager->destroySceneNode(rootNode);
+    deleteAllImages();
+    deleteAllMobotModels();
+    sceneManager->destroySceneNode(rootImageNode);
+    sceneManager->destroySceneNode(rootMobotModelNode);
 //	ROS_INFO("~visual");
 }
 
@@ -165,7 +168,7 @@ int ImageMapVisual::insertImage(float poseX, float poseY, float poseTheta,
 		}
 	}
 	manual_object_->end();
-	setPose(poseX, poseY, poseTheta, sessionID, mobotID, imageID);
+    setImagePose(poseX, poseY, poseTheta, sessionID, mobotID, imageID);
 	return 0;
 }
 
@@ -250,7 +253,7 @@ int ImageMapVisual::deleteSession(const std::string* nodeName){
  */
 int ImageMapVisual::deleteAllImages(){
 //	ROS_INFO("[deleteAllImages]");
-	Ogre::Node::ChildNodeIterator sessionIterator = rootNode->getChildIterator();
+    Ogre::Node::ChildNodeIterator sessionIterator = rootImageNode->getChildIterator();
 	Ogre::SceneNode* sessionNode;
 	while(sessionIterator.hasMoreElements()){
 		sessionNode = static_cast<Ogre::SceneNode*> (sessionIterator.getNext());
@@ -261,7 +264,7 @@ int ImageMapVisual::deleteAllImages(){
 }
 
 // Position and orientation are passed through to the SceneNode
-int ImageMapVisual::setPose(float poseX, float poseY, float poseTheta,
+int ImageMapVisual::setImagePose(float poseX, float poseY, float poseTheta,
 									int sessionID, int mobotID, int imageID){
 	Ogre::SceneNode* imageNode = findNode(sessionID, mobotID, imageID);
     if(imageNode == NULL){
@@ -277,6 +280,62 @@ int ImageMapVisual::setPose(float poseX, float poseY, float poseTheta,
     return 0;
 }
 
+int ImageMapVisual::setMobotModel(int mobotID, float poseX, float poseY, float poseTheta){
+    // Create SceneNode to which the model is attached
+    std::string id = "model-m" + boost::lexical_cast<std::string>(mobotID);
+    Ogre::Node* node;
+    try{
+        node = rootMobotModelNode->getChild(id);
+    }catch(Ogre::Exception& e){
+        rootMobotModelNode->createChildSceneNode(id, Ogre::Vector3::ZERO,
+                Ogre::Quaternion::IDENTITY);
+        node = rootMobotModelNode->getChild(id);
+        Ogre::SceneNode* sceneNode = (Ogre::SceneNode*) node;
+        createColourCube(mobotID);
+        Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(
+              "Test/ColourTest-" + id, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+        material->getTechnique(0)->getPass(0)->setVertexColourTracking(Ogre::TVC_AMBIENT);
+        Ogre::Entity* thisEntity = sceneManager->createEntity("cc-" + id, "ColourCube-" + id);
+        thisEntity->setMaterialName("Test/ColourTest-" + id);
+        sceneNode->attachObject(thisEntity);
+        sceneNode->setScale(0.01, 0.01, 0.005);
+        node = (Ogre::Node*) sceneNode;
+    }
+    // Set position
+    Ogre::Radian rad(poseTheta);
+    Ogre::Quaternion quat(rad, Ogre::Vector3::UNIT_Z);
+    node->setOrientation(quat);
+    // Set the position (x and y)
+    Ogre::Vector3 vect(poseX, poseY, 0.5);
+    node->setPosition(vect);
+
+    return 0;
+}
+
+/**
+ * Deletes all mobot model nodes and thier resources.
+ *  Mesh: "ColourCube" + id
+ *  Node:
+ */
+void ImageMapVisual::deleteAllMobotModels(){
+    Ogre::Node::ChildNodeIterator mobotModelIterator = rootMobotModelNode->getChildIterator();
+    Ogre::SceneNode* mobotModelNode;
+    while(mobotModelIterator.hasMoreElements()){
+        mobotModelNode = static_cast<Ogre::SceneNode*> (mobotModelIterator.getNext());
+        deleteMobotModel(&mobotModelNode->getName());
+    }
+}
+
+// Material: "Test/ColourTest-" + id
+// Entity: "cc-" + id
+// Mesh: "ColourCube" + id
+void ImageMapVisual::deleteMobotModel(const std::string* nodeName){
+    Ogre::MaterialManager::getSingleton().remove("Test/ColourTest-" + *nodeName);
+    sceneManager->destroyEntity("cc-" + *nodeName);
+    Ogre::MeshManager::getSingleton().remove("ColourCube-" + *nodeName);
+    sceneManager->destroySceneNode(*nodeName);
+}
+
 /**
  * Searches for the requested Node. Creates the path if it does not exist. 
  */
@@ -287,11 +346,11 @@ Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID
 	name += boost::lexical_cast<std::string>(sessionID);
 	Ogre::Node* node;
 	try{
-		node = rootNode->getChild(name);
+        node = rootImageNode->getChild(name);
 	}catch(Ogre::Exception& e){
-		rootNode->createChildSceneNode(name, Ogre::Vector3::ZERO,
+        rootImageNode->createChildSceneNode(name, Ogre::Vector3::ZERO,
 			Ogre::Quaternion::IDENTITY);
-		node = rootNode->getChild(name);
+        node = rootImageNode->getChild(name);
 	}
 	// Get the specified mobot node
 	name += "m";
@@ -329,7 +388,7 @@ Ogre::SceneNode* ImageMapVisual::findNode(int sessionID, int mobotID, int imageI
 	name += boost::lexical_cast<std::string>(sessionID);
 	Ogre::Node* node;
 	try{
-		node = rootNode->getChild(name);
+        node = rootImageNode->getChild(name);
 	} catch(Ogre::Exception& e) {
 		return NULL;
 	}
@@ -356,6 +415,134 @@ Ogre::SceneNode* ImageMapVisual::findNode(int sessionID, int mobotID, int imageI
 		return NULL;
 	}
 	return (Ogre::SceneNode*) node;
+}
+
+void ImageMapVisual::createColourCube(int mobotID)
+{
+    std::string id = "-m";
+    id += boost::lexical_cast<std::string>(mobotID);
+
+    /// Create the mesh via the MeshManager
+    Ogre::MeshPtr msh = Ogre::MeshManager::getSingleton().createManual("ColourCube-model" + id, "General");
+
+    /// Create one submesh
+    Ogre::SubMesh* sub = msh->createSubMesh();
+
+    const float sqrt13 = 0.577350269f; /* sqrt(1/3) */
+
+    /// Define the vertices (8 vertices, each consisting of 2 groups of 3 floats
+    const size_t nVertices = 8;
+    const size_t vbufCount = 3*2*nVertices;
+    float vertices[vbufCount] = {
+            -100.0,100.0,-100.0,        //0 position
+            -sqrt13,sqrt13,-sqrt13,     //0 normal
+            100.0,100.0,-100.0,         //1 position
+            sqrt13,sqrt13,-sqrt13,      //1 normal
+            100.0,-100.0,-100.0,        //2 position
+            sqrt13,-sqrt13,-sqrt13,     //2 normal
+            -100.0,-100.0,-100.0,       //3 position
+            -sqrt13,-sqrt13,-sqrt13,    //3 normal
+            -100.0,100.0,100.0,         //4 position
+            -sqrt13,sqrt13,sqrt13,      //4 normal
+            100.0,100.0,100.0,          //5 position
+            sqrt13,sqrt13,sqrt13,       //5 normal
+            100.0,-100.0,100.0,         //6 position
+            sqrt13,-sqrt13,sqrt13,      //6 normal
+            -100.0,-100.0,100.0,        //7 position
+            -sqrt13,-sqrt13,sqrt13,     //7 normal
+    };
+
+    Ogre::RenderSystem* rs = Ogre::Root::getSingleton().getRenderSystem();
+    Ogre::RGBA colours[nVertices];
+    Ogre::RGBA *pColour = colours;
+    // Use render system to convert colour value since colour packing varies
+    rs->convertColourValue(Ogre::ColourValue(1.0,0.0,0.0), pColour++); //0 colour
+    rs->convertColourValue(Ogre::ColourValue(1.0,1.0,0.0), pColour++); //1 colour
+    rs->convertColourValue(Ogre::ColourValue(0.0,1.0,0.0), pColour++); //2 colour
+    rs->convertColourValue(Ogre::ColourValue(0.0,0.0,0.0), pColour++); //3 colour
+    rs->convertColourValue(Ogre::ColourValue(1.0,0.0,1.0), pColour++); //4 colour
+    rs->convertColourValue(Ogre::ColourValue(1.0,1.0,1.0), pColour++); //5 colour
+    rs->convertColourValue(Ogre::ColourValue(0.0,1.0,1.0), pColour++); //6 colour
+    rs->convertColourValue(Ogre::ColourValue(0.0,0.0,1.0), pColour++); //7 colour
+
+    /// Define 12 triangles (two triangles per cube face)
+    /// The values in this table refer to vertices in the above table
+    const size_t ibufCount = 36;
+    unsigned short faces[ibufCount] = {
+            0,2,3,
+            0,1,2,
+            1,6,2,
+            1,5,6,
+            4,6,5,
+            4,7,6,
+            0,7,4,
+            0,3,7,
+            0,5,1,
+            0,4,5,
+            2,7,3,
+            2,6,7
+    };
+
+    /// Create vertex data structure for 8 vertices shared between submeshes
+    msh->sharedVertexData = new Ogre::VertexData();
+    msh->sharedVertexData->vertexCount = nVertices;
+
+    /// Create declaration (memory format) of vertex data
+    Ogre::VertexDeclaration* decl = msh->sharedVertexData->vertexDeclaration;
+    size_t offset = 0;
+    // 1st buffer
+    decl->addElement(0, offset, Ogre::VET_FLOAT3, Ogre::VES_POSITION);
+    offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT3);
+    decl->addElement(0, offset, Ogre::VET_FLOAT3, Ogre::VES_NORMAL);
+    offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT3);
+    /// Allocate vertex buffer of the requested number of vertices (vertexCount)
+    /// and bytes per vertex (offset)
+    Ogre::HardwareVertexBufferSharedPtr vbuf =
+        Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
+        offset, msh->sharedVertexData->vertexCount, Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+    /// Upload the vertex data to the card
+    vbuf->writeData(0, vbuf->getSizeInBytes(), vertices, true);
+
+    /// Set vertex buffer binding so buffer 0 is bound to our vertex buffer
+    Ogre::VertexBufferBinding* bind = msh->sharedVertexData->vertexBufferBinding;
+    bind->setBinding(0, vbuf);
+
+    // 2nd buffer
+    offset = 0;
+    decl->addElement(1, offset, Ogre::VET_COLOUR, Ogre::VES_DIFFUSE);
+    offset += Ogre::VertexElement::getTypeSize(Ogre::VET_COLOUR);
+    /// Allocate vertex buffer of the requested number of vertices (vertexCount)
+    /// and bytes per vertex (offset)
+    vbuf = Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
+        offset, msh->sharedVertexData->vertexCount, Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+    /// Upload the vertex data to the card
+    vbuf->writeData(0, vbuf->getSizeInBytes(), colours, true);
+
+    /// Set vertex buffer binding so buffer 1 is bound to our colour buffer
+    bind->setBinding(1, vbuf);
+
+    /// Allocate index buffer of the requested number of vertices (ibufCount)
+    Ogre::HardwareIndexBufferSharedPtr ibuf = Ogre::HardwareBufferManager::getSingleton().
+        createIndexBuffer(
+        Ogre::HardwareIndexBuffer::IT_16BIT,
+        ibufCount,
+        Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+
+    /// Upload the index data to the card
+    ibuf->writeData(0, ibuf->getSizeInBytes(), faces, true);
+
+    /// Set parameters of the submesh
+    sub->useSharedVertices = true;
+    sub->indexData->indexBuffer = ibuf;
+    sub->indexData->indexCount = ibufCount;
+    sub->indexData->indexStart = 0;
+
+    /// Set bounding information (for culling)
+    msh->_setBounds(Ogre::AxisAlignedBox(-100,-100,-100,100,100,100));
+    msh->_setBoundingSphereRadius(Ogre::Math::Sqrt(3*100*100));
+
+    /// Notify -Mesh object that it has been loaded
+    msh->load();
 }
 
 }
