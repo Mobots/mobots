@@ -56,10 +56,6 @@ void ImageMapDisplay::reset(){
     //ROS_INFO("reset");
 }
 
-const std::string& ImageMapDisplay::getMobotPoseCount(){
-    return boost::lexical_cast<std::string>(mobotPoseCount);
-}
-
 /**
  * Subscription to 3 static topics:
  *  - relative pose with image
@@ -194,6 +190,11 @@ void ImageMapDisplay::setMobotPoseCount(const std::string& topic){
     ROS_INFO("setMobotPoseCount");
 }
 
+const std::string& ImageMapDisplay::getMobotPoseCount(){
+    mobotPoseCountStr = boost::lexical_cast<std::string>(mobotPoseCount);
+    return mobotPoseCountStr;
+}
+
 // TODO pass information to image_map_info
 // TODO retrieveImageSeries
 void ImageMapDisplay::relPoseCallback(
@@ -271,11 +272,11 @@ void ImageMapDisplay::retrieveImages(int sessionID, int mobotID){
 // this is called.
 void ImageMapDisplay::createProperties(){
     //ROS_INFO("properties");
-	relPoseTopicProperty = property_manager_->createProperty<rviz::ROSTopicStringProperty>(
+    /*relPoseTopicProperty = property_manager_->createProperty<rviz::ROSTopicStringProperty>(
 		"RelativePoseTopic", property_prefix_,
 		boost::bind(&ImageMapDisplay::getRelPoseTopic, this),
 		boost::bind(&ImageMapDisplay::setRelPoseTopic, this, _1),
-		parent_category_, this );
+        parent_category_, this );*/
 	absPoseTopicProperty = property_manager_->createProperty<rviz::ROSTopicStringProperty>(
 		"AbsolutePoseTopic", property_prefix_,
 		boost::bind(&ImageMapDisplay::getAbsPoseTopic, this),
@@ -292,15 +293,15 @@ void ImageMapDisplay::createProperties(){
         boost::bind(&ImageMapDisplay::setMobotPoseCount, this, _1),
         parent_category_, this );
 		
-    setPropertyHelpText(relPoseTopicProperty, "Relative pose topic to subscribe to.");
+    //setPropertyHelpText(relPoseTopicProperty, "Relative pose topic to subscribe to.");
 	setPropertyHelpText(absPoseTopicProperty, "Absolute pose topic to subscribe to.");
     setPropertyHelpText(imageStoreTopicProperty, "Image Store topic to connect to.");
     setPropertyHelpText(mobotPoseCountProperty, "Number of mobots to connect to and display thier poses.");
-	rviz::ROSTopicStringPropertyPtr relPoseTopicProp = relPoseTopicProperty.lock();
+    //rviz::ROSTopicStringPropertyPtr relPoseTopicProp = relPoseTopicProperty.lock();
 	rviz::ROSTopicStringPropertyPtr absPoseTopicProp = absPoseTopicProperty.lock();
     //rviz::ROSTopicStringPropertyPtr imageStoreTopicProp = imageStoreTopicProperty.lock();
-	relPoseTopicProp->setMessageType
-		(ros::message_traits::datatype<mobots_msgs::ImageWithPoseAndID>());
+    /*relPoseTopicProp->setMessageType
+        (ros::message_traits::datatype<mobots_msgs::ImageWithPoseAndID>());*/
 	absPoseTopicProp->setMessageType
         (ros::message_traits::datatype<mobots_msgs::PoseAndID>());
 //    imageStoreTopicProp->setMessageType
