@@ -6,6 +6,7 @@
 #define IMAGE_MAP_DISPLAY_H
 
 #include <boost/filesystem.hpp>
+#include <boost/bind.hpp>
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
@@ -24,6 +25,8 @@
 #include "map_visualization/GetImageWithPose.h"
 
 #include "image_map_visual.h"
+
+#define MOBOT_TOPIC_BASE "/mobot"
 
 namespace Ogre
 {
@@ -64,6 +67,9 @@ public:
     const std::string& getAbsPoseTopic(){return absPoseTopic;}
     void setImageStoreTopic(const std::string& imageStoreTopic);
     const std::string& getImageStoreTopic(){return imageStoreTopic;}
+    void setMobotPoseCount(const std::string& mobotPoseCount);
+    const std::string& getMobotPoseCount(){
+        return boost::lexical_cast<std::string>(mobotPoseCount);}
 
 protected:
     virtual void onEnable();
@@ -84,12 +90,14 @@ private:
     // ROS Subscriber Callbacks/Handlers
     void relPoseCallback(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg);
     void absPoseCallback(const mobots_msgs::PoseAndID::ConstPtr& msg);
+    void mobotPoseCallback(int mobotID, const geometry_msgs::Pose2D::ConstPtr &msg);
     void retrieveImages(int sessionID, int mobotID);
 
     // ROS data Input/Output
     ros::Subscriber relPoseSub;
     ros::Subscriber absPoseSub;
     ros::ServiceClient imageStoreClient;
+    std::vector<ros::Subscriber> mobotPoseSub;
 
     // Test
     void testVisual(ImageMapVisual* visual_, std::string fileName);
@@ -102,9 +110,11 @@ private:
     std::string relPoseTopic;
     std::string absPoseTopic;
     std::string imageStoreTopic;
+    int mobotPoseCount;
     rviz::ROSTopicStringPropertyWPtr relPoseTopicProperty;
     rviz::ROSTopicStringPropertyWPtr absPoseTopicProperty;
     rviz::ROSTopicStringPropertyWPtr imageStoreTopicProperty;
+    rviz::ROSTopicStringPropertyWPtr mobotPoseCountProperty;
 };
 
 }
