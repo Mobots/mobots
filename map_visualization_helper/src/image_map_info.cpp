@@ -4,7 +4,7 @@ namespace map_visualization{
 
 ImageMapInfo::ImageMapInfo(int argc, char** argv, QWidget *parent)
     : QMainWindow(parent)
-    , model(0)
+    , model(parent)
     , waypoint(argc, argv)
 {
     QHBoxLayout* headerBox = new QHBoxLayout();
