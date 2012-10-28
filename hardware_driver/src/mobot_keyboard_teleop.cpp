@@ -77,13 +77,16 @@ void globalPoseCallback(const geometry_msgs::Pose2D& msg){
 
 
 int main(int argc, char** argv){
-  ros::init(argc, argv, "mobot_keyboard_teleop", ros::init_options::NoSigintHandler);
-  nh = new ros::NodeHandle;
+
 	
 	cout << "specify a mobot to control (enter the mobot id): ";
 	int mobotID;
 	cin >> mobotID;
 	cout << endl;
+	std::stringstream namess;
+	namess << "mobot_keyboard_teleop-" << mobotID;
+	ros::init(argc, argv, namess.str(), ros::init_options::NoSigintHandler);
+  nh = new ros::NodeHandle;
 	string waypointPath;
 	string globalPosePath;
 	stringstream ss;
