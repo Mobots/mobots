@@ -1,9 +1,5 @@
 #include "image_map_display.h"
 
-void magic(const geometry_msgs::Pose2D::ConstPtr& msg, int mobot){
-    std::cout << mobot;
-}
-
 namespace map_visualization{
 	
 ImageMapDisplay::ImageMapDisplay()
@@ -58,6 +54,10 @@ void ImageMapDisplay::reset(){
     Display::reset();
     clear();
     //ROS_INFO("reset");
+}
+
+const std::string& ImageMapDisplay::getMobotPoseCount(){
+    return boost::lexical_cast<std::string>(mobotPoseCount);
 }
 
 /**
@@ -119,6 +119,7 @@ void ImageMapDisplay::subscribe(){
                 sub = update_nh_.subscribe<geometry_msgs::Pose2D>(topic, 10, callback);
                 mobotPoseSub.push_back(sub);
             }
+            ROS_INFO("mobotPoseSub size: %i", mobotPoseSub.size());
         }
         catch(ros::Exception& e){
             setStatus(rviz::status_levels::Error, "Topic", std::string
@@ -130,11 +131,16 @@ void ImageMapDisplay::subscribe(){
 }
 
 void ImageMapDisplay::unsubscribe(){
-    //ROS_INFO("[unsubscribe]");
+    ROS_INFO("[unsubscribe]");
 	relPoseSub.shutdown();
 	absPoseSub.shutdown();
     imageStoreClient.shutdown();
-    //ROS_INFO("[unsubscribe]");
+    for(int i = 0; i < mobotPoseSub.size(); i++){
+        mobotPoseSub[i].shutdown();
+    }
+    ROS_INFO("[unsubscribe]");
+    mobotPoseSub.clear();
+    ROS_INFO("[unsubscribe]");
 }
 
 void ImageMapDisplay::setRelPoseTopic(const std::string& topic){
@@ -176,7 +182,11 @@ void ImageMapDisplay::setMobotPoseCount(const std::string& topic){
     //ROS_INFO("setAbsPoseTopic: %s", topic.c_str());
     unsubscribe();
     clear();
-    mobotPoseCount = boost::lexical_cast<int>(topic);
+    try {
+        mobotPoseCount = boost::lexical_cast<int>(topic);
+    } catch( boost::bad_lexical_cast const& ) {
+        ROS_INFO("Error: mobot pose count was not valid %s", topic.c_str());
+    }
     subscribe();
     propertyChanged(mobotPoseCountProperty);
     causeRender();
@@ -277,8 +287,8 @@ void ImageMapDisplay::createProperties(){
         parent_category_, this );
     mobotPoseCountProperty = property_manager_->createProperty<rviz::ROSTopicStringProperty>(
         "MobotPoseCount", property_prefix_,
-        boost::bind(&ImageMapDisplay::getImageStoreTopic, this),
-        boost::bind(&ImageMapDisplay::setImageStoreTopic, this, _1),
+        boost::bind(&ImageMapDisplay::getMobotPoseCount, this),
+        boost::bind(&ImageMapDisplay::setMobotPoseCount, this, _1),
         parent_category_, this );
 		
     setPropertyHelpText(relPoseTopicProperty, "Relative pose topic to subscribe to.");
@@ -315,7 +325,7 @@ void ImageMapDisplay::testVisual(ImageMapVisual* visual_, std::string filePath){
     visual_->insertImage(a,a,a, 0,0,0, mat);
     //ROS_INFO("testVisual");
     visual_->setImagePose(1,1,0, 0,0,0);
-    visual_->setMobotModel(1,a,a,0);
+    visual_->setMobotModel(1,4,2,0);
 }
 
 } // end namespace rviz_plugin_display
