@@ -1,13 +1,16 @@
 #include "image_map_info.h"
 
-int main(int argc, char *argv[]){
-    QApplication app(argc, argv);
-    map_visualization::ImageMapModel imageMapModel(0);
+namespace map_visualization{
 
+ImageMapInfo::ImageMapInfo(int argc, char** argv, QWidget *parent)
+    : QMainWindow(parent)
+    , model(0)
+    , waypoint(argc, argv)
+{
     QHBoxLayout* headerBox = new QHBoxLayout();
     QLabel* waypointLabel = new QLabel("Active Mobot");
     QComboBox* waypointComboBox = new QComboBox(0);
-    waypointComboBox->setModel(&imageMapModel);
+    //waypointComboBox->setModel(&imageMapModel);
     headerBox->addWidget(waypointLabel);
     headerBox->addWidget(waypointComboBox);
     headerBox->addStretch(0);
@@ -19,7 +22,7 @@ int main(int argc, char *argv[]){
 
     QVBoxLayout* centralWidget = new QVBoxLayout();
     QTableView* infoTable = new QTableView();
-    infoTable->setModel(&imageMapModel);
+    infoTable->setModel(&model);
     centralWidget->addLayout(headerBox);
     centralWidget->addWidget(infoTable);
 
@@ -28,12 +31,10 @@ int main(int argc, char *argv[]){
     window->setWindowTitle("Image Map Info");
     window->show();
 
-    map_visualization::ImageMapWaypoint waypoint(argc, argv);
     waypoint.start();
-    //waypoint.init();
 
     QObject::connect(waypointComboBox, SIGNAL(currentIndexChanged(int)),
                      &waypoint, SLOT(setActiveMobot(int)));
+}
 
-    return app.exec();
 }

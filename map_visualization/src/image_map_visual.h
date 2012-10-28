@@ -9,6 +9,13 @@
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreDataStream.h>
 #include <OGRE/OgreHardwarePixelBuffer.h>
+#include <OGRE/OgreRoot.h>
+#include <OGRE/OgreHardwareBufferManager.h>
+#include <OGRE/OgreSubMesh.h>
+#include <OGRE/OgreAxisAlignedBox.h>
+#include <OGRE/OgreEntity.h>
+
+//#include <OGRE/OgreMaterial.h>
 
 #include <iostream>
 #include <fstream>
@@ -36,12 +43,8 @@ public:
 	ImageMapVisual(Ogre::SceneManager* scene_manager);
 	virtual ~ImageMapVisual();
 
-	int insertImage(
-		float poseX, float poseY, float poseTheta,
-		int sessionID, int mobotID, int imageID,
-		const std::vector<unsigned char>* imageData,
-		const std::string* encoding, int width, int height
-	);
+    int insertImage(float poseX, float poseY, float poseTheta,
+        int sessionID, int mobotID, int imageID, cv::Mat mat);
 	int showImage(int sessionID, int mobotID, int imageID);
 	int hideImage(int sessionID, int mobotID, int imageID);
 	int deleteImage(const std::string* nodeName);
@@ -55,8 +58,13 @@ public:
     int deleteSession(const std::string* nodeName);
 	
 	int deleteAllImages();
+
 	
-    int setPose(float poseX, float poseY, float poseTheta, int sessionID, int mobotID, int imageID);
+    int setImagePose(float poseX, float poseY, float poseTheta, int sessionID, int mobotID, int imageID);
+
+    void deleteMobotModel(const std::string* nodeName);
+    void deleteAllMobotModels();
+    int setMobotModel(int mobotID, float poseX, float poseY, float poseTheta);
 
   // If the node is not found, a the node and its path is created.
 	Ogre::SceneNode* getNode(int sessionID, int mobotID, int imageID);
@@ -67,14 +75,16 @@ private:
 	Ogre::TexturePtr texture_;
 	Ogre::TextureUnitState* tex_unit_;
 	Ogre::ManualObject* manual_object_;
-  Ogre::Rectangle2D* rectangle_;
+    Ogre::Rectangle2D* rectangle_;
 
 	int width_;
 	int height_;
 
-	Ogre::SceneNode* rootNode;
+    Ogre::SceneNode* rootImageNode;
+    Ogre::SceneNode* rootMobotModelNode;
 	Ogre::SceneManager* sceneManager;
 	std::list<Ogre::ManualObject*> manualObjects;
+    void createColourCube(int mobotID);
 };
 
 }
