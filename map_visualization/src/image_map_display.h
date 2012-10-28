@@ -67,7 +67,7 @@ public:
     const std::string& getAbsPoseTopic(){return absPoseTopic;}
     void setImageStoreTopic(const std::string& imageStoreTopic);
     const std::string& getImageStoreTopic(){return imageStoreTopic;}
-    void setMobotPoseCount(const std::string& mobotPoseCount);
+    void setMobotPoseCount(const std::string& topic);
     const std::string& getMobotPoseCount();
 
 protected:
@@ -110,6 +110,7 @@ private:
     std::string absPoseTopic;
     std::string imageStoreTopic;
     int mobotPoseCount;
+    std::string mobotPoseCountStr;
     rviz::ROSTopicStringPropertyWPtr relPoseTopicProperty;
     rviz::ROSTopicStringPropertyWPtr absPoseTopicProperty;
     rviz::ROSTopicStringPropertyWPtr imageStoreTopicProperty;
