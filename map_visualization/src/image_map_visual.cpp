@@ -19,12 +19,15 @@ ImageMapVisual::ImageMapVisual( Ogre::SceneManager* sceneManager_){
  */
 ImageMapVisual::~ImageMapVisual()
 {
-//	ROS_INFO("~visual");
+    ROS_INFO("~visual");
     deleteAllImages();
+    ROS_INFO("Check1");
     deleteAllMobotModels();
+    ROS_INFO("Check2");
     sceneManager->destroySceneNode(rootImageNode);
+    ROS_INFO("Check3");
     sceneManager->destroySceneNode(rootMobotModelNode);
-//	ROS_INFO("~visual");
+    ROS_INFO("~visual");
 }
 
 /**

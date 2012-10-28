@@ -145,7 +145,7 @@ void ImageMapDisplay::unsubscribe(){
 
 void ImageMapDisplay::setRelPoseTopic(const std::string& topic){
     //ROS_INFO("setRelPoseTopic: %s", relPoseTopic.c_str());
-	unsubscribe();
+    unsubscribe();
 	clear();
 	relPoseTopic = topic;
 	subscribe();
@@ -179,7 +179,7 @@ void ImageMapDisplay::setImageStoreTopic(const std::string& topic){
 }
 
 void ImageMapDisplay::setMobotPoseCount(const std::string& topic){
-    ROS_INFO("setAbsPoseTopic: %s", topic.c_str());
+    ROS_INFO("setMobotPoseCount: %s", topic.c_str());
     unsubscribe();
     clear();
     try {
@@ -191,7 +191,7 @@ void ImageMapDisplay::setMobotPoseCount(const std::string& topic){
     subscribe();
     propertyChanged(mobotPoseCountProperty);
     causeRender();
-    ROS_INFO("setAbsPoseTopic");
+    ROS_INFO("setMobotPoseCount");
 }
 
 // TODO pass information to image_map_info
