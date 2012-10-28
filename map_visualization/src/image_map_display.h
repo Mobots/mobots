@@ -68,8 +68,7 @@ public:
     void setImageStoreTopic(const std::string& imageStoreTopic);
     const std::string& getImageStoreTopic(){return imageStoreTopic;}
     void setMobotPoseCount(const std::string& mobotPoseCount);
-    const std::string& getMobotPoseCount(){
-        return boost::lexical_cast<std::string>(mobotPoseCount);}
+    const std::string& getMobotPoseCount();
 
 protected:
     virtual void onEnable();
