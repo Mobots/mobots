@@ -13,6 +13,7 @@ include(${QT_USE_FILE})
 # Run the moc pre-processor on the qt files
 add_definitions(-DQT_NO_KEYWORDS)
 set(qt_srcs
+    src/main.cpp
     src/image_map_info.cpp
     src/image_map_model.cpp
     src/image_map_waypoint.cpp)
