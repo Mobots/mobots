@@ -179,18 +179,19 @@ void ImageMapDisplay::setImageStoreTopic(const std::string& topic){
 }
 
 void ImageMapDisplay::setMobotPoseCount(const std::string& topic){
-    //ROS_INFO("setAbsPoseTopic: %s", topic.c_str());
+    ROS_INFO("setAbsPoseTopic: %s", topic.c_str());
     unsubscribe();
     clear();
     try {
         mobotPoseCount = boost::lexical_cast<int>(topic);
     } catch( boost::bad_lexical_cast const& ) {
+        mobotPoseCount = 0;
         ROS_INFO("Error: mobot pose count was not valid %s", topic.c_str());
     }
     subscribe();
     propertyChanged(mobotPoseCountProperty);
     causeRender();
-    //ROS_INFO("setAbsPoseTopic");
+    ROS_INFO("setAbsPoseTopic");
 }
 
 // TODO pass information to image_map_info
