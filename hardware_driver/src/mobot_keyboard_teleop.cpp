@@ -106,7 +106,7 @@ int main(int argc, char** argv){
 			exit(1);
 		}
 	}else{
-		cout << "No path_planner found" << endl;
+		ROS_WARNING("[%s] No path_planner found", namess.str());
 	}
 	globalPosePath = ss.str();
   targetPose_pub = nh->advertise<mobots_msgs::Pose2DPrio>(ss.str(), 2);
