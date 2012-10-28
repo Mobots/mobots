@@ -35,3 +35,5 @@ rosbuild_add_library(${PROJECT_NAME}
   ${uis_h} ${qt_srcs} ${qt_moc_srcs}
 )
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_LIBRARIES})
+rosbuild_add_boost_directories()
+rosbuild_add_executable(guiTest src/guiTest.cpp)

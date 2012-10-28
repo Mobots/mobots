@@ -25,20 +25,23 @@ void* shutterThread(void* data){
   int mobotID = 0;
   int sessionID = 0;
   while(ros::ok()){
-    cin.ignore(std::numeric_limits<streamsize>::max(),'\n');
-	 for(int i = 0; i < 7; i++)
-		usb_cam_camera_grab_image(camera_image_);
-    fillImage(msg.image, "rgb8", camera_image_->height, camera_image_->width, 3 * camera_image_->width, camera_image_->image);
-    //msg.image = currentImage;
-	 pub.publish(msg);
-	 cv_bridge::CvImagePtr imagePtr = cv_bridge::toCvCopy(msg.image);
-	 stringstream ss;
-	 ss << msg.id.image_id << ".png" << endl;
-	 vector<uchar> buf;
-	 cv::imencode(".png", imagePtr->image, buf);
-	 cv::imwrite(ss.str(), buf);
-	 msg.id.image_id++;
-    cout << TAG << "shuttered" << endl;
+		cin.ignore(std::numeric_limits<streamsize>::max(),'\n');
+		camera_image_->is_new = 0;
+		for(int i = 0; i < 6; i++){
+			usb_cam_camera_grab_image(camera_image_);
+			cout << "is new " << camera_image_->is_new << endl;
+		}
+		fillImage(msg.image, "rgb8", camera_image_->height, camera_image_->width, 3 * camera_image_->width, camera_image_->image);
+		//msg.image = currentImage;
+		pub.publish(msg);
+		cv_bridge::CvImagePtr imagePtr = cv_bridge::toCvCopy(msg.image);
+		stringstream ss;
+		ss << msg.id.image_id << ".png" << endl;
+		//vector<uchar> buf;
+		//cv::imencode(".png", imagePtr->image, buf);
+		cv::imwrite(ss.str(), imagePtr->image);
+		msg.id.image_id++;
+		cout << TAG << "shuttered" << endl;
   }
 }
 
@@ -50,7 +53,7 @@ int main(int argc, char **argv){
   pthread_t thread_t;
   pthread_create(&thread_t, 0, shutterThread, 0);
   cout << TAG << "Press [enter] for shutter" << endl;
-  camera_image_ = usb_cam_camera_start("/dev/video0",
+  camera_image_ = usb_cam_camera_start("/dev/video1",
         IO_METHOD_MMAP,
         PIXEL_FORMAT_YUYV,
         640,
