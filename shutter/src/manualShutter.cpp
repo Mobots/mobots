@@ -26,8 +26,11 @@ void* shutterThread(void* data){
   int sessionID = 0;
   while(ros::ok()){
 		cin.ignore(std::numeric_limits<streamsize>::max(),'\n');
-		for(int i = 0; i < 6; i++)
+		camera_image_->is_new = 0;
+		for(int i = 0; i < 6; i++){
 			usb_cam_camera_grab_image(camera_image_);
+			cout << "is new " << camera_image_->is_new << endl;
+		}
 		fillImage(msg.image, "rgb8", camera_image_->height, camera_image_->width, 3 * camera_image_->width, camera_image_->image);
 		//msg.image = currentImage;
 		pub.publish(msg);
