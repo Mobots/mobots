@@ -144,7 +144,7 @@ void ImageMapDisplay::unsubscribe(){
 }
 
 void ImageMapDisplay::setRelPoseTopic(const std::string& topic){
-    //ROS_INFO("setRelPoseTopic: %s", relPoseTopic.c_str());
+    ROS_INFO("setRelPoseTopic: %s", relPoseTopic.c_str());
     unsubscribe();
 	clear();
 	relPoseTopic = topic;
@@ -153,29 +153,29 @@ void ImageMapDisplay::setRelPoseTopic(const std::string& topic){
 	propertyChanged(relPoseTopicProperty);
 	// Make sure rviz renders the next time it gets a chance.
 	causeRender();
-    //ROS_INFO("setRelPoseTopic: %s", relPoseTopic.c_str());
+    ROS_INFO("setRelPoseTopic: %s", relPoseTopic.c_str());
 }
 
 void ImageMapDisplay::setAbsPoseTopic(const std::string& topic){
-    //ROS_INFO("setAbsPoseTopic: %s", topic.c_str());
+    ROS_INFO("setAbsPoseTopic: %s", topic.c_str());
 	unsubscribe();
 	clear();
 	absPoseTopic = topic;
 	subscribe();
 	propertyChanged(absPoseTopicProperty);
 	causeRender();
-    //ROS_INFO("setAbsPoseTopic");
+    ROS_INFO("setAbsPoseTopic");
 }
 
 void ImageMapDisplay::setImageStoreTopic(const std::string& topic){
-    //ROS_INFO("setAbsPoseTopic: %s", topic.c_str());
+    ROS_INFO("setImageStoreTopic: %s", topic.c_str());
     unsubscribe();
     clear();
     imageStoreTopic = topic;
     subscribe();
     propertyChanged(imageStoreTopicProperty);
     causeRender();
-    //ROS_INFO("setAbsPoseTopic");
+    ROS_INFO("setImageStoreTopic");
 }
 
 void ImageMapDisplay::setMobotPoseCount(const std::string& topic){
@@ -198,7 +198,7 @@ void ImageMapDisplay::setMobotPoseCount(const std::string& topic){
 // TODO retrieveImageSeries
 void ImageMapDisplay::relPoseCallback(
 	const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg){
-    //ROS_INFO("[imageRelPoseCallback]");
+    ROS_INFO("[imageRelPoseCallback]");
     cv::Mat mat;
     if(msg->image.encoding == "jpg" || msg->image.encoding == "png"){
         mat = cv::imdecode(msg->image.data, 1);
