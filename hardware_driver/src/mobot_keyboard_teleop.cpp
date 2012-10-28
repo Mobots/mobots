@@ -56,10 +56,10 @@
 
 using namespace std;
 
-double linear_vel;
-double angular_vel;
-double linear_vel_fast;
-double angular_vel_fast;
+double linear_vel = 0.1;
+double angular_vel = 0.1;
+double linear_vel_fast = 0.3;
+double angular_vel_fast = 0.3;
 
 geometry_msgs::Pose2D currentPosition;
 ros::Publisher targetPose_pub;
@@ -87,15 +87,15 @@ int main(int argc, char** argv){
 	string waypointPath;
 	string globalPosePath;
 	stringstream ss;
-	ss << "/mobot" << mobotID << "/waypoint";
+	ss << "/mobot" << mobotID << "/waypoint_rel";
 	waypointPath = ss.str();
-	ss.clear();
+	/*ss.clear();
 	ss.str("");
-	ss << "/mobot" << mobotID << "/mouse";
+	ss << "/mobot" << mobotID << "/mouse";*/
 	globalPosePath = ss.str();
-  targetPose_pub = nh->advertise<mobots_msgs::Pose2DPrio>("waypoint", 2);
-	globalPose_sub = nh->subscribe(globalPosePath, 2, globalPoseCallback);
-	cout << "paths: " << endl << waypointPath << endl << globalPosePath << endl << endl;
+  targetPose_pub = nh->advertise<mobots_msgs::Pose2DPrio>(ss.str(), 2);
+	//globalPose_sub = nh->subscribe(globalPosePath, 2, globalPoseCallback);s
+	cout << "paths: " << endl << waypointPath << endl;/* << globalPosePath << endl << endl;*/
 	
   boost::thread t = boost::thread(keyboardLoop);
   ros::spin();
@@ -112,7 +112,7 @@ void keyboardLoop(){
   double max_tv = linear_vel;
   double max_rv = angular_vel;
   bool dirty = false;
-  int speed = 0;
+  double speed = 0;
   int turn = 0;
   
   // get the console in raw mode
@@ -155,7 +155,7 @@ void keyboardLoop(){
       }
       continue;
     }
-    float heading = currentPosition.theta;
+    //float heading = currentPosition.theta;
     switch(c){
 	case KEYCODE_W:
 	    max_tv = linear_vel;
@@ -213,10 +213,11 @@ void keyboardLoop(){
 	  break;*/
     }
     mobots_msgs::Pose2DPrio pub_pose;
-    pub_pose.pose.x = currentPosition.x + (heading)*speed*max_tv;
-    pub_pose.pose.y = currentPosition.y + (heading)*speed*max_tv;
-    pub_pose.pose.theta = currentPosition.theta + turn*max_rv;
+    pub_pose.pose.x = /*currentPosition.x + (heading)**/speed*max_tv;
+    pub_pose.pose.y = /*currentPosition.y + (heading)**/0;
+    pub_pose.pose.theta =/*currentPosition.theta +*/ turn*max_rv;
     pub_pose.prio = 0;
+		//cout << pub_pose.pose.x << " and " << speed*max_tv << endl;
 	 targetPose_pub.publish(pub_pose);
   }
 }

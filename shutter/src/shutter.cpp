@@ -1,21 +1,24 @@
 #include "shutter.h"
 #include "util/util.h"
 
-static const char TAG[] = "[shutter] ";
-
 int main(int argc, char** argv){
 ros::init(argc, argv, "shutter");
 ros::NodeHandle nh;
 int mobotID = 0;
 if(!util::parseNamespace(nh.getNamespace(), mobotID))
-  ROS_ERROR("%s mobotID cannot be parsed from namespace: %s", TAG, nh.getNamespace().c_str());
+  ROS_ERROR("%s mobotID cannot be parsed from namespace: %s", __PRETTY_FUNCTION__, nh.getNamespace().c_str());
 
 //Shutter shutter(0,1.06805,0.80104); //l/b für Simulator: 1.06805,0.80104
-Shutter shutter(mobotID, 3000.06805, 2500.80104);
+//Shutter shutter(mobotID, 3000.06805, 2500.80104);
+Shutter2 shutter(mobotID, 3000.06805, 2500.80104);
+shutter.startShutter();
 }
 Shutter::Shutter(int mobotID, double l, double b): mobotID(mobotID), g(l,b) //Instanzierung von Geometry
 {
-    Shutter::startShutter(); 
+		if(!ros::param::get("/sessionID", sessionID))
+		ROS_ERROR("[%s] /sessionID or gtfo, sessionID set to 0", __PRETTY_FUNCTION__);
+		ipid.id.session_id = sessionID;
+		ipid.id.mobot_id = mobotID;
 }
 
 Shutter::~Shutter() {
@@ -23,7 +26,7 @@ Shutter::~Shutter() {
 
 void Shutter::startShutter()
 {
-    ROS_INFO("%s Mobot %d: Shutterfunktion gestartet.", TAG, mobotID);
+    ROS_INFO("[%s] Mobot %d: Shutterfunktion gestartet.", __PRETTY_FUNCTION__, mobotID);
     poseImage_pub = nh.advertise<mobots_msgs::ImageWithPoseAndID>("image_pose_id", 2);
 
     image_sub = nh.subscribe("usb_cam/image_raw", 5, &Shutter::imageCallback, this);
@@ -32,8 +35,6 @@ void Shutter::startShutter()
     ros::ServiceServer service = nh.advertiseService("getDelta", &Shutter::getDelta, this);
     
     ros::param::param<double>("overlap", overlap, 0.3);
-    if(!ros::param::get("sessionID", sessionID))
-      ROS_ERROR("%s sessionID or gtfo, sessionID set to 0", TAG);
     dX = 0;
     dY = 0;
     dTheta = 0;
@@ -50,7 +51,7 @@ bool Shutter::getDelta(shutter::delta::Request &req, shutter::delta::Response &r
   return true;
 }
 
-void Shutter::publishMessage(double &x, double &y, double &theta, const sensor_msgs::Image &image) {
+void Shutter::publishMessage(double x, double y, double theta, const sensor_msgs::Image &image) {
     ipid.image = image;
 
     geometry_msgs::Pose2D pose;
@@ -59,8 +60,6 @@ void Shutter::publishMessage(double &x, double &y, double &theta, const sensor_m
     pose.theta = theta;
 
     ipid.pose = pose;
-	 ipid.id.mobot_id = mobotID;
-	 ipid.id.session_id = sessionID;
 	 ipid.id.image_id = imageID;
     poseImage_pub.publish(ipid);
 	 imageID++;
