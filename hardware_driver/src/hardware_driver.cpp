@@ -166,6 +166,10 @@ void relPoseCallback(const mobots_msgs::Pose2DPrio& msg){
   next.pose.x += cost*msg.pose.x - sint*msg.pose.y;
   next.pose.y += sint*msg.pose.x + cost*msg.pose.y;
   next.pose.theta += msg.pose.theta;
+	while(next.pose.theta > 2*M_PI) //normalize angle
+		next.pose.theta -= 2*M_PI;
+	while(next.pose.theta < 0)
+		next.pose.theta += 2*M_PI;
   next.prio = msg.prio;
   absPoseCallback(next);
 }
