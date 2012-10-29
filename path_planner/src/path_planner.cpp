@@ -4,6 +4,7 @@
 #include "mobots_msgs/Pose2DPrio.h"
 #include "mobots_msgs/InfraredScan.h"
 #include "mobots_msgs/PoseAndID.h"
+#include "path_planner/KeyboardRequest.h"
 
 #include <stdlib.h>
 #include <time.h>
@@ -11,14 +12,15 @@
 ros::Publisher nextPoseRel_1;
 ros::Publisher nextPoseRel_2;
 ros::Publisher nextPoseRel_3;
+ros::ServiceServer keyReqServer;
 
 struct mobot{
   double x;
   double y;
   double theta;
   int id;
-  int direction;
-  bool autoExplore; // A Mobot in auto Explore Mode is driving straight
+  bool userControlled;
+  bool obstacle;
 } mobot_1, mobot_2, mobot_3;
 
 void moveMobot(int id, int direction);
@@ -26,73 +28,89 @@ void refreshPose(int id, geometry_msgs::Pose2D pose);
 void stop(int id);
 void releasePose(int id, int prio, geometry_msgs::Pose2D pose);
 void wait(int duration);
+void handleObstacle(int id, bool scan[6]);
 
 void irCallback(const mobots_msgs::InfraredScan& irScan, int id);
 void irCallback1(const mobots_msgs::InfraredScan& irScan);
 void irCallback2(const mobots_msgs::InfraredScan& irScan);
 void irCallback3(const mobots_msgs::InfraredScan& irScan);
 void userCallback(const mobots_msgs::PoseAndID& input);
+bool keyReqCallback(path_planner::KeyboardRequest::Request& req, path_planner::KeyboardRequest::Response& res);
 
 
 int main(int argc, char **argv){
-  ros::init(argc, argv, "path_planner");
-  ros::NodeHandle nh;
+  { //initialising the node
   
-  {//initialising the subscribers
-  ros::Subscriber infraredScan_1 = nh.subscribe("/mobot1/infrared", 20, irCallback1);
-  ros::Subscriber infraredScan_2 = nh.subscribe("/mobot2/infrared", 20, irCallback2);
-  ros::Subscriber infraredScan_3 = nh.subscribe("/mobot3/infrared", 20, irCallback3);
-  ros::Subscriber userInput_1 = nh.subscribe("/mobot1/waypoint_user", 20, userCallback);
-  ros::Subscriber userInput_2 = nh.subscribe("/mobot2/waypoint_user", 20, userCallback);
-  ros::Subscriber userInput_3 = nh.subscribe("/mobot3/waypoint_user", 20, userCallback);
+    //initialising ROS
+    ros::init(argc, argv, "path_planner");
+    ros::NodeHandle nh;
   
-  //initialising the publishers
-  nextPoseRel_1 = nh.advertise<mobots_msgs::Pose2DPrio>("/mobot1/waypoint_rel", 20);
-  nextPoseRel_2 = nh.advertise<mobots_msgs::Pose2DPrio>("/mobot2/waypoint_rel", 20);
-  nextPoseRel_3 = nh.advertise<mobots_msgs::Pose2DPrio>("/mobot3/waypoint_rel", 20);
-  
-  //initialising the Mobots
-  mobot_1.autoExplore = true;
-  mobot_1.id = 1;
-  mobot_1.theta = 0.0;
-  mobot_1.x = 0.0;
-  mobot_1.y = 0.0;
-  mobot_1.direction = 1;
-  
-  mobot_2.autoExplore = true;
-  mobot_2.id = 2;
-  mobot_2.theta = 0.0;
-  mobot_2.x = 0.0;
-  mobot_2.y = 0.0;
-  mobot_2.direction = 1;
-  
-  mobot_3.autoExplore = true;
-  mobot_3.id = 3;
-  mobot_3.theta = 0.0;
-  mobot_3.x = 0.0;
-  mobot_3.y = 0.0;
-  mobot_3.direction = 1;}
+    //initialising the subscribers
+    ros::Subscriber infraredScan_1 = nh.subscribe("/mobot1/infrared", 1, irCallback1);
+    ros::Subscriber infraredScan_2 = nh.subscribe("/mobot2/infrared", 1, irCallback2);
+    ros::Subscriber infraredScan_3 = nh.subscribe("/mobot3/infrared", 1, irCallback3);
+    ros::Subscriber userInput_1 = nh.subscribe("/mobot1/waypoint_user", 20, userCallback);
+    ros::Subscriber userInput_2 = nh.subscribe("/mobot2/waypoint_user", 20, userCallback);
+    ros::Subscriber userInput_3 = nh.subscribe("/mobot3/waypoint_user", 20, userCallback);
+    
+    //initialising the publishers
+    nextPoseRel_1 = nh.advertise<mobots_msgs::Pose2DPrio>("/mobot1/waypoint_rel", 20);
+    nextPoseRel_2 = nh.advertise<mobots_msgs::Pose2DPrio>("/mobot2/waypoint_rel", 20);
+    nextPoseRel_3 = nh.advertise<mobots_msgs::Pose2DPrio>("/mobot3/waypoint_rel", 20);
+    
+    //initialising the keyboad request server
+    keyReqServer = nh.advertiseService("/path_planner/keyboard_request", keyReqCallback);
+    
+    //initialising the Mobots
+    mobot_1.id = 1;
+    mobot_1.theta = 0.0;
+    mobot_1.x = 0.0;
+    mobot_1.y = 0.0;
+    mobot_1.obstacle = false;
+    mobot_1.userControlled = false;
+
+    mobot_2.id = 2;
+    mobot_2.theta = 0.0;
+    mobot_2.x = 0.0;
+    mobot_2.y = 0.0;
+    mobot_2.obstacle = false;
+    mobot_2.userControlled = false;
+    
+    mobot_3.id = 3;
+    mobot_3.theta = 0.0;
+    mobot_3.x = 0.0;
+    mobot_3.y = 0.0;
+    mobot_3.obstacle = false;
+    mobot_3.userControlled = false;
+  }
   
   //entering the event loop TODO
   while(ros::ok()){
     for(int id = 1 ; id <= 3 ; id++){
       switch(id){
-	case 1:
-	  if(mobot_1.autoExplore){
+	case 1:	  
+	  if(!mobot_1.userControlled){
 	    moveMobot(1, 0);
 	    moveMobot(1, 1);
 	  }
 	  break;
 	  
 	case 2:
-	  
+	  if(!mobot_2.userControlled){
+	    moveMobot(2,0);
+	    moveMobot(2,1);
+	  }
 	  break;
 	  
 	case 3:
-	  
+	  if(!mobot_3.userControlled){
+	    moveMobot(3,0);
+	    moveMobot(3,1);
+	  }
 	  break;
       }
     }
+    wait(1000);
   }
   return 1;
 }
@@ -204,17 +222,6 @@ void refreshPose(int id, geometry_msgs::Pose2D pose){
 
 /*Stopping the Mobot*/
 void stop(int id){
-  switch(id){
-    case 1:
-      mobot_1.autoExplore = false;
-      break;
-    case 2:
-      mobot_2.autoExplore = false;
-      break;
-    case 3:
-      mobot_3.autoExplore = false;
-      break;
-  }
   geometry_msgs::Pose2D stop;
   stop.x = 0.0;
   stop.y = 0.0;
@@ -259,37 +266,98 @@ void wait(int duration){
 /* Wrapper for the infrared scan callback of Mobot 1.
  * There is no hint of the ID of the Mobot in the IR scan data. */
 void irCallback1(const mobots_msgs::InfraredScan& irScan){
-  irCallback(irScan, 1);
+  if(!mobot_1.obstacle)
+    irCallback(irScan, 1);
 }
 
 /* Wrapper for the infrared scan callback of Mobot 2 */
 void irCallback2(const mobots_msgs::InfraredScan& irScan){
-  irCallback(irScan, 2);
+  if(!mobot_2.obstacle)  
+    irCallback(irScan, 2);
 }
 
 /* Wrapper for the infrared scan callback of Mobot 3 */
 void irCallback3(const mobots_msgs::InfraredScan& irScan){
-  irCallback(irScan, 3);
+  if(!mobot_3.obstacle)
+    irCallback(irScan, 3);
 }
 
 /* This deals with the infrared scan data and stops the Mobot if obstacles occur */
 //TODO
 void irCallback(const mobots_msgs::InfraredScan& irScan, int id){
+  bool scanBool[6];
+  bool act = false;
   for(int i = 0 ; i <= 5 ; i++){
-    int scan = irScan.data[i];
-    if(i == 0 || i == 1 || i == 5){ // something in front of Mobot
-      if(scan == 1){
+    scanBool[i] = (1 == irScan.data[i]) ? true : false; //boolean array for further handling of the obstacle 
+    if(i == 0 || i == 1 || i == 5){ //something in front of Mobot
+      if(scanBool[i]){
 	stop(id);
+	act = true;
       }
     }
   }
+  if(act){
+    handleObstacle(id, scanBool);
+  }
 }
+
+void handleObstacle(int id, bool scan[6]){
+  switch(id){
+    case 1:
+      mobot_1.obstacle = true;
+      break;
+    case 2:
+      mobot_2.obstacle = true;
+      break;
+    case 3:
+      mobot_3.obstacle = true;
+      break;
+  }
+}
+
 
 /* This method deals with user inputs over the gui */
 void userCallback(const mobots_msgs::PoseAndID& input){
   int id = input.id.mobot_id;
+  switch(id){
+    case 1:
+      mobot_1.userControlled = true;
+      break;
+    case 2:
+      mobot_2.userControlled = true;
+      break;
+    case 3:
+      mobot_3.userControlled = true;
+      break;
+    default:
+      ROS_INFO("invalid Mobot ID, user waypoint not released");
+      return;    
+  }
   stop(id); 
   ROS_INFO("Mobot_%i handling user input", id);
   releasePose(id, -2, input.pose);
+}
+
+/* This method activates the keyboard teleop control for a mobot */
+bool keyReqCallback(path_planner::KeyboardRequest::Request& req, path_planner::KeyboardRequest::Response& res){
+  bool en = req.enable;
+  switch(req.mobot_id){
+    case 1:
+      mobot_1.userControlled = en;
+      break;
+    case 2:
+      mobot_2.userControlled = en;
+      break;
+    case 3:
+      mobot_3.userControlled = en;
+      break;
+    default:
+      ROS_INFO("invalid Mobot ID, keyboard request not granted");
+      res.enabled = false;
+      return false;      
+  }
+  ROS_INFO("keyboard control granted for Mobot %i", req.mobot_id);
+  res.enabled = en;
+  return true;
 }
 
