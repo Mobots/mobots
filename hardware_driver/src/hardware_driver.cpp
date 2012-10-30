@@ -3,6 +3,10 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <string.h>
+#include <pthread.h>
+#include <sys/types.h>
+
 
 #include "geometry_msgs/Pose2D.h"
 #include "geometry_msgs/PoseStamped.h"
@@ -10,6 +14,8 @@
 #include "mobots_msgs/InfraredScan.h"
 #include "hardware_driver/ChangeGlobalPose.h"
 
+#include "include/ComProtocol.hpp"
+#include "include/UARTCommunication.hpp"
 using namespace std;
 
 //=== constants ===
@@ -24,16 +30,19 @@ geometry_msgs::Pose2D globalPose, currentTargetPose;
 list<geometry_msgs::Pose2D> targetPoses;
 
 ros::NodeHandle *nh;
-ros::Subscriber nextPoseSubRel, nextPoseSubAbs;
+ros::Subscriber nextPoseSubRel, nextPoseSubAbs, speedSub;
 ros::Publisher mousePosePub, globalPosePub, infraredScanPub;
 ros::ServiceClient shutterClient;
 ros::ServiceServer setGlobalPoseServer;
+ComProtocol proto;
+double rad;
 
 //==== method declarations ====
 
 void* singleMouseReader(void*);
 void* dualMouseReader(void*);
 void* infraredReader(void*);
+void initCom(); 
 /**
  * Service to be called by slam
  */
@@ -47,6 +56,10 @@ void absPoseCallback(const mobots_msgs::Pose2DPrio&);
  * Receives (relative i.e. delta) waypoints with a priority 
  */
 void relPoseCallback(const mobots_msgs::Pose2DPrio&);
+/**
+ * receives servo speeds as geometry pose
+ */
+void sendSpeedCallback(const geometry_msgs::Pose2D&);
 
 //== begin methods ==
 
@@ -56,6 +69,7 @@ int main(int argc, char **argv){
   
   nextPoseSubRel = nh->subscribe("waypoint_rel", 5, relPoseCallback);
   nextPoseSubAbs = nh->subscribe("waypoint_abs", 5, absPoseCallback);
+    speedSub = nh->subscribe("velocity", 2, sendSpeedCallback);
   
   mousePosePub = nh->advertise<geometry_msgs::Pose2D>("mouse", 2);
   globalPosePub = nh->advertise<geometry_msgs::Pose2D>("pose", 2);
@@ -63,19 +77,42 @@ int main(int argc, char **argv){
   
   //shutterClient = nh->serviceClient<shutter::delta>("getDelta");
   setGlobalPoseServer = nh->advertiseService("set_pose", changeGlobalPose);
-  int miceCount = 2;
+  ros::param::param<double>("rad",rad,0.14); //TODO, genauer Radius, messen Mitte- Räder-Bodenkontakt  
+
+int miceCount = 2;
   pthread_t thread_t;
-  /*if(miceCount > 1)
-    pthread_create(&thread_t, 0, dualMouseReader, 0);
-  else
-    pthread_create(&thread_t, 0, singleMouseReader, 0);
-    
-  pthread_create(&thread_t, 0, infraredReader, 0);*/
+    initCom();
   
+    if(miceCount > 1)
+        pthread_create(&thread_t, 0, dualMouseReader, 0);
+      else
+        pthread_create(&thread_t, 0, singleMouseReader, 0);
+        /*
+      pthread_create(&thread_t, 0, infraredReader, 0);*/
+      
   ros::spin();
+
+}
+
+void initCom() {
+
+	Communication* com;
+	com = new UARTCommunication();
+	proto(com);
+	proto.protocol_init();
+
+	cout << "begin\n" << endl;
+	
+
 }
 
 /*
+void readPrintfs(Communication* com) {
+	unsigned char buf;
+	while (com->read(&buf, sizeof(char)))
+		std::cout << buf << std::flush;
+}*/
+
 void* singleMouseReader(void* data){
   ros::Rate rate(mouseFrequency);
   ros::Publisher pub = nh->advertise<geometry_msgs::Pose2D>("mouse", 2);  //needs remapping
@@ -95,7 +132,7 @@ void* dualMouseReader(void* data){
   char data1[3];
   char data2[3];
   ros::Rate rate(mouseFrequency);
-  ros::Publisher pub = nh->advertise<geometry_msgs::Pose2D>("mouse", 2); //needs remapping
+ // ros::Publisher pub = nh->advertise<geometry_msgs::Pose2D>("mouse", 2); //needs remapping
   geometry_msgs::Pose2D deltaPose;
   while(ros::ok()){
     char xAvg = 0;
@@ -115,7 +152,7 @@ void* dualMouseReader(void* data){
     rate.sleep();
   }
 }
-
+/*
 void* infraredReader(void* data){
   /*ros::Rate rate(infraredFrequency);
   ros::Publisher pub = nh->advertise<>("", 2);
@@ -125,6 +162,16 @@ void* infraredReader(void* data){
     rate.sleep();
   }
 }*/
+
+
+void sendSpeedCallback(const geometry_msgs::Pose2D& msg) {
+    struct ServoSpeed sersp;
+	sersp.s1 = msg.x;
+	sersp.s2 = msg.y;
+	sersp.s3 = msg.theta;
+    proto.sendData(Servo, (unsigned char*) &sersp, sizeof(struct ServoSpeed));
+
+}
 
 /**
  *# prio == 0: pose vor allen anderen einfügen, rest verwerfen (default)
