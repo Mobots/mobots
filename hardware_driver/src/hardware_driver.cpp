@@ -16,6 +16,8 @@
 
 #include "include/ComProtocol.hpp"
 #include "include/UARTCommunication.hpp"
+
+#include "include/mousesensor.h"
 using namespace std;
 
 //=== constants ===
@@ -36,6 +38,7 @@ ros::ServiceClient shutterClient;
 ros::ServiceServer setGlobalPoseServer;
 ComProtocol proto;
 double rad;
+bool received;
 
 //==== method declarations ====
 
@@ -60,6 +63,12 @@ void relPoseCallback(const mobots_msgs::Pose2DPrio&);
  * receives servo speeds as geometry pose
  */
 void sendSpeedCallback(const geometry_msgs::Pose2D&);
+
+//handler
+void setDataValHandler(enum PROTOCOL_IDS id, unsigned char *data,
+		unsigned short size, Communication* com);
+
+
 
 //== begin methods ==
 
@@ -100,10 +109,44 @@ void initCom() {
 	com = new UARTCommunication();
 	proto(com);
 	proto.protocol_init();
+    proto.protocol_registerHandler(setDataValHandler);
 
-	cout << "begin\n" << endl;
-	
+    proto.receiveData();	
 
+}
+
+void setDataValHandler(enum PROTOCOL_IDS id, unsigned char *data,
+		unsigned short size, Communication* com) {
+
+	//std::cout <<"datavalHandler"<<std::endl;
+
+	if (id != SensorData_DeltaVal) {
+		std::cout << "Error, wrong ID\n" << std::endl;
+		return;
+	}
+
+	int i = sizeof(struct Mouse_Data_DeltaVal);
+	//printf("sizeof: %d\n", i);
+	//printf("size: %d\n", size);
+	if (size != i) {
+		std::cout << "Error, wrong size\n" << std::endl;
+		return;
+	}
+
+	struct Mouse_Data_DeltaVal *delta_vals = (struct Mouse_Data_DeltaVal*) data;
+    
+  geometry_msgs::Pose2D deltaPose;
+
+     //publish
+	//entweder fertig aufbereitet vom stm oder hier implementiert auf ein päärchen warten:
+    
+    deltaPose.x = xAvg;
+    deltaPose.y = yAvg;
+    deltaPose.theta = theta;
+    pub.publish(deltaPose);
+
+    std::cout << delta_vals->delta_x << std::endl;
+	std::cout << delta_vals->delta_y << std::endl;
 }
 
 /*
@@ -113,6 +156,7 @@ void readPrintfs(Communication* com) {
 		std::cout << buf << std::flush;
 }*/
 
+/*
 void* singleMouseReader(void* data){
   ros::Rate rate(mouseFrequency);
   ros::Publisher pub = nh->advertise<geometry_msgs::Pose2D>("mouse", 2);  //needs remapping
@@ -152,7 +196,7 @@ void* dualMouseReader(void* data){
     rate.sleep();
   }
 }
-/*
+
 void* infraredReader(void* data){
   /*ros::Rate rate(infraredFrequency);
   ros::Publisher pub = nh->advertise<>("", 2);
@@ -213,10 +257,6 @@ void relPoseCallback(const mobots_msgs::Pose2DPrio& msg){
   next.pose.x += cost*msg.pose.x - sint*msg.pose.y;
   next.pose.y += sint*msg.pose.x + cost*msg.pose.y;
   next.pose.theta += msg.pose.theta;
-	while(next.pose.theta > 2*M_PI) //normalize angle
-		next.pose.theta -= 2*M_PI;
-	while(next.pose.theta < 0)
-		next.pose.theta += 2*M_PI;
   next.prio = msg.prio;
   absPoseCallback(next);
 }
