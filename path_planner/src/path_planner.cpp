@@ -8,6 +8,7 @@
 
 #include <stdlib.h>
 #include <time.h>
+#include <cmath>
 
 ros::Publisher nextPoseRel_1;
 ros::Publisher nextPoseRel_2;
@@ -25,10 +26,12 @@ struct mobot{
 
 void moveMobot(int id, int direction);
 void refreshPose(int id, geometry_msgs::Pose2D pose);
+bool nearly_equal(double a, double b, double eps);
 void stop(int id);
 void releasePose(int id, int prio, geometry_msgs::Pose2D pose);
 void wait(int duration);
-void handleObstacle(int id, bool scan[6]);
+int handleObstacle(int id, bool scan[6]);
+
 
 void irCallback(const mobots_msgs::InfraredScan& irScan, int id);
 void irCallback1(const mobots_msgs::InfraredScan& irScan);
@@ -84,33 +87,30 @@ int main(int argc, char **argv){
     mobot_3.userControlled = false;
   }
   
-  //entering the event loop TODO
+  //entering the event loop
   while(ros::ok()){
     for(int id = 1 ; id <= 3 ; id++){
       switch(id){
 	case 1:	  
-	  if(!mobot_1.userControlled){
-	    moveMobot(1, 0);
+	  if(!mobot_1.userControlled && !mobot_1.obstacle){
 	    moveMobot(1, 1);
 	  }
 	  break;
 	  
 	case 2:
-	  if(!mobot_2.userControlled){
-	    moveMobot(2,0);
+	  if(!mobot_2.userControlled && !mobot_2.obstacle){
 	    moveMobot(2,1);
 	  }
 	  break;
 	  
 	case 3:
-	  if(!mobot_3.userControlled){
-	    moveMobot(3,0);
+	  if(!mobot_3.userControlled && !mobot_3.obstacle){
 	    moveMobot(3,1);
 	  }
 	  break;
       }
     }
-    wait(1000);
+    wait(10000);
   }
   return 1;
 }
@@ -199,25 +199,45 @@ void moveMobot(int id, int direction){
 
 /* Updating the Mobot Pose in the Database of this Node incremental */
 void refreshPose(int id, geometry_msgs::Pose2D pose){
+  double newTheta;
   switch(id){
     case 1:
       mobot_1.x += pose.x;
       mobot_1.y += pose.y;
-      mobot_1.theta += pose.theta;
+      newTheta = mobot_1.theta + pose.theta;
+      //if Mobot is turned around 360°, then start with 0°
+      if((nearly_equal(newTheta, 360.0, 0.1)) || (nearly_equal(newTheta, -360.0, 0.1))){
+	mobot_1.theta = fmod(newTheta, 360.0);
+      } else{
+	mobot_1.theta += pose.theta;
+      }	
       break;
     case 2:
       mobot_2.x += pose.x;
       mobot_2.y += pose.y;
+      newTheta = mobot_2.theta + pose.theta;
+      if((nearly_equal(newTheta, 360.0, 0.1)) || (nearly_equal(newTheta, -360.0, 0.1))){
+	mobot_2.theta = fmod(newTheta, 360.0);
+      } else{
       mobot_2.theta += pose.theta;
+      }
       break;
     case 3:
       mobot_3.x += pose.x;
       mobot_3.y += pose.y;
+      newTheta = mobot_3.theta + pose.theta;
+      if((nearly_equal(newTheta, 360.0, 0.1)) || (nearly_equal(newTheta, -360.0, 0.1))){
+	mobot_3.theta = fmod(newTheta, 360.0);
+      } else{
       mobot_3.theta += pose.theta;
+      }
       break;
-    default:
-      ROS_INFO("Invalid Mobot ID, refreshing Pose aborted");
   }
+}
+
+/* Method to check if two doubles are nearly equal */
+bool nearly_equal(double a, double b, double eps){
+  return std::abs(a-b) <= eps;
 }
 
 /*Stopping the Mobot*/
@@ -266,24 +286,20 @@ void wait(int duration){
 /* Wrapper for the infrared scan callback of Mobot 1.
  * There is no hint of the ID of the Mobot in the IR scan data. */
 void irCallback1(const mobots_msgs::InfraredScan& irScan){
-  if(!mobot_1.obstacle)
     irCallback(irScan, 1);
 }
 
 /* Wrapper for the infrared scan callback of Mobot 2 */
-void irCallback2(const mobots_msgs::InfraredScan& irScan){
-  if(!mobot_2.obstacle)  
+void irCallback2(const mobots_msgs::InfraredScan& irScan){ 
     irCallback(irScan, 2);
 }
 
 /* Wrapper for the infrared scan callback of Mobot 3 */
 void irCallback3(const mobots_msgs::InfraredScan& irScan){
-  if(!mobot_3.obstacle)
     irCallback(irScan, 3);
 }
 
 /* This deals with the infrared scan data and stops the Mobot if obstacles occur */
-//TODO
 void irCallback(const mobots_msgs::InfraredScan& irScan, int id){
   bool scanBool[6];
   bool act = false;
@@ -297,24 +313,279 @@ void irCallback(const mobots_msgs::InfraredScan& irScan, int id){
     }
   }
   if(act){
-    handleObstacle(id, scanBool);
+    switch(id){
+      case 1:
+	mobot_1.obstacle = true;
+	break;
+      case 2:
+	mobot_2.obstacle = true;
+	break;
+      case 3:
+	mobot_3.obstacle = true;
+	break;
+    }
+    int dir = handleObstacle(id, scanBool);
+    moveMobot(id, dir);
+    switch(id){
+      case 1:
+	mobot_1.obstacle = false;
+	break;
+      case 2:
+	mobot_2.obstacle = false;
+	break;
+      case 3:
+	mobot_3.obstacle = false;
+	break;
+    }
   }
 }
 
-void handleObstacle(int id, bool scan[6]){
-  switch(id){
-    case 1:
-      mobot_1.obstacle = true;
-      break;
-    case 2:
-      mobot_2.obstacle = true;
-      break;
-    case 3:
-      mobot_3.obstacle = true;
-      break;
+/* Dealing with the obstacle and giving back a direction for the mobot */
+int handleObstacle(int id, bool scan[6]){
+  int count = 0; //counter of blocked directions
+  int newDir;
+  for(int i = 0 ; i <= 5 ; i++){ //count blocked directions
+    if(scan[i]) count++;
   }
+  
+  if(count == 1){ //one direction blocked, turning in opposite direction
+    for(int i = 0 ; i <= 5 ; i++){
+      if(scan[i]){
+	switch(i){
+	  case 0:
+	    newDir = 8;
+	    break;
+	  case 1:
+	    newDir = 6;
+	    break;
+	  case 2:
+	    newDir = 2;
+	    break;
+	  case 3:
+	    newDir = 1;
+	    break;
+	  case 4:
+	    newDir = 3;
+	    break;
+	  case 5:
+	    newDir = 7;
+	    break;
+	}
+	return newDir;
+      }
+    }
+  }
+  
+  if(count == 2){ //two directions blocked, check if they are beside one another
+    int diff = 0; //difference between two blocked directions
+    int dirLeft = 2; //counter for blocked directions to be found
+    int first; //first blocked direction
+    int second; //second blocked direction
+    for(int i = 0 ; i <= 5; i++){
+      if(scan[i]){
+	diff++;
+	if(dirLeft == 2){
+	  first = i;
+	} else{
+	  second = i;
+	  break; //both directions found
+	}
+	dirLeft--;	
+      } else if(diff > 0){
+	diff++;
+      }
+    }
+    if(diff == 1 || diff == 5){
+      switch(first+second){
+	case 1: //sensor 0 and 1
+	  newDir = 6;
+	  break;
+	case 3: //sensor 1 and 2
+	  newDir = 4;
+	  break;
+	case 5: //either sensor 2 and 3 or sensor 0 and 5
+	  newDir = (first == 2 || second == 2) ? 2 : 7;
+	  break;
+	case 7: //sensor 3 and 4
+	  newDir = 3;
+	  break;
+	case 9: //sensor 4 and 5
+	  newDir = 5;
+	  break;
+      }
+      return newDir;
+    }
+    if(diff == 2 || diff == 4){
+      switch(first+second){
+	case 2: //sensor 0 and 2
+	  newDir = 4;
+	  break;
+	case 4: //sensor 1 and 3 or 0 and 4
+	  newDir = (first == 4 || second == 4) ? 7 : 2;
+	  break;
+	case 6: //sensor 2 and 4 or 1 and 5
+	  newDir = (first == 2 || second == 2) ? 1 : 8;
+	  break;
+	case 8: //sensor 3 and 5
+	  newDir = 3;
+	  break;
+      }
+      return newDir;
+    } else{
+      switch(first+second){
+	case 3: //sensor 0 and 3
+	  newDir = (first == 0) ? 5 : 4;
+	  break;
+	case 5: //sensor 1 and 4
+	  newDir = (first == 1) ? 2 : 7;
+	  break;
+	case 7: //sensor 2 and 5
+	  newDir = (first == 2) ? 3 : 6;
+	  break;
+      }
+    }    
+  }
+  
+  if(count == 3){ //three directions blocked, there are 20 different constellations of blocked directions
+    if((!scan[0] && !scan[1] && scan[2] && scan[3] && scan[4] && !scan[5])){
+      newDir = 1;
+      return newDir;
+    }
+    
+    if((!scan[0] && scan[1] && scan[2] && scan[3] && !scan[4] && !scan[5])
+      || (!scan[0] && scan[1] && scan[2] && !scan[3] && scan[4] && !scan[5])
+      || (!scan[0] && scan[1] && !scan[2] && scan[3] && scan[4] && !scan[5])){
+      newDir = 2;
+      return newDir;
+    }
+    
+    if((!scan[0] && !scan[1] && !scan[2] && scan[3] && scan[4] && scan[5])
+      || (!scan[0] && !scan[1] && scan[2] && scan[3] && !scan[4] && scan[5])
+      || (!scan[0] && !scan[1] && scan[2] && !scan[3] && scan[4] && scan[5])){
+      newDir = 3;
+      return newDir;
+    }
+    
+    if((scan[0] && !scan[1] && scan[2] && scan[3] && !scan[4] && !scan[5])
+      || (!scan[0] && !scan[1] && scan[2] && !scan[3] && scan[4] && scan[5])){
+      newDir = 4;
+      return newDir;
+    }
+    
+    if((scan[0] && !scan[1] && !scan[2] && scan[3] && scan[4] && !scan[5])
+      || (scan[0] && !scan[1] && !scan[2] && scan[3] && !scan[4] && scan[5])){
+      newDir = 5;
+      return newDir;
+    }
+    
+    if((scan[0] && scan[1] && scan[2] && !scan[3] && !scan[4] && !scan[5])
+      || (scan[0] && !scan[1] && scan[2] && !scan[3] && !scan[4] && scan[5])
+      || (!scan[0] && scan[1] && scan[2] && !scan[3] && !scan[4] && scan[5])){
+      newDir = 6;
+      return newDir;
+    }
+    
+    if((scan[0] && !scan[1] && !scan[2] && !scan[3] && scan[4] && scan[5])
+      || (!scan[0] && scan[1] && !scan[2] && !scan[3] && scan[4] && scan[5])
+      || (scan[0] && scan[1] && !scan[2] && !scan[3] && scan[4] && !scan[5])){
+      newDir = 7;
+      return newDir;
+    }
+    
+    if((scan[0] && scan[1] && !scan[2] && !scan[3] && !scan[4] && scan[5])){
+      newDir = 8;
+      return newDir;
+    }   
+      
+    if((!scan[0] && scan[1] && !scan[2] && scan[3] && !scan[4] && scan[5])
+      || (!scan[0] && !scan[1] && scan[2] && !scan[3] && scan[4] && !scan[5])){
+      count = 6; //stuck go on to count = 6
+    }
+  }
+  
+  if(count == 4){ //two directions left, check if they are beside one another or different
+    int diff = 0; //difference between two free directions
+    int dirLeft = 2; //counter for free directions to be found
+    int first; //first direction
+    int second; //second direction
+    for(int i = 0 ; i <= 5; i++){
+      if(!scan[i]){
+	diff++;
+	if(dirLeft == 2){
+	  first = i;
+	} else{
+	  second = i;
+	  break; //both directions found
+	}
+	dirLeft--; //one direction found -> decrement
+      } else if(diff > 0){
+	diff++; //increment the difference
+      }
+    }
+    if(diff == 1 || diff == 5){ //free directions are beside one another
+      switch(first+second){
+	case 1: //sensor 0 and 1
+	  newDir = 3;
+	  break;
+	case 3: //sensor 1 and 2
+	  newDir = 5;
+	  break;
+	case 5: //either sensor 2 and 3 or sensor 0 and 5
+	  newDir = (first == 2 || second == 2) ? 7 : 2;
+	  break;
+	case 7: //sensor 3 and 4
+	  newDir = 6;
+	  break;
+	case 9: //sensor 4 and 5
+	  newDir = 4;
+	  break;
+      }
+      return newDir;
+    } else{
+      //two different directions left, equal to one direction left. Go on to count = 5
+      count = 5; 
+    }
+  }
+  
+  if(count == 5){ //one direction left, turn Mobot to it
+    for(int i = 0 ; i <= 5 ; i++){
+      if(!scan[i]){
+	switch(i){
+	  case 0:
+	    newDir = 1; //straight
+	    break;
+	  case 1:
+	    newDir = 3; //left 45°
+	    break;
+	  case 2:
+	    newDir = 7; //left 135°
+	    break;
+	  case 3:
+	    newDir = 8; //180°
+	    break;
+	  case 4:
+	    newDir = 6; //right 135°
+	    break;
+	  case 5:
+	    newDir = 2; // right 45°
+	    break;    
+	}
+	ROS_INFO("Mobot %i turning in last direction possible", id);
+	return newDir;
+      }
+    }
+  }
+  
+  if(count == 6){ //every direction is blocked
+    ROS_INFO("Mobot %i is stuck, please help", id);
+    ROS_INFO("waiting 30 seconds for Mobot to be set on another place");
+    ros::Rate r(1/30);
+    r.sleep();
+    ROS_INFO("Mobot %i is going on", id);
+    return 0;
+  }
+  return 0;
 }
-
 
 /* This method deals with user inputs over the gui */
 void userCallback(const mobots_msgs::PoseAndID& input){
