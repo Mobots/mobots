@@ -9,6 +9,7 @@
 #include <QDebug>
 
 #include <boost/bind.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <ros/ros.h>
 
@@ -28,18 +29,25 @@ public:
     //bool init();
     void updateInfoHandler(const mobots_msgs::IDKeyValue::ConstPtr& msg);
     void poseRelayHandler(const geometry_msgs::PoseStamped::ConstPtr& msgIn);
+    int updateRviz(std::string function, std::string operands);
 protected:
     void run();
 public Q_SLOTS:
-    void setActiveMobot(int mobotID);
+    void setActiveMobot(QString mobotID);
+Q_SIGNALS:
+    void dataChanged(int sessionID, int mobotID, int key, int value);
 private:
+    void subscribe();
+    void unsubscribe();
+
     int init_argc;
     char** init_argv;
     int activeMobotID;
     int activeSessionID;
     ros::Subscriber* poseRelaySub;
-    ros::Publisher* poseRelayPub;
     ros::Subscriber* updateInfoSub;
+    ros::Publisher* poseRelayPub;
+    ros::ServiceClient* updateRvizClient;
     ros::NodeHandle *nh;
 };
 

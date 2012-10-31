@@ -15,6 +15,11 @@ public:
 private:
     ImageMapModel model;
     ImageMapWaypoint waypoint;
+    QComboBox* waypointComboBox;
+    QComboBox* replayComboBox;
+public Q_SLOTS:
+    void removeWaypointMobot(int mobotID);
+    void addWaypointMobot(int mobotID);
 };
 
 }
