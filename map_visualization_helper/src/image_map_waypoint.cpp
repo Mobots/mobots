@@ -10,8 +10,13 @@ ImageMapWaypoint::ImageMapWaypoint(int argc, char** argv):
 {
 }
 
+/**********************************************************
+  * Initialization
+  *********************************************************/
+
 ImageMapWaypoint::~ImageMapWaypoint(){
     if(ros::isStarted()) {
+        unsubscribe();
         ros::shutdown(); // explicitly needed since we use ros::start();
         ros::waitForShutdown();
     }
@@ -23,28 +28,42 @@ void ImageMapWaypoint::run(){
     if ( ! ros::master::check() ) {
         return;
     }
-    ros::start(); // explicitly needed since our nodehandle is going out of scope.
+    // explicitly needed since our nodehandle is going out of scope.
+    ros::start();
     ros::NodeHandle nh_;
     nh = &nh_;
-    // Add your ros communications here.
-    //chatter_publisher = n.advertise<std_msgs::String>("chatter", 1000);
-    ros::Subscriber poseRelaySub_ = nh->subscribe("/image_map/pose", 10,
-                                          &ImageMapWaypoint::poseRelayHandler, this);
-    poseRelaySub = &poseRelaySub_;
-    ros::Publisher poseRelayPub_ = nh->advertise<mobots_msgs::PoseAndID>("/waypoint_user", 10);
-    poseRelayPub = &poseRelayPub_;
-    ros::Subscriber updateInfoSub_ = nh->subscribe("/image_map/update_push", 10,
-                                                   &ImageMapWaypoint::updateInfoHandler, this);
-    updateInfoSub = &updateInfoSub_;
+    subscribe();
+
     ros::spin();
 }
 
-// TODO resubscribe poseRelayPub
-void ImageMapWaypoint::setActiveMobot(int mobotID){
-    activeMobotID = mobotID;
-    ROS_INFO("activeMobotID: %i", activeMobotID);
-    return;
+void ImageMapWaypoint::subscribe(){
+    // Input: User Waypoints from Rviz
+    ros::Subscriber poseRelaySub_ = nh->subscribe("/image_map/pose", 10,
+            &ImageMapWaypoint::poseRelayHandler, this);
+    poseRelaySub = &poseRelaySub_;
+    // Output: User Waypoints to path_planner
+    ros::Publisher poseRelayPub_ = nh->advertise
+            <mobots_msgs::PoseAndID>("/path_planner/waypoint_user", 10);
+    poseRelayPub = &poseRelayPub_;
+    // Input: Update data in the table
+    ros::Subscriber updateInfoSub_ = nh->subscribe("/image_map/update_push", 10,
+            &ImageMapWaypoint::updateInfoHandler, this);
+    updateInfoSub = &updateInfoSub_;
+    // Input/Output: Update state in the Rviz 3D scene
+    ros::ServiceClient updateRvizClient_ = nh->serviceClient
+            <map_visualization::RemoteProcedureCall>("/image_map/rpc");
+    updateRvizClient = &updateRvizClient_;
 }
+
+void ImageMapWaypoint::unsubscribe(){
+    // Shutdown every handle created through this NodeHandle.
+    nh->shutdown();
+}
+
+/**********************************************************
+  * ROS Callbacks / Publishers / Service Clients
+  *********************************************************/
 
 void ImageMapWaypoint::poseRelayHandler(const geometry_msgs::PoseStamped::ConstPtr& msgIn){
     ROS_INFO("[poseRouterCallback]");
@@ -68,8 +87,39 @@ void ImageMapWaypoint::poseRelayHandler(const geometry_msgs::PoseStamped::ConstP
 }
 
 void ImageMapWaypoint::updateInfoHandler(const mobots_msgs::IDKeyValue::ConstPtr& msg){
-    ROS_INFO("[updateInfoHandler] s%im%ii%i: %s-%s", msg->id.session_id, msg->id.mobot_id,
-             msg->id.image_id, msg->key.c_str(), msg->value.c_str());
+    ROS_INFO("[updateInfoHandler] s%im%ii%i: %i-%i", msg->id.session_id, msg->id.mobot_id,
+             msg->id.image_id, msg->key, msg->value);
+    Q_EMIT dataChanged(msg->id.session_id, msg->id.mobot_id, msg->key, msg->value);
+    return;
+}
+
+int ImageMapWaypoint::updateRviz(std::string function, std::string operands){
+    ROS_INFO("[updateRviz]");
+    map_visualization::RemoteProcedureCall srv;
+    srv.request.function = function;
+    srv.request.operands = operands;
+
+    if (updateRvizClient->call(srv)){
+        ROS_INFO("Called Rviz: %s(%s) = %i", function.c_str(), operands.c_str(),
+                srv.response.result);
+    } else {
+        ROS_ERROR("Call Rviz failed: %s(%s) = %i", function.c_str(),
+                operands.c_str(), srv.response.result);
+        return -1;
+    }
+    return srv.response.result;
+}
+
+/**********************************************************
+  * Qt Slots
+  *********************************************************/
+
+// Slot to change the ID of the waypoints relayed through
+// TODO resubscribe poseRelayPub
+// TODO connect from QComboBox
+void ImageMapWaypoint::setActiveMobot(QString mobotID){
+    activeMobotID = mobotID.toInt();
+    ROS_INFO("activeMobotID: %i", activeMobotID);
     return;
 }
 

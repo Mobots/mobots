@@ -9,13 +9,13 @@ ImageMapInfo::ImageMapInfo(int argc, char** argv, QWidget *parent)
 {
     QHBoxLayout* headerBox = new QHBoxLayout();
     QLabel* waypointLabel = new QLabel("Active Mobot");
-    QComboBox* waypointComboBox = new QComboBox(0);
+    waypointComboBox = new QComboBox(0);
     //waypointComboBox->setModel(&imageMapModel);
     headerBox->addWidget(waypointLabel);
     headerBox->addWidget(waypointComboBox);
     headerBox->addStretch(0);
     QLabel* replayLabel = new QLabel("Replay Session");
-    QComboBox* replayComboBox = new QComboBox(0);
+    replayComboBox = new QComboBox(0);
     headerBox->addWidget(replayLabel);
     headerBox->addWidget(replayComboBox);
     headerBox->addStretch(0);
@@ -32,9 +32,29 @@ ImageMapInfo::ImageMapInfo(int argc, char** argv, QWidget *parent)
     window->show();
 
     waypoint.start();
+    // TODO connect updateRviz
+    QObject::connect(&waypoint, SIGNAL(dataChanged(int,int,int,int)),
+                     &model, SLOT(updateData(int,int,int,int)));
+    QObject::connect(waypointComboBox, SIGNAL(currentIndexChanged(QString)),
+                     &waypoint, SLOT(setActiveMobot(QString)));
+    QObject::connect(&model, SIGNAL(addWaypointMobot(int)),
+                     this, SLOT(addWaypointMobot(int)));
+    QObject::connect(&model, SIGNAL(removeWaypointMobot(int)),
+                     this, SLOT(removeWaypointMobot(int)));
+    QObject::connect(&model, SIGNAL(clearWaypointMobot()),
+                     waypointComboBox, SLOT(clear()));
 
-    QObject::connect(waypointComboBox, SIGNAL(currentIndexChanged(int)),
-                     &waypoint, SLOT(setActiveMobot(int)));
+}
+
+void ImageMapInfo::addWaypointMobot(int mobotID){
+    QString mobotID_ = QString::number(mobotID);
+    waypointComboBox->addItem(mobotID_);
+}
+
+void ImageMapInfo::removeWaypointMobot(int mobotID){
+    QString mobotID_ = QString::number(mobotID);
+    int i = waypointComboBox->findText(mobotID_);
+    waypointComboBox->removeItem(i);
 }
 
 }
