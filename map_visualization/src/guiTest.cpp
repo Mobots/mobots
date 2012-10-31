@@ -70,8 +70,8 @@ void* shutterThread(void* data){
 			msg.image.encoding = "png";
 			msg.image.is_bigendian = 0;
 			msg.image.step = img.cols * img.elemSize();
-			int sign = ((double)rand())/((double)RAND_MAX) > 0.5;
-			bool usePose = ((double)rand())/((double)RAND_MAX) > 0.5;
+			int sign = ((double)rand())/((double)RAND_MAX) > 0.5 ? 1 : -1;
+			bool usePose = true;//((double)rand())/((double)RAND_MAX) > 0.5;
 			if(usePose){
 				msg.pose.x = globalPoses[mobotID].x;
 				msg.pose.y = globalPoses[mobotID].y;
@@ -97,7 +97,10 @@ void relPoseCallback(int mobotID, const mobots_msgs::Pose2DPrio& deltaPose){
 	globalPoses[mobotID].x += cost*deltaPose.pose.x - sint*deltaPose.pose.y;
 	globalPoses[mobotID].y += sint*deltaPose.pose.x + cost*deltaPose.pose.y;
 	globalPoses[mobotID].theta += deltaPose.pose.theta;
-	
+	while(globalPoses[mobotID].theta > 2*M_PI) //normalize angle
+		globalPoses[mobotID].theta -= 2*M_PI;
+	while(globalPoses[mobotID].theta < 0)
+		globalPoses[mobotID].theta += 2*M_PI;
 	globalPosePubs[mobotID].publish(globalPoses[mobotID]);
 }
 
@@ -108,7 +111,7 @@ void absPoseCallback(int mobotID, const mobots_msgs::Pose2DPrio& absPose){
 }
 
 int main(int argc, char **argv){
-  ros::init(argc, argv, "shutterTest");
+  ros::init(argc, argv, "mobot simulaters");
   ros::NodeHandle nh;
 	for(int i = 0; i < 4; i++){
 		std::stringstream ss;
