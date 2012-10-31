@@ -11,10 +11,15 @@ class ImageMapInfo : public QMainWindow {
 Q_OBJECT
 
 public:
-    ImageMapInfo(int argc, char** argv, QWidget *parent);
+    ImageMapInfo(int argc, char** argv, QWidget *parent = 0);
 private:
     ImageMapModel model;
     ImageMapWaypoint waypoint;
+    QComboBox* waypointComboBox;
+    QComboBox* replayComboBox;
+public Q_SLOTS:
+    void removeWaypointMobot(int mobotID);
+    void addWaypointMobot(int mobotID);
 };
 
 }

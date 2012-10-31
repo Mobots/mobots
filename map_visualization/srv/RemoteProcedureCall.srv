@@ -1,5 +1,5 @@
 # Calls up a function on the server node and returns the int return value
 string function
-string operand
+string operands
 ---
-int8 returnValue
+int8 result
