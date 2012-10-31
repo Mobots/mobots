@@ -6,7 +6,7 @@ const int Shutter2::MOUSE_THRESHOLD = 5;
 const int Shutter2::CAM_QUERY_THRESHOLD = 6;
 
 Shutter2::Shutter2(int mobotID, double l, double b): Shutter(mobotID, l, b){
-	camera_image_ = usb_cam_camera_start("/dev/video1",
+	camera_image_ = usb_cam_camera_start("/dev/video0",
 			IO_METHOD_MMAP,
 			PIXEL_FORMAT_YUYV,
 			640,

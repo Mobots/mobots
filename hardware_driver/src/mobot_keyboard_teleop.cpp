@@ -40,6 +40,7 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Pose2D.h>
 #include "mobots_msgs/Pose2DPrio.h"
+#include "path_planner/KeyboardRequest.h"
 
 
 #define KEYCODE_W 0x77
@@ -64,6 +65,7 @@ double angular_vel_fast = 0.3;
 geometry_msgs::Pose2D currentPosition;
 ros::Publisher targetPose_pub;
 ros::Subscriber globalPose_sub;
+ros::ServiceClient client;
 ros::NodeHandle* nh;
 
 int kfd = 0;
@@ -77,14 +79,12 @@ void globalPoseCallback(const geometry_msgs::Pose2D& msg){
 
 
 int main(int argc, char** argv){
-
-	
 	cout << "specify a mobot to control (enter the mobot id): ";
 	int mobotID;
 	cin >> mobotID;
 	cout << endl;
 	std::stringstream namess;
-	namess << "mobot_keyboard_teleop-" << mobotID;
+	namess << "mobot_keyboard_teleop_" << mobotID;
 	ros::init(argc, argv, namess.str(), ros::init_options::NoSigintHandler);
   nh = new ros::NodeHandle;
 	string waypointPath;
@@ -95,6 +95,19 @@ int main(int argc, char** argv){
 	/*ss.clear();
 	ss.str("");
 	ss << "/mobot" << mobotID << "/mouse";*/
+	client = nh->serviceClient<path_planner::KeyboardRequest>("/path_planner/keyboard_request");
+	path_planner::KeyboardRequest::Request req;
+	path_planner::KeyboardRequest::Response res;
+	req.mobot_id = mobotID;
+	req.enable = true;
+	if(client.call(req, res)){
+		if(!res.enabled){
+			cout << "path_planner does currently not allow keyboard controlling for this id" << endl;
+			exit(1);
+		}
+	}else{
+		ROS_WARN("[%s] No path_planner found", namess.str().c_str());
+	}
 	globalPosePath = ss.str();
   targetPose_pub = nh->advertise<mobots_msgs::Pose2DPrio>(ss.str(), 2);
 	//globalPose_sub = nh->subscribe(globalPosePath, 2, globalPoseCallback);s
@@ -106,7 +119,8 @@ int main(int argc, char** argv){
   t.interrupt(); //?
   t.join();
   tcsetattr(kfd, TCSANOW, &cooked);
-  
+	req.enable = false;
+  client.call(req, res);
   return(0);
 }
 
