@@ -1,0 +1,4 @@
+int8 mobot_id #the mobot id
+int8 enable   #whether we want to start keyboard or want to give control back to path_planner. true = keyboard, false = path_controller
+---
+int8 enabled  #the new state of the keyboard controller: true => granted, false => not granted
