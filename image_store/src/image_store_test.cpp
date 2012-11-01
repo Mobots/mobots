@@ -1,9 +1,9 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include "mobots_msgs/ImageWithPoseAndID.h"
+#include "mobots_msgs/PoseAndID.h"
 #include "mobots_msgs/FeatureSetWithPoseAndID.h"
 #include "map_visualization/GetImageWithPose.h"
-//#include "image_transport/image_transport.h"
 #include "opencv/cvwimage.h"
 #include "opencv/highgui.h"
 #include "iostream"
@@ -19,7 +19,7 @@
  * This is an example of how to interface with the image_store server.
  */
 void saveRequest(std::string filePath, ros::NodeHandle* handle){
-	ros::Publisher pub = handle->advertise<mobots_msgs::ImageWithPoseAndID>("shutter_image_delta_pose", 10);
+	ros::Publisher pub = handle->advertise<mobots_msgs::ImageWithPoseAndID>("/mobot1/image_pose_id", 10);
 	mobots_msgs::ImageWithPoseAndID msg;
 	// Set image info data
 	msg.pose.x = 1.23;
@@ -56,6 +56,33 @@ void saveRequest(std::string filePath, ros::NodeHandle* handle){
 		msg.id.image_id++;
 	}
 	return;
+}
+
+void absRequest(ros::NodeHandle* handle){
+    ros::Publisher pub = handle->advertise<mobots_msgs::PoseAndID>("slam/abs_pose", 10);
+    mobots_msgs::PoseAndID msg;
+    // Set image info data
+    msg.pose.x = 1.23;
+    msg.pose.y = 2.23;
+    msg.pose.theta = 0.00;
+    msg.id.session_id = 0;
+    msg.id.mobot_id = 0;
+    msg.id.image_id = 0;
+    
+    ros::Rate loop_rate(0.5);
+    
+    while (handle->ok())
+    {
+        ROS_INFO("Sent msg no: %i", msg.id.image_id);
+        pub.publish(msg);
+        ros::spinOnce();
+        loop_rate.sleep();
+        // Change image info data (pose)
+        msg.pose.x++;
+        msg.pose.y++;
+        msg.id.image_id++;
+    }
+    return;
 }
 
 void getRequest(int sessionID, int mobotID, int imageID, ros::NodeHandle* handle){
@@ -196,6 +223,8 @@ int main(int argc, char **argv)
 	
 	if(argument1 == "save" && argc == 3){
 		saveRequest(std::string(argv[2]), &handle);
+    } else if(argument1 == "abs" && argc == 2){
+        absRequest(&handle);
 	} else if(argument1 == "get" && argc == 5){
 		getRequest(atoi(argv[2]), atoi(argv[3]), atoi(argv[4]), &handle);
 	} else {

@@ -4,7 +4,7 @@
 #include <mobots_msgs/PoseAndID.h>
 #include <mobots_msgs/IDKeyValue.h>
 #include <map_visualization/RemoteProcedureCall.h>
-#include <map_visualization/include/definitions.h>
+#include <map_visualization/definitions.h>
 
 ros::NodeHandle nh;
 ros::Subscriber poseRelayTestSub;
