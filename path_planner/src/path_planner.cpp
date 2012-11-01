@@ -75,8 +75,7 @@ int main(int argc, char **argv){
   //initialising the keyboad request server
   keyReqServer = nh.advertiseService("/path_planner/keyboard_request", keyReqCallback);
       
-  //initialising the Mobots
-  
+  //initialising the Mobots  
   mobots[0].id = 1;
   mobots[0].theta = 0.0;
   mobots[0].x = 0.0;
@@ -138,10 +137,10 @@ int main(int argc, char **argv){
 void moveMobot(int id, int direction){
   int dir;
   if(direction == 0 || direction > 8 || direction < -1){
-    srand(time(NULL));
+    srand(std::time(NULL));
     dir = rand() % 4 +2; //number between 2 and 5
   } else if(direction == -1){
-    srand(time(NULL));
+    srand(std::time(NULL));
     dir = rand() % 3 +6; //number between 6 and 8
   }
   else{
@@ -335,9 +334,10 @@ void irCallback(const mobots_msgs::InfraredScan& irScan, int id){
   }
   if(act){
     mobots[id-1].obstacle = true;
+    ROS_INFO("Mobot %i dealing with obstacle", id);
     int dir = handleObstacle(id, scanBool); //generate new direction
     moveMobot(id, dir);	//move Mobot to avoid obstacle
-    ros::Duration(10).sleep();
+    ros::Duration(10).sleep(); //wait 10 seconds for excecuting the command
     mobots[id-1].obstacle = false;
   }
 }
@@ -397,7 +397,7 @@ int handleObstacle(int id, bool scan[6]){
 	diff++;
       }
     }
-    if(diff == 1 || diff == 5){
+    if(diff == 1 || diff == 5){ //beside one another
       switch(first+second){
 	case 1: //sensor 0 and 1
 	  newDir = 6;
@@ -417,7 +417,7 @@ int handleObstacle(int id, bool scan[6]){
       }
       return newDir;
     }
-    if(diff == 2 || diff == 4){
+    if(diff == 2 || diff == 4){ //beside one another with one free direction between
       switch(first+second){
 	case 2: //sensor 0 and 2
 	  newDir = 4;
