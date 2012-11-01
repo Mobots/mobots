@@ -15,7 +15,7 @@
 #include <OGRE/OgreAxisAlignedBox.h>
 #include <OGRE/OgreEntity.h>
 
-//#include <OGRE/OgreMaterial.h>
+#include <boost/lexical_cast.hpp>
 
 #include <iostream>
 #include <fstream>
