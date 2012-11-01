@@ -14,14 +14,13 @@ class ComProtocol
 private:
 class Communication *com;
 struct ProtocolHeader* protocol_receiveHeader();
-void protocol_registerHandler(enum PROTOCOL_IDS id, void (*handler)(enum PROTOCOL_IDS id, unsigned char *data, unsigned short size, class Communication* com));
-void protocolHandler_init();
 
 public:
 ComProtocol(class Communication *com);
 void sendData(enum PROTOCOL_IDS id, unsigned char *data, unsigned short size);
 void receiveData();
-void protocol_init();
+void protocol_init(void (*defaultHandler)(enum PROTOCOL_IDS id, unsigned char *data, unsigned short size, class Communication* com));
+void protocol_registerHandler(enum PROTOCOL_IDS id, void (*handler)(enum PROTOCOL_IDS id, unsigned char *data, unsigned short size, class Communication* com));
 
 };
 
