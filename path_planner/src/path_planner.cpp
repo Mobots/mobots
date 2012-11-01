@@ -10,6 +10,7 @@
 #include <time.h>
 #include <cmath>
 
+/* global attributes */
 ros::Publisher nextPoseRel_1;
 ros::Publisher nextPoseRel_2;
 ros::Publisher nextPoseRel_3;
@@ -18,6 +19,7 @@ ros::Timer timerMobot_1;
 ros::Timer timerMobot_2;
 ros::Timer timerMobot_3;
 
+/* Mobot data structure for saving the state of one Mobot. */
 struct mobot{
   double x; //relative x position of the mobot
   double y; //relative y position of the mobot
@@ -26,8 +28,11 @@ struct mobot{
   bool userControlled; //is the mobot controlled by the user?
   bool obstacle; //is there an obstacle with which the mobot is dealing right now?
   int timer; //timer for reactivating the mobots auto explore mode after an user command
-} mobot_1, mobot_2, mobot_3;
+};
 
+struct mobot mobots[3];
+/* Declaring the member functions.
+ * Member functions for the Mobot control. */
 void moveMobot(int id, int direction);
 void refreshPose(int id, geometry_msgs::Pose2D pose);
 bool nearly_equal(double a, double b, double eps);
@@ -36,6 +41,7 @@ void releasePose(int id, int prio, geometry_msgs::Pose2D pose);
 void wait(int duration);
 int handleObstacle(int id, bool scan[6]);
 
+/* Member functions for the communication with the rest of our system. */
 void timerCallback1(const ros::TimerEvent& event);
 void timerCallback2(const ros::TimerEvent& event);
 void timerCallback3(const ros::TimerEvent& event);
@@ -46,92 +52,80 @@ void irCallback3(const mobots_msgs::InfraredScan& irScan);
 void userCallback(const mobots_msgs::PoseAndID& input);
 bool keyReqCallback(path_planner::KeyboardRequest::Request& req, path_planner::KeyboardRequest::Response& res);
 
-
 int main(int argc, char **argv){
-  { //initialising the node
-  
-    //initialising ROS
-    ros::init(argc, argv, "path_planner");
-    ros::NodeHandle nh;
-  
-    //initialising the subscribers
-    ros::Subscriber infraredScan_1 = nh.subscribe("/mobot1/infrared", 1, irCallback1);
-    ros::Subscriber infraredScan_2 = nh.subscribe("/mobot2/infrared", 1, irCallback2);
-    ros::Subscriber infraredScan_3 = nh.subscribe("/mobot3/infrared", 1, irCallback3);
-    ros::Subscriber userInput_1 = nh.subscribe("/mobot1/waypoint_user", 20, userCallback);
-    ros::Subscriber userInput_2 = nh.subscribe("/mobot2/waypoint_user", 20, userCallback);
-    ros::Subscriber userInput_3 = nh.subscribe("/mobot3/waypoint_user", 20, userCallback);
-    
-    //initialising the publishers
-    nextPoseRel_1 = nh.advertise<mobots_msgs::Pose2DPrio>("/mobot1/waypoint_rel", 20);
-    nextPoseRel_2 = nh.advertise<mobots_msgs::Pose2DPrio>("/mobot2/waypoint_rel", 20);
-    nextPoseRel_3 = nh.advertise<mobots_msgs::Pose2DPrio>("/mobot3/waypoint_rel", 20);
-    
-    //initialising the keyboad request server
-    keyReqServer = nh.advertiseService("/path_planner/keyboard_request", keyReqCallback);
-        
-    //initialising the Mobots
-    mobot_1.id = 1;
-    mobot_1.theta = 0.0;
-    mobot_1.x = 0.0;
-    mobot_1.y = 0.0;
-    mobot_1.obstacle = false;
-    mobot_1.userControlled = false;
-    mobot_1.timer = 0;
+  //initialising the node
 
-    mobot_2.id = 2;
-    mobot_2.theta = 0.0;
-    mobot_2.x = 0.0;
-    mobot_2.y = 0.0;
-    mobot_2.obstacle = false;
-    mobot_2.userControlled = false;
-    mobot_2.timer = 0;
-    
-    mobot_3.id = 3;
-    mobot_3.theta = 0.0;
-    mobot_3.x = 0.0;
-    mobot_3.y = 0.0;
-    mobot_3.obstacle = false;
-    mobot_3.userControlled = false;
-    mobot_3.timer = 0;
-    
-    //initialising the timers for the Mobots
-    timerMobot_1 = nh.createTimer(ros::Duration(1), timerCallback1);
-    timerMobot_2 = nh.createTimer(ros::Duration(1), timerCallback2);
-    timerMobot_3 = nh.createTimer(ros::Duration(1), timerCallback3);
-  }
+  //initialising ROS
+  ros::init(argc, argv, "path_planner");
+  ros::NodeHandle nh;
+
+  //initialising the subscribers
+  ros::Subscriber infraredScan_1 = nh.subscribe("/mobot1/infrared", 1, irCallback1);
+  ros::Subscriber infraredScan_2 = nh.subscribe("/mobot2/infrared", 1, irCallback2);
+  ros::Subscriber infraredScan_3 = nh.subscribe("/mobot3/infrared", 1, irCallback3);
+  ros::Subscriber userInput_1 = nh.subscribe("/mobot1/waypoint_user", 20, userCallback);
+  ros::Subscriber userInput_2 = nh.subscribe("/mobot2/waypoint_user", 20, userCallback);
+  ros::Subscriber userInput_3 = nh.subscribe("/mobot3/waypoint_user", 20, userCallback);
   
+  //initialising the publishers
+  nextPoseRel_1 = nh.advertise<mobots_msgs::Pose2DPrio>("/mobot1/waypoint_rel", 20);
+  nextPoseRel_2 = nh.advertise<mobots_msgs::Pose2DPrio>("/mobot2/waypoint_rel", 20);
+  nextPoseRel_3 = nh.advertise<mobots_msgs::Pose2DPrio>("/mobot3/waypoint_rel", 20);
+  
+  //initialising the keyboad request server
+  keyReqServer = nh.advertiseService("/path_planner/keyboard_request", keyReqCallback);
+      
+  //initialising the Mobots
+  
+  mobots[0].id = 1;
+  mobots[0].theta = 0.0;
+  mobots[0].x = 0.0;
+  mobots[0].y = 0.0;
+  mobots[0].obstacle = false;
+  mobots[0].userControlled = false;
+  mobots[0].timer = 0;
+
+  mobots[1].id = 2;
+  mobots[1].theta = 0.0;
+  mobots[1].x = 0.0;
+  mobots[1].y = 0.0;
+  mobots[1].obstacle = false;
+  mobots[1].userControlled = false;
+  mobots[1].timer = 0;
+  
+  mobots[2].id = 3;
+  mobots[2].theta = 0.0;
+  mobots[2].x = 0.0;
+  mobots[2].y = 0.0;
+  mobots[2].obstacle = false;
+  mobots[2].userControlled = false;
+  mobots[2].timer = 0;
+  
+  //initialising the timers for the Mobots
+  timerMobot_1 = nh.createTimer(ros::Duration(1), timerCallback1);
+  timerMobot_2 = nh.createTimer(ros::Duration(1), timerCallback2);
+  timerMobot_3 = nh.createTimer(ros::Duration(1), timerCallback3);
+
   /* Entering the event loop. If there is no obstacle or the user is not controlling the
    * Mobot, it is driving straight till something occurs. */  
   while(ros::ok()){
-    for(int id = 1 ; id <= 3 ; id++){
-      switch(id){
-	case 1:	  
-	  if(!mobot_1.userControlled && !mobot_1.obstacle){
-	    moveMobot(1, 1);
-	  }
-	  break;
-	  
-	case 2:
-	  if(!mobot_2.userControlled && !mobot_2.obstacle){
-	    moveMobot(2,1);
-	  }
-	  break;
-	  
-	case 3:
-	  if(!mobot_3.userControlled && !mobot_3.obstacle){
-	    moveMobot(3,1);
-	  }
-	  break;
+    for(int i = 0 ; i <= 2 ; i++){
+      if(!mobots[i].userControlled && !mobots[i].obstacle){
+	moveMobot(mobots[i].id, 1);
       }   
     }
-    wait(10000);
+    wait(3000);
   }
-  return 1;
+  //stopping the timers
+  timerMobot_1.stop();
+  timerMobot_2.stop();
+  timerMobot_3.stop();
+  return 0;
 }
 
 /* Giving a Mobot a move command.
  * direction syntax:
+ * -1: random movement, turning between -135° and 135° 
  * 0: random movement, turning between -90° and 90°
  * 1: driving straight
  * 2: turning right 45°
@@ -143,9 +137,12 @@ int main(int argc, char **argv){
  * 8: turning right 180° */
 void moveMobot(int id, int direction){
   int dir;
-  if(direction == 0 || direction > 8 || direction < 0){
+  if(direction == 0 || direction > 8 || direction < -1){
     srand(time(NULL));
     dir = rand() % 4 +2; //number between 2 and 5
+  } else if(direction == -1){
+    srand(time(NULL));
+    dir = rand() % 3 +6; //number between 6 and 8
   }
   else{
     dir = direction;
@@ -215,38 +212,14 @@ void moveMobot(int id, int direction){
 /* Updating the Mobot Pose in the Database of this Node */
 void refreshPose(int id, geometry_msgs::Pose2D pose){
   double newTheta;
-  switch(id){
-    case 1:
-      mobot_1.x += pose.x;
-      mobot_1.y += pose.y;
-      newTheta = mobot_1.theta + pose.theta;
-      //if Mobot is turned around 360°, then start with 0°
-      if((nearly_equal(newTheta, 360.0, 0.1)) || (nearly_equal(newTheta, -360.0, 0.1))){
-	mobot_1.theta = fmod(newTheta, 360.0);
-      } else{
-	mobot_1.theta += pose.theta;
-      }	
-      break;
-    case 2:
-      mobot_2.x += pose.x;
-      mobot_2.y += pose.y;
-      newTheta = mobot_2.theta + pose.theta;
-      if((nearly_equal(newTheta, 360.0, 0.1)) || (nearly_equal(newTheta, -360.0, 0.1))){
-	mobot_2.theta = fmod(newTheta, 360.0);
-      } else{
-      mobot_2.theta += pose.theta;
-      }
-      break;
-    case 3:
-      mobot_3.x += pose.x;
-      mobot_3.y += pose.y;
-      newTheta = mobot_3.theta + pose.theta;
-      if((nearly_equal(newTheta, 360.0, 0.1)) || (nearly_equal(newTheta, -360.0, 0.1))){
-	mobot_3.theta = fmod(newTheta, 360.0);
-      } else{
-      mobot_3.theta += pose.theta;
-      }
-      break;
+  mobots[id-1].x += pose.x;
+  mobots[id-1].y += pose.y;
+  newTheta = mobots[id-1].theta + pose.theta;
+  //if Mobot is turned around 360°, then start with 0°
+  if((nearly_equal(newTheta, 360.0, 0.1)) || (nearly_equal(newTheta, -360.0, 0.1))){
+    mobots[id-1].theta = fmod(newTheta, 360.0);
+  } else{
+    mobots[id-1].theta += pose.theta;
   }
 }
 
@@ -284,50 +257,49 @@ void releasePose(int id, int prio, geometry_msgs::Pose2D pose){
 	break;
     }
   } else ROS_INFO("invalid Mobot ID, publishing aborted");
+  return;
 }
 
 /* Wait for the given duration in milliseconds and the ROS System
  * is spinning, handling the callback queue ten times a second. */
 void wait(int duration){
   ros::Rate r(10);
-  for(int i = 0 ; i <= (duration/100) ; i++){
-    if(ros::ok()){
-      ros::spinOnce();      
-      r.sleep();
-    }
+  for(int i = 0 ; i <= (duration/100) && ros::ok() ; i++){
+    ros::spinOnce();      
+    r.sleep();
   }
 }
 
-/* Timer for the Mobot 1. After 30 seconds of no new command of the user, the Mobot
+/* Timer for the Mobot 1. After 30 seconds of no new user waypoint, the Mobot
  * is reactivating the auto explore mode. */
 void timerCallback1(const ros::TimerEvent& event){
-  if(mobot_1.userControlled){
-    mobot_1.timer++;
-    if(mobot_1.timer >= 30){
+  if(mobots[0].userControlled){
+    mobots[0].timer++;
+    if(mobots[0].timer >= 30){
       ROS_INFO("Mobot 1 going back to autonome work");
-      mobot_1.userControlled = false;
+      mobots[0].userControlled = false;
     }
   }
 }
 
 /* Timer for Mobot 2. */
 void timerCallback2(const ros::TimerEvent& event){
-  if(mobot_2.userControlled){
-    mobot_2.timer++;
-    if(mobot_2.timer >= 30){
+  if(mobots[1].userControlled){
+    mobots[1].timer++;
+    if(mobots[1].timer >= 30){
       ROS_INFO("Mobot 2 going back to autonome work");
-      mobot_2.userControlled = false;
+      mobots[1].userControlled = false;
     }
   }
 }
 
 /* Timer for Mobot 3. */
 void timerCallback3(const ros::TimerEvent& event){
-  if(mobot_3.userControlled){
-    mobot_3.timer++;
-    if(mobot_3.timer >= 30){
-      ROS_INFO("Mobot 1 going back to autonome work");
-      mobot_3.userControlled = false;
+  if(mobots[2].userControlled){
+    mobots[2].timer++;
+    if(mobots[2].timer >= 30){
+      ROS_INFO("Mobot 3 going back to autonome work");
+      mobots[2].userControlled = false;
     }
   }
 }
@@ -362,30 +334,11 @@ void irCallback(const mobots_msgs::InfraredScan& irScan, int id){
     }
   }
   if(act){
-    switch(id){
-      case 1:
-	mobot_1.obstacle = true;
-	break;
-      case 2:
-	mobot_2.obstacle = true;
-	break;
-      case 3:
-	mobot_3.obstacle = true;
-	break;
-    }
-    int dir = handleObstacle(id, scanBool);
-    moveMobot(id, dir);
-    switch(id){
-      case 1:
-	mobot_1.obstacle = false;
-	break;
-      case 2:
-	mobot_2.obstacle = false;
-	break;
-      case 3:
-	mobot_3.obstacle = false;
-	break;
-    }
+    mobots[id-1].obstacle = true;
+    int dir = handleObstacle(id, scanBool); //generate new direction
+    moveMobot(id, dir);	//move Mobot to avoid obstacle
+    ros::Duration(10).sleep();
+    mobots[id-1].obstacle = false;
   }
 }
 
@@ -401,8 +354,8 @@ int handleObstacle(int id, bool scan[6]){
     for(int i = 0 ; i <= 5 ; i++){
       if(scan[i]){
 	switch(i){
-	  case 0:
-	    newDir = 8;
+	  case 0: //only the front is blocked, turn randomly around at 135°, 180° or -135°
+	    newDir = -1;
 	    break;
 	  case 1:
 	    newDir = 6;
@@ -628,8 +581,7 @@ int handleObstacle(int id, bool scan[6]){
   if(count == 6){ //every direction is blocked
     ROS_INFO("Mobot %i is stuck, please help", id);
     ROS_INFO("waiting 30 seconds for Mobot to be set on another place");
-    ros::Rate r(1/30);
-    r.sleep();
+    ros::Duration(30).sleep();
     ROS_INFO("Mobot %i is going on", id);
     return 0;
   }
@@ -638,52 +590,33 @@ int handleObstacle(int id, bool scan[6]){
 
 /* This method deals with user inputs over the gui. Everytime a new command is recieved
  * the timer of the specific Mobot is set to 0 and the Mobot is stopping and deleting all
- * queued waypoints.
- */
+ * queued waypoints. */
 void userCallback(const mobots_msgs::PoseAndID& input){
   int id = input.id.mobot_id;
-  switch(id){
-    case 1:
-      mobot_1.userControlled = true;
-      mobot_1.timer = 0;
-      break;
-    case 2:
-      mobot_2.userControlled = true;
-      mobot_2.timer = 0;
-      break;
-    case 3:
-      mobot_3.userControlled = true;
-      mobot_3.timer = 0;
-      break;
-    default:
-      ROS_INFO("invalid Mobot ID, user waypoint not released");
-      return;    
+  if(id == 1 || id == 2 || id == 3){
+    mobots[id-1].userControlled = true;
+    mobots[id-1].timer = 0;
+    stop(id); 
+    ROS_INFO("Mobot_%i handling user input", id);
+    releasePose(id, -2, input.pose);
+  } else{
+    ROS_INFO("&i is an invalid Mobot ID, user waypoint not released", id);
+    return;
   }
-  stop(id); 
-  ROS_INFO("Mobot_%i handling user input", id);
-  releasePose(id, -2, input.pose);
 }
 
 /* This method activates the keyboard teleop control for a mobot */
 bool keyReqCallback(path_planner::KeyboardRequest::Request& req, path_planner::KeyboardRequest::Response& res){
   bool en = req.enable;
-  switch(req.mobot_id){
-    case 1:
-      mobot_1.userControlled = en;
-      break;
-    case 2:
-      mobot_2.userControlled = en;
-      break;
-    case 3:
-      mobot_3.userControlled = en;
-      break;
-    default:
-      ROS_INFO("invalid Mobot ID, keyboard request not granted");
-      res.enabled = false;
-      return false;      
+  int id = req.mobot_id;
+  if(id == 1 || id == 2 || id == 3){
+    mobots[id-1].userControlled = en;
+    ROS_INFO("keyboard control switch granted for Mobot %i", id);
+    res.enabled = en;
+    return true;
+  } else{
+    ROS_INFO("%i is an invalid Mobot ID, keyboard request not granted", id);
+    res.enabled = false;
+    return false;
   }
-  ROS_INFO("keyboard control switch granted for Mobot %i", req.mobot_id);
-  res.enabled = en;
-  return true;
 }
-
