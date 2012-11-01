@@ -22,19 +22,13 @@ void ComProtocol::protocol_registerHandler(enum PROTOCOL_IDS id,
 	protocolHandlers[id] = handler;
 }
 
-void ComProtocol::protocolHandler_init() {
-	protocol_registerHandler(SensorData_DeltaVal, setDataValHandler);
-}
-
-
-
-void ComProtocol::protocol_init() {
+void ComProtocol::protocol_init(void (*defaultHandler)(enum PROTOCOL_IDS id, unsigned char *data,
+				unsigned short size, Communication* com)) {
 	receivedHeaderBytes = 0;
 	int i = 0;
 	for (i = 0; i < NUM_IDS; i++) {
-		protocolHandlers[i] = protocol_defaultHandler;
+		protocolHandlers[i] = defaultHandler;
 	}
-	protocolHandler_init();
 }
 
 

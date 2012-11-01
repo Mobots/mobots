@@ -36,16 +36,16 @@ ros::Subscriber nextPoseSubRel, nextPoseSubAbs, speedSub;
 ros::Publisher mousePosePub, globalPosePub, infraredScanPub;
 ros::ServiceClient shutterClient;
 ros::ServiceServer setGlobalPoseServer;
-ComProtocol proto;
+ComProtocol *proto;
 double rad;
 bool received;
+pthread_t receiveThread_t;
 
 //==== method declarations ====
 
 void* singleMouseReader(void*);
 void* dualMouseReader(void*);
 void* infraredReader(void*);
-void initCom(); 
 /**
  * Service to be called by slam
  */
@@ -64,9 +64,28 @@ void relPoseCallback(const mobots_msgs::Pose2DPrio&);
  */
 void sendSpeedCallback(const geometry_msgs::Pose2D&);
 
-//handler
-void setDataValHandler(enum PROTOCOL_IDS id, unsigned char *data,
+/**
+ * Handler method which gets called with the sensor data
+ */
+void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		unsigned short size, Communication* com);
+/**
+ * default Handler method which gets called if no other handler is set for the given id
+ */
+void defaultHandler(enum PROTOCOL_IDS id, unsigned char *data,
+		unsigned short size, Communication* com);
+/**
+ * Initialize the communication with the microcontroller
+ */
+void initCom(); 
+/**
+ * Start receiving sensor data
+ */
+void startReceivingSensorVals();
+/**
+ * Internal method which is used for threading
+ */
+void* receiveMethod(void* data);
 
 
 
@@ -78,7 +97,7 @@ int main(int argc, char **argv){
   
   nextPoseSubRel = nh->subscribe("waypoint_rel", 5, relPoseCallback);
   nextPoseSubAbs = nh->subscribe("waypoint_abs", 5, absPoseCallback);
-    speedSub = nh->subscribe("velocity", 2, sendSpeedCallback);
+	speedSub = nh->subscribe("velocity", 2, sendSpeedCallback);
   
   mousePosePub = nh->advertise<geometry_msgs::Pose2D>("mouse", 2);
   globalPosePub = nh->advertise<geometry_msgs::Pose2D>("pose", 2);
@@ -87,35 +106,40 @@ int main(int argc, char **argv){
   //shutterClient = nh->serviceClient<shutter::delta>("getDelta");
   setGlobalPoseServer = nh->advertiseService("set_pose", changeGlobalPose);
   ros::param::param<double>("rad",rad,0.14); //TODO, genauer Radius, messen Mitte- Räder-Bodenkontakt  
-
-int miceCount = 2;
-  pthread_t thread_t;
-    initCom();
-  
-    if(miceCount > 1)
-        pthread_create(&thread_t, 0, dualMouseReader, 0);
-      else
-        pthread_create(&thread_t, 0, singleMouseReader, 0);
-        /*
-      pthread_create(&thread_t, 0, infraredReader, 0);*/
-      
+	
+	initCom();
+	startReceivingSensorVals();
+	
   ros::spin();
 
 }
 
-void initCom() {
-
-	Communication* com;
-	com = new UARTCommunication();
-	proto(com);
-	proto.protocol_init();
-    proto.protocol_registerHandler(setDataValHandler);
-
-    proto.receiveData();	
-
+void initCom(){
+	UARTCommunication com;
+	proto = new ComProtocol(&com);
+	proto->protocol_init(defaultHandler);
+	proto->protocol_registerHandler(SensorData_DeltaVal, sensorValHandler);
 }
 
-void setDataValHandler(enum PROTOCOL_IDS id, unsigned char *data,
+void startReceivingSensorVals(){
+	pthread_create(&receiveThread_t, 0, receiveMethod, 0);
+}
+
+void* receiveMethod(void* data){
+#define schnauze 1
+	while(schnauze){
+		proto->receiveData();
+	}
+	return 0;
+}
+
+void defaultHandler(enum PROTOCOL_IDS id, unsigned char *data,
+		unsigned short size, Communication* com) {
+	cerr << "[hardware_driver] no handler specified for id: " << id << endl;
+	ROS_WARN_STREAM("[hardware_driver] no handler specified for id: " << id);
+}
+
+void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		unsigned short size, Communication* com) {
 
 	//std::cout <<"datavalHandler"<<std::endl;
@@ -140,10 +164,10 @@ void setDataValHandler(enum PROTOCOL_IDS id, unsigned char *data,
      //publish
 	//entweder fertig aufbereitet vom stm oder hier implementiert auf ein päärchen warten:
     
-    deltaPose.x = xAvg;
-    deltaPose.y = yAvg;
-    deltaPose.theta = theta;
-    pub.publish(deltaPose);
+    deltaPose.x = 0;//xAvg;
+    deltaPose.y = 0;//yAvg;
+    deltaPose.theta = 0;//theta;
+    globalPosePub.publish(deltaPose);
 
     std::cout << delta_vals->delta_x << std::endl;
 	std::cout << delta_vals->delta_y << std::endl;
@@ -213,7 +237,7 @@ void sendSpeedCallback(const geometry_msgs::Pose2D& msg) {
 	sersp.s1 = msg.x;
 	sersp.s2 = msg.y;
 	sersp.s3 = msg.theta;
-    proto.sendData(Servo, (unsigned char*) &sersp, sizeof(struct ServoSpeed));
+    proto->sendData(Servo, (unsigned char*) &sersp, sizeof(struct ServoSpeed));
 
 }
 
