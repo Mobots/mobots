@@ -1,3 +1,3 @@
 mobots_msgs/ID id
-string key
-string value
+int8 key
+int8 value

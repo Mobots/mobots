@@ -1,0 +1,161 @@
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src
+END
+stm32f10x_spi.c
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_spi.c
+END
+misc.c
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/misc.c
+END
+stm32f10x_it.c
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_it.c
+END
+system_stm32f10x.c
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/system_stm32f10x.c
+END
+stm32f10x_can.c
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_can.c
+END
+stm32f10x_flash.c
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_flash.c
+END
+stm32f10x_gpio.c
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_gpio.c
+END
+stm32f10x_rcc.c
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_rcc.c
+END
+stm32f10x_iwdg.c
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_iwdg.c
+END
+stm32f10x_crc.c
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_crc.c
+END
+stm32f10x_dbgmcu.c
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_dbgmcu.c
+END
+stm32f10x_dma.c
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_dma.c
+END
+stm32f10x_tim.c
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_tim.c
+END
+stm32f10x_sdio.c
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_sdio.c
+END
+stm32f10x_i2c.c
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_i2c.c
+END
+stm32f10x_adc.c
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_adc.c
+END
+stm32f10x_cec.c
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_cec.c
+END
+stm32f10x_rtc.c
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_rtc.c
+END
+stm32f10x_fsmc.c
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_fsmc.c
+END
+stm32f10x_usart.c
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_usart.c
+END
+stm32f10x_wwdg.c
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_wwdg.c
+END
+stm32f10x_dac.c
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_dac.c
+END
+stm32f10x_bkp.c
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_bkp.c
+END
+core_cm3.c
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/core_cm3.c
+END
+stm32f10x_exti.c
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_exti.c
+END
+stm32f10x_pwr.c
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/mobots/!svn/ver/3/stm32vl/stm32_lib/src/stm32f10x_pwr.c
+END

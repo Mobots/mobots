@@ -22,7 +22,7 @@
 poseT zeroPose{0,0,0,1};
 // Saves the last pose of each mobot
 std::map<int, poseT> deltaPoseBuffer;
-int currentSessionID = 0;
+int currentSessionID;
 ros::Publisher* relativePub;
 ros::Publisher* absolutePub;
 
@@ -140,7 +140,7 @@ bool imageHandlerOut(map_visualization::GetImageWithPose::Request &req, map_visu
     res.abs_pose.x = absPose.x;
     res.abs_pose.y = absPose.y;
     res.abs_pose.theta = absPose.theta;
-	}
+	
 	return true;
 }
 
@@ -165,6 +165,7 @@ int main(int argc, char **argv){
   const int mobotCount = 3;
 	// The node is called image_store_server
 	ros::init(argc, argv, "image_store");
+    currentSessionID = 0;
 	if(!ros::param::get("/sessionID", currentSessionID)){
 		currentSessionID = 0;
 		ROS_ERROR("%s /sessionID is not set, sessionID set to 0", __FILE__);
@@ -182,9 +183,9 @@ int main(int argc, char **argv){
 		std::stringstream ss;
 		ss << "/mobot" << i << "/featureset_pose_id";
 		featuresetSubs[i] = n.subscribe(ss.str(), 10, featureSetHandler);
-		ss = std::stringstream;
-		ss << "/mobot" << i << "/image_pose_id", 10;
-		deltaSubs[i] = n.subscribe(ss.str(), 10, imageDeltaPoseHandler);
+        std::stringstream ss2;
+		ss2 << "/mobot" << i << "/image_pose_id", 10;
+		deltaSubs[i] = n.subscribe(ss2.str(), 10, imageDeltaPoseHandler);
 	}
 	ros::Publisher relPub = n.advertise<mobots_msgs::ImageWithPoseAndID>("image_store_rel_pose", 10);
 	relativePub = &relPub;
