@@ -102,11 +102,14 @@ void absolutePoseHandler(const mobots_msgs::PoseAndID::ConstPtr& msg){
 		{0,0,0,0},
 		{0,0,0,0},
 		{msg->pose.x, msg->pose.y, msg->pose.theta, 1},
-		{0,0,""}
+		//{0,0,""}
 	};
+    infoData.image.width = 0;
+    infoData.image.height = 0;
+    infoData.image.encoding = "";
 	ImagePose imagePose(&infoData);
-	absolutePub->publish(*msg);
-	ros::spinOnce();
+	//absolutePub->publish(*msg);
+	//ros::spinOnce();
 	ROS_INFO("image_store: image saved: %i", msg->id.image_id);
 }
 
@@ -184,7 +187,7 @@ int main(int argc, char **argv){
 		ss << "/mobot" << i << "/featureset_pose_id";
 		featuresetSubs[i] = n.subscribe(ss.str(), 10, featureSetHandler);
         std::stringstream ss2;
-		ss2 << "/mobot" << i << "/image_pose_id", 10;
+		ss2 << "/mobot" << i << "/image_pose_id";
 		deltaSubs[i] = n.subscribe(ss2.str(), 10, imageDeltaPoseHandler);
 	}
 	ros::Publisher relPub = n.advertise<mobots_msgs::ImageWithPoseAndID>("image_store_rel_pose", 10);
