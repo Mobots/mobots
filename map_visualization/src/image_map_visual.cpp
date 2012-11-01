@@ -261,6 +261,7 @@ int ImageMapVisual::setImagePose(float poseX, float poseY, float poseTheta,
 	// Set the position (x and y)
 	Ogre::Vector3 vect(poseX, poseY, 0);
 	imageNode->setPosition(vect);
+    ROS_INFO("[Rviz] setImagePose: ()");
     return 0;
 }
 
@@ -355,7 +356,7 @@ Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID
 			Ogre::Quaternion::IDENTITY);
 		node = node->getChild(name);
 	}
-    ROS_INFO("[Rviz] get node: %s", name);
+    ROS_INFO("[Rviz] get node: %s", name.c_str());
 	return (Ogre::SceneNode*) node;
 }
 
@@ -375,12 +376,12 @@ Ogre::SceneNode* ImageMapVisual::findNode(int sessionID, int mobotID, int imageI
 	try{
         node = rootImageNode->getChild(name);
 	} catch(Ogre::Exception& e) {
-        ROS_INFO("[Rviz] find node: Error %s", name);
+        ROS_INFO("[Rviz] find node: Error %s", name.c_str());
 		return NULL;
 	}
 	// Get the specified mobot node
 	if(mobotID < 0){
-        ROS_INFO("[Rviz] find node: %s", name);
+        ROS_INFO("[Rviz] find node: %s", name.c_str());
 		return (Ogre::SceneNode*) node;
 	}
 	name += "m";
@@ -388,12 +389,12 @@ Ogre::SceneNode* ImageMapVisual::findNode(int sessionID, int mobotID, int imageI
 	try{
 		node = node->getChild(name);
 	} catch(Ogre::Exception& e) {
-        ROS_INFO("[Rviz] find node: Error %s", name);
+        ROS_INFO("[Rviz] find node: Error %s", name.c_str());
 		return NULL;
 	}
 	// Get the specified image node
 	if(imageID < 0){
-        ROS_INFO("[Rviz] find node: %s", name);
+        ROS_INFO("[Rviz] find node: %s", name.c_str());
 		return (Ogre::SceneNode*) node;
 	}
 	name += "i";
@@ -401,10 +402,10 @@ Ogre::SceneNode* ImageMapVisual::findNode(int sessionID, int mobotID, int imageI
 	try{
 		node = node->getChild(name);
 	} catch(Ogre::Exception& e) {
-        ROS_INFO("[Rviz] find node: Error %s", name);
+        ROS_INFO("[Rviz] find node: Error %s", name.c_str());
 		return NULL;
 	}
-    ROS_INFO("[Rviz] find node: %s", name);
+    ROS_INFO("[Rviz] find node: %s", name.c_str());
 	return (Ogre::SceneNode*) node;
 }
 
