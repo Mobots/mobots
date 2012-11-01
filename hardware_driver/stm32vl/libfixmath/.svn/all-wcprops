@@ -1,0 +1,95 @@
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/mobots/!svn/ver/3/stm32vl/libfixmath
+END
+fix16_trig_sin_lut.h
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/mobots/!svn/ver/3/stm32vl/libfixmath/fix16_trig_sin_lut.h
+END
+int64.h
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/mobots/!svn/ver/3/stm32vl/libfixmath/int64.h
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mobots/!svn/ver/3/stm32vl/libfixmath/Makefile
+END
+fix16_exp.c
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/mobots/!svn/ver/3/stm32vl/libfixmath/fix16_exp.c
+END
+uint32.c
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mobots/!svn/ver/3/stm32vl/libfixmath/uint32.c
+END
+fix16.c
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/mobots/!svn/ver/3/stm32vl/libfixmath/fix16.c
+END
+uint32.h
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mobots/!svn/ver/3/stm32vl/libfixmath/uint32.h
+END
+fix16.h
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/mobots/!svn/ver/3/stm32vl/libfixmath/fix16.h
+END
+fix16.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mobots/!svn/ver/3/stm32vl/libfixmath/fix16.hpp
+END
+fix16_trig.c
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mobots/!svn/ver/3/stm32vl/libfixmath/fix16_trig.c
+END
+fixmath.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mobots/!svn/ver/3/stm32vl/libfixmath/fixmath.h
+END
+fix16_sqrt.c
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mobots/!svn/ver/3/stm32vl/libfixmath/fix16_sqrt.c
+END
+fract32.c
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mobots/!svn/ver/3/stm32vl/libfixmath/fract32.c
+END
+libfixmath.cbp
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/mobots/!svn/ver/3/stm32vl/libfixmath/libfixmath.cbp
+END
+fract32.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mobots/!svn/ver/3/stm32vl/libfixmath/fract32.h
+END
