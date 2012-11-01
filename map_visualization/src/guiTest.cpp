@@ -111,7 +111,7 @@ void absPoseCallback(int mobotID, const mobots_msgs::Pose2DPrio& absPose){
 }
 
 int main(int argc, char **argv){
-  ros::init(argc, argv, "mobot simulaters");
+  ros::init(argc, argv, "mobot_simulaters");
   ros::NodeHandle nh;
 	for(int i = 0; i < 4; i++){
 		std::stringstream ss;
