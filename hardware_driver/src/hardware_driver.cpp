@@ -14,10 +14,10 @@
 #include "mobots_msgs/InfraredScan.h"
 #include "hardware_driver/ChangeGlobalPose.h"
 
-#include "include/ComProtocol.hpp"
-#include "include/UARTCommunication.hpp"
+#include "../stm32vl/Client/ComProtocol.hpp"
+#include "../stm32vl/Client/UARTCommunication.hpp"
+#include "../stm32vl/mousesensor.h"
 
-#include "include/mousesensor.h"
 using namespace std;
 
 //=== constants ===
