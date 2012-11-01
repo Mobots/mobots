@@ -102,7 +102,7 @@ void absolutePoseHandler(const mobots_msgs::PoseAndID::ConstPtr& msg){
 		{0,0,0,0},
 		{0,0,0,0},
 		{msg->pose.x, msg->pose.y, msg->pose.theta, 1},
-		{0,0,0}
+		{0,0,""}
 	};
 	ImagePose imagePose(&infoData);
 	absolutePub->publish(*msg);
