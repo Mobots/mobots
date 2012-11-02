@@ -8,6 +8,7 @@
 #include <vector>
 
 // The row in which the data is located in the vector
+// Has to be synced with map_visualization::image_map_display/visual
 static const int SESSION =  0;
 static const int MOBOT =    1;
 static const int ENABLED =  2;
