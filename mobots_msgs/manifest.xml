@@ -1,5 +1,5 @@
 <package>
-  <description brief="Custom messages for the MoBots project.">
+  <description brief="Custom messages and constants for the MoBots project.">
 
      The package mobots_msgs contains ROS message types, which are used
      in the MoBots project.
@@ -13,6 +13,10 @@
   <depend package="sensor_msgs"/> <!-- for CompressedImage.msg -->
   <depend package="geometry_msgs"/> <!-- for Pose.msg -->
   <!-- Or is the frame in the Image Header maybe enough (instead of Pose)? -->
+
+  <export>
+    <cpp cflags="-I${prefix}/include"/>
+  </export>
 
 </package>
 
