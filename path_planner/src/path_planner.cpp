@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <cmath>
+#include <stdio.h>
 
 /* global attributes */
 ros::Publisher nextPoseRel_1;
@@ -22,7 +23,7 @@ ros::Timer timerMobot_3;
 /* Mobot data structure for saving the state of one Mobot. */
 struct mobot{
   double x; //relative x position of the mobot
-  double y; //relative y position of the mobot
+  double y; //relative y position of the mobot (driving direction)
   double theta; //relative turning angle of the mobot
   int id; //mobot id
   bool userControlled; //is the mobot controlled by the user?
@@ -30,7 +31,9 @@ struct mobot{
   int timer; //timer for reactivating the mobots auto explore mode after an user command
 };
 
-struct mobot mobots[3];
+struct mobot mobots[3]; //array for saving the different Mobot states
+const double pi = 3.14159265; //pi for angle calculation
+
 /* Declaring the member functions.
  * Member functions for the Mobot control. */
 void moveMobot(int id, int direction);
@@ -38,7 +41,7 @@ void refreshPose(int id, geometry_msgs::Pose2D pose);
 bool nearly_equal(double a, double b, double eps);
 void stop(int id);
 void releasePose(int id, int prio, geometry_msgs::Pose2D pose);
-void wait(int duration);
+void wait(int duration, bool spin);
 int handleObstacle(int id, bool scan[6]);
 
 /* Member functions for the communication with the rest of our system. */
@@ -106,14 +109,14 @@ int main(int argc, char **argv){
   timerMobot_3 = nh.createTimer(ros::Duration(1), timerCallback3);
 
   /* Entering the event loop. If there is no obstacle or the user is not controlling the
-   * Mobot, it is driving straight till something occurs. */  
+   * Mobot, it is driving straight till something occurs. */
   while(ros::ok()){
-    for(int i = 0 ; i <= 2 ; i++){
+    for(int i = 0 ; i <= 2; i++){
       if(!mobots[i].userControlled && !mobots[i].obstacle){
 	moveMobot(mobots[i].id, 1);
       }   
     }
-    wait(3000);
+    wait(3000, true);    
   }
   //stopping the timers
   timerMobot_1.stop();
@@ -150,8 +153,8 @@ void moveMobot(int id, int direction){
   geometry_msgs::Pose2D nextPose;
     switch(dir){
       case 1: //driving straight
-	nextPose.x = 1000.0;
-	nextPose.y = 0.0;
+	nextPose.x = 0.0;
+	nextPose.y = 1000.0;
 	nextPose.theta = 0.0;
 	releasePose(id, -2, nextPose);
 	break;
@@ -159,49 +162,49 @@ void moveMobot(int id, int direction){
       case 2: //turning right 45°
 	nextPose.x = 0.0;
 	nextPose.y = 0.0;
-	nextPose.theta = 45.0;
+	nextPose.theta = -(pi/4);
 	releasePose(id, -2, nextPose);
 	break;
 	
       case 3: //turning left 45°
 	nextPose.x = 0.0;
 	nextPose.y = 0.0;
-	nextPose.theta = -45.0;
+	nextPose.theta = (pi/4);
 	releasePose(id, -2, nextPose);
 	break;
 	
       case 4: //turning right 90°
 	nextPose.x = 0.0;
 	nextPose.y = 0.0;
-	nextPose.theta = 90.0;
+	nextPose.theta = -(pi/2);
 	releasePose(id, -2, nextPose);
 	break;
 	
       case 5: //turning left 90°
 	nextPose.x = 0.0;
 	nextPose.y = 0.0;
-	nextPose.theta = -90.0;
+	nextPose.theta = (pi/2);
 	releasePose(id, -2, nextPose);
 	break;
 	
       case 6: //turning right 135°
 	nextPose.x = 0.0;
 	nextPose.y = 0.0;
-	nextPose.theta = 135.0;
+	nextPose.theta = -(3*pi/4);
 	releasePose(id, -2, nextPose);
 	break;
 	
       case 7: //turning left 135°
 	nextPose.x = 0.0;
 	nextPose.y = 0.0;
-	nextPose.theta = -135.0;
+	nextPose.theta = (3*pi/4);
 	releasePose(id, -2, nextPose);
 	break;
 	
      case 8: //turning 180°
 	nextPose.x = 0.0;
 	nextPose.y = 0.0;
-	nextPose.theta = 180.0;
+	nextPose.theta = pi;
 	releasePose(id, -2, nextPose);
 	break;
     }
@@ -259,12 +262,12 @@ void releasePose(int id, int prio, geometry_msgs::Pose2D pose){
   return;
 }
 
-/* Wait for the given duration in milliseconds and the ROS System
- * is spinning, handling the callback queue ten times a second. */
-void wait(int duration){
+/* Wait for the given duration in milliseconds. If the ROS System should spin,
+ * the parameter spin is true. If so, the callback queue is called 10 times a second. */
+void wait(int duration, bool spin){
   ros::Rate r(10);
   for(int i = 0 ; i <= (duration/100) && ros::ok() ; i++){
-    ros::spinOnce();      
+    if(spin) ros::spinOnce();      
     r.sleep();
   }
 }
@@ -323,13 +326,10 @@ void irCallback3(const mobots_msgs::InfraredScan& irScan){
 void irCallback(const mobots_msgs::InfraredScan& irScan, int id){
   bool scanBool[6];
   bool act = false;
-  for(int i = 0 ; i <= 5 ; i++){
-    scanBool[i] = (1 == irScan.data[i]) ? true : false; //boolean array for further handling of the obstacle 
-    if(i == 0 || i == 1 || i == 5){ //something in front of Mobot
-      if(scanBool[i]){
-	stop(id);
-	act = true;
-      }
+  for(int i = 0 ; i <= 5 ; i++){ //if one IR sensor is spotting something
+    if(scanBool[i] = (1 == irScan.data[i]) ? true : false){ //boolean array for further handling of the obstacle 
+      stop(id);
+      act = true;      
     }
   }
   if(act){
@@ -337,7 +337,7 @@ void irCallback(const mobots_msgs::InfraredScan& irScan, int id){
     ROS_INFO("Mobot %i dealing with obstacle", id);
     int dir = handleObstacle(id, scanBool); //generate new direction
     moveMobot(id, dir);	//move Mobot to avoid obstacle
-    ros::Duration(10).sleep(); //wait 10 seconds for excecuting the command
+    wait(10000, false); //wait 10 seconds for excecuting the command
     mobots[id-1].obstacle = false;
   }
 }
@@ -385,13 +385,13 @@ int handleObstacle(int id, bool scan[6]){
     int second; //second blocked direction
     for(int i = 0 ; i <= 5; i++){
       if(scan[i]){
-	diff++;
 	if(dirLeft == 2){
 	  first = i;
 	} else{
 	  second = i;
 	  break; //both directions found
 	}
+	diff++;
 	dirLeft--;	
       } else if(diff > 0){
 	diff++;
@@ -500,7 +500,7 @@ int handleObstacle(int id, bool scan[6]){
     }   
       
     if((!scan[0] && scan[1] && !scan[2] && scan[3] && !scan[4] && scan[5])
-      || (!scan[0] && !scan[1] && scan[2] && !scan[3] && scan[4] && !scan[5])){
+      || (scan[0] && !scan[1] && scan[2] && !scan[3] && scan[4] && !scan[5])){
       count = 6; //stuck go on to count = 6
     }
   }
@@ -512,13 +512,13 @@ int handleObstacle(int id, bool scan[6]){
     int second; //second direction
     for(int i = 0 ; i <= 5; i++){
       if(!scan[i]){
-	diff++;
 	if(dirLeft == 2){
 	  first = i;
 	} else{
 	  second = i;
 	  break; //both directions found
 	}
+	diff++;
 	dirLeft--; //one direction found -> decrement
       } else if(diff > 0){
 	diff++; //increment the difference
@@ -572,17 +572,17 @@ int handleObstacle(int id, bool scan[6]){
 	    newDir = 2; // right 45°
 	    break;    
 	}
-	ROS_INFO("Mobot %i turning in last direction possible", id);
+	ROS_INFO("Mobot %i turning in last direction possible", id+1);
 	return newDir;
       }
     }
   }
   
   if(count == 6){ //every direction is blocked
-    ROS_INFO("Mobot %i is stuck, please help", id);
+    ROS_INFO("Mobot %i is stuck, please help", id+1);
     ROS_INFO("waiting 30 seconds for Mobot to be set on another place");
-    ros::Duration(30).sleep();
-    ROS_INFO("Mobot %i is going on", id);
+    wait(30000, false);
+    ROS_INFO("Mobot %i is going on", id+1);
     return 0;
   }
   return 0;
@@ -611,7 +611,12 @@ bool keyReqCallback(path_planner::KeyboardRequest::Request& req, path_planner::K
   int id = req.mobot_id;
   if(id == 1 || id == 2 || id == 3){
     mobots[id-1].userControlled = en;
-    ROS_INFO("keyboard control switch granted for Mobot %i", id);
+    ROS_INFO("switching the keyboard control granted for Mobot %i", id);
+    if(en){
+      ROS_INFO("Mobot %i is controlled via keyboard", id);
+    } else{
+      ROS_INFO("Mobot %i is controlled by the system", id);
+    }
     res.enabled = en;
     return true;
   } else{
