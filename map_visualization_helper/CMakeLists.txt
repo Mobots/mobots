@@ -5,6 +5,7 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 set(ROS_BUILD_TYPE RelWithDebInfo)
 ## Setup the ROS libraries
 rosbuild_init()
+EXEC_PROGRAM("rosstack find mobots" OUTPUT_VARIABLE MOBOT_PATH)
 # set the default path for built executables to the "bin" directory
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 
@@ -32,5 +33,8 @@ rosbuild_add_executable(image_map_info
     ${qt_srcs} ${qt_moc_srcs} #${uis_h}
 )
 target_link_libraries(image_map_info ${QT_LIBRARIES})
+#----------Test Program----------#
+include_directories(${MOBOT_PATH}/map_visualization/include/)
 
+rosbuild_add_executable(test_image_map_info src/test_image_map_info.cpp)
 #rosbuild_link_boost(image_map_info bind)
