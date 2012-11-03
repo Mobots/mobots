@@ -1,27 +1,18 @@
 #include <fstream>
 #include <sys/stat.h>
-
+#include "mobots_util/util.h"
 #include "feature.h"
 #include "image_pose_data_types.h"
 
 namespace ser = ros::serialization;
 
-//
-static const char* HOME = getenv("HOME");
-
-static std::string getPathForIDT(const IDT id, const char* fileEnding){
-  std::stringstream ss;
-  ss << HOME << "/session-" << id.sessionID << "/mobot-" << id.mobotID << "-" << id.imageID << fileEnding;
-  return ss.str();
-}
-
 bool FeatureStore::loadFeatureSet(const IDT& idt, mobots_msgs::FeatureSetWithPoseAndID& featureSet){
-  std::string path = getPathForIDT(idt, "");
+  std::string path = mobots_util::image_store::getPathForID(idt.sessionID, idt.mobotID, idt.imageID, ".feature");
   struct stat filestatus;
   stat(path.c_str(), &filestatus);
   long size = filestatus.st_size;
   std::ifstream in;
-  in.open(getPathForIDT(idt, "").c_str(), std::ios::binary);
+  in.open(path.c_str(), std::ios::binary);
   if(!in)
 	 return false;
   unsigned char* data = new unsigned char[size];
@@ -43,7 +34,7 @@ bool FeatureStore::saveFeatureSet(const mobots_msgs::FeatureSetWithPoseAndID& fe
   idt.sessionID = featureSet.id.session_id;
   idt.imageID = featureSet.id.image_id;
   std::ofstream out;
-  out.open(getPathForIDT(idt, "").c_str(), std::ios::binary);
+  out.open(mobots_util::image_store::getPathForID(idt.sessionID, idt.mobotID, idt.imageID, ".feature").c_str(), std::ios::binary);
   if(!out)
 	 return false;
   out.write((const char*) data, serial_size);
