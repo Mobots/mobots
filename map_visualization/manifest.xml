@@ -12,6 +12,7 @@
   <depend package="cv_bridge"/>
   <depend package="image_transport"/>
   <depend package="rviz"/>
+    <depend package="mobots_common"/>
   <export>
     <rosdoc config="${prefix}/rosdoc.yaml"/>
     <rviz plugin="${prefix}/plugin_description.xml"/>
