@@ -1,37 +1,21 @@
 #include "hardware_driver.h"
+#include "mobots_common/utils.h"
 
 using namespace std;
-
-
-//==== method declarations ====
 
 int main(int argc, char** argv)
 {
 ros::init(argc, argv, "hardware_driver");
-Hardware_driver Hardware_driver(0);
-}
-
-Hardware_driver::Hardware_driver(int mobot_ID):mobotID(mobot_ID) 			//Konstruktor Weg
-{
   nh = new ros::NodeHandle;
-  if(!util::parseNamespace(nh->getNamespace(), mobotID))
-    ROS_ERROR("%s mobotID cannot be parsed from namespace: %s", __PRETTY_FUNCTION__);
-  Hardware_driver::startWeg();
+  if(!mobots_common::utils::parseNamespace(nh->getNamespace(), mobotID))
+    ROS_ERROR("%s mobotID cannot be parsed from namespace: %s", __PRETTY_FUNCTION__, nh->getNamespace().c_str());
+  startWeg();
 }
-
-Hardware_driver::~Hardware_driver()				//Destruktor
-{
-  delete nh;
-}
-
-
-
 
 //== begin methods ==
 
-void Hardware_driver::startWeg()
-    {
-  ros::init(argc, argv, "hardware_driver");
+void startWeg()
+{
   nh = new ros::NodeHandle;
 
   //shutterClient = nh->serviceClient<shutter::delta>("getDelta");
@@ -51,7 +35,7 @@ void Hardware_driver::startWeg()
 
     //Services
       client = nh->serviceClient<shutter::delta>("getDelta");
-      service = nh->advertiseService("setGlobalPose", &hardware_driver::ChangeGlobalPose,this);
+      service = nh->advertiseService("setGlobalPose", changeGlobalPose);
 
     //Parameter übernehmen
     ros::param::param<double>("sBrems",sBrems,0.2);
@@ -77,27 +61,26 @@ void Hardware_driver::startWeg()
   }
 
 
-void Hardware_driver::initCom(){
-	UARTCommunication com;
+void initCom(){
 	proto = new ComProtocol(&com);
 	proto->protocol_init(defaultHandler);
 	proto->protocol_registerHandler(SensorData_DeltaVal, sensorValHandler);
 }
 
-void* Hardware_driver::receiveMethod(void* data){
+void* receiveMethod(void* data){
     while(1){
 		proto->receiveData();
 	}
 	return 0;
 }
 
-void Hardware_driver::defaultHandler(enum PROTOCOL_IDS id, unsigned char *data,
+void defaultHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		unsigned short size, Communication* com) {
 	cerr << "[hardware_driver] no handler specified for id: " << id << endl;
 	ROS_WARN_STREAM("[hardware_driver] no handler specified for id: " << id);
 }
 
-void Hardware_driver::sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
+void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		unsigned short size, Communication* com) {
 
 	//std::cout <<"datavalHandler"<<std::endl;
@@ -122,14 +105,16 @@ void Hardware_driver::sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data
      //publish
 	//entweder fertig aufbereitet vom stm oder hier implementiert auf ein päärchen warten:
     
-    deltaPose.x = delta_vals->;//xAvg;
+    /*deltaPose.x = delta_vals->;//xAvg;
     deltaPose.y = 0;//yAvg;
-    deltaPose.theta = 0;//theta;
-    globalPosePub.publish(deltaPose);
+    deltaPose.theta = 0;//theta;*/
+				//TODO globalPose aktualisieren
+    globalPosePub.publish(globalPose); //evtl paar mal integrieren und dann publishen
 
     std::cout << delta_vals->delta_x << std::endl;
-	std::cout << delta_vals->delta_y << std::endl;
+		std::cout << delta_vals->delta_y << std::endl;
     regel();
+
 }
 
 /*
@@ -152,7 +137,7 @@ void* infraredReader(void* data){
   # prio == -2: pose am ende der liste einfügen
   # prio == sonst: pose an der prio-position einfügen
 */
-void Hardware_driver::absPoseCallback(const mobots_msgs::Pose2DPrio& next_pose){
+void absPoseCallback(const mobots_msgs::Pose2DPrio& next_pose){
   switch(next_pose.prio){
 	 case -2: 
 		targetPoses.push_back(next_pose.pose);
@@ -179,7 +164,7 @@ void Hardware_driver::absPoseCallback(const mobots_msgs::Pose2DPrio& next_pose){
 }
 
 
-void Hardware_driver::relPoseCallback(const mobots_msgs::Pose2DPrio& msg){
+void relPoseCallback(const mobots_msgs::Pose2DPrio& msg){
   mobots_msgs::Pose2DPrio next;
   next.pose = globalPose;
   double cost = cos(next.pose.theta);
@@ -201,7 +186,7 @@ void Hardware_driver::relPoseCallback(const mobots_msgs::Pose2DPrio& msg){
  * Node überprüft werden, der dann auch das Delta vom shutter besorgen  und bereits
  * aufadiert an diesen Node weitergeben sollte
  *****************************************************************************************/
-bool Hardware_driver::changeGlobalPose(hardware_driver::ChangeGlobalPose::Request& req,
+bool changeGlobalPose(hardware_driver::ChangeGlobalPose::Request& req,
 							 hardware_driver::ChangeGlobalPose::Response& res){
   /*shutter::delta srv;
   if (1client.call(srv))
@@ -229,15 +214,20 @@ bool Hardware_driver::changeGlobalPose(hardware_driver::ChangeGlobalPose::Reques
 *
 *
 **************************************************************************************/
-void Hardware_driver::regel()
+void regel()
 {
-    double eX =  sollS.x - globalPose.x;
-    double eY =  sollS.y - globalPose.y;
-    double eTheta =  sollS.theta - globalPose.theta;
-    if (eX < minS && eY < minS && eTheta*radiusInnen < minDegree*(M_PI * radiusInneniusInnen / 180))
+    double eX =  currentTargetPose.x - globalPose.x;
+    double eY =  currentTargetPose.y - globalPose.y;
+    double eTheta =  currentTargetPose.theta - globalPose.theta;
+    if (eX < minS && eY < minS && eTheta*radiusInnen < minDegree*(M_PI * radiusInnen / 180))
     { //Ziel erreicht
-       Pose p={0,0,0};
-       listManage(p,-2);
+       //geometry_msgs::Pose2D p={0,0,0};
+			targetPoses.pop_front(); //aktuelles ziel erreicht => aus liste löschen
+			if(!targetPoses.empty())
+				currentTargetPose = targetPoses.front();
+			else
+				currentTargetPose = globalPose; //bleiben wir halt stehn
+			return;
     }
     if (true || (wayType == STIFF) || (wayType == FAST)) //TODO
     {
@@ -257,7 +247,7 @@ void Hardware_driver::regel()
 * bParam skaliert auf den gewünschten Bremsweg hoch, dieser kann durch bmax begrenzt werden.
 * V wird metrisch verrechnet.
 */
-double Hardware_driver::regelFkt(double e)
+double regelFkt(double e)
 {
 if (e>0) {
  double d = pow(e*bParam, 1.0/rootParam);
@@ -275,11 +265,8 @@ if (e<0) {
 /*
  * Linear steigende Regelfunktion, Steigung dParam.
  * */
-double Hardware_driver::regelFktDreh(double e)
+double regelFktDreh(double e)
 {
- double d = e*dParam*radiusInneniusInnen;		//von bogenmaß auf bahngeschwindigkeit
+ double d = e*dParam*radiusInnen;		//von bogenmaß auf bahngeschwindigkeit //TODO so war das vorher  e*dParam*=radiusInnen;
  return (d>(vMax/4.0)) ? vMax/4.0 : ((d<(-(vMax/4.0))) ? -vMax/4.0 :d);
-}
-
-
 }

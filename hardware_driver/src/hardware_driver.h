@@ -16,36 +16,27 @@
 #include "mobots_msgs/Pose2DPrio.h"
 #include "mobots_msgs/InfraredScan.h"
 #include "hardware_driver/ChangeGlobalPose.h"
+#include "shutter/delta.h"
 
+#include "../stm32vl/Client/Communication.hpp"
 #include "../stm32vl/Client/ComProtocol.hpp"
 #include "../stm32vl/Client/UARTCommunication.hpp"
 #include "../stm32vl/mousesensor.h"
 
-typedef struct{
+/*typedef struct{
   double x,y,theta;
-} Pose;
+} Pose;*/
+//typedef geometry_msgs::Pose2D Pose;
 typedef enum{STIFF,FAST} way;
-
-
-
-class Hardware_driver{
-
-public:
-    Hardware_driver(int mobot_ID);
-    ~Hardware_driver();
 
   // TODO potentielles Laufzeitproblem: TORO-Laufzeit länger als ein "Shutter"==> getdelta bezieht sich auf ein falsches Bild
 
     //Service später einfügen
-    bool changeGlobalPose(path_controller::ChangeGlobalPose::Request &req, path_controller::ChangeGlobalPose::Response &res);
+    bool changeGlobalPose(hardware_driver::ChangeGlobalPose::Request &req, hardware_driver::ChangeGlobalPose::Response &res);
 
     //Publisher
     void publishGlobalPose(const geometry_msgs::Pose2D &pose2D);
-
-private:
-  /* Auf dem Stack allokieren geht nicht, weil dann wird es vor ros::init erzeugt,
-    * Achtung: wird das letzte NodeHandle deallokiert, wird der Node heruntergefahren,
-    * die Benutzung von publisher/subscriber führt dann zu nicht nachvollziehbaren SegFaults. -_- */
+	
     /**
      * Receives (absolute) waypoints with a priority      */
     void absPoseCallback(const mobots_msgs::Pose2DPrio&);
@@ -74,8 +65,6 @@ private:
     //Subscriber
     void poseCallback(const mobots_msgs::Pose2DPrio &next_pose);
     void poseStampedCallback(const geometry_msgs::PoseStamped& next_pose);
-    void absPoseCallback(const mobots_msgs::Pose2DPrio& next_pose);
-    void relPoseCallback(const mobots_msgs::Pose2DPrio& msg);
 
     double regelFkt(double e);
     double regelFktDreh(double e);
@@ -83,11 +72,10 @@ private:
     void regel();
 
     // -- values in Hz --
-    int mouseFrequency = 10;
-    int infraredFrequency = 10;
+    int mouseFrequency;
 
     geometry_msgs::Pose2D globalPose, currentTargetPose;
-    list<geometry_msgs::Pose2D> targetPoses;
+    std::list<geometry_msgs::Pose2D> targetPoses;
 
 
     ros::Subscriber nextPoseSubRel, nextPoseSubAbs, speedSub;
@@ -95,7 +83,7 @@ private:
     ros::ServiceClient shutterClient;
     ros::ServiceServer setGlobalPoseServer;
     ComProtocol *proto;
-    double radiusInnen;
+		UARTCommunication com;
     bool received;
     pthread_t receiveThread_t;
 
@@ -107,15 +95,11 @@ private:
     ros::ServiceClient client;
     ros::ServiceServer service;
     shutter::delta srv;
-
-      Pose globalPose, sollS;
-      Pose next,best;
-      std::list<Pose> list;
+		
       way wayType;
       double sBrems,bParam,vParam,dParam,rootParam, radiusInnen, vMax, minS, minDegree;
 
       int mobotID;
 
-};
 
 #endif // HARDWARE_DRIVER_H
