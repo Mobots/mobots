@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
 				moveMobot(mobots[i].id, 1);
 			}
 		}
-		wait(20000, true);
+		wait(10000, true);
 	}
 	//stopping the timers
 	timerMobot_1.stop();
