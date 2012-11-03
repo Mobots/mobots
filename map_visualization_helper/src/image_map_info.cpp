@@ -31,12 +31,24 @@ ImageMapInfo::ImageMapInfo(int argc, char** argv, QWidget *parent)
     window->setWindowTitle("Image Map Info");
     window->show();
 
-    waypoint.start();
+    // Running ROS communication in a thread
+    QThread* thread = new QThread;
+    ImageMapWaypoint* waypoint = new ImageMapWaypoint(argc, argv);
+    waypoint->moveToThread(thread);
+    // Thread/Waypoint Connections
+    QObject::connect(waypoint, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+    QObject::connect(thread, SIGNAL(started()), waypoint, SLOT(process()));
+    QObject::connect(waypoint, SIGNAL(finished()), thread, SLOT(quit()));
+    QObject::connect(waypoint, SIGNAL(finished()), waypoint, SLOT(deleteLater()));
+    QObject::connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+    thread->start();
+
     // TODO connect updateRviz
-    QObject::connect(&waypoint, SIGNAL(dataChanged(int,int,int,int)),
+    // Model/Waypoint connections
+    QObject::connect(waypoint, SIGNAL(dataChanged(int,int,int,int)),
                      &model, SLOT(updateData(int,int,int,int)));
     QObject::connect(waypointComboBox, SIGNAL(currentIndexChanged(QString)),
-                     &waypoint, SLOT(setActiveMobot(QString)));
+                     waypoint, SLOT(setActiveMobot(QString)));
     QObject::connect(&model, SIGNAL(addWaypointMobot(int)),
                      this, SLOT(addWaypointMobot(int)));
     QObject::connect(&model, SIGNAL(removeWaypointMobot(int)),
