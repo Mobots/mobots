@@ -10,7 +10,8 @@
   <depend package="roscpp" />
   <depend package="geometry_msgs" />
   <depend package="mobots_msgs" />
-	<depend package="path_planner" />
+  <depend package="path_planner" />
+  <depend package="shutter" />
   <url>http://ros.org/wiki/hardware_driver</url>
 
 </package>
