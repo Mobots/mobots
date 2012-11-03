@@ -176,7 +176,10 @@ int main(int argc, char **argv){
 	for(int i = 0; i < mobotCount; i++){
 		std::stringstream stream;
 		stream << "mkdir $HOME/mobots-data/session-" << currentSessionID << "/mobot-" << i;
-		system(stream.str().c_str());
+		boost::filesystem::path dir(stream.str());
+		if(!boost::filesystem::create_directory(dir)){
+			ROS_ERROR("%s in %s cannot create mobots data dir: %s", __PRETTY_FUNCTION__, __FILE__,  stream.str().c_str());
+		}
 	}
 
 	ros::NodeHandle n;
