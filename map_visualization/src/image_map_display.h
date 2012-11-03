@@ -22,11 +22,10 @@
 
 #include "mobots_msgs/ImageWithPoseAndID.h"
 #include "mobots_msgs/PoseAndID.h"
+
 #include "map_visualization/GetImageWithPose.h"
-
 #include "image_map_visual.h"
-
-#define MOBOT_TOPIC_BASE "/mobot"
+#include "../include/definitions.h"
 
 namespace Ogre
 {
