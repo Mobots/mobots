@@ -18,6 +18,10 @@ namespace mobots_common {
      */
     std::string getPathForID(const int sessionID, const int mobotID, const int imageID, const char* fileEnding);
 
+		/**
+		 * creates the dirs where images and features are saved for a given sessionID
+		 * returns false on failure
+		 */
     bool createDirs(const int sessionID);
   };
 };

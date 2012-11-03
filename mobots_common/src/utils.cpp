@@ -23,7 +23,7 @@ bool mobots_common::utils::parseNamespace(const std::string& nspace, int& mobotI
 }
 
 static const char* HOME = getenv("HOME");
-static std::string base = std::string(HOME)+std::string("mobots-data");
+static std::string base = std::string(HOME)+std::string("/mobots-data");
 
 std::string mobots_common::utils::getPathForID(const int sessionID, const int mobotID, const int imageID, const char* fileEnding){
   std::stringstream ss;
@@ -32,12 +32,14 @@ std::string mobots_common::utils::getPathForID(const int sessionID, const int mo
 }
 
 bool mobots_common::utils::createDirs(int sessionID){
-	for(int i = 0; i < 3; i++){
+	for(int i = 0; i < mobots_common::constants::mobot_count; i++){
 		std::stringstream stream;
-		stream << "mkdir $HOME/mobots-data/session-" << sessionID << "/mobot-" << i;
+		stream << "mkdir -p $HOME/mobots-data/session-" << sessionID << "/mobot-" << i;
 		system(stream.str().c_str());
 		struct stat filestatus;
-		if(stat(stream.str().c_str(), &filestatus) == -1)
+		std::stringstream ss;
+		ss << base << "/session-" << sessionID << "/mobot-" << i;
+		if(stat(ss.str().c_str(), &filestatus) == -1)
 			return false;
 	}
 	return true;

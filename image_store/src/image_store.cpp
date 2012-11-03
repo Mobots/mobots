@@ -172,10 +172,10 @@ int main(int argc, char **argv){
     currentSessionID = 0;
 	if(!ros::param::get("/sessionID", currentSessionID)){
 		currentSessionID = 0;
-		ROS_ERROR("%s /sessionID is not set, sessionID set to 0", __FILE__);
+		ROS_WARN("%s /sessionID is not set, sessionID set to 0", __FILE__);
 	}
 	if(!mobots_common::utils::createDirs(currentSessionID)){
-		ROS_ERROR("%s in %s cannot mobot data dirs for session %d", __PRETTY_FUNCTION__, __FILE__, currentSessionID);
+		ROS_ERROR("%s in %s cannot create mobot data dirs for session %d", __PRETTY_FUNCTION__, __FILE__, currentSessionID);
 		exit(1);
 	}
 	
@@ -189,7 +189,7 @@ int main(int argc, char **argv){
 		std::stringstream ss;
 		ss << "/mobot" << i << "/featureset_pose_id";
 		featuresetSubs[i] = n.subscribe(ss.str(), 10, featureSetHandler);
-        std::stringstream ss2;
+		std::stringstream ss2;
 		ss2 << "/mobot" << i << "/image_pose_id";
 		deltaSubs[i] = n.subscribe(ss2.str(), 10, imageDeltaPoseHandler);
 	}
