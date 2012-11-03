@@ -6,5 +6,5 @@ bin/
 lib/
 msg_gen/
 srv_gen/
-.kdev*
+*.kdev*
 *.pro
