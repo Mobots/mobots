@@ -1,11 +1,11 @@
-#include <string>
 #include <stdlib.h>
+#include <sstream>
 #include <mobots_util/util.h>
 
 
 bool mobots_util::parseNamespace(const std::string& nspace, int& mobotID){
   std::string mobot("mobot");
-  int pos = nspace.find(mobot);
+  size_t pos = nspace.find(mobot);
   if(pos == std::string::npos)
     return false;
   char c = nspace.at(pos+mobot.size());
