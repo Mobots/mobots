@@ -30,7 +30,7 @@ void Shutter::startShutter()
     ROS_INFO("[%s] Mobot %d: Shutterfunktion gestartet.", __PRETTY_FUNCTION__, mobotID);
     poseImage_pub = nh.advertise<mobots_msgs::ImageWithPoseAndID>("image_pose_id", 2);
 
-  //  image_sub = nh.subscribe("usb_cam/image_raw", 5, &Shutter::imageCallback, this);
+    image_sub = nh.subscribe("usb_cam/image_raw", 5, &Shutter::imageCallback, this);
     pose_sub = nh.subscribe("mouse", 100, &Shutter::mouseCallback, this);
 
     ros::ServiceServer service = nh.advertiseService("getDelta", &Shutter::getDelta, this);
