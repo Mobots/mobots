@@ -28,28 +28,33 @@ void ImageMapWaypoint::run(){
     if ( ! ros::master::check() ) {
         return;
     }
+    ROS_INFO("[Map_Visualization_Helper] running");
     // explicitly needed since our nodehandle is going out of scope.
     ros::start();
     ros::NodeHandle nh_;
     nh = &nh_;
     subscribe();
 
-    ros::spin();
+    start();
 }
 
 void ImageMapWaypoint::subscribe(){
+    ROS_INFO("[Map_Visualization_Helper] subscribing");
     // Input: User Waypoints from Rviz
     ros::Subscriber poseRelaySub_ = nh->subscribe("/image_map/pose", 10,
             &ImageMapWaypoint::poseRelayHandler, this);
     poseRelaySub = &poseRelaySub_;
+
     // Output: User Waypoints to path_planner
     ros::Publisher poseRelayPub_ = nh->advertise
             <mobots_msgs::PoseAndID>("/path_planner/waypoint_user", 10);
     poseRelayPub = &poseRelayPub_;
+
     // Input: Update data in the table
     ros::Subscriber updateInfoSub_ = nh->subscribe("/image_map/update_push", 10,
             &ImageMapWaypoint::updateInfoHandler, this);
     updateInfoSub = &updateInfoSub_;
+
     // Input/Output: Update state in the Rviz 3D scene
     ros::ServiceClient updateRvizClient_ = nh->serviceClient
             <map_visualization::RemoteProcedureCall>("/image_map/rpc");
@@ -83,6 +88,7 @@ void ImageMapWaypoint::poseRelayHandler(const geometry_msgs::PoseStamped::ConstP
              msgIn->pose.orientation.x, msgIn->pose.orientation.y, msgIn->pose.orientation.z,
              msgIn->pose.orientation.w, msgOut.pose.theta * 180 / PI);
     poseRelayPub->publish(msgOut);
+    ros::spinOnce();
     return;
 }
 
@@ -93,17 +99,17 @@ void ImageMapWaypoint::updateInfoHandler(const mobots_msgs::IDKeyValue::ConstPtr
     return;
 }
 
-int ImageMapWaypoint::updateRviz(std::string function, std::string operands){
+int ImageMapWaypoint::updateRviz(int function, std::string operands){
     ROS_INFO("[updateRviz]");
     map_visualization::RemoteProcedureCall srv;
     srv.request.function = function;
     srv.request.operands = operands;
 
     if (updateRvizClient->call(srv)){
-        ROS_INFO("Called Rviz: %s(%s) = %i", function.c_str(), operands.c_str(),
+        ROS_INFO("Called Rviz: %i(%s) = %i", function, operands.c_str(),
                 srv.response.result);
     } else {
-        ROS_ERROR("Call Rviz failed: %s(%s) = %i", function.c_str(),
+        ROS_ERROR("Call Rviz failed: %i(%s) = %i", function,
                 operands.c_str(), srv.response.result);
         return -1;
     }
