@@ -12,6 +12,7 @@
   <depend package="image_transport"/>
   <depend package="rviz"/>
   <depend package="map_visualization"/>
+	<depend package="mobots_util" />
   <export>
     <rosdoc config="${prefix}/rosdoc.yaml"/>
   </export>
