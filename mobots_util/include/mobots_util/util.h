@@ -16,7 +16,7 @@ namespace image_store{
 	/**
 	 * returns the path for something to save
 	 */
-	static std::string getPathForID(const int sessionID, const int mobotID, const int imageID, const char* fileEnding);
+	std::string getPathForID(const int sessionID, const int mobotID, const int imageID, const char* fileEnding);
 }
 
 };
