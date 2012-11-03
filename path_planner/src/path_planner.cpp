@@ -114,10 +114,10 @@ int main(int argc, char **argv) {
 	while (ros::ok()) {
 		for (int i = 0; i <= 2; i++) {
 			if (!mobots[i].userControlled && !mobots[i].obstacle) {
-				moveMobot(mobots[i].id, 3);
+				moveMobot(mobots[i].id, 1);
 			}
 		}
-		wait(3000, true);
+		wait(5000, true);
 	}
 	//stopping the timers
 	timerMobot_1.stop();
@@ -154,7 +154,7 @@ void moveMobot(int id, int direction) {
 	switch (dir) {
 	case 1: //driving straight
 		nextPose.x = 0.0;
-		nextPose.y = 1000.0;
+		nextPose.y = 10.0;
 		nextPose.theta = 0.0;
 		releasePose(id, -2, nextPose);
 		break;
@@ -614,8 +614,8 @@ bool keyReqCallback(path_planner::KeyboardRequest::Request& req,
 		path_planner::KeyboardRequest::Response& res) {
 	bool en = req.enable;
 	int id = req.mobot_id;
-	if (id == 1 || id == 2 || id == 3) {
-		mobots[id - 1].userControlled = en;
+	if (id == 0 || id == 1 || id == 2) {
+		mobots[id].userControlled = en;
 		ROS_INFO("switching the keyboard control granted for Mobot %i", id);
 		if (en) {
 			ROS_INFO("Mobot %i is controlled via keyboard", id);
