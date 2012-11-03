@@ -30,8 +30,8 @@ ImageMapVisual::~ImageMapVisual()
  * @Notes All resources are named;enabling a clean deletion
  * TODO variable image resolution
  */
-int ImageMapVisual::insertImage(float poseX, float poseY, float poseTheta,
-    int sessionID, int mobotID,	int imageID, cv::Mat mat)
+int ImageMapVisual::insertImage(int sessionID, int mobotID,	int imageID,
+        float poseX, float poseY, float poseTheta, cv::Mat mat)
 {
 	// Get the node to which the image is assigned to
 	Ogre::SceneNode* imageNode = getNode(sessionID, mobotID, imageID);
@@ -160,7 +160,7 @@ int ImageMapVisual::insertImage(float poseX, float poseY, float poseTheta,
 		}
 	}
 	manual_object_->end();
-    setImagePose(poseX, poseY, poseTheta, sessionID, mobotID, imageID);
+    setImagePose(sessionID, mobotID, imageID, poseX, poseY, poseTheta);
 	return 0;
 }
 
