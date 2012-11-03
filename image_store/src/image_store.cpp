@@ -17,6 +17,7 @@
 #include "mobots_msgs/ImageWithPoseAndID.h"
 #include "mobots_msgs/PoseAndID.h"
 #include "mobots_msgs/FeatureSetWithPoseAndID.h"
+#include <mobots_util/util.h>
 
 // The NULL pose
 poseT zeroPose{0,0,0,1};
@@ -173,15 +174,11 @@ int main(int argc, char **argv){
 		currentSessionID = 0;
 		ROS_ERROR("%s /sessionID is not set, sessionID set to 0", __FILE__);
 	}
-	for(int i = 0; i < mobotCount; i++){
-		std::stringstream stream;
-		stream << "mkdir $HOME/mobots-data/session-" << currentSessionID << "/mobot-" << i;
-		boost::filesystem::path dir(stream.str());
-		if(!boost::filesystem::create_directory(dir)){
-			ROS_ERROR("%s in %s cannot create mobots data dir: %s", __PRETTY_FUNCTION__, __FILE__,  stream.str().c_str());
-		}
+	if(!mobots_util::image_store::createDirs(currentSessionID)){
+		ROS_ERROR("%s in %s cannot mobot data dirs for session %d", __PRETTY_FUNCTION__, __FILE__, currentSessionID);
+		exit(1);
 	}
-
+	
 	ros::NodeHandle n;
 	// To save images: image_store_save
 	// To get images: image_store_get

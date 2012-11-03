@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <sstream>
+#include <sys/stat.h>
 #include <mobots_util/util.h>
 
 
@@ -27,4 +28,16 @@ std::string mobots_util::image_store::getPathForID(const int sessionID, const in
   std::stringstream ss;
   ss << base << "/session-" << sessionID << "/mobot-" << mobotID << "/" << imageID << fileEnding;
   return ss.str();
+}
+
+bool mobots_util::image_store::createDirs(int sessionID){
+	for(int i = 0; i < 3; i++){
+		std::stringstream stream;
+		stream << "mkdir $HOME/mobots-data/session-" << sessionID << "/mobot-" << i;
+		system(stream.str().c_str());
+		struct stat filestatus;
+		if(stat(stream.str().c_str(), &filestatus) == -1)
+			return false;
+		return true;
+	}
 }
