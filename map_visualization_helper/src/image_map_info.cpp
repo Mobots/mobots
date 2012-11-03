@@ -36,7 +36,7 @@ ImageMapInfo::ImageMapInfo(int argc, char** argv, QWidget *parent)
     ImageMapWaypoint* waypoint = new ImageMapWaypoint(argc, argv);
     waypoint->moveToThread(thread);
     // Thread/Waypoint Connections
-    QObject::connect(waypoint, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+    // TODO clean shutdown through gui quit
     QObject::connect(thread, SIGNAL(started()), waypoint, SLOT(process()));
     QObject::connect(waypoint, SIGNAL(finished()), thread, SLOT(quit()));
     QObject::connect(waypoint, SIGNAL(finished()), waypoint, SLOT(deleteLater()));
@@ -45,8 +45,10 @@ ImageMapInfo::ImageMapInfo(int argc, char** argv, QWidget *parent)
 
     // TODO connect updateRviz
     // Model/Waypoint connections
-    QObject::connect(waypoint, SIGNAL(dataChanged(int,int,int,int)),
-                     &model, SLOT(updateData(int,int,int,int)));
+    QObject::connect(&model, SIGNAL(tableChanged(int,int,int,int)),
+                     waypoint, SLOT(updateRviz(int,int,int,int)));
+    QObject::connect(waypoint, SIGNAL(rvizChanged(int,int,int,int)),
+                     &model, SLOT(updateTable(int,int,int,int)));
     QObject::connect(waypointComboBox, SIGNAL(currentIndexChanged(QString)),
                      waypoint, SLOT(setActiveMobot(QString)));
     QObject::connect(&model, SIGNAL(addWaypointMobot(int)),
@@ -55,7 +57,6 @@ ImageMapInfo::ImageMapInfo(int argc, char** argv, QWidget *parent)
                      this, SLOT(removeWaypointMobot(int)));
     QObject::connect(&model, SIGNAL(clearWaypointMobot()),
                      waypointComboBox, SLOT(clear()));
-
 }
 
 void ImageMapInfo::addWaypointMobot(int mobotID){

@@ -5,7 +5,7 @@
 #include <mobots_msgs/IDKeyValue.h>
 #include <map_visualization/RemoteProcedureCall.h>
 #include <iostream>
-#include <definitions.h>
+#include <map_visualization/definitions.h>
 
 ros::NodeHandle* nh;
 ros::Subscriber* poseRelayTestSub;
@@ -23,21 +23,24 @@ void updateInfoTest(){
     msg.id.session_id = 0;
     msg.id.mobot_id = 0;
     msg.id.image_id = 0;
+    int a;
     std::cout << "Enter the session:" << std::endl;
-    std::cin >> msg.id.session_id;
-    std::cout << "Enter the value:" << std::endl;
-    std::cin >> msg.id.mobot_id;
-    ros::Rate rate_limit(1);
+    std::cin >> a;
+    msg.id.session_id = a;
+    std::cout << "Enter the mobot:" << std::endl;
+    std::cin >> a;
+    msg.id.mobot_id = a;
     while(ros::ok()){
         msg.id.mobot_id %= 3;
         std::cout << "Enter the key:" << std::endl;
-        std::cin >> msg.key;
+        std::cin >> a;
+        msg.key = a;
         std::cout << "Enter the value:" << std::endl;
-        std::cin >> msg.value;
+        std::cin >> a;
+        msg.value = a;
         updateInfoTestPub->publish(msg);
         ROS_INFO("spin");
         ros::spinOnce();
-        rate_limit.sleep();
         msg.id.mobot_id++;
     }
     ROS_INFO("updateInfoTest");
@@ -45,56 +48,57 @@ void updateInfoTest(){
 
 bool updateRvizTest(map_visualization::RemoteProcedureCall::Request &req,
                     map_visualization::RemoteProcedureCall::Response &res){
+    ROS_INFO("[updateRvizTest]");
     int function = req.function;
     switch(function){
-    case INSERTIMAGE:
+    case INSERT_IMAGE:
         ROS_INFO("a");
         break;
-    case SHOWIMAGE:
+    case SHOW_IMAGE:
         ROS_INFO("b");
         break;
-    case HIDEIMAGE:
+    case HIDE_IMAGE:
         ROS_INFO("c");
         break;
-    case DELETEIMAGE:
+    case DELETE_IMAGE:
         ROS_INFO("d");
         break;
 
-    case SHOWMOBOT:
+    case SHOW_MOBOT:
         ROS_INFO("e");
         break;
-    case HIDEMOBOT:
+    case HIDE_MOBOT:
         ROS_INFO("f");
         break;
-    case DELETEMOBOT:
+    case DELETE_MOBOT:
         ROS_INFO("g");
         break;
 
-    case SHOWSESSION:
+    case SHOW_SESSION:
         ROS_INFO("h");
         break;
-    case HIDESESSION:
+    case HIDE_SESSION:
         ROS_INFO("i");
         break;
-    case DELETESESSION:
+    case DELETE_SESSION:
         ROS_INFO("j");
         break;
 
-    case DELETEALLIMAGES:
+    case DELETE_ALL_IMAGES:
         ROS_INFO("k");
         break;
 
-    case SETIMAGEPOSE:
+    case SET_IMAGE_POSE:
         ROS_INFO("l");
         break;
 
-    case DELETEMOBOTMODEL:
+    case DELETE_MOBOT_MODEL:
         ROS_INFO("m");
         break;
-    case DELETEALLMOBOTMODELS:
+    case DELETE_ALL_MOBOT_MODELS:
         ROS_INFO("n");
         break;
-    case SETMOBOTMODEL:
+    case SET_MOBOT_MODEL:
         ROS_INFO("o");
         break;
     }
@@ -118,9 +122,12 @@ int main(int argc, char** argv){
     ros::ServiceServer updateRvizTestServer_ = nh->advertiseService("/image_map/rpc", updateRvizTest);
     updateRvizTestServer = &updateRvizTestServer_;
     ROS_INFO("Test");
-    if(argv[0][0] == 'a'){
-        updateInfoTest();
-        return 1;
+    if(argc == 2){
+        if(argv[1][0] == 'a'){
+            ROS_INFO("Testa");
+            updateInfoTest();
+            return 1;
+        }
     }
     ros::spin();
     return 0;

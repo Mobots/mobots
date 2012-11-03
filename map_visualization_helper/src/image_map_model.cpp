@@ -77,10 +77,12 @@ QVariant ImageMapModel::data(const QModelIndex &index, int role) const
 
 bool ImageMapModel::setData(const QModelIndex & index, const QVariant & value, int role)
 {
-    if (role == Qt::EditRole)
-    {
+    if (role == Qt::EditRole){
+        int row = index.row();
+        int col = index.column();
         //save value from editor to member m_gridData
-        tableData[index.row()][index.column()] = value.toInt();
+        tableData[row][col] = value.toInt();
+        Q_EMIT tableChanged(tableData[row][SESSION], tableData[row][MOBOT], col, value.toInt());
     }
     return true;
 }
@@ -103,13 +105,16 @@ Qt::ItemFlags ImageMapModel::flags(const QModelIndex &index) const{
 /**
   * The slot which recieves the updates from the waypoint/ROS interface
   */
-void ImageMapModel::updateData(int sessionID, int mobotID, int key, int value){
+void ImageMapModel::updateTable(int sessionID, int mobotID, int key, int value){
+    ROS_INFO("[updateTable]");
     // Clear data
     if(key == -1){
+        ROS_INFO("[updateTable] clear");
         clearData();
     }
     // Negative sign -> delete mobot/session entry
     if(sessionID < 0){
+        ROS_INFO("[updateTable] delete");
         sessionID *= -1;
         if(mobotID < 0){
             mobotID *= -1;
@@ -128,13 +133,15 @@ void ImageMapModel::updateData(int sessionID, int mobotID, int key, int value){
             }
         }
     }
-
+    ROS_INFO("[updateTable] add");
     addMobot(sessionID, mobotID, key, value);
     return;
 }
 
+// TODO emit signal for changed data
 void ImageMapModel::addMobot(int sessionID, int mobotID, int key, int value){
-    std::vector<int> dataEntry;
+    ROS_INFO("[addMobot]");
+    std::vector<int> dataEntry(tableData.size(), 0);
     dataEntry[SESSION] = sessionID;
     dataEntry[MOBOT] = mobotID;
     dataEntry[key] = value;

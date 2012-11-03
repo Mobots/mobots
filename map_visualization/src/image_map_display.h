@@ -25,7 +25,7 @@
 
 #include "map_visualization/GetImageWithPose.h"
 #include "image_map_visual.h"
-#include "../include/definitions.h"
+#include "../include/map_visualization/definitions.h"
 
 namespace Ogre
 {
