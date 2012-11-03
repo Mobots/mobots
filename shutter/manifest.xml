@@ -13,7 +13,7 @@
   <depend package="sensor_msgs"/>
   <depend package="mobots_msgs"/>
   <depend package="usb_cam"/>
-	<depend package="mobots_util"/>
+	<depend package="mobots_common"/>
  <export>
     <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib/libgeometry.a"/>
   </export>
