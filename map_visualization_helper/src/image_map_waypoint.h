@@ -20,20 +20,21 @@
 
 namespace map_visualization{
 
-class ImageMapWaypoint : public QThread
-{
+class ImageMapWaypoint : public QObject{
     Q_OBJECT
+
 public:
     ImageMapWaypoint(int argc, char** argv);
     ~ImageMapWaypoint();
     void updateInfoHandler(const mobots_msgs::IDKeyValue::ConstPtr& msg);
     void poseRelayHandler(const geometry_msgs::PoseStamped::ConstPtr& msgIn);
     int updateRviz(int function, std::string operands);
-protected:
-    void run();
 public Q_SLOTS:
+    void process();
     void setActiveMobot(QString mobotID);
 Q_SIGNALS:
+    void finished();
+    void error(QString err);
     void dataChanged(int sessionID, int mobotID, int key, int value);
 private:
     void subscribe();
