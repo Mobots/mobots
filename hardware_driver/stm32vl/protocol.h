@@ -15,6 +15,7 @@ enum PROTOCOL_IDS
     SensorData_All,
     SensorData_DeltaVal,
     Servo,
+    Debug_Controller,
     NUM_IDS // muss immer an letzter stelle stehen
 };
 

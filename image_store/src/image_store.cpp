@@ -17,7 +17,7 @@
 #include "mobots_msgs/ImageWithPoseAndID.h"
 #include "mobots_msgs/PoseAndID.h"
 #include "mobots_msgs/FeatureSetWithPoseAndID.h"
-#include <mobots_util/util.h>
+#include <mobots_common/utils.h>
 
 // The NULL pose
 poseT zeroPose{0,0,0,1};
@@ -174,7 +174,7 @@ int main(int argc, char **argv){
 		currentSessionID = 0;
 		ROS_ERROR("%s /sessionID is not set, sessionID set to 0", __FILE__);
 	}
-	if(!mobots_util::image_store::createDirs(currentSessionID)){
+	if(!mobots_common::utils::createDirs(currentSessionID)){
 		ROS_ERROR("%s in %s cannot mobot data dirs for session %d", __PRETTY_FUNCTION__, __FILE__, currentSessionID);
 		exit(1);
 	}

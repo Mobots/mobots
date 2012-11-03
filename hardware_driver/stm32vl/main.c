@@ -38,6 +38,7 @@
 /* Private define ------------------------------------------------------------*/
 #define  LSE_FAIL_FLAG  0x80
 #define  LSE_PASS_FLAG  0x100
+const int DELAY_IN_MILLI = 10;
 /* Private macro -------------------------------------------------------------*/
 /* Private consts ------------------------------------------------------------*/
 
@@ -59,58 +60,66 @@ int main() {
 	led_init();
 
 	USART1_Init(USART_USE_INTERRUPTS);
+	spi_init();
 	delay_ms(100);
+	//control_init(10);
 	protocol_init(TRUE);
 	servo_init();
 	servo_setAngle(Servo_1, 0);
 	servo_setAngle(Servo_2, 0);
 	servo_setAngle(Servo_3, 0);
-	if (Sensor_init(SPI_1)) {
+	//int m1 = Sensor_init(SPI_1);
+	//int m2 = Sensor_init(SPI_2);
+	if ( Sensor_init(SPI_1)&&Sensor_init(SPI_2)) {
 		//print("Sensor Initialisierung erfolgreich!\n");
 		GPIO_SetBits(GPIOC, GPIO_Pin_9); // läuft der Sensorinit durch geht die grüne led an
 	} else {
 		//print("Sensor Initialisierung fehlgeschlagen!\n");
 	}
-	SysTick_Config(SystemCoreClock / 200); // Systick auf 10ms stellen
+	SysTick_Config(SystemCoreClock / 100); // Systick auf 10ms stellen
 
 	GPIO_SetBits(GPIOC, GPIO_Pin_8);
 	//---------------------------------------------------------------------
 
-	//print("Init done\n");
+	print("Init done\n");
 
 	struct Mouse_Data_DeltaVal temp, null;
 
 	temp.delta_x = 0;
 	temp.delta_y = 0;
-	temp.squal = 0;
-	temp.n = 0;
 	null.delta_x = 0;
 	null.delta_y = 0;
-	null.squal = 0;
-	null.n = 0;
+
 	while (1) {
-		delay_ms(1000);
+
+		delay_ms(DELAY_IN_MILLI);
 		protocol_receiveData();
-
-		if(delta_vals.delta_x || delta_vals.delta_y){
-			temp = delta_vals;
-			delta_vals = null;
-			protocol_sendData(SensorData_DeltaVal, (unsigned char*) &temp, sizeof(struct Mouse_Data_DeltaVal));
+		//simon: ich arbeite mit dem takt in ros, deshalb einfach auch 0messages shcicken
+		if (delta_vals1.delta_x || delta_vals1.delta_y) {
+			temp = delta_vals1;
+			delta_vals1 = null;
+			protocol_sendData(SensorData_DeltaVal, (unsigned char*) &temp,
+					sizeof(struct Mouse_Data_DeltaVal));
 		}
-
-
+		return 0;
 	}
-	return 0;
 }
 
 void SysTick_Handler() {
 	//time_in_ms++;
 	if (spi_ReadRegister(REG_Motion, SPI_1)) {
-		delta_vals.delta_x += (s16) spi_ReadRegister(REG_Delta_X_L, SPI_1)
+		delta_vals1.delta_x += (s16) spi_ReadRegister(REG_Delta_X_L, SPI_1)
 				| (s16) (spi_ReadRegister(REG_Delta_X_H, SPI_1) << 8);
-		delta_vals.delta_y += (s16) spi_ReadRegister(REG_Delta_Y_L, SPI_1)
+		delta_vals1.delta_y += (s16) spi_ReadRegister(REG_Delta_Y_L, SPI_1)
 				| (s16) (spi_ReadRegister(REG_Delta_Y_H, SPI_1) << 8);
 	}
+	//TODO
+	//fill delta_vals2 from second maussensor
+
+	//transformMouseToCoordinateSystem(sX,sY,sTheta);
+	//sX,sY,sTheta an raspberry schicken TODO struct für senden
+	//control(transformToServoSpeed(0.14,0.15,0.1,0.01));
+
 }
 
 unsigned int getTime() {

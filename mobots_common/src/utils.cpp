@@ -1,11 +1,11 @@
 #include <stdlib.h>
 #include <sstream>
 #include <sys/stat.h>
-#include <mobots_common/util.h>
+#include <mobots_common/utils.h>
 #include <mobots_common/constants.h>
 
 
-bool mobots_common::util::parseNamespace(const std::string& nspace, int& mobotID){
+bool mobots_common::utils::parseNamespace(const std::string& nspace, int& mobotID){
   std::string mobot("mobot");
   size_t pos = nspace.find(mobot);
   if(pos == std::string::npos)
@@ -25,13 +25,13 @@ bool mobots_common::util::parseNamespace(const std::string& nspace, int& mobotID
 static const char* HOME = getenv("HOME");
 static std::string base = std::string(HOME)+std::string("mobots-data");
 
-std::string mobots_common::util::getPathForID(const int sessionID, const int mobotID, const int imageID, const char* fileEnding){
+std::string mobots_common::utils::getPathForID(const int sessionID, const int mobotID, const int imageID, const char* fileEnding){
   std::stringstream ss;
   ss << base << "/session-" << sessionID << "/mobot-" << mobotID << "/" << imageID << fileEnding;
   return ss.str();
 }
 
-bool mobots_common::util::createDirs(int sessionID){
+bool mobots_common::utils::createDirs(int sessionID){
 	for(int i = 0; i < 3; i++){
 		std::stringstream stream;
 		stream << "mkdir $HOME/mobots-data/session-" << sessionID << "/mobot-" << i;
