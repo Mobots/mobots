@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
 				moveMobot(mobots[i].id, 1);
 			}
 		}
-		wait(10000, true);
+		wait(5000, true);
 	}
 	//stopping the timers
 	timerMobot_1.stop();
@@ -154,7 +154,7 @@ void moveMobot(int id, int direction) {
 	switch (dir) {
 	case 1: //driving straight
 		nextPose.x = 0.0;
-		nextPose.y = 1.0;
+		nextPose.y = 0.2;
 		nextPose.theta = 0.0;
 		releasePose(id, -2, nextPose);
 		break;
@@ -280,6 +280,7 @@ void wait(int duration, bool spin) {
 void timerCallback1(const ros::TimerEvent& event) {
 	if (mobots[0].userControlled) {
 		mobots[0].timer++;
+		std::cout << mobots[0].timer << std::endl;
 		if (mobots[0].timer >= 30) {
 			ROS_INFO("Mobot 1 going back to autonome work");
 			mobots[0].userControlled = false;
@@ -291,6 +292,7 @@ void timerCallback1(const ros::TimerEvent& event) {
 void timerCallback2(const ros::TimerEvent& event) {
 	if (mobots[1].userControlled) {
 		mobots[1].timer++;
+		std::cout << mobots[1].timer << std::endl;
 		if (mobots[1].timer >= 30) {
 			ROS_INFO("Mobot 2 going back to autonome work");
 			mobots[1].userControlled = false;
@@ -302,6 +304,7 @@ void timerCallback2(const ros::TimerEvent& event) {
 void timerCallback3(const ros::TimerEvent& event) {
 	if (mobots[2].userControlled) {
 		mobots[2].timer++;
+		std::cout << mobots[2].timer << std::endl;
 		if (mobots[2].timer >= 30) {
 			ROS_INFO("Mobot 3 going back to autonome work");
 			mobots[2].userControlled = false;
