@@ -10,12 +10,10 @@
   <url>http://ros.org/wiki/shutter</url>
   <depend package="roscpp"/>
   <depend package="geometry_msgs"/>
-  <depend package="std_msgs"/>
   <depend package="sensor_msgs"/>
   <depend package="mobots_msgs"/>
-  <depend package="opencv2"/>
   <depend package="usb_cam"/>
-  <depend package="cv_bridge"/>
+	<depend package="mobots_util"/>
  <export>
     <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib/libgeometry.a"/>
   </export>
