@@ -43,8 +43,8 @@ public:
 	ImageMapVisual(Ogre::SceneManager* scene_manager);
 	virtual ~ImageMapVisual();
 
-    int insertImage(float poseX, float poseY, float poseTheta,
-        int sessionID, int mobotID, int imageID, cv::Mat mat);
+    int insertImage(int sessionID, int mobotID, int imageID,
+        float poseX, float poseY, float poseTheta, cv::Mat mat);
 	int showImage(int sessionID, int mobotID, int imageID);
 	int hideImage(int sessionID, int mobotID, int imageID);
 	int deleteImage(const std::string* nodeName);
@@ -60,7 +60,7 @@ public:
 	int deleteAllImages();
 
 	
-    int setImagePose(float poseX, float poseY, float poseTheta, int sessionID, int mobotID, int imageID);
+    int setImagePose(int sessionID, int mobotID, int imageID, float poseX, float poseY, float poseTheta);
 
     void deleteMobotModel(const std::string* nodeName);
     void deleteAllMobotModels();

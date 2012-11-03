@@ -14,7 +14,7 @@
 #include "image_pose.h"
 
 // Filename ending for the files
-std::string savePathRoot("~/"); // save path root
+std::string savePathRoot(""); // save path root
 std::string fileConvention("mobotID%i-%i.%s"); // mobotID2-12.jpg
 std::string folderConvention("%ssession-%i/"); // /home/john/session-1/
 std::string infoEnding("info");

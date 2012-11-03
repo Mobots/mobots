@@ -1,9 +1,12 @@
+#define _USE_MATH_DEFINES
+
 #include "slam.h"
 #include "std_msgs/String.h"
 #include <boost/foreach.hpp>
-#include <math.h>
+#include <cmath>
 #include <feature_detector/MessageBridge.h>
 #include "mobots_msgs/PoseAndID.h"
+#include "mobots_common/constants.h"
 
  /* Erlaube ich mir, weil darunter sowieso noch der Namespace TreeOptimizer2 liegt. */
 using namespace AISNavigation;
@@ -24,6 +27,7 @@ Slam::Slam() :
     last_id_[bot] = 0;
     current_id_[bot] = 0;
   }
+  
 }
 
 void Slam::callback1(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg)
@@ -142,13 +146,16 @@ void Slam::findEdgesBruteforce()
       
       /* Matching-Ergebnis als Edge zwischen den zwei Vertices einfügen */
       
-      TreeOptimizer2::Transformation t = convert(delta);
+      TreeOptimizer2::Transformation t = convertPixelsToMeters(delta);
 
-      // Lustige Covarianzmatrix
+      // Lustige Covarianzmatrix erstellen
+      float varianz_translation = std::pow(10.0/2 * mobots_common::constants::image_height_in_meters / mobots_common::constants::image_height_in_meters, 2); // Schätzung: 2-fache Standardabweichung 10 Pixel
+      float varianz_rotation = std::pow(10.0/2 * M_PI/180, 2); // Schätzung: 2-fache Standardabweichung 10 Grad
+      
       TreeOptimizer2::InformationMatrix m;
-      m.values[0][0] = 1; m.values[0][1] = 0; m.values[0][2] = 0;
-      m.values[1][0] = 0; m.values[1][1] = 1; m.values[1][2] = 0;
-      m.values[2][0] = 0; m.values[2][1] = 0; m.values[2][2] = 1;
+      m.values[0][0] = varianz_translation; m.values[0][1] = 0;                   m.values[0][2] = 0;
+      m.values[1][0] = 0;                   m.values[1][1] = varianz_translation; m.values[1][2] = 0;
+      m.values[2][0] = 0;                   m.values[2][1] = 0;                   m.values[2][2] = varianz_rotation;
 
       ROS_INFO_STREAM("Adding edge with x = " << t.translation().x() << ", y = " << t.translation().y() << ", theta = " << t.rotation() << ". Result: " << pose_graph_.addEdge(v.second, w.second, t, m) );
     }
@@ -188,15 +195,19 @@ uint32_t Slam::merge(mobots_msgs::ID const &id)
 mobots_msgs::ID Slam::split(uint32_t id)
 {
   mobots_msgs::ID result;
-  result.session_id = -1;
+  result.session_id = 0;
   result.mobot_id = id >> 16;
   result.image_id = (uint16_t) id;
   return result;
 }
 
-TreeOptimizer2::Transformation Slam::convert(geometry_msgs::Pose2D pose)
+TreeOptimizer2::Transformation Slam::convertPixelsToMeters(geometry_msgs::Pose2D pose)
 {
-  return TreeOptimizer2::Transformation(pose.x, pose.y, pose.theta);
+  float x_in_meters = pose.x * mobots_common::constants::image_width_in_meters / mobots_common::constants::image_width_in_pixels;
+  float y_in_meters = - pose.y * mobots_common::constants::image_height_in_meters / mobots_common::constants::image_height_in_pixels;
+  float theta = pose.theta;
+  assert(0 <= pose.theta && pose.theta < 2*M_PI);
+  return TreeOptimizer2::Transformation(x_in_meters, y_in_meters, pose.theta);
 }
 
 geometry_msgs::Pose2D Slam::convert(TreeOptimizer2::Pose toro_pose)

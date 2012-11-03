@@ -17,8 +17,28 @@ Shutter2::~Shutter2(){
 }
 
 void Shutter2::startShutter(){
-	ROS_INFO("Shutter: using poll method");
-	Shutter::startShutter();
+    ROS_INFO("[%s] Mobot %d: Shutterfunktion gestartet (polling method).", __PRETTY_FUNCTION__, mobotID);
+    poseImage_pub = nh.advertise<mobots_msgs::ImageWithPoseAndID>("image_pose_id", 2);
+		
+    pose_sub = nh.subscribe("mouse", 100, &Shutter2::mouseCallback, this);
+
+    ros::ServiceServer service = nh.advertiseService("getDelta", &Shutter2::getDelta, this);
+    
+    ros::param::param<double>("overlap", overlap, 0.3);
+    dX = 0;
+    dY = 0;
+    dTheta = 0;
+
+    ros::spin();
+
+}
+
+bool Shutter2::getDelta(shutter::delta::Request &req, shutter::delta::Response &res)
+{
+  res.x = dX;
+  res.y = dY;
+  res.theta = dTheta;
+  return true;
 }
 
 /*void Shutter2::imageCallback(const sensor_msgs::Image &mobot_image) {

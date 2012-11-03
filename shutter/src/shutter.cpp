@@ -1,11 +1,11 @@
 #include "shutter.h"
-#include "util/util.h"
+#include "mobots_util/util.h"
 
 int main(int argc, char** argv){
 ros::init(argc, argv, "shutter");
 ros::NodeHandle nh;
 int mobotID = 0;
-if(!util::parseNamespace(nh.getNamespace(), mobotID))
+if(!mobots_util::parseNamespace(nh.getNamespace(), mobotID))
   ROS_ERROR("%s mobotID cannot be parsed from namespace: %s", __PRETTY_FUNCTION__, nh.getNamespace().c_str());
 
 //Shutter shutter(0,1.06805,0.80104); //l/b für Simulator: 1.06805,0.80104
@@ -13,6 +13,7 @@ if(!util::parseNamespace(nh.getNamespace(), mobotID))
 Shutter2 shutter(mobotID, 3000.06805, 2500.80104);
 shutter.startShutter();
 }
+
 Shutter::Shutter(int mobotID, double l, double b): mobotID(mobotID), g(l,b) //Instanzierung von Geometry
 {
 		if(!ros::param::get("/sessionID", sessionID))
