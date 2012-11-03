@@ -14,4 +14,7 @@
 	<node name="rviz" pkg="rviz" type="rviz" output="screen" >
 	</node>
 
+    <node name="image_store" pkg="image_store" type="image_store" output="screen" >
+	</node>
+
 </launch>

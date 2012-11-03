@@ -55,7 +55,7 @@ private:
     
     uint32_t merge(mobots_msgs::ID const &id);
     mobots_msgs::ID split(uint32_t id);
-    AISNavigation::TreeOptimizer2::Transformation convert(geometry_msgs::Pose2D pose);
+    AISNavigation::TreeOptimizer2::Transformation convertPixelsToMeters(geometry_msgs::Pose2D pose);
     geometry_msgs::Pose2D convert(AISNavigation::TreeOptimizer2::Pose toro_pose);
 };
 
