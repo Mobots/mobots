@@ -37,7 +37,6 @@
 #include <pthread.h>
 #include <signal.h>
 
-#include <boost/thread/thread.hpp>
 #include <ros/ros.h>
 #include <geometry_msgs/Pose2D.h>
 #include "mobots_msgs/Pose2DPrio.h"

@@ -1,0 +1,18 @@
+<package>
+  <description brief="mobots_teleop">
+
+     mobots_teleop
+
+  </description>
+  <author>jonas</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <depend package="roscpp" />
+  <depend package="geometry_msgs" />
+  <depend package="mobots_msgs" />
+  <depend package="path_planner" />
+  <url>http://ros.org/wiki/hardware_driver</url>
+
+</package>
+
+
