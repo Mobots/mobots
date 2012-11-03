@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <sys/poll.h>
 #include <pthread.h>
+#include <signal.h>
 
 #include <boost/thread/thread.hpp>
 #include <ros/ros.h>
@@ -61,6 +62,7 @@ double linear_vel = 0.1;
 double angular_vel = 0.1;
 double linear_vel_fast = 0.3;
 double angular_vel_fast = 0.3;
+int mobotID;
 
 geometry_msgs::Pose2D currentPosition;
 ros::Publisher targetPose_pub;
@@ -77,16 +79,25 @@ void globalPoseCallback(const geometry_msgs::Pose2D& msg){
 	currentPosition = msg;
 }
 
+void siginthandler(int param){
+    path_planner::KeyboardRequest::Request req;
+    path_planner::KeyboardRequest::Response res;
+    req.mobot_id = mobotID;
+    req.enable = false;
+    client.call(req, res);
+    tcsetattr(kfd, TCSANOW, &cooked);
+    exit(1);
+}
+
 
 int main(int argc, char** argv){
 	cout << "specify a mobot to control (enter the mobot id): ";
-	int mobotID;
 	cin >> mobotID;
 	cout << endl;
 	std::stringstream namess;
 	namess << "mobot_keyboard_teleop_" << mobotID;
 	ros::init(argc, argv, namess.str(), ros::init_options::NoSigintHandler);
-  nh = new ros::NodeHandle;
+    nh = new ros::NodeHandle;
 	string waypointPath;
 	string globalPosePath;
 	stringstream ss;
@@ -109,18 +120,19 @@ int main(int argc, char** argv){
 		ROS_WARN("[%s] No path_planner found", namess.str().c_str());
 	}
 	globalPosePath = ss.str();
-  targetPose_pub = nh->advertise<mobots_msgs::Pose2DPrio>(ss.str(), 2);
-	//globalPose_sub = nh->subscribe(globalPosePath, 2, globalPoseCallback);s
-	cout << "paths: " << endl << waypointPath << endl;/* << globalPosePath << endl << endl;*/
-	
-  boost::thread t = boost::thread(keyboardLoop);
-  ros::spin();
+    targetPose_pub = nh->advertise<mobots_msgs::Pose2DPrio>(ss.str(), 2);
+	cout << "paths: " << endl << waypointPath << endl;
+	signal(SIGINT, siginthandler);
+  //boost::thread t = boost::thread(keyboardLoop);
+  //t.interrupt(); //?
+  //t.join();
+ //ros::spin();
+    keyboardLoop();
   
-  t.interrupt(); //?
-  t.join();
-  tcsetattr(kfd, TCSANOW, &cooked);
-	req.enable = false;
-  client.call(req, res);
+
+ 
+  
+
   return(0);
 }
 
