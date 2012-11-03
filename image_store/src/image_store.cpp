@@ -174,7 +174,7 @@ int main(int argc, char **argv){
 		ROS_ERROR("%s /sessionID is not set, sessionID set to 0", __FILE__);
 	}*/
 	std::stringstream stream;
-	stream << "mkdir ~/session-" << currentSessionID;
+	stream << "mkdir $HOME/mobots_data/session-" << currentSessionID;
 	system(stream.str().c_str());
 	ros::NodeHandle n;
 	// To save images: image_store_save
