@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
 				moveMobot(mobots[i].id, 1);
 			}
 		}
-		wait(5000, true);
+		wait(10000, true);
 	}
 	//stopping the timers
 	timerMobot_1.stop();
@@ -154,7 +154,7 @@ void moveMobot(int id, int direction) {
 	switch (dir) {
 	case 1: //driving straight
 		nextPose.x = 0.0;
-		nextPose.y = 10.0;
+		nextPose.y = 1.0;
 		nextPose.theta = 0.0;
 		releasePose(id, -2, nextPose);
 		break;
@@ -616,16 +616,16 @@ bool keyReqCallback(path_planner::KeyboardRequest::Request& req,
 	int id = req.mobot_id;
 	if (id == 0 || id == 1 || id == 2) {
 		mobots[id].userControlled = en;
-		ROS_INFO("switching the keyboard control granted for Mobot %i", id);
+		ROS_INFO("switching the keyboard control granted for Mobot %i", id+1);
 		if (en) {
-			ROS_INFO("Mobot %i is controlled via keyboard", id);
+			ROS_INFO("Mobot %i is controlled via keyboard", id+1);
 		} else {
-			ROS_INFO("Mobot %i is controlled by the system", id);
+			ROS_INFO("Mobot %i is controlled by the system", id+1);
 		}
 		res.enabled = en;
 		return true;
 	} else {
-		ROS_INFO("%i is an invalid Mobot ID, keyboard request not granted", id);
+		ROS_INFO("%i is an invalid Mobot ID, keyboard request not granted", id+1);
 		res.enabled = false;
 		return false;
 	}

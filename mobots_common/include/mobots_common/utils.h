@@ -4,7 +4,7 @@
 #pragma once
 
 namespace mobots_common {
-  namespace util {
+  namespace utils {
   
     /**
      * parses the mobotID from the given namespace 
