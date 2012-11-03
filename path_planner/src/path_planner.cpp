@@ -615,7 +615,7 @@ bool keyReqCallback(path_planner::KeyboardRequest::Request& req,
 	bool en = req.enable;
 	int id = req.mobot_id;
 	if (id == 0 || id == 1 || id == 2) {
-		mobots[id].userControlled = en ? 2 : 0;
+		mobots[id].userControlled = en ? 2 : 0; //keaboard control activated or deactivated?
 		ROS_INFO("switching the keyboard control granted for Mobot %i", id+1);
 		if (en) {
 			ROS_INFO("Mobot %i is controlled via keyboard", id+1);
@@ -623,7 +623,6 @@ bool keyReqCallback(path_planner::KeyboardRequest::Request& req,
 			ROS_INFO("Mobot %i is controlled by the system", id+1);
 		}
 		res.enabled = en;
-		wait(1000, false);
 		return true;
 	} else {
 		ROS_INFO("%i is an invalid Mobot ID, keyboard request not granted", id+1);
