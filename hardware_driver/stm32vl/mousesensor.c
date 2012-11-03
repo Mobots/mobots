@@ -10,9 +10,9 @@
 #include "printf.h"
 #include "stm32f10x_gpio.h"
 #include "util.h"
+#include "fixmath.h"
 
 volatile struct Mouse_Data_All mouse_data;
-volatile struct Mouse_Data_DeltaVal delta_vals;
 
 DATA_STAT spi1_datastat;
 DATA_STAT spi2_datastat;
@@ -53,11 +53,6 @@ DATA_STAT spi2_datastat;
 //
 //}
 
-void SPI_init() {
-	spi1_datastat = OUTDATED;
-	spi2_datastat = OUTDATED;
-	spi_init();
-}
 
 unsigned char download_firmware(SPI spi) {
 
@@ -243,7 +238,6 @@ void EXTI3_IRQHandler(void) {
 
 int Sensor_init(SPI spi) {
 
-	SPI_init();
 	delay_ms(100);
 	//EXIT_init();
 
@@ -257,25 +251,6 @@ int Sensor_init(SPI spi) {
 		return 0; // return FALSE
 	}
 
-	clear_bits_addr(REG_Configuration_II, 0x18, spi);
-
-	spi_WriteRegister(REG_Shutter_Max_Bound_Lower, 0x20, spi); //0x20
-	spi_WriteRegister(REG_Shutter_Max_Bound_Upper, 0x4e, spi); //0x4e  0x6e
-//
-//	//Frame_Period_Min  0x0fa0 - 61a8
-	spi_WriteRegister(REG_Frame_Period_Min_Bound_Lower, 0xa0, spi); //0xa0
-	spi_WriteRegister(REG_Frame_Period_Min_Bound_Lower, 0x0f, spi); //0x0f
-//
-//	//Frame_Period_Max  Framerate=47000000/frame_period_max  (fps)
-	spi_WriteRegister(REG_Frame_Period_Max_Bound_Lower, 0xc0, spi); //0xc0
-	spi_WriteRegister(REG_Frame_Period_Max_Bound_Upper, 0x5d, spi); //0x5d
-
-	//Resolution
-	spi_WriteRegister(REG_Configuration_I, 0x12, spi); // auflösung auf ~2520 dpi => 1 pixel ~10,08um
-
-	clear_bits_addr(REG_LASER_CTRL0, 0x01, spi);
-	clear_bits_addr(REG_LASER_CTRL0, 0x0e, spi);
-
 	uint8_t go_on = 1;
 	while (go_on) {
 		download_firmware(spi);
@@ -286,6 +261,26 @@ int Sensor_init(SPI spi) {
 		}
 	}
 
+	clear_bits_addr(REG_Configuration_II, 0x18, spi);
+
+	spi_WriteRegister(REG_Shutter_Max_Bound_Lower, 0x20, spi); //0x20
+	spi_WriteRegister(REG_Shutter_Max_Bound_Upper, 0x4e, spi); //0x4e  0x6e
+	//
+	//	//Frame_Period_Min  0x0fa0 - 61a8
+	spi_WriteRegister(REG_Frame_Period_Min_Bound_Lower, 0xa0, spi); //0xa0
+	spi_WriteRegister(REG_Frame_Period_Min_Bound_Lower, 0x0f, spi); //0x0f
+	//
+	//	//Frame_Period_Max  Framerate=47000000/frame_period_max  (fps)
+	spi_WriteRegister(REG_Frame_Period_Max_Bound_Lower, 0xc0, spi); //0xc0
+	spi_WriteRegister(REG_Frame_Period_Max_Bound_Upper, 0x5d, spi); //0x5d
+
+	//Resolution
+	// auflösung auf ~2520 dpi => 1 pixel ~10,08um
+
+	clear_bits_addr(REG_LASER_CTRL0, 0x01, spi);
+	clear_bits_addr(REG_LASER_CTRL0, 0x0e, spi);
+
+	spi_WriteRegister(REG_Configuration_I, 0x38, spi);
 	clear_bits_addr(REG_LASER_CTRL0, 0x01, spi);
 
 	delay_ms(10);
@@ -295,3 +290,43 @@ int Sensor_init(SPI spi) {
 	return 1;
 }
 
+//gibt die pixel als strecke in meter im mobot_koordinatensystem aus
+void transformMouseToCoordinateSystem(double *sX,double *sY, double *sTheta,double r) {
+
+	static const double sin_120 = -0.5;
+	static const double cos_120 = 0.866028;
+	double fuenf_sechstel = 0.83333;
+
+	double x1=delta_vals1.delta_x;
+	double y1=delta_vals1.delta_y;
+	double x2=delta_vals2.delta_x;
+	double y2=delta_vals2.delta_y;
+
+//	sX=((x1-x2)/3-y1*1.1547)*0.0254/5040; //TODO correct dpi insert
+	//sY=(x1-x2)/3*0.0254/5040;
+//	sTheta=(y1*0.5774+0.6667*x2+x1*0.3333))/r*0.0254/5040; //TODO eventuell nicht bogenmass
+
+
+}
+
+struct Servospeed transformToServoSpeed(double r_innen, double r_aussen, double v_max, double totzeit){
+
+#define sqrt3 1,73205081
+
+	double x1=delta_vals1.delta_x;
+	double y1=delta_vals1.delta_y;
+	double x2=delta_vals2.delta_x;
+	double y2=delta_vals2.delta_y;
+
+	#define penis -r_innen/r_aussen*y1/sqrt3-r_innen/r_aussen*2/3*x2-r_innen/r_aussen*x1/3
+	struct Servospeed s;
+
+	s.s1 = (x1/3-x2/3-2/sqrt3*y1 + penis)/v_max*1000/totzeit;
+	s.s2 =  (x1/sqrt3-x2/3+y1/sqrt3 + penis)/v_max*1000/totzeit;
+	s.s3 =  ()-y1/sqrt3-2/3*x1 + 2/3*x2 + penis)/v_max*1000/totzeit;
+
+
+
+
+
+}
