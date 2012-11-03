@@ -26,8 +26,7 @@ struct mobot {
 	double y; //relative y position of the mobot (driving direction)
 	double theta; //relative turning angle of the mobot
 	int id; //mobot id
-	bool userControlled; //is the mobot controlled by the user?
-	bool keyboardControl; //is the mobot controlled via keyboard?
+	int userControlled; //is the mobot controlled by the user? (0 = no, 1 = user waypoints, 2 = keyboard control)
 	bool obstacle; //is there an obstacle with which the mobot is dealing right now?
 	int timer; //timer for reactivating the mobots auto explore mode after an user command
 };
@@ -86,8 +85,7 @@ int main(int argc, char **argv) {
 	mobots[0].x = 0.0;
 	mobots[0].y = 0.0;
 	mobots[0].obstacle = false;
-	mobots[0].userControlled = false;
-	mobots[0].keyboardControl = false;
+	mobots[0].userControlled = 0;
 	mobots[0].timer = 0;
 
 	mobots[1].id = 2;
@@ -95,8 +93,7 @@ int main(int argc, char **argv) {
 	mobots[1].x = 0.0;
 	mobots[1].y = 0.0;
 	mobots[1].obstacle = false;
-	mobots[1].userControlled = false;
-	mobots[1].keyboardControl = false;
+	mobots[1].userControlled = 0;
 	mobots[1].timer = 0;
 
 	mobots[2].id = 3;
@@ -104,8 +101,7 @@ int main(int argc, char **argv) {
 	mobots[2].x = 0.0;
 	mobots[2].y = 0.0;
 	mobots[2].obstacle = false;
-	mobots[2].userControlled = false;
-	mobots[2].keyboardControl = false;
+	mobots[2].userControlled = 0;
 	mobots[2].timer = 0;
 
 	//initialising the timers for the Mobots
@@ -117,7 +113,7 @@ int main(int argc, char **argv) {
 	 * Mobot, it is driving straight till something occurs. */
 	while (ros::ok()) {
 		for (int i = 0; i <= 2; i++) {
-			if (!mobots[i].userControlled && !mobots[i].obstacle) {
+			if (mobots[i].userControlled == 0 && !mobots[i].obstacle) {
 				moveMobot(mobots[i].id, 1);
 			}
 		}
@@ -282,7 +278,7 @@ void wait(int duration, bool spin) {
 /* Timer for the Mobot 1. After 30 seconds of no new user waypoint, the Mobot
  * is reactivating the auto explore mode. */
 void timerCallback1(const ros::TimerEvent& event) {
-	if (mobots[0].userControlled && !mobots[0].keyboardControl) {
+	if (mobots[0].userControlled == 1) {
 		mobots[0].timer++;
 		if (mobots[0].timer >= 30) {
 			ROS_INFO("Mobot 1 going back to autonome work");
@@ -293,7 +289,7 @@ void timerCallback1(const ros::TimerEvent& event) {
 
 /* Timer for Mobot 2. */
 void timerCallback2(const ros::TimerEvent& event) {
-	if (mobots[1].userControlled && !mobots[1].keyboardControl) {
+	if (mobots[1].userControlled == 1) {
 		mobots[1].timer++;
 		if (mobots[1].timer >= 30) {
 			ROS_INFO("Mobot 2 going back to autonome work");
@@ -304,7 +300,7 @@ void timerCallback2(const ros::TimerEvent& event) {
 
 /* Timer for Mobot 3. */
 void timerCallback3(const ros::TimerEvent& event) {
-	if (mobots[2].userControlled && !mobots[2].keyboardControl) {
+	if (mobots[2].userControlled == 1) {
 		mobots[2].timer++;
 		if (mobots[2].timer >= 30) {
 			ROS_INFO("Mobot 3 going back to autonome work");
@@ -602,7 +598,7 @@ int handleObstacle(int id, bool scan[6]) {
 void userCallback(const mobots_msgs::PoseAndID& input) {
 	int id = input.id.mobot_id;
 	if (id == 1 || id == 2 || id == 3) {
-		mobots[id - 1].userControlled = true;
+		mobots[id - 1].userControlled = 1;
 		mobots[id - 1].timer = 0;
 		stop(id);
 		ROS_INFO("Mobot_%i handling user input", id);
@@ -619,7 +615,7 @@ bool keyReqCallback(path_planner::KeyboardRequest::Request& req,
 	bool en = req.enable;
 	int id = req.mobot_id;
 	if (id == 0 || id == 1 || id == 2) {
-		mobots[id].userControlled = en;
+		mobots[id].userControlled = en ? 2 : 0;
 		ROS_INFO("switching the keyboard control granted for Mobot %i", id+1);
 		if (en) {
 			ROS_INFO("Mobot %i is controlled via keyboard", id+1);
