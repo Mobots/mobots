@@ -218,8 +218,8 @@ void refreshPose(int id, geometry_msgs::Pose2D pose) {
 	mobots[id - 1].y += pose.y;
 	newTheta = mobots[id - 1].theta + pose.theta;
 	//if Mobot is turned around 360°, then start with 0°
-	if ((nearly_equal(newTheta, 2 * pi, 0.1)) 
-		|| (nearly_equal(newTheta, -2 * pi, 0.1))) {
+	if ((nearly_equal(newTheta, 2 * pi, 0.01)) 
+		|| (nearly_equal(newTheta, -2 * pi, 0.01))) {
 		mobots[id - 1].theta = fmod(newTheta, 2 * pi);
 	} else {
 		mobots[id - 1].theta += pose.theta;
@@ -615,7 +615,7 @@ bool keyReqCallback(path_planner::KeyboardRequest::Request& req,
 	bool en = req.enable;
 	int id = req.mobot_id;
 	if (id == 0 || id == 1 || id == 2) {
-		mobots[id].userControlled = en ? 2 : 0; //keaboard control activated or deactivated?
+		mobots[id].userControlled = en ? 2 : 0; //keyboard control activated or deactivated?
 		ROS_INFO("switching the keyboard control granted for Mobot %i", id+1);
 		if (en) {
 			ROS_INFO("Mobot %i is controlled via keyboard", id+1);
