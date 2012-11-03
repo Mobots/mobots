@@ -1,0 +1,16 @@
+<package>
+  <description brief="util">
+
+     util
+
+  </description>
+  <author>David Weigel</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/slam</url>
+  <export>
+    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -Wl,-rpath,${prefix}/lib -lutil"/>
+  </export>
+</package>
+
+
