@@ -626,6 +626,7 @@ bool keyReqCallback(path_planner::KeyboardRequest::Request& req,
 			ROS_INFO("Mobot %i is controlled by the system", id+1);
 		}
 		res.enabled = en;
+		mobots[id].timer = 0;
 		return true;
 	} else {
 		ROS_INFO("%i is an invalid Mobot ID, keyboard request not granted", id+1);
