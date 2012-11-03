@@ -26,7 +26,7 @@ FeatureSet features2;
  * angle is in radian kk
  */
 
-void findRotationMatrix2D(Point2f center, double angle, Mat& rotMat){
+void findRotationMatrix2D(Point2d center, double angle, Mat& rotMat){
     double alpha = cos(angle);
     double beta = sin(angle);
     rotMat.create(2, 3, CV_64F);
@@ -75,6 +75,8 @@ extern Mat mm1;
 extern Mat mm2;
 extern Mat good_matches_r;
 extern Mat good_matches;
+extern Mat mega;
+extern Mat homo;
 
 void checkResult(){
   geometry_msgs::Pose2D delta;
@@ -87,18 +89,22 @@ void checkResult(){
   }
 	//imshow("good Matches with ransac", good_matches_r);
 	//imshow("good Matches", good_matches);
-	//imshow("mm1", mm1);
-	//imshow("mm2", mm2);
+
   /*cout << "deltaX " << delta.x << endl;
   cout << "deltaY " << delta.y << endl;
   cout << "theta " << delta.theta << " rad = " << toDegree(delta.theta) << "°" << endl;
   Mat aff;*/
 	Mat aff;
   
-  findRotationMatrix2D(Point2f(gimage2.cols/2, gimage2.rows/2), delta.theta, aff);
+  findRotationMatrix2D(Point2d(gimage2.cols/2, gimage2.rows/2), -delta.theta, aff);
   aff.at<double>(0,2) = delta.x;
   aff.at<double>(1,2) = delta.y;
-  cout << affine2 << endl;
+  cout << "aff:" << endl << aff << endl;
+	
+	//imshow("mm1", mm1);
+	//imshow("mm2", mm2);
+	//imshow("mega", mega);
+	
   Mat result;
   Mat result2;
   result2.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
@@ -112,47 +118,28 @@ void checkResult(){
   gimage1.copyTo(outImg21);
   warpAffine(gimage2, result2, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
   
-  imshow("result with ransac", result);
-  imshow("result2 with ransac", result2);
-  
-
-  /*Mat result3;
+	Mat a = result.clone();
+	Mat b = result2.clone();
+  imshow("result with ransac", a);
+  imshow("result2 with ransac", b);
+	
+	Mat result3;
   Mat result4;
   result3.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
   result4.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
-  Mat outImg3 = result3(Rect(0, 0, gimage1.cols, gimage1.rows));
-  Mat outImg41 = result4(Rect(0, 0, gimage1.cols, gimage1.rows));
-  
-  findRotationMatrix2D(Point2f(gimage2.cols/2, gimage2.rows/2), delta.theta, affine2);
-  affine2.at<double>(0,2) = delta.x;
-  affine2.at<double>(1,2) = delta.y;
-  cout << "now affine 2 " << endl << affine3 << endl;
-  warpAffine(gimage2, result3, affine2, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
-  gimage1.copyTo(outImg3);
-  
-  gimage1.copyTo(outImg41);
-  warpAffine(gimage2, result4, affine2, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
-  
-  
-  imshow("result without ransac", result3);
-  imshow("result 2 without ransac", result4);
-  
-  /*Mat result3;
-  Mat result4;
-  result3.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
-  result4.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
-  Mat outImg3 = result3(Rect(0, 0, gimage1.cols, gimage1.rows));
-  Mat outImg41 = result4(Rect(0, 0, gimage1.cols, gimage1.rows));
+  outImg1 = result3(Rect(0, 0, gimage1.cols, gimage1.rows));
+  outImg21 = result4(Rect(0, 0, gimage1.cols, gimage1.rows));
 
-  warpPerspective(gimage2, result3, H, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
-  gimage1.copyTo(outImg3);
+	cout << "homo:" << endl << homo << endl;
+  warpPerspective(gimage2, result3, homo, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  gimage1.copyTo(outImg1);
   
-  gimage1.copyTo(outImg41);
-  warpPerspective(gimage2, result4, H, result3.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  gimage1.copyTo(outImg21);
+  warpPerspective(gimage2, result4, homo, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
   
-  
-  imshow("result H", result3);
-  imshow("result H2", result4);*/
+  imshow("result with homo + ransac", result3);
+  imshow("result2 with homo + ransac", result4);
+ 
   
   //imwrite("out.png", result);
   waitKey(0);

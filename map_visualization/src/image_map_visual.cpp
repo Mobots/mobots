@@ -248,8 +248,8 @@ int ImageMapVisual::deleteAllImages(){
 }
 
 // Position and orientation are passed through to the SceneNode
-int ImageMapVisual::setImagePose(float poseX, float poseY, float poseTheta,
-									int sessionID, int mobotID, int imageID){
+int ImageMapVisual::setImagePose(int sessionID, int mobotID, int imageID,
+                                 float poseX, float poseY, float poseTheta){
 	Ogre::SceneNode* imageNode = findNode(sessionID, mobotID, imageID);
     if(imageNode == NULL){
         return 1;

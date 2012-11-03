@@ -60,7 +60,7 @@ public:
 	int deleteAllImages();
 
 	
-    int setImagePose(float poseX, float poseY, float poseTheta, int sessionID, int mobotID, int imageID);
+    int setImagePose(int sessionID, int mobotID, int imageID, float poseX, float poseY, float poseTheta);
 
     void deleteMobotModel(const std::string* nodeName);
     void deleteAllMobotModels();
