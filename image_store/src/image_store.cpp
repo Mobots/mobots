@@ -169,13 +169,16 @@ int main(int argc, char **argv){
 	// The node is called image_store_server
 	ros::init(argc, argv, "image_store");
     currentSessionID = 0;
-	/*if(!ros::param::get("/sessionID", currentSessionID)){
+	if(!ros::param::get("/sessionID", currentSessionID)){
 		currentSessionID = 0;
 		ROS_ERROR("%s /sessionID is not set, sessionID set to 0", __FILE__);
-	}*/
-	std::stringstream stream;
-	stream << "mkdir $HOME/mobots_data/session-" << currentSessionID;
-	system(stream.str().c_str());
+	}
+	for(int i = 0; i < mobotCount; i++){
+		std::stringstream stream;
+		stream << "mkdir $HOME/mobots-data/session-" << currentSessionID << "/mobot-" << i;
+		system(stream.str().c_str());
+	}
+
 	ros::NodeHandle n;
 	// To save images: image_store_save
 	// To get images: image_store_get
