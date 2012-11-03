@@ -7,14 +7,9 @@
 
 #include <vector>
 
-// The row in which the data is located in the vector
-// Has to be synced with map_visualization::image_map_display/visual
-static const int SESSION =  0;
-static const int MOBOT =    1;
-static const int ENABLED =  2;
-static const int IMAGES  =  3;
-static const int RELATIVE = 4;
-static const int ABSOLUTE = 5;
+#include <ros/ros.h>
+
+#include <map_visualization/definitions.h>
 
 namespace map_visualization{
 
@@ -35,16 +30,17 @@ private:
     void addMobot(int sessionID, int mobotID, int key, int value);
     void removeMobot(int sessionID, int mobotID);
     void removeSession(int sessionID);
-    // TODO support sessions
+    // TODO support sessions properly
     //{sessionID, mobotID,enabled,images,rel_pose,abs_pose}
     std::vector< std::vector<int> > tableData;
     int activeMobot;
 public Q_SLOTS:
-    void updateData(int sessionID, int mobotID, int key, int value);
+    void updateTable(int sessionID, int mobotID, int key, int value);
 Q_SIGNALS:
-     void removeWaypointMobot(int mobotID);
-     void addWaypointMobot(int mobotID);
-     void clearWaypointMobot();
+    void tableChanged(int session, int mobot, int key, int value);
+    void removeWaypointMobot(int mobotID);
+    void addWaypointMobot(int mobotID);
+    void clearWaypointMobot();
 };
 
 }

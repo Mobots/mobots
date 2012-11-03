@@ -5,8 +5,6 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 set(ROS_BUILD_TYPE RelWithDebInfo)
 ## Setup the ROS libraries
 rosbuild_init()
-EXEC_PROGRAM("rosstack find mobots" OUTPUT_VARIABLE MOBOT_PATH)
-include_directories(${MOBOT_PATH}/map_visualization/include/)
 # set the default path for built executables to the "bin" directory
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 

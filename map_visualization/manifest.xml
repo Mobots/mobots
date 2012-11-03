@@ -15,7 +15,7 @@
   <export>
     <rosdoc config="${prefix}/rosdoc.yaml"/>
     <rviz plugin="${prefix}/plugin_description.xml"/>
-    <cpp cflags="-I${prefix}/include"/>
+    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -Wl,-rpath,${prefix}/lib -lutil"/>
   </export>
   <platform os="ubuntu" version="9.04"/>
   <platform os="ubuntu" version="9.10"/>
