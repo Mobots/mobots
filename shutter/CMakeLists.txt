@@ -29,9 +29,9 @@ rosbuild_add_boost_directories()
 EXEC_PROGRAM("rosstack find mobots" OUTPUT_VARIABLE MOBOT_PATH)
 include_directories(${MOBOT_PATH}/util/include/)
 
-rosbuild_add_executable(shutter src/shutter.cpp src/shutter2.cpp)
+rosbuild_add_executable(shutter src/shutter.cpp src/shutter2.cpp src/geometry.cpp)
 #rosbuild_add_executable(manualShutter src/manualShutter.cpp)
-target_link_boost(shutter geometry)
+#rosbuild_link_boost(shutter geometry)
 #target_link_libraries(example ${PROJECT_NAME})
 #rosbuild_find_ros_package(image_transport)
 
