@@ -17,25 +17,21 @@ ImageMapWaypoint::ImageMapWaypoint(int argc, char** argv):
 ImageMapWaypoint::~ImageMapWaypoint(){
     if(ros::isStarted()) {
         unsubscribe();
-        ros::shutdown(); // explicitly needed since we use ros::start();
-        ros::waitForShutdown();
     }
-    wait();
 }
 
-void ImageMapWaypoint::run(){
+void ImageMapWaypoint::process(){
     ros::init(init_argc, init_argv, "image_map_info");
     if ( ! ros::master::check() ) {
         return;
     }
     ROS_INFO("[Map_Visualization_Helper] running");
     // explicitly needed since our nodehandle is going out of scope.
-    ros::start();
     ros::NodeHandle nh_;
     nh = &nh_;
     subscribe();
-
-    start();
+    ros::spin();
+    Q_EMIT finished();
 }
 
 void ImageMapWaypoint::subscribe(){
