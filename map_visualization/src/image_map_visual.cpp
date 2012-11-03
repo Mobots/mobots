@@ -1,4 +1,5 @@
 #include "image_map_visual.h"
+#include "mobots_msgs/constants.h"
 
 namespace map_visualization
 {
@@ -117,11 +118,12 @@ int ImageMapVisual::insertImage(int sessionID, int mobotID,	int imageID,
 	imageNode->attachObject(manual_object_);
 	
 	// Normalize the image size
-	float imageScale = 5;
+	float imageScale = mobots_msgs::image_width_in_meters;
 	float widthScaled = imageScale;
     float rows = mat.rows;
     float cols = mat.cols;
-	float heightScaled = (rows / cols) * imageScale;
+	//float heightScaled = (rows / cols) * imageScale;
+    float heightScaled = mobots_msgs::image_height_in_meters;
 	std::cout << imageScale << " " << mat.cols << " " << widthScaled << " " << mat.rows << " " << heightScaled << std::endl;
 	
 	// Define the manual object as a rectangle
