@@ -6,7 +6,7 @@
 #include <cmath>
 #include <feature_detector/MessageBridge.h>
 #include "mobots_msgs/PoseAndID.h"
-#include "mobots_msgs/constants.h"
+#include "mobots_common/constants.h"
 
  /* Erlaube ich mir, weil darunter sowieso noch der Namespace TreeOptimizer2 liegt. */
 using namespace AISNavigation;
@@ -149,7 +149,7 @@ void Slam::findEdgesBruteforce()
       TreeOptimizer2::Transformation t = convertPixelsToMeters(delta);
 
       // Lustige Covarianzmatrix erstellen
-      float varianz_translation = std::pow(10.0/2 * mobots_msgs::image_height_in_meters / mobots_msgs::image_height_in_pixels, 2); // Schätzung: 2-fache Standardabweichung 10 Pixel
+      float varianz_translation = std::pow(10.0/2 * mobots_common::constants::image_height_in_meters / mobots_common::constants::image_height_in_meters, 2); // Schätzung: 2-fache Standardabweichung 10 Pixel
       float varianz_rotation = std::pow(10.0/2 * M_PI/180, 2); // Schätzung: 2-fache Standardabweichung 10 Grad
       
       TreeOptimizer2::InformationMatrix m;
@@ -203,14 +203,11 @@ mobots_msgs::ID Slam::split(uint32_t id)
 
 TreeOptimizer2::Transformation Slam::convertPixelsToMeters(geometry_msgs::Pose2D pose)
 {
-  float x_in_meters = pose.x * mobots_msgs::image_width_in_meters / mobots_msgs::image_width_in_pixels;
-  float y_in_meters = - pose.y * mobots_msgs::image_height_in_meters / mobots_msgs::image_height_in_pixels;
+  float x_in_meters = pose.x * mobots_common::constants::image_width_in_meters / mobots_common::constants::image_width_in_pixels;
+  float y_in_meters = - pose.y * mobots_common::constants::image_height_in_meters / mobots_common::constants::image_height_in_pixels;
   float theta = pose.theta;
-  /*if (theta < 0)
-    theta += M_PI;*/
-
-  ROS_INFO_STREAM("THETA " << theta);
-  return TreeOptimizer2::Transformation(x_in_meters, y_in_meters, theta);
+  assert(0 <= pose.theta && pose.theta < 2*M_PI);
+  return TreeOptimizer2::Transformation(x_in_meters, y_in_meters, pose.theta);
 }
 
 geometry_msgs::Pose2D Slam::convert(TreeOptimizer2::Pose toro_pose)
