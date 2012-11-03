@@ -613,6 +613,7 @@ void userCallback(const mobots_msgs::PoseAndID& input) {
 bool keyReqCallback(path_planner::KeyboardRequest::Request& req,
 		path_planner::KeyboardRequest::Response& res) {
 	bool en = req.enable;
+	ROS_INFO("keyboard incoming");
 	int id = req.mobot_id;
 	if (id == 0 || id == 1 || id == 2) {
 		mobots[id].userControlled = en ? 2 : 0; //keyboard control activated or deactivated?
