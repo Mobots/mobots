@@ -117,49 +117,52 @@ int ImageMapVisual::insertImage(int sessionID, int mobotID,	int imageID,
 	}
 	imageNode->attachObject(manual_object_);
 	
-	// Normalize the image size
-	float imageScale = mobots_msgs::image_width_in_meters;
-	float widthScaled = imageScale;
-    float rows = mat.rows;
-    float cols = mat.cols;
-	//float heightScaled = (rows / cols) * imageScale;
-    float heightScaled = mobots_msgs::image_height_in_meters;
-	std::cout << imageScale << " " << mat.cols << " " << widthScaled << " " << mat.rows << " " << heightScaled << std::endl;
-	
 	// Define the manual object as a rectangle
 	manual_object_->begin(material_->getName(),
 		Ogre::RenderOperation::OT_TRIANGLE_LIST);
 	{
-		// First triangle
-		{
-			// Bottom left
-			manual_object_->position( 0.0f, 0.0f, 0.0f );
+        // First triangle
+        {
+            // Bottom left
+            manual_object_->position( -mobots_msgs::image_width_in_meters/2,
+                                      -mobots_msgs::image_height_in_meters/2,
+                                      0.0f );
             manual_object_->textureCoord(0.0f, 1.0f);
-			manual_object_->normal( 0.0f, 0.0f, 1.0f );
-			// Top right
-			manual_object_->position( widthScaled, heightScaled, 0.0f );
+            manual_object_->normal( 0.0f, 0.0f, 1.0f );
+            // Top right
+            manual_object_->position( mobots_msgs::image_width_in_meters/2,
+                                      mobots_msgs::image_height_in_meters/2,
+                                      0.0f );
             manual_object_->textureCoord(1.0f, 0.0f);
-			manual_object_->normal( 0.0f, 0.0f, 1.0f );
-			// Top left
-			manual_object_->position( 0.0f, heightScaled, 0.0f );
-			manual_object_->textureCoord(0.0f, 0.0f);
-			manual_object_->normal( 0.0f, 0.0f, 1.0f );
-		}
-		// Second triangle
-		{
-			// Bottom left
-			manual_object_->position( 0.0f, 0.0f, 0.0f );
+            manual_object_->normal( 0.0f, 0.0f, 1.0f );
+            // Top left
+            manual_object_->position( -mobots_msgs::image_width_in_meters/2,
+                                      mobots_msgs::image_height_in_meters/2,
+                                      0.0f );
+            manual_object_->textureCoord(0.0f, 0.0f);
+            manual_object_->normal( 0.0f, 0.0f, 1.0f );
+        }
+        // Second triangle
+        {
+            // Bottom left
+            manual_object_->position( -mobots_msgs::image_width_in_meters/2,
+                                      -mobots_msgs::image_height_in_meters/2,
+                                      0.0f );
             manual_object_->textureCoord(0.0f, 1.0f);
-			manual_object_->normal( 0.0f, 0.0f, 1.0f );
-			// Bottom right
-			manual_object_->position( widthScaled, 0.0f, 0.0f );
+            manual_object_->normal( 0.0f, 0.0f, 1.0f );
+            // Bottom right
+            manual_object_->position( mobots_msgs::image_width_in_meters/2,
+                                      -mobots_msgs::image_height_in_meters/2,
+                                      0.0f );
             manual_object_->textureCoord(1.0f, 1.0f);
-			manual_object_->normal( 0.0f, 0.0f, 1.0f );
-			// Top right
-			manual_object_->position( widthScaled, heightScaled, 0.0f );
+            manual_object_->normal( 0.0f, 0.0f, 1.0f );
+            // Top right
+            manual_object_->position( mobots_msgs::image_width_in_meters/2,
+                                      mobots_msgs::image_height_in_meters/2,
+                                      0.0f );
             manual_object_->textureCoord(1.0f, 0.0f);
-			manual_object_->normal( 0.0f, 0.0f, 1.0f );
-		}
+            manual_object_->normal( 0.0f, 0.0f, 1.0f );
+        }
 	}
 	manual_object_->end();
     setImagePose(sessionID, mobotID, imageID, poseX, poseY, poseTheta);
@@ -285,7 +288,7 @@ int ImageMapVisual::setMobotModel(int mobotID, float poseX, float poseY, float p
         Ogre::Entity* thisEntity = sceneManager->createEntity("cc-" + id, "ColourCube-" + id);
         thisEntity->setMaterialName("Test/ColourTest-" + id);
         sceneNode->attachObject(thisEntity);
-        sceneNode->setScale(0.01, 0.01, 0.005);
+        sceneNode->setScale(0.0001, 0.0001, 0.00005);
         node = (Ogre::Node*) sceneNode;
     }
     // Set position
