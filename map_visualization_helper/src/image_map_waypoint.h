@@ -26,10 +26,9 @@ class ImageMapWaypoint : public QThread
 public:
     ImageMapWaypoint(int argc, char** argv);
     ~ImageMapWaypoint();
-    //bool init();
     void updateInfoHandler(const mobots_msgs::IDKeyValue::ConstPtr& msg);
     void poseRelayHandler(const geometry_msgs::PoseStamped::ConstPtr& msgIn);
-    int updateRviz(std::string function, std::string operands);
+    int updateRviz(int function, std::string operands);
 protected:
     void run();
 public Q_SLOTS:

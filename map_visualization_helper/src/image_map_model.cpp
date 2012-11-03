@@ -88,7 +88,7 @@ bool ImageMapModel::setData(const QModelIndex & index, const QVariant & value, i
 Qt::ItemFlags ImageMapModel::flags(const QModelIndex &index) const{
     int row = index.row();
     int col = index.column();
-    if (col == 1 || col == 3 || col == 4){
+    if (col == ENABLED || col == RELATIVE || col == ABSOLUTE){
         if(tableData[row][col] != -1){
             return Qt::ItemIsEnabled | Qt::ItemIsEditable;
         }

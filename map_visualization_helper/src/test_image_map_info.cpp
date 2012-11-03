@@ -4,126 +4,124 @@
 #include <mobots_msgs/PoseAndID.h>
 #include <mobots_msgs/IDKeyValue.h>
 #include <map_visualization/RemoteProcedureCall.h>
-#include <map_visualization/definitions.h>
+#include <iostream>
+#include <definitions.h>
 
-ros::NodeHandle nh;
-ros::Subscriber poseRelayTestSub;
-ros::Publisher updateInfoTestPub;
-ros::ServiceServer updateRvizTestServer;
+ros::NodeHandle* nh;
+ros::Subscriber* poseRelayTestSub;
+ros::Publisher* updateInfoTestPub;
+ros::ServiceServer* updateRvizTestServer;
 
 void poseRelayTestHandler(const mobots_msgs::PoseAndID::ConstPtr& msg){
     ROS_INFO("Pose(%f, %f, %f) ID(%i, %i, %i)", msg->pose.x, msg->pose.y,
              msg->pose.theta, msg->id.session_id, msg->id.mobot_id, msg->id.image_id);
-    return 1;
 }
 
-int updateInfoTest(){
+void updateInfoTest(){
+    ROS_INFO("updateInfoTest");
     mobots_msgs::IDKeyValue msg;
     msg.id.session_id = 0;
     msg.id.mobot_id = 0;
     msg.id.image_id = 0;
-    cout << "Enter the session:" << endl;
-    cin >> msg.id.session_id;
-    cout << "Enter the value:" << endl;
-    cin >> msg.id;
-    while(ros::ok){
+    std::cout << "Enter the session:" << std::endl;
+    std::cin >> msg.id.session_id;
+    std::cout << "Enter the value:" << std::endl;
+    std::cin >> msg.id.mobot_id;
+    ros::Rate rate_limit(1);
+    while(ros::ok()){
         msg.id.mobot_id %= 3;
-        cout << "Enter the key:" << endl;
-        cin >> msg.key;
-        cout << "Enter the value:" << endl;
-        cin >> msg.value;
-        updateInfoTestPub.publish(msg);
+        std::cout << "Enter the key:" << std::endl;
+        std::cin >> msg.key;
+        std::cout << "Enter the value:" << std::endl;
+        std::cin >> msg.value;
+        updateInfoTestPub->publish(msg);
+        ROS_INFO("spin");
         ros::spinOnce();
+        rate_limit.sleep();
         msg.id.mobot_id++;
     }
-    return 1;
+    ROS_INFO("updateInfoTest");
 }
 
-
-int updateRvizTest(){
-    map_visualization::RemoteProcedureCall srv;
-    int function = srv.request.function;
+bool updateRvizTest(map_visualization::RemoteProcedureCall::Request &req,
+                    map_visualization::RemoteProcedureCall::Response &res){
+    int function = req.function;
     switch(function){
-    case insertImage:
+    case INSERTIMAGE:
         ROS_INFO("a");
         break;
-    case showImage:
+    case SHOWIMAGE:
         ROS_INFO("b");
         break;
-    case hideImage:
+    case HIDEIMAGE:
         ROS_INFO("c");
         break;
-    case deleteImage:
+    case DELETEIMAGE:
         ROS_INFO("d");
         break;
 
-    case showMobot:
+    case SHOWMOBOT:
         ROS_INFO("e");
         break;
-    case hideMobot:
+    case HIDEMOBOT:
         ROS_INFO("f");
         break;
-    case deleteMobot:
+    case DELETEMOBOT:
         ROS_INFO("g");
         break;
 
-    case showSession:
+    case SHOWSESSION:
         ROS_INFO("h");
         break;
-    case hideSession:
+    case HIDESESSION:
         ROS_INFO("i");
         break;
-    case deleteSession:
+    case DELETESESSION:
         ROS_INFO("j");
         break;
 
-    case deleteAllImages:
+    case DELETEALLIMAGES:
         ROS_INFO("k");
         break;
 
-    case setImagePose:
+    case SETIMAGEPOSE:
         ROS_INFO("l");
         break;
 
-    case deleteMobotModel:
+    case DELETEMOBOTMODEL:
         ROS_INFO("m");
         break;
-    case deleteAllMobotModels:
+    case DELETEALLMOBOTMODELS:
         ROS_INFO("n");
         break;
-    case setMobotModel:
+    case SETMOBOTMODEL:
         ROS_INFO("o");
         break;
     }
-
-    return 1;
+    res.result = 0;
+    return true;
 }
 
 int main(int argc, char** argv){
-    ros::init(argc, argv);
+    ROS_INFO("Test");
+    ros::init(argc, argv, "map_visualization_test");
+    ros::NodeHandle nh_;
+    nh = &nh_;
+    ROS_INFO("Test");
     // Test input: User Waypoint from Rviz
-    poseRelayTestSub = nh.subscribe("/path_planner/waypoint_user", 10,
-            poseRelayTestHandler);
-    updateInfoTestPub = nh.advertise
+    ros::Subscriber poseRelayTestSub_ = nh->subscribe("/path_planner/waypoint_user", 10,
+                                    poseRelayTestHandler);
+    poseRelayTestSub = &poseRelayTestSub_;
+    ros::Publisher updateInfoTestPub_ = nh->advertise
             <mobots_msgs::IDKeyValue>("/image_map/update_push", 10);
-    updateRvizTestServer = nh.advertise("/image_map/rpc", updateRvizTestHandler);
-    if(argv[1][0] == 'a'){
-        poseRelayTestHandler();
-        return 1;
-    }
-    if(argv[1][0] == 'b'){
+    updateInfoTestPub = &updateInfoTestPub_;
+    ros::ServiceServer updateRvizTestServer_ = nh->advertiseService("/image_map/rpc", updateRvizTest);
+    updateRvizTestServer = &updateRvizTestServer_;
+    ROS_INFO("Test");
+    if(argv[0][0] == 'a'){
         updateInfoTest();
         return 1;
     }
-    if(argv[1][0] == 'c'){
-        updateRvizTest();
-        return 1;
-    }
-    if(argv[1][0] == 'd'){
-        poseRelayTestHandler();
-        updateInfoTest();
-        updateRvizTest();
-        return 1;
-    }
-    ROS_INFO("usage: 'a' for poseRelayTest, 'b' for updateInfo, 'c' for updateRviz, 'd' for all");
+    ros::spin();
+    return 0;
 }

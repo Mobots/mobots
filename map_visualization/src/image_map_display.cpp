@@ -324,7 +324,11 @@ void ImageMapDisplay::testVisual(ImageMapVisual* visual_, std::string filePath){
 	imageData.assign(buffer, buffer + sizeof(buffer) / sizeof(char));
 	float a = 0.0;
     cv::Mat mat = cv::imdecode(imageData, 1);
-    visual_->insertImage(a,a,a, 0,0,0, mat);
+    visual_->insertImage(a,a,0, 0,0,0, mat);
+    visual_->insertImage(0,5,1.5707963, 0,0,1, mat);
+    visual_->insertImage(0,10,3.1415927, 0,0,1, mat);
+    visual_->insertImage(0,15,4.712389, 0,0,1, mat);
+    visual_->insertImage(0,20,6.2831853, 0,0,1, mat);
     //ROS_INFO("testVisual");
     visual_->setImagePose(1,1,0, 0,0,0);
     visual_->setMobotModel(1,4,2,0);
