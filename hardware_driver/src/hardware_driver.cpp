@@ -1,16 +1,13 @@
-
+#include "hardware_driver.h"
 
 using namespace std;
-
-//=== constants ===
-const char TAG[] = "[hardware_driver] ";
 
 
 //==== method declarations ====
 
 int main(int argc, char** argv)
 {
-ros::init(argc, argv, "PathController");
+ros::init(argc, argv, "hardware_driver");
 Hardware_driver Hardware_driver(0);
 }
 
@@ -18,7 +15,7 @@ Hardware_driver::Hardware_driver(int mobot_ID):mobotID(mobot_ID) 			//Konstrukto
 {
   nh = new ros::NodeHandle;
   if(!util::parseNamespace(nh->getNamespace(), mobotID))
-    ROS_ERROR("%s mobotID cannot be parsed from namespace: %s", "path_controller", nh->getNamespace().c_str());
+    ROS_ERROR("%s mobotID cannot be parsed from namespace: %s", __PRETTY_FUNCTION__);
   Hardware_driver::startWeg();
 }
 
@@ -54,7 +51,7 @@ void Hardware_driver::startWeg()
 
     //Services
       client = nh->serviceClient<shutter::delta>("getDelta");
-      service = nh->advertiseService("setGlobalPose", &PathController::changeGlobalPose,this);
+      service = nh->advertiseService("setGlobalPose", &hardware_driver::ChangeGlobalPose,this);
 
     //Parameter übernehmen
     ros::param::param<double>("sBrems",sBrems,0.2);
