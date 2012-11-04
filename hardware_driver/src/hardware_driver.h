@@ -29,7 +29,7 @@ const static int POST_EVERY_X_MESSAGE=5;
   double x,y,theta;
 } Pose;*/
 //typedef geometry_msgs::Pose2D Pose;
-typedef enum{STIFF,FAST} way;
+typedef enum{STIFF,FAST} way_type;
 
   // TODO potentielles Laufzeitproblem: TORO-Laufzeit länger als ein "Shutter"==> getdelta bezieht sich auf ein falsches Bild
 
@@ -98,7 +98,7 @@ typedef enum{STIFF,FAST} way;
     ros::ServiceServer service;
     shutter::delta srv;
 		
-      way wayType;
+      way_type wayType;
       double sBrems,bParam,vParam,dParam,rootParam, radiusInnen, vMax, minS, minDegree;
 
       int mobotID, counter;

@@ -48,6 +48,7 @@ void startWeg()
     // ros::param::param<double>("vFac",vFac,1);  //anderes Konzept
     //vFac ist der zusammenhang: Vmaximal/1000 zwischen promilledaten und realität
     ros::param::param<double>("vParam", vParam, 1); //?? den hast du vergessen /Jonas
+    ros::param::param<way_type>("fahrTyp",wayType,FAST);
 
     bParam=pow(vMax,rootParam)/sBrems;
 
@@ -102,11 +103,11 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		deltaPose.y += delta_vals->delta_y;//yAvg;
 		deltaPose.theta += delta_vals->delta_theta;//theta;*/
 					//TODO globalPose aktualisieren
+	    globalPose.x+=deltaPose.x;
+	    globalPose.y+=deltaPose.y;
+	    globalPose.theta+=deltaPose.theta;
+		deltaPose.x = deltaPose.y = deltaPose.y = 0;
 		if (POST_EVERY_X_MESSAGE == counter) {
-		    globalPose.x+=deltaPose.x;
-		    globalPose.y+=deltaPose.y;
-		    globalPose.theta+=deltaPose.theta;
-			deltaPose.x = deltaPose.y = deltaPose.y = 0;
 			counter=0;
 
 			globalPosePub.publish(globalPose);
@@ -140,7 +141,7 @@ void* infraredReader(void* data){
  *# prio == 0: pose vor allen anderen einfügen, rest verwerfen (default)
   # prio == -1: pose vor allen anderen einfügen
   # prio == -2: pose am ende der liste einfügen
-  # prio == sonst: pose an der prio-position einfügen
+  # prio == sonst: pose an der prio-position einfügen (zero based)
 */
 void absPoseCallback(const mobots_msgs::Pose2DPrio& next_pose){
   switch(next_pose.prio){
@@ -162,9 +163,11 @@ void absPoseCallback(const mobots_msgs::Pose2DPrio& next_pose){
 	 default:
 		list<geometry_msgs::Pose2D>::iterator it = targetPoses.begin();
 		int prio = next_pose.prio;
-		if(prio > targetPoses.size())
-			prio = targetPoses.size();
-		std::advance(it, prio);
+		if(prio >= targetPoses.size()) {
+			targetPoses.push_back(next_pose.pose);
+			break;
+		}
+		std::advance(it, prio);	//keep this zero-based, user gives prio==5, it goes to list[5]=> inserted as6th element
 		targetPoses.insert(it, next_pose.pose);
 		break;		
   }
@@ -173,10 +176,24 @@ void absPoseCallback(const mobots_msgs::Pose2DPrio& next_pose){
 
 
 void relPoseCallback(const mobots_msgs::Pose2DPrio& msg){
+
+  //retrieve position, to sum up with new delta pose:
   mobots_msgs::Pose2DPrio next;
-  next.pose = globalPose;
-  double cost = cos(next.pose.theta);
-  double sint = sin(next.pose.theta);
+  if (msg.prio == -1 || msg.prio == 0 || targetPoses.empty()) 	//current position, if set as current target positon or list empty
+  {
+	  next.pose = globalPose;
+  } else if (msg.prio == -2) {	//last position
+	  next.pose= targetPoses.back();
+  } else { // prio >=1 (default) s.o.
+	  next.pose = globalPose;
+	  int prio = next_pose.prio;
+	  if(prio >= targetPoses.size())
+			prio = targetPoses.size()-1;	//retrieve last element
+	  std::advance(it, prio);
+		  next.pose = *it;
+  }
+  double cost = cos(globalPose.theta);
+  double sint = sin(globalPose.theta);
   next.pose.x += cost*msg.pose.x - sint*msg.pose.y;
   next.pose.y += sint*msg.pose.x + cost*msg.pose.y;
   next.pose.theta += msg.pose.theta;
@@ -226,7 +243,12 @@ void regel()
 {
     double eX =  currentTargetPose.x - globalPose.x;
     double eY =  currentTargetPose.y - globalPose.y;
-    double eTheta =  currentTargetPose.theta - globalPose.theta;
+    double eTheta=0;
+    if (wayType == FAST) {
+    	eTheta =  tan(eY/eX) - M_PI/2 - globalPose.theta; 		//-Pi/2, um ziel mit y als hauptfahrrichtung anzufahren
+    } else {
+        eTheta =  currentTargetPose.theta - globalPose.theta;
+    }
     if (eX < minS && eY < minS && eTheta*radiusInnen < minDegree*(M_PI * radiusInnen / 180))
     { //Ziel erreicht
        //geometry_msgs::Pose2D p={0,0,0};
@@ -235,16 +257,19 @@ void regel()
 				currentTargetPose = targetPoses.front();
 			else
 				currentTargetPose = globalPose; //bleiben wir halt stehn
+		     struct ServoSpeed sersp;
+		     sersp.s1 = 0;
+		     sersp.s2 = 0;
+		     sersp.s3 = 0;
+		     proto->sendData(Debug_Controller, (unsigned char*) &sersp, sizeof(struct ServoSpeed));
 			return;
     }
-    if (true || (wayType == STIFF) || (wayType == FAST)) //TODO
-    {
      struct ServoSpeed sersp;
-     sersp.s1 = regelFkt(eX); //in m und radiusInneniusInnen
+     sersp.s1 = regelFkt(eX); //in meter und rad
      sersp.s2 = regelFkt(eY);
      sersp.s3 = regelFktDreh(eTheta);
      proto->sendData(Debug_Controller, (unsigned char*) &sersp, sizeof(struct ServoSpeed));
-    }
+
 }
 
 
