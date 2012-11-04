@@ -112,10 +112,12 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 			globalPosePub.publish(globalPose);
 		}
 
-		regel();
+		if (!targetPoses.empty()) {
+			regel();
+		}
 
 	} else {
-		std::cout << "Error, wrong ID\n" << std::endl;
+		//case: no mouse delta vals
 				return;
 		}
 }
@@ -144,6 +146,9 @@ void absPoseCallback(const mobots_msgs::Pose2DPrio& next_pose){
   switch(next_pose.prio){
 	 case -2: 
 		targetPoses.push_back(next_pose.pose);
+		if (targetPoses.size() == 1) { //case: first element was just inserted
+			currentTargetPose = next_pose.pose;
+		}
 		break;
 	 case -1:
 		targetPoses.push_front(next_pose.pose);
@@ -158,8 +163,8 @@ void absPoseCallback(const mobots_msgs::Pose2DPrio& next_pose){
 		list<geometry_msgs::Pose2D>::iterator it = targetPoses.begin();
 		int prio = next_pose.prio;
 		if(prio > targetPoses.size())
-		  prio = targetPoses.size();
-		std::advance(it, 6);
+			prio = targetPoses.size();
+		std::advance(it, prio);
 		targetPoses.insert(it, next_pose.pose);
 		break;		
   }
