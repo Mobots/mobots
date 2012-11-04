@@ -50,16 +50,19 @@ void startWeg()
     string wayTypeString;
     ros::param::param<string>("fahrTyp",wayTypeString, "FAST");
 		
-		for(int i = 0; i < wayTypeString.size(); i++)
-			wayTypeString[i] = toupper(wayTypeString[i]);
-		if(wayTypeString == string("FAST"))
-			ros::param::param<double>("drehFac",drehFac,0.4);	//Bruchteil der vMax, mit der sich der mobot maximal drehen soll
-			wayType = FAST;
-		else if(wayTypeString == string("STIFF"))
-			ros::param::param<double>("drehFac",drehFac,0.25);	//Bruchteil der vMax, mit der sich der mobot maximal drehen soll
-			wayType = STIFF;
-		else
-			ROS_ERROR("unknown type %s", wayTypeString.c_str());
+	for(int i = 0; i < wayTypeString.size(); i++) {
+		wayTypeString[i] = toupper(wayTypeString[i]);
+	}
+	if(wayTypeString == string("FAST")) {
+		ros::param::param<double>("drehFac",drehFac,0.4);	//Bruchteil der vMax, mit der sich der mobot maximal drehen soll
+		wayType = FAST;
+	}
+	else if(wayTypeString == string("STIFF")) {
+		ros::param::param<double>("drehFac",drehFac,0.25);	//Bruchteil der vMax, mit der sich der mobot maximal drehen soll
+		wayType = STIFF;
+	}
+	else
+		ROS_ERROR("unknown type %s", wayTypeString.c_str());
 
 
     bParam=pow(vMax,rootParam)/sBrems;
