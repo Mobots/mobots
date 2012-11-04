@@ -18,6 +18,7 @@
 #include "mobots_msgs/PoseAndID.h"
 #include "mobots_msgs/FeatureSetWithPoseAndID.h"
 #include <mobots_common/utils.h>
+#include <mobots_common/constants.h>
 
 // The NULL pose
 poseT zeroPose{0,0,0,1};
@@ -50,7 +51,7 @@ void refreshDeltaPoseBuffer(){
  * TODO check if a session already has images
  */
 void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg){
-	ROS_INFO("deltaPose1");
+	ROS_INFO("deltaPose1 x %d, y %d, theta %d", msg->pose.x, msg->pose.y, msg->pose.theta);
 	imagePoseData infoData{
 		{msg->id.session_id, msg->id.mobot_id, msg->id.image_id},
 		{msg->pose.x, msg->pose.y, msg->pose.theta, 1}, // delPose (relative)
@@ -166,7 +167,7 @@ void featureSetHandler(const mobots_msgs::FeatureSetWithPoseAndID& msg){
  * "image_map_display".
  */
 int main(int argc, char **argv){
-  const int mobotCount = 3;
+  const int mobotCount = mobots_common::constants::mobot_count;
 	// The node is called image_store_server
 	ros::init(argc, argv, "image_store");
     currentSessionID = 0;

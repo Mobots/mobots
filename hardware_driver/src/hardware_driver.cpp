@@ -47,12 +47,20 @@ void startWeg()
     ros::param::param<double>("minDegree",minDegree,1); //Toleranz für erreichte Drehrichtung
     // ros::param::param<double>("vFac",vFac,1);  //anderes Konzept
     //vFac ist der zusammenhang: Vmaximal/1000 zwischen promilledaten und realität
-    ros::param::param<double>("vParam", vParam, 1); //?? den hast du vergessen /Jonas
-    ros::param::param<way_type>("fahrTyp",wayType,FAST);
+    ros::param::param<double>("vParam", vParam, 1); 
+		string wayTypeString;
+    ros::param::param<string>("fahrTyp",wayTypeString, "FAST");
+		
+		for(int i = 0; i < wayTypeString.size(); i++)
+			wayTypeString[i] = toupper(wayTypeString[i]);
+		if(wayTypeString == string("FAST"))
+			wayType = FAST;
+		else if(wayTypeString == string("STIFF"))
+			wayType = STIFF;
+		else
+			ROS_ERROR("unknown type %s", wayTypeString.c_str());
 
     bParam=pow(vMax,rootParam)/sBrems;
-
-    ge
 
     initCom();
     pthread_create(&receiveThread_t, 0, receiveMethod, 0);
@@ -106,6 +114,10 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 	    globalPose.x+=deltaPose.x;
 	    globalPose.y+=deltaPose.y;
 	    globalPose.theta+=deltaPose.theta;
+			if(globalPose.theta < 0)
+				globalPose.theta += 2*M_PI;
+			else if(globalPose.theta > 2*M_PI)
+				globalPose.theta -= 2*M_PI;
 		deltaPose.x = deltaPose.y = deltaPose.y = 0;
 		if (POST_EVERY_X_MESSAGE == counter) {
 			counter=0;
@@ -185,12 +197,12 @@ void relPoseCallback(const mobots_msgs::Pose2DPrio& msg){
   } else if (msg.prio == -2) {	//last position
 	  next.pose= targetPoses.back();
   } else { // prio >=1 (default) s.o.
-	  next.pose = globalPose;
-	  int prio = next_pose.prio;
+	  int prio = msg.prio-1;
+		list<geometry_msgs::Pose2D>::iterator it = targetPoses.begin();
 	  if(prio >= targetPoses.size())
-			prio = targetPoses.size()-1;	//retrieve last element
+		prio = targetPoses.size()-1;	//retrieve last element
 	  std::advance(it, prio);
-		  next.pose = *it;
+		next.pose = *it;
   }
   double cost = cos(globalPose.theta);
   double sint = sin(globalPose.theta);
