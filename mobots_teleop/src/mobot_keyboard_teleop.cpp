@@ -57,9 +57,9 @@
 
 using namespace std;
 
-double linear_vel = 0.1;
+double linear_vel = 0.01;
 double angular_vel = 0.1;
-double linear_vel_fast = 0.3;
+double linear_vel_fast = 0.03;
 double angular_vel_fast = 0.3;
 int mobotID;
 
