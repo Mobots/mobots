@@ -23,6 +23,8 @@
 #include "../stm32vl/Client/UARTCommunication.hpp"
 #include "../stm32vl/mousesensor.h"
 
+const static int POST_EVERY_X_MESSAGE=5;
+
 /*typedef struct{
   double x,y,theta;
 } Pose;*/
@@ -99,7 +101,7 @@ typedef enum{STIFF,FAST} way;
       way wayType;
       double sBrems,bParam,vParam,dParam,rootParam, radiusInnen, vMax, minS, minDegree;
 
-      int mobotID;
+      int mobotID, counter;
 
 
 #endif // HARDWARE_DRIVER_H

@@ -291,41 +291,45 @@ int Sensor_init(SPI spi) {
 }
 
 //gibt die pixel als strecke in meter im mobot_koordinatensystem aus
-void transformMouseToCoordinateSystem(double *sX,double *sY, double *sTheta,double r) {
+struct Mouse_Data_Delta2DPose transformMouseToCoordinateSystem(double r_aussen) {
+	struct Mouse_Data_Delta2DPose s;
+
 
 	static const double sin_120 = -0.5;
 	static const double cos_120 = 0.866028;
 	double fuenf_sechstel = 0.83333;
 
+	//get current mouse data
 	double x1=delta_vals1.delta_x;
 	double y1=delta_vals1.delta_y;
 	double x2=delta_vals2.delta_x;
 	double y2=delta_vals2.delta_y;
 
-//	sX=((x1-x2)/3-y1*1.1547)*0.0254/5040; //TODO correct dpi insert
-	//sY=(x1-x2)/3*0.0254/5040;
-//	sTheta=(y1*0.5774+0.6667*x2+x1*0.3333))/r*0.0254/5040; //TODO eventuell nicht bogenmass
-
+	//transform
+	s.delta_x=((x1-x2)/3-y1*1.1547)*0.0254/5040; //TODO correct dpi insert
+	s.delta_y=(x1-x2)/3*0.0254/5040;
+	s.delta_theta=(y1*0.5774+0.6667*x2+x1*0.3333))/r*0.0254/5040; //TODO eventuell nicht bogenmass
+	return s;
 
 }
 
 struct Servospeed transformToServoSpeed(double r_innen, double r_aussen, double v_max, double totzeit){
 
-#define sqrt3 1,73205081
 
 	double x1=delta_vals1.delta_x;
 	double y1=delta_vals1.delta_y;
 	double x2=delta_vals2.delta_x;
 	double y2=delta_vals2.delta_y;
 
-	#define penis -r_innen/r_aussen*y1/sqrt3-r_innen/r_aussen*2/3*x2-r_innen/r_aussen*x1/3
+	#define sqrt3 1,73205081
+	#define omega -r_innen/r_aussen*y1/sqrt3-r_innen/r_aussen*2/3*x2-r_innen/r_aussen*x1/3
 	struct Servospeed s;
 
-	s.s1 = (x1/3-x2/3-2/sqrt3*y1 + penis)/v_max*1000/totzeit;
-	s.s2 =  (x1/sqrt3-x2/3+y1/sqrt3 + penis)/v_max*1000/totzeit;
-	s.s3 =  ()-y1/sqrt3-2/3*x1 + 2/3*x2 + penis)/v_max*1000/totzeit;
+	s.s1 = (x1/3-x2/3-2/sqrt3*y1 + omega)/v_max*1000/totzeit;
+	s.s2 =  (x1/sqrt3-x2/3+y1/sqrt3 + omega)/v_max*1000/totzeit;
+	s.s3 =  (-y1/sqrt3-2/3*x1 + 2/3*x2 + omega)/v_max*1000/totzeit; 	//TODO, nicht sicher, ob richtig abgeschrieben
 
-
+    return s;
 
 
 

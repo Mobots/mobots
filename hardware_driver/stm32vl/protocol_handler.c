@@ -44,6 +44,7 @@ void ControllerDebugHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		setSollV(servSp);
 
 }
+
 void setServoSpeedHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		unsigned short size) {
 
@@ -97,11 +98,11 @@ void RequestHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		protocol_sendData(MouseData_All, (unsigned char*) &mouse_data,
 				sizeof(mouse_data));
 		break;
-	case MouseData_DeltaVal:
+	//case MouseData_DeltaVal:
 		//print("MouseData_DeltaVal");
 	//	protocol_sendData(SensorData_DeltaVal, (unsigned char*) &delta_vals,
 	//			sizeof(struct Mouse_Data_DeltaVal));
-		break;
+	//	break;
 	default:
 		break;
 	}

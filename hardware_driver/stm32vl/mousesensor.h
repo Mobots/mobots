@@ -39,6 +39,12 @@ struct Mouse_Data_DeltaVal{
 }__attribute__ ((packed)) __attribute__((__may_alias__));
 
 
+struct Mouse_Data_Delta2DPose{
+	float delta_x;
+	float delta_y;
+	float delta_theta;
+}__attribute__ ((packed)) __attribute__((__may_alias__));
+
 // Registers
 #define REG_Product_ID                           0x00
 #define REG_Revision_ID                          0x01

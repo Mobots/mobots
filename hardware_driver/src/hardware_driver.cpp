@@ -47,15 +47,15 @@ void startWeg()
     ros::param::param<double>("minDegree",minDegree,1); //Toleranz für erreichte Drehrichtung
     // ros::param::param<double>("vFac",vFac,1);  //anderes Konzept
     //vFac ist der zusammenhang: Vmaximal/1000 zwischen promilledaten und realität
-
+    ros::param::param<double>("vParam", vParam, 1); //?? den hast du vergessen /Jonas
 
     bParam=pow(vMax,rootParam)/sBrems;
 
-    ros::param::param<double>("vParam", vParam, 1); //?? den hast du vergessen /Jonas
-
+    ge
 
     initCom();
     pthread_create(&receiveThread_t, 0, receiveMethod, 0);
+    counter=0; //used to send mouse deltas every XXX incoming message
     ros::spin();
 
   }
@@ -64,7 +64,7 @@ void startWeg()
 void initCom(){
 	proto = new ComProtocol(&com);
 	proto->protocol_init(defaultHandler);
-	proto->protocol_registerHandler(SensorData_DeltaVal, sensorValHandler);
+	proto->protocol_registerHandler(SensorData_transformedDelta, sensorValHandler);
 }
 
 void* receiveMethod(void* data){
@@ -83,38 +83,41 @@ void defaultHandler(enum PROTOCOL_IDS id, unsigned char *data,
 void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		unsigned short size, Communication* com) {
 
+
 	//std::cout <<"datavalHandler"<<std::endl;
 
-	if (id != SensorData_DeltaVal) {
+	if (id == SensorData_transformedDelta) {
+		counter++;
+			//check:
+		int i = sizeof(struct Mouse_Data_Delta2DPose);
+		if (size != i) {
+			std::cout << "Error, wrong size\n" << std::endl;
+			return;
+		}
+		struct Mouse_Data_Delta2DPose *delta_vals = (struct Mouse_Data_Delta2DPose*) data;
+		 //publish
+		geometry_msgs::Pose2D deltaPose;
+
+		deltaPose.x += delta_vals->delta_x;//xAvg;
+		deltaPose.y += delta_vals->delta_y;//yAvg;
+		deltaPose.theta += delta_vals->delta_theta;//theta;*/
+					//TODO globalPose aktualisieren
+		if (POST_EVERY_X_MESSAGE == counter) {
+		    globalPose.x+=deltaPose.x;
+		    globalPose.y+=deltaPose.y;
+		    globalPose.theta+=deltaPose.theta;
+			deltaPose.x = deltaPose.y = deltaPose.y = 0;
+			counter=0;
+
+			globalPosePub.publish(globalPose);
+		}
+
+		regel();
+
+	} else {
 		std::cout << "Error, wrong ID\n" << std::endl;
-		return;
-	}
-
-	int i = sizeof(struct Mouse_Data_DeltaVal);
-	//printf("sizeof: %d\n", i);
-	//printf("size: %d\n", size);
-	if (size != i) {
-		std::cout << "Error, wrong size\n" << std::endl;
-		return;
-	}
-
-	struct Mouse_Data_DeltaVal *delta_vals = (struct Mouse_Data_DeltaVal*) data;
-    
-  geometry_msgs::Pose2D deltaPose;
-
-     //publish
-	//entweder fertig aufbereitet vom stm oder hier implementiert auf ein päärchen warten:
-    
-    /*deltaPose.x = delta_vals->;//xAvg;
-    deltaPose.y = 0;//yAvg;
-    deltaPose.theta = 0;//theta;*/
-				//TODO globalPose aktualisieren
-    globalPosePub.publish(globalPose); //evtl paar mal integrieren und dann publishen
-
-    std::cout << delta_vals->delta_x << std::endl;
-		std::cout << delta_vals->delta_y << std::endl;
-    regel();
-
+				return;
+		}
 }
 
 /*
@@ -235,7 +238,7 @@ void regel()
      sersp.s1 = regelFkt(eX); //in m und radiusInneniusInnen
      sersp.s2 = regelFkt(eY);
      sersp.s3 = regelFktDreh(eTheta);
-     proto->sendData(Servo, (unsigned char*) &sersp, sizeof(struct ServoSpeed));
+     proto->sendData(Debug_Controller, (unsigned char*) &sersp, sizeof(struct ServoSpeed));
     }
 }
 

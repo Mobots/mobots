@@ -43,7 +43,7 @@ const int DELAY_IN_MILLI = 10;
 /* Private consts ------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-unsigned int time_in_ms = 0;
+unsigned int counter_in_ms = 0;
 /* Private function prototypes -----------------------------------------------*/
 
 /* Private functions ---------------------------------------------------------*/
@@ -83,7 +83,7 @@ int main() {
 
 	print("Init done\n");
 
-	struct Mouse_Data_DeltaVal temp, null;
+/*	struct Mouse_Data_DeltaVal temp, null;
 
 	temp.delta_x = 0;
 	temp.delta_y = 0;
@@ -94,37 +94,55 @@ int main() {
 
 		delay_ms(DELAY_IN_MILLI);
 		protocol_receiveData();
-		//simon: ich arbeite mit dem takt in ros, deshalb einfach auch 0messages shcicken
+		//an simon: ich arbeite mit dem takt in ros, deshalb einfach auch 0messages shcicken
 		if (delta_vals1.delta_x || delta_vals1.delta_y) {
-			temp = delta_vals1;
+			struct Mouse_Data_DeltaVal  transformed = transformMouseToCoordinateSystem(0.15);
 			delta_vals1 = null;
-			protocol_sendData(SensorData_DeltaVal, (unsigned char*) &temp,
-					sizeof(struct Mouse_Data_DeltaVal));
+			protocol_sendData(SensorData_transformedDelta, (unsigned char*) &transformed,
+					sizeof(struct Mouse_Data_Delta2DPose));
 		}
-		return 0;
+		return 0; */
 	}
 }
 
 void SysTick_Handler() {
-	//time_in_ms++;
+	counter_in_ms++;
+
 	if (spi_ReadRegister(REG_Motion, SPI_1)) {
 		delta_vals1.delta_x += (s16) spi_ReadRegister(REG_Delta_X_L, SPI_1)
 				| (s16) (spi_ReadRegister(REG_Delta_X_H, SPI_1) << 8);
 		delta_vals1.delta_y += (s16) spi_ReadRegister(REG_Delta_Y_L, SPI_1)
 				| (s16) (spi_ReadRegister(REG_Delta_Y_H, SPI_1) << 8);
 	}
-	//TODO
-	//fill delta_vals2 from second maussensor
+	if (spi_ReadRegister(REG_Motion, SPI_2)) {//fill delta_vals2 from second maussensor
+			delta_vals2.delta_x += (s16) spi_ReadRegister(REG_Delta_X_L, SPI_2)
+					| (s16) (spi_ReadRegister(REG_Delta_X_H, SPI_2) << 8);
+			delta_vals2.delta_y += (s16) spi_ReadRegister(REG_Delta_Y_L, SPI_2)
+					| (s16) (spi_ReadRegister(REG_Delta_Y_H, SPI_2) << 8);
 
-	//transformMouseToCoordinateSystem(sX,sY,sTheta);
-	//sX,sY,sTheta an raspberry schicken TODO struct für senden
-	//control(transformToServoSpeed(0.14,0.15,0.1,0.01));
+	}
 
+
+	if ((counter_in_ms % 10) == 0){
+	control(transformToServoSpeed(0.14,0.15,0.1,0.01));
+	}
+
+	// read mouse data, transform, reset, send:
+	 if ((counter_in_ms % 25) == 0){
+		struct Mouse_Data_DeltaVal null;
+		null.delta_x = 0;
+		null.delta_y = 0;
+		struct Mouse_Data_DeltaVal  transformed = transformMouseToCoordinateSystem(0.15);
+		delta_vals1 = delta_vals2 = null;
+		protocol_sendData(SensorData_transformedDelta, (unsigned char*) &transformed,
+							sizeof(struct Mouse_Data_Delta2DPose));
+	}
 }
 
+/*
 unsigned int getTime() {
-	return time_in_ms;
-}
+	return counter_in_ms;
+}*/
 
 /**
  * @brief  Inserts a delay time.
