@@ -63,7 +63,6 @@ double linear_vel_fast = 0.3;
 double angular_vel_fast = 0.3;
 int mobotID;
 
-geometry_msgs::Pose2D currentPosition;
 ros::Publisher targetPose_pub;
 ros::Subscriber globalPose_sub;
 ros::ServiceClient client;
@@ -74,18 +73,15 @@ struct termios cooked, raw;
 
 void keyboardLoop();
 
-void globalPoseCallback(const geometry_msgs::Pose2D& msg){
-	currentPosition = msg;
-}
-
 void siginthandler(int param){
-    path_planner::KeyboardRequest::Request req;
-    path_planner::KeyboardRequest::Response res;
-    req.mobot_id = mobotID;
-    req.enable = false;
-    client.call(req, res);
-    tcsetattr(kfd, TCSANOW, &cooked);
-    exit(1);
+	path_planner::KeyboardRequest::Request req;
+	path_planner::KeyboardRequest::Response res;
+	req.mobot_id = mobotID;
+	req.enable = false;
+	if(!client.call(req, res))
+		ROS_WARN("[mobot_keyboard_teleop] No path_planner found while detaching teleop");
+	tcsetattr(kfd, TCSANOW, &cooked);
+	exit(1);
 }
 
 
@@ -116,7 +112,7 @@ int main(int argc, char** argv){
 			exit(1);
 		}
 	}else{
-		ROS_WARN("[%s] No path_planner found", namess.str().c_str());
+		ROS_WARN("[%s] No path_planner found while attaching teleop", namess.str().c_str());
 	}
 	globalPosePath = ss.str();
     targetPose_pub = nh->advertise<mobots_msgs::Pose2DPrio>(ss.str(), 2);
@@ -162,7 +158,7 @@ void keyboardLoop(){
   ufd.events = POLLIN;
   
   for(;;){
-    boost::this_thread::interruption_point();
+    //boost::this_thread::interruption_point();
     
     // get the next event from the keyboard
     int num;
