@@ -46,7 +46,7 @@ void control(struct ServoSpeed *vIst) {
 	servo_setAngle(Servo_3, s3);
 }
 
-void referenceLogic(double Vx, double Vy, double omega) { //Erwartungswerte 0-1000. Omega <=200. Betrag(Vx,Vy) nach Möglichkeit kleiner, gleich 1000
+void referenceLogic(double Vx, double Vy, double omega) { //Erwartungswerte 0-1000. omega <=250. Betrag(Vx,Vy) nach Möglichkeit kleiner, gleich 1000
 
 	double v0, v1, v2, a0, a1, a2, a;
 
@@ -90,6 +90,8 @@ void referenceLogic(double Vx, double Vy, double omega) { //Erwartungswerte 0-10
 
 }
 
+//erwartet die x,y,theta geschwindigkeiten, wobei theta bahngeschwindigkeit ist (mit radius bis zud en rädern eingerechnete winkelgeschw.)
+//ausserdem jeweils werte [-1000:1000]
 void setSollV(struct ServoSpeed *soll) {
 	//calculate the single servo speed
 	sollV = *soll;
