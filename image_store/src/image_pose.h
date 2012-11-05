@@ -34,7 +34,6 @@ public:
 	std::vector<unsigned char> getImageData();
 	void loadLast(const IDT* id_);
 private:
-	std::string savePath;
 	int errorStatus;
 	
 	std::string infoPath;
@@ -43,8 +42,6 @@ private:
 	std::string imagePath;
 	std::vector<unsigned char> imageData;
 	
-	char* concPath(const char*);
-	char* concPath();
 	int initReadImage();
 	int initWrite();
 };

@@ -25,7 +25,7 @@ bool mobots_common::utils::parseNamespace(const std::string& nspace, int& mobotI
 static const char* HOME = getenv("HOME");
 static std::string base = std::string(HOME)+std::string("/mobots-data");
 
-std::string mobots_common::utils::getPathForID(const int sessionID, const int mobotID, const int imageID, const char* fileEnding){
+std::string mobots_common::utils::getPathForID(const int sessionID, const int mobotID, const int imageID, const std::string &fileEnding){
   std::stringstream ss;
   ss << base << "/session-" << sessionID << "/mobot-" << mobotID << "/" << imageID << fileEnding;
   return ss.str();
