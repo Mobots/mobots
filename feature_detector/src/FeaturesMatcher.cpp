@@ -159,6 +159,8 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, g
 		if(points1Refinedx2.size() < 10)
 			return false;
 		transformMatrix = estimateRigidTransform(points2Refinedx2, points1Refinedx2, false);
+		affine2 = transformMatrix;
+		cout << "before " << endl << transformMatrix;
 		//transformMatrix = homo;
 		cout << "size after homo " << points1Refinedx2.size() << endl;		
 		  /*drawing::drawMatches2(gimage1, points1Refinedx2, gimage2, points2Refinedx2,
@@ -187,8 +189,12 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, g
 	//delta.theta = (theta1-theta2)/2;
 	//if(delta.theta < 0)
 	//	delta.theta += 2*M_PI;
-  delta.x = transformMatrix.at<double>(0,2);
-  delta.y = transformMatrix.at<double>(1,2);
+  double x = transformMatrix.at<double>(0,2);
+  double y = transformMatrix.at<double>(1,2);
+	double cost = cos(delta.theta);
+	double sint = sin(delta.theta);
+	delta.x = x;
+	delta.y = y;
 	moduleEnded();
   
   /*Mat roi1;
