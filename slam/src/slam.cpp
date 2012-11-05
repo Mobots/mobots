@@ -149,8 +149,8 @@ void Slam::findEdgesBruteforce()
       TreeOptimizer2::Transformation t = convertPixelsToMeters(delta);
 
       // Lustige Covarianzmatrix erstellen
-      float varianz_translation = std::pow(10.0/2 * mobots_common::constants::image_height_in_meters / mobots_common::constants::image_height_in_meters, 2); // Schätzung: 2-fache Standardabweichung 10 Pixel
-      float varianz_rotation = std::pow(10.0/2 * M_PI/180, 2); // Schätzung: 2-fache Standardabweichung 10 Grad
+      float varianz_translation = std::pow(0.5/2 * mobots_common::constants::image_height_in_meters / mobots_common::constants::image_height_in_meters, 2); // Schätzung: 2-fache Standardabweichung 10 Pixel
+      float varianz_rotation = std::pow(0.5/2 * M_PI/180, 2); // Schätzung: 2-fache Standardabweichung 10 Grad
       
       TreeOptimizer2::InformationMatrix m;
       m.values[0][0] = varianz_translation; m.values[0][1] = 0;                   m.values[0][2] = 0;
@@ -176,14 +176,19 @@ void Slam::runToro()
 }
 
 void Slam::publishOptimizedPoses()
-{  
+{
+  int i = 0;
   /* (Hoffentlich) optimierte Image-Poses rausschicken. */
   BOOST_FOREACH(TreeOptimizer2::VertexMap::value_type &v, pose_graph_.vertices)
   {
     mobots_msgs::PoseAndID pai;
     pai.id = split(v.first);
     pai.pose = convert(v.second->pose);
+    /*pai.pose.x = i * mobots_common::constants::image_width_in_meters;
+    pai.pose.y = i * mobots_common::constants::image_height_in_meters;
+    pai.pose.theta = i*M_PI/8;*/
     publisher_.publish(pai);
+    i++;
   }
 }
 
@@ -203,11 +208,10 @@ mobots_msgs::ID Slam::split(uint32_t id)
 
 TreeOptimizer2::Transformation Slam::convertPixelsToMeters(geometry_msgs::Pose2D pose)
 {
-  float x_in_meters = pose.x * mobots_common::constants::image_width_in_meters / mobots_common::constants::image_width_in_pixels;
+  float x_in_meters = pose.x * mobots_common::constants::image_height_in_meters / mobots_common::constants::image_width_in_pixels;
   float y_in_meters = - pose.y * mobots_common::constants::image_height_in_meters / mobots_common::constants::image_height_in_pixels;
-  float theta = pose.theta;
   assert(0 <= pose.theta && pose.theta < 2*M_PI);
-  return TreeOptimizer2::Transformation(x_in_meters, y_in_meters, pose.theta);
+  return TreeOptimizer2::Transformation(x_in_meters, y_in_meters, - pose.theta);
 }
 
 geometry_msgs::Pose2D Slam::convert(TreeOptimizer2::Pose toro_pose)
