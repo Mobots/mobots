@@ -8,3 +8,9 @@ msg_gen/
 srv_gen/
 *.kdev*
 *.pro
+
+toro/installed
+toro/toro_svn/trunk/libtoro.a
+toro/toro_svn/trunk/libtoro3d.a
+toro/toro_svn/trunk/toro
+toro/toro_svn/trunk/toro3d
