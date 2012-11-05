@@ -33,7 +33,7 @@ void ImageMapDisplay::onInitialize(){
 void ImageMapDisplay::onEnable(){
 	subscribe();
     visual_ = new ImageMapVisual(vis_manager_->getSceneManager());
-    testVisual(visual_, "/home/moritz/TillEvil.jpg");
+    //testVisual(visual_, "/home/moritz/TillEvil.jpg");
 }
 
 void ImageMapDisplay::onDisable(){
@@ -186,8 +186,8 @@ void ImageMapDisplay::relPoseCallback(
         cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg->image, "rgb8");
         mat = cv_ptr->image;
     }
-    visual_->insertImage(msg->pose.x, msg->pose.y, msg->pose.theta,
-                         msg->id.session_id, msg->id.mobot_id, msg->id.image_id,
+    visual_->insertImage(msg->id.session_id, msg->id.mobot_id, msg->id.image_id,
+                         msg->pose.x, msg->pose.y, msg->pose.theta,
                          mat);
     // If the first image is missing(ID=0), get all until the recieved image.
     /*if(visual_->findNode(msg->id.session_id, msg->id.mobot_id, 0) == NULL){
@@ -199,6 +199,7 @@ void ImageMapDisplay::relPoseCallback(
 // TODO pass information to image_map_info
 void ImageMapDisplay::absPoseCallback(
 	const mobots_msgs::PoseAndID::ConstPtr& msg){
+    ROS_INFO("[absPoseCallback] pose(%f,%f,%f)", msg->pose.x, msg->pose.y, msg->pose.theta);
     if(visual_->setImagePose(msg->id.session_id, msg->id.mobot_id, msg->id.image_id,
                         msg->pose.x, msg->pose.y, msg->pose.theta) != 0){
         ROS_ERROR("[imageMapDisplay] No image to assign abs pose to");
@@ -234,9 +235,9 @@ void ImageMapDisplay::retrieveImages(int sessionID, int mobotID){
             cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(srv.response.image, "rgb8");
             mat = cv_ptr->image;
         }
-        visual_->insertImage(srv.response.rel_pose.x, srv.response.rel_pose.y,
-                srv.response.rel_pose.theta, srv.request.id.session_id,
-                srv.request.id.mobot_id, srv.request.id.image_id, mat);
+        visual_->insertImage(srv.request.id.session_id, srv.request.id.mobot_id,
+                srv.request.id.image_id, srv.response.rel_pose.x, srv.response.rel_pose.y,
+                srv.response.rel_pose.theta, mat);
         srv.request.id.image_id++;
     }
     return;

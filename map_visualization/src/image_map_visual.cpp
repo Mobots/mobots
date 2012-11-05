@@ -286,7 +286,7 @@ int ImageMapVisual::setMobotModel(int mobotID, float poseX, float poseY, float p
         Ogre::Entity* thisEntity = sceneManager->createEntity("cc-" + id, "ColourCube-" + id);
         thisEntity->setMaterialName("Test/ColourTest-" + id);
         sceneNode->attachObject(thisEntity);
-        sceneNode->setScale(0.0001, 0.0001, 0.00005);
+        sceneNode->setScale(0.001, 0.001, 0.0005);
         node = (Ogre::Node*) sceneNode;
     }
     // Set position
@@ -360,7 +360,6 @@ Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID
 			Ogre::Quaternion::IDENTITY);
 		node = node->getChild(name);
 	}
-    ROS_INFO("[Rviz] get node: %s", name.c_str());
 	return (Ogre::SceneNode*) node;
 }
 

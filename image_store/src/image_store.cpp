@@ -3,7 +3,6 @@
  * Writen by Moritz Ulmer, Hauke  Uni Bremen
  */
 
-#include <boost/filesystem.hpp>
 #include <iostream>
 #include <fstream>
 
