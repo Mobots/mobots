@@ -43,8 +43,8 @@ int ImageMapVisual::insertImage(int sessionID, int mobotID,	int imageID,
     imageNode = parentNode->createChildSceneNode(imageNodeName,
 		Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
 
-    cv::namedWindow("recieved_image", 1);
-    cv::imshow("recieved_image", mat);
+    //cv::namedWindow("recieved_image", 1);
+    //cv::imshow("recieved_image", mat);
 	
 	// Create the material
 	std::stringstream ss;
