@@ -28,16 +28,19 @@ void OrbFeaturesFinder::computeFeatureSet(const Mat& image, FeatureSet& features
 	 Rect roiRect(i*image.cols/sliceCount, 0, image.cols/sliceCount, image.rows);
 	 Mat roi(image, roiRect);
 	 orb->detect(roi, tmp);
-	 //if(i > 0){
+	 if(i > 0){
 		for(int i2 = tmp.size()-1; i2 >= 0; i2--){
-		  tmp[i2].pt.x += i*image.cols/sliceCount - halfWidth;
-			tmp[i2].pt.y += - halfHeight;
+		  tmp[i2].pt.x += i*image.cols/sliceCount;
 		}
-	 //}
+	 }
 	 features.keyPoints.insert(features.keyPoints.end(), tmp.begin(), tmp.end());
 	 cout << "size " << features.keyPoints.size() << endl;
   }
   extractor->compute(image, features.keyPoints, features.descriptors);
+	for(int i2 = features.keyPoints.size()-1; i2 >= 0; i2--){
+		  features.keyPoints[i2].pt.x -=  halfWidth;
+			features.keyPoints[i2].pt.y -=  halfHeight;
+	}
 
   moduleEnded();
 }
