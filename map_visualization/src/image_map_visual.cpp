@@ -42,7 +42,6 @@ int ImageMapVisual::insertImage(int sessionID, int mobotID,	int imageID,
 	deleteImage(&imageNodeName);
     imageNode = parentNode->createChildSceneNode(imageNodeName,
 		Ogre::Vector3::ZERO, Ogre::Quaternion::IDENTITY);
-    ROS_INFO("[Rviz] insert image: %s", (imageNode->getName()).c_str());
 
     cv::namedWindow("recieved_image", 1);
     cv::imshow("recieved_image", mat);
@@ -266,7 +265,6 @@ int ImageMapVisual::setImagePose(int sessionID, int mobotID, int imageID,
 	// Set the position (x and y)
 	Ogre::Vector3 vect(poseX, poseY, 0);
 	imageNode->setPosition(vect);
-    ROS_INFO("[Rviz] setImagePose: ()");
     return 0;
 }
 
@@ -330,6 +328,7 @@ void ImageMapVisual::deleteMobotModel(const std::string* nodeName){
  * Searches for the requested Node. Creates the path if it does not exist. 
  */
 Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID){
+    ROS_INFO("[Get Node] (%i,%i,%i)", sessionID, mobotID, imageID);
 	// Get the specified session node
 	std::string name = "s";
 	name += boost::lexical_cast<std::string>(sessionID);
@@ -369,7 +368,7 @@ Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID
  * Searches for the requested Node. Returns NULL pointer if node is not found. 
  */
 Ogre::SceneNode* ImageMapVisual::findNode(int sessionID, int mobotID, int imageID){
-    ROS_INFO("[Find Node]");
+    ROS_INFO("[Find Node] (%i,%i,%i)", sessionID, mobotID, imageID);
 	// Get the specified session node
 	if(sessionID < 0){
         ROS_INFO("[Rviz] find node: Not found");

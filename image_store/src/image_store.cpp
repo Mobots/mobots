@@ -29,6 +29,7 @@ ros::Publisher* absolutePub;
 /**
  * When a new session is activated, the buffer for the delta pose to relative
  * pose conversion has to be updated.
+ * UNTESTED
  */
 void refreshDeltaPoseBuffer(){
 	ROS_INFO("[refreshDeltaPoseBuffer]");
@@ -49,7 +50,6 @@ void refreshDeltaPoseBuffer(){
  * TODO check if a session already has images
  */
 void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg){
-	ROS_INFO("deltaPose1");
 	imagePoseData infoData{
 		{msg->id.session_id, msg->id.mobot_id, msg->id.image_id},
 		{msg->pose.x, msg->pose.y, msg->pose.theta, 1}, // delPose (relative)
@@ -57,23 +57,18 @@ void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg)
 		{0,0,0,0}, // absPose (absolute)
 		{msg->image.width, msg->image.height, msg->image.encoding}
 	};
-	ROS_INFO("deltaPose2");
 	// Check if the correct session is used
 	if(currentSessionID != infoData.id.sessionID){
 		currentSessionID = infoData.id.sessionID;
 		refreshDeltaPoseBuffer();
 	}
-	ROS_INFO("deltaPose3");
 	// All delta poses exept the first one need to be added to the last one.
 	if(deltaPoseBuffer.count(infoData.id.mobotID) != 0){
 		infoData.relPose = infoData.delPose + deltaPoseBuffer[infoData.id.mobotID];
 	}
 	// If the delta pose buffer vector is too small
-	ROS_INFO("deltaPose5: image: %i", msg->image.data.size());
-	ROS_INFO("deltaPose5: buffer: %i", deltaPoseBuffer.size());
 	deltaPoseBuffer[infoData.id.mobotID] = infoData.relPose;
 	ImagePose imagePose(&infoData, msg->image.data);
-	ROS_INFO("deltaPose6");
 	// Relay the image and updated pose to Rviz
 	mobots_msgs::ImageWithPoseAndID relayMsg;
 	relayMsg.pose.x = infoData.relPose.x;
@@ -89,8 +84,6 @@ void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg)
 	relativePub->publish(relayMsg);
 	// Send message
 	ros::spinOnce();
-	
-	ROS_INFO("image_store: image saved: %i", msg->id.image_id);
 }
 
 /**
@@ -110,7 +103,6 @@ void absolutePoseHandler(const mobots_msgs::PoseAndID::ConstPtr& msg){
 	ImagePose imagePose(&infoData);
 	//absolutePub->publish(*msg);
 	//ros::spinOnce();
-	ROS_INFO("image_store: image saved: %i", msg->id.image_id);
 }
 
 /**
@@ -196,7 +188,6 @@ int main(int argc, char **argv){
 	absolutePub = &absPub;
 	ros::ServiceServer service = n.advertiseService("image_store_get", imageHandlerOut);
 	
-	ROS_INFO("Image_store: Ready");
 	ros::spin();
 	return 0;
 }
