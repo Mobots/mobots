@@ -1,5 +1,5 @@
 #include "image_map_visual.h"
-#include "mobots_msgs/constants.h"
+#include "mobots_common/constants.h"
 
 namespace map_visualization
 {
@@ -123,20 +123,20 @@ int ImageMapVisual::insertImage(int sessionID, int mobotID,	int imageID,
         // First triangle
         {
             // Bottom left
-            manual_object_->position( -mobots_msgs::image_width_in_meters/2,
-                                      -mobots_msgs::image_height_in_meters/2,
+            manual_object_->position( -mobots_common::constants::image_width_in_meters/2,
+                                      -mobots_common::constants::image_height_in_meters/2,
                                       0.0f );
             manual_object_->textureCoord(0.0f, 1.0f);
             manual_object_->normal( 0.0f, 0.0f, 1.0f );
             // Top right
-            manual_object_->position( mobots_msgs::image_width_in_meters/2,
-                                      mobots_msgs::image_height_in_meters/2,
+            manual_object_->position( mobots_common::constants::image_width_in_meters/2,
+                                      mobots_common::constants::image_height_in_meters/2,
                                       0.0f );
             manual_object_->textureCoord(1.0f, 0.0f);
             manual_object_->normal( 0.0f, 0.0f, 1.0f );
             // Top left
-            manual_object_->position( -mobots_msgs::image_width_in_meters/2,
-                                      mobots_msgs::image_height_in_meters/2,
+            manual_object_->position( -mobots_common::constants::image_width_in_meters/2,
+                                      mobots_common::constants::image_height_in_meters/2,
                                       0.0f );
             manual_object_->textureCoord(0.0f, 0.0f);
             manual_object_->normal( 0.0f, 0.0f, 1.0f );
@@ -144,20 +144,20 @@ int ImageMapVisual::insertImage(int sessionID, int mobotID,	int imageID,
         // Second triangle
         {
             // Bottom left
-            manual_object_->position( -mobots_msgs::image_width_in_meters/2,
-                                      -mobots_msgs::image_height_in_meters/2,
+            manual_object_->position( -mobots_common::constants::image_width_in_meters/2,
+                                      -mobots_common::constants::image_height_in_meters/2,
                                       0.0f );
             manual_object_->textureCoord(0.0f, 1.0f);
             manual_object_->normal( 0.0f, 0.0f, 1.0f );
             // Bottom right
-            manual_object_->position( mobots_msgs::image_width_in_meters/2,
-                                      -mobots_msgs::image_height_in_meters/2,
+            manual_object_->position( mobots_common::constants::image_width_in_meters/2,
+                                      -mobots_common::constants::image_height_in_meters/2,
                                       0.0f );
             manual_object_->textureCoord(1.0f, 1.0f);
             manual_object_->normal( 0.0f, 0.0f, 1.0f );
             // Top right
-            manual_object_->position( mobots_msgs::image_width_in_meters/2,
-                                      mobots_msgs::image_height_in_meters/2,
+            manual_object_->position( mobots_common::constants::image_width_in_meters/2,
+                                      mobots_common::constants::image_height_in_meters/2,
                                       0.0f );
             manual_object_->textureCoord(1.0f, 0.0f);
             manual_object_->normal( 0.0f, 0.0f, 1.0f );

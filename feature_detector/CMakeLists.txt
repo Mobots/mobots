@@ -32,5 +32,7 @@ rosbuild_add_executable(feature_detector src/FeatureDetector.cpp src/FeaturesFin
 target_link_libraries(feature_detector messageBridge)
 rosbuild_add_executable(testFeatures src/testFeatures.cpp)
 target_link_libraries(testFeatures messageBridge featuresMatcher)
+rosbuild_add_executable(testPics src/testPics.cpp)
+target_link_libraries(testPics messageBridge featuresMatcher)
 #rosbuild_add_executable(test2 src/test2.cpp)
 #target_link_libraries(example ${PROJECT_NAME})

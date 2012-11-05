@@ -8,6 +8,7 @@
 #define MOUSESENSOR_H_
 
 #include "spi_1.h"
+#include "libfixmath/fixmath.h"
 
 
 typedef enum{
@@ -37,6 +38,12 @@ struct Mouse_Data_DeltaVal{
 	int delta_y;
 }__attribute__ ((packed)) __attribute__((__may_alias__));
 
+
+struct Mouse_Data_Delta2DPose{
+	float delta_x;
+	float delta_y;
+	float delta_theta;
+}__attribute__ ((packed)) __attribute__((__may_alias__));
 
 // Registers
 #define REG_Product_ID                           0x00
@@ -87,7 +94,9 @@ struct Mouse_Data_DeltaVal{
 
 
 extern volatile struct Mouse_Data_All mouse_data;
-extern volatile struct Mouse_Data_DeltaVal delta_vals;
+extern volatile struct Mouse_Data_DeltaVal delta_vals1;
+extern volatile struct Mouse_Data_DeltaVal delta_vals2;
+void transformMouseToCoordinateSystem(fix16_t *sX,fix16_t *sY, fix16_t *sTheta,fix16_t r);
 
 extern DATA_STAT spi1_datastat;
 extern DATA_STAT spi2_datastat;

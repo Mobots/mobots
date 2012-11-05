@@ -8,6 +8,8 @@
 #include "feature_detector/FeaturesFinder.h"
 #include "mobots_msgs/FeatureSetWithPoseAndID.h"
 #include "mobots_msgs/ImageWithPoseAndID.h"
+#include <boost/concept_check.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 using namespace std;
 
@@ -17,15 +19,20 @@ ros::Publisher publisher;
 char* TAG;
 
 
-void processImage(const mobots_msgs::ImageWithPoseAndID& image){
+void processImage(const mobots_msgs::ImageWithPoseAndID& msg){
   ROS_INFO("%s processImage", TAG);
-  FeatureSet features;
-  cv_bridge::CvImagePtr imagePtr = cv_bridge::toCvCopy(image.image, "mono8");
-  detector->computeFeatureSet(imagePtr->image, features);
+	FeatureSet features;
+	if(msg.image.encoding == string("png")){
+		cv::Mat img = cv::imdecode(msg.image.data, 0);
+		detector->computeFeatureSet(img, features);
+	}else{
+		cv_bridge::CvImagePtr imagePtr = cv_bridge::toCvCopy(msg.image, "mono8");
+		detector->computeFeatureSet(imagePtr->image, features);
+	}
   mobots_msgs::FeatureSetWithPoseAndID result;
   MessageBridge::copyToRosMessage(features, result.features);
-  result.pose = image.pose;
-  result.id = image.id;
+  result.pose = msg.pose;
+  result.id = msg.id;
   publisher.publish(result);
 }
 

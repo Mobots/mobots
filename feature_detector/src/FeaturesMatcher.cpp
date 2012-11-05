@@ -103,8 +103,8 @@ static void planeTest(const vector<Point2f>& points1, const vector<Point2f>& poi
 
 Mat affine3;
 Mat affine2;
-extern Mat gimage1;
-extern Mat gimage2;
+//extern Mat gimage1;
+//extern Mat gimage2;
 Mat kpoints1;
 Mat kpoints2;
 Mat good_matches;
@@ -239,7 +239,7 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, g
 Mat mm1, mm2;
 Mat mega;
 
-
+/*
 
 using namespace boost::assign;
 
@@ -292,7 +292,7 @@ bool getIntersectionRois(const geometry_msgs::Pose2D& delta, Mat& roi1, Mat& roi
 	pointsdata[3][0] = gimage1.cols;
 	pointsdata[3][1] = 0;
 	memcpy(pointsdata1, pointsdata, 10*sizeof(double));*/
-point pointsc[4];
+/*point pointsc[4];
 	pointsa[3] = point(0, 0);
 	pointsa[2] = point(0, gimage1.rows);
 	pointsa[1] = point(gimage1.cols, gimage1.rows);
@@ -307,7 +307,7 @@ point pointsc[4];
 		/*pointsa[i].x(x*cost + y*sint + delta.x + centerX);
 		pointsa[i].y(-x*sint + y*cost + delta.y + centerY);*/
 
-		rotatePoint(pointsa[i], point(centerX, centerY), delta.theta);
+		/*rotatePoint(pointsa[i], point(centerX, centerY), delta.theta);
 		cout << "(" << pointsc[i].x() << "," << pointsc[i].y() << ") => (" << pointsa[i].x() << "," << pointsa[i].y() << ")";
 		cout << "with center (" << centerX << "," << centerY << ") with theta = " << delta.theta << endl;
 		double x = pointsa[i].x();
@@ -337,7 +337,7 @@ point pointsc[4];
 	boost::geometry::append(poly3, pointsdata);
 	polygon poly4;
 	boost::geometry::append(poly4, pointsdata1);*/
-	ring2 += pointsa[0], pointsa[1], pointsa[2], pointsa[3], pointsa[0];
+	//ring2 += pointsa[0], pointsa[1], pointsa[2], pointsa[3], pointsa[0];
 	/*vertices[0][0] = 0;
   vertices[0][1] = 0;
   vertices[4][0] = 0;
@@ -360,7 +360,7 @@ point pointsc[4];
   //vertices[4][0] = vertices[0][0];
   //vertices[4][1] = vertices[0][1];
   //boost::geometry::append(poly2, vertices);
-  boost::geometry::correct(ring1);
+  /*boost::geometry::correct(ring1);
   boost::geometry::correct(ring2);
 
   std::deque<polygon > resultList;
@@ -399,7 +399,7 @@ point pointsc[4];
 /**
  * copied from old opencv
  */
-void cvBoxPoints(Point2d center, double width, double height, double angle, boost_ring& ring){
+/*void cvBoxPoints(Point2d center, double width, double height, double angle, boost_ring& ring){
 	float a = (float)cos(angle)*0.5f;
 	float b = (float)sin(angle)*0.5f;
 	 double x0 = center.x - a*height - b*width;
@@ -412,7 +412,7 @@ void cvBoxPoints(Point2d center, double width, double height, double angle, boos
 	 ring += point(2*center.x - x0, 2*center.y - y0);
 	 ring += point(2*center.x - x1, 2*center.y - y1);
 	 ring += point(x0, y0);*/
-	 ring += point(x0, y0);
+	 /*ring += point(x0, y0);
 	 ring += point(2*center.x - x1, 2*center.y - y1);
 	 ring += point(2*center.x - x0, 2*center.y - y0);
 	 ring += point(x1, y1);
@@ -426,7 +426,7 @@ void cvBoxPoints(Point2d center, double width, double height, double angle, boos
     pt[2][1] = 2*center.y - pt[0][1];
     pt[3][0] = 2*center.x - pt[1][0];
     pt[3][1] = 2*center.y - pt[1][1];*/
-}
+//}
 
 
 /*

@@ -29,15 +29,15 @@ protected:
 		Geometry g;
 		double overlap, dX, dY, dTheta;
 		ros::NodeHandle nh;
+		
+		//getDelta-Service:
+		virtual bool getDelta(shutter::delta::Request &req, shutter::delta::Response &res);
 
 private:
 		void imageCallback(const sensor_msgs::Image &mobot_image);
     virtual void mouseCallback(const geometry_msgs::Pose2D &mouse_data);
 		double checkPicture(double x, double y, double theta);
 		void publishMessage(double x, double y, double theta, const sensor_msgs::Image& image);
-		
-		//getDelta-Service:
-		bool getDelta(shutter::delta::Request &req, shutter::delta::Response &res);
 };
 
 /**
@@ -66,4 +66,6 @@ private:
 		inline void grabImageMsg(mobots_msgs::ImageWithPoseAndID& msg);
 		inline void publishMessage(double x, double y, double theta);
 		virtual void mouseCallback(const geometry_msgs::Pose2D &mouse_data);
+				//getDelta-Service:
+		virtual bool getDelta(shutter::delta::Request &req, shutter::delta::Response &res);
 };

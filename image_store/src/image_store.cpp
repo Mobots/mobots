@@ -17,6 +17,8 @@
 #include "mobots_msgs/ImageWithPoseAndID.h"
 #include "mobots_msgs/PoseAndID.h"
 #include "mobots_msgs/FeatureSetWithPoseAndID.h"
+#include <mobots_common/utils.h>
+#include <mobots_common/constants.h>
 
 // The NULL pose
 poseT zeroPose{0,0,0,1};
@@ -157,17 +159,19 @@ void featureSetHandler(const mobots_msgs::FeatureSetWithPoseAndID& msg){
  * "image_map_display".
  */
 int main(int argc, char **argv){
-  const int mobotCount = 3;
+  const int mobotCount = mobots_common::constants::mobot_count;
 	// The node is called image_store_server
 	ros::init(argc, argv, "image_store");
     currentSessionID = 0;
-	/*if(!ros::param::get("/sessionID", currentSessionID)){
+	if(!ros::param::get("/sessionID", currentSessionID)){
 		currentSessionID = 0;
-		ROS_ERROR("%s /sessionID is not set, sessionID set to 0", __FILE__);
-	}*/
-	std::stringstream stream;
-	stream << "mkdir ~/session-" << currentSessionID;
-	system(stream.str().c_str());
+		ROS_WARN("%s /sessionID is not set, sessionID set to 0", __FILE__);
+	}
+	if(!mobots_common::utils::createDirs(currentSessionID)){
+		ROS_ERROR("%s in %s cannot create mobot data dirs for session %d", __PRETTY_FUNCTION__, __FILE__, currentSessionID);
+		exit(1);
+	}
+	
 	ros::NodeHandle n;
 	// To save images: image_store_save
 	// To get images: image_store_get
@@ -178,7 +182,7 @@ int main(int argc, char **argv){
 		std::stringstream ss;
 		ss << "/mobot" << i << "/featureset_pose_id";
 		featuresetSubs[i] = n.subscribe(ss.str(), 10, featureSetHandler);
-        std::stringstream ss2;
+		std::stringstream ss2;
 		ss2 << "/mobot" << i << "/image_pose_id";
 		deltaSubs[i] = n.subscribe(ss2.str(), 10, imageDeltaPoseHandler);
 	}

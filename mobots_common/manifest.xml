@@ -1,7 +1,7 @@
 <package>
-  <description brief="util">
+  <description brief="mobots_common">
 
-     util
+     mobots_common
 
   </description>
   <author>David Weigel</author>
@@ -9,7 +9,7 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/slam</url>
   <export>
-    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -Wl,-rpath,${prefix}/lib -lutil"/>
+    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -Wl,-rpath,${prefix}/lib -lutils"/>
   </export>
 </package>
 
