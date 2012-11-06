@@ -49,10 +49,10 @@ int main(int argc, char** argv){
   ros::NodeHandle nodeHandle;
   ros::Publisher publisher = nodeHandle.advertise<mobots_msgs::ImageWithPoseAndID>("image_pose_id", 2);
   
-  for (int i = 1; i <= 19; i++)
+  for (int i = 2; i <= 25; i++)
   {
     string slam_path = ros::package::getPath("slam");
-    string filename = slam_path + "/pics/karte/" + boost::lexical_cast<string>(i) + ".png";
+    string filename = slam_path + "/pics/karte2/" + boost::lexical_cast<string>(i) + ".png";
     Mat image = imread(filename, 1); //1 for colours
     if (image.data == NULL) {
       cerr << "Error loading pic " << filename << "!" << endl;
