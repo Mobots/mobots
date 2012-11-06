@@ -95,8 +95,8 @@ void RequestHandler(enum PROTOCOL_IDS id, unsigned char *data,
 
 	switch (req->req_typ) {
 	case MouseData_All:
-		protocol_sendData(MouseData_All, (unsigned char*) &mouse_data,
-				sizeof(mouse_data));
+		//protocol_sendData(MouseData_All, (unsigned char*) &mouse_data,
+			//	sizeof(mouse_data));
 		break;
 	//case MouseData_DeltaVal:
 		//print("MouseData_DeltaVal");

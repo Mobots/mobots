@@ -8,7 +8,6 @@
 #ifndef ENGINE_H_
 #define ENGINE_H_
 
-#include "libfixmath/fixmath.h"
 
 #define MAX_TRAJECTORY_SIZE 16
 #define MAX_ACCELERATION 0.2 // m/s²
@@ -30,12 +29,6 @@ struct Trajectory {
 	struct nextPoint data[MAX_TRAJECTORY_SIZE];
 }__attribute__ ((packed)) __attribute__((__may_alias__));
 
-struct robotCoord {
-	fix16_t delta_x; // in mm
-	fix16_t delta_y; // in mm
-	fix16_t angle; // in deg
-	int time_ms;
-};
 
 
 /*

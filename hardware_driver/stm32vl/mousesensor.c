@@ -10,12 +10,10 @@
 #include "printf.h"
 #include "stm32f10x_gpio.h"
 #include "util.h"
-#include "fixmath.h"
 
-volatile struct Mouse_Data_All mouse_data;
+volatile struct Mouse_Data_DeltaVal delta_vals;
+volatile struct Mouse_Data_DeltaValOut delta_valsOut;
 
-DATA_STAT spi1_datastat;
-DATA_STAT spi2_datastat;
 
 //void DMA_init() {
 //	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
@@ -52,7 +50,6 @@ DATA_STAT spi2_datastat;
 //	DMA_Cmd(DMA1_Channel2, ENABLE);
 //
 //}
-
 
 unsigned char download_firmware(SPI spi) {
 
@@ -217,7 +214,7 @@ void Sensor_ReadByBurst(SPI spi) {
 		;
 	delay_us(120);
 
-	spi_GetData((unsigned char *) &mouse_data, 14);
+	//spi_GetData((unsigned char *) &mouse_data, 14);
 	spi_DeselectChip(spi);
 	delay_us(15);
 }
@@ -231,7 +228,6 @@ void EXTI15_10_IRQHandler(void) {
 
 void EXTI3_IRQHandler(void) {
 	if (EXTI_GetITStatus(EXTI_Line3)) {
-		spi1_datastat = UPDATED;
 		EXTI_ClearITPendingBit(EXTI_Line3);
 	}
 }
@@ -289,48 +285,40 @@ int Sensor_init(SPI spi) {
 
 	return 1;
 }
+#define r_aussen 0.125
+#define r_innen  0.10
+//
+////gibt die pixel als strecke in meter im mobot_koordinatensystem aus
+void transformMouseToCoordinateSystem(struct Mouse_Data_DeltaVal* data,
+		struct Mouse_Data_DeltaValOut* dataOut) {
 
-//gibt die pixel als strecke in meter im mobot_koordinatensystem aus
-struct Mouse_Data_Delta2DPose transformMouseToCoordinateSystem(double r_aussen) {
-	struct Mouse_Data_Delta2DPose s;
-
-
-	static const double sin_120 = -0.5;
-	static const double cos_120 = 0.866028;
-	double fuenf_sechstel = 0.83333;
-
-	//get current mouse data
-	double x1=delta_vals1.delta_x;
-	double y1=delta_vals1.delta_y;
-	double x2=delta_vals2.delta_x;
-	double y2=delta_vals2.delta_y;
-
+	double x1 = -data->delta_y1;
+	double y1 = -data->delta_x1;
+	double x2 = -data->delta_y2;
 	//transform
-	s.delta_x=((x1-x2)/3-y1*1.1547)*0.0254/5040; //TODO correct dpi insert
-	s.delta_y=(x1-x2)/3*0.0254/5040;
-	s.delta_theta=(y1*0.5774+0.6667*x2+x1*0.3333))/r*0.0254/5040; //TODO eventuell nicht bogenmass
-	return s;
+	dataOut->delta_x = ((x1 - x2) / 3 - y1 * 1.1547) * 0.0254 / 5040; //TODO correct dpi insert
+	dataOut->delta_y = (x1 - x2) / 3 * 0.0254 / 5040;
+	dataOut->delta_theta = (y1 * 0.5774 + 0.6667 * x2 + x1 * 0.3333) / r_aussen
+			* 0.0254 / 5040; //TODO eventuell nicht bogenmass
 
 }
+#define v_max 0.15
 
-struct Servospeed transformToServoSpeed(double r_innen, double r_aussen, double v_max, double totzeit){
+void transformToServoSpeed(struct Mouse_Data_DeltaVal* data,
+		struct ServoSpeed* sOut, double totzeit) {
 
+	double x1 = -data->delta_y1;
+	double y1 = -data->delta_x1;
+	double x2 = -data->delta_y2;
 
-	double x1=delta_vals1.delta_x;
-	double y1=delta_vals1.delta_y;
-	double x2=delta_vals2.delta_x;
-	double y2=delta_vals2.delta_y;
+#define sqrt3 1,73205081
+#define omega -r_innen/r_aussen*y1/sqrt3-r_innen/r_aussen*2/3*x2-r_innen/r_aussen*x1/3
 
-	#define sqrt3 1,73205081
-	#define omega -r_innen/r_aussen*y1/sqrt3-r_innen/r_aussen*2/3*x2-r_innen/r_aussen*x1/3
-	struct Servospeed s;
-
-	s.s1 = (x1/3-x2/3-2/sqrt3*y1 + omega)/v_max*1000/totzeit;
-	s.s2 =  (x1/sqrt3-x2/3+y1/sqrt3 + omega)/v_max*1000/totzeit;
-	s.s3 =  (-y1/sqrt3-2/3*x1 + 2/3*x2 + omega)/v_max*1000/totzeit; 	//TODO, nicht sicher, ob richtig abgeschrieben
-
-    return s;
-
-
+	sOut->s1 = ((x1 / 3 - x2 / 3 - 2 / sqrt3 * y1 + omega) / v_max * 1000
+			/ totzeit);
+	sOut->s2 = (x1 / sqrt3 - x2 / 3 + y1 / sqrt3 + omega) / v_max * 1000
+			/ totzeit;
+	sOut->s3 = (-y1 / sqrt3 - 2 / 3 * x1 + 2 / 3 * x2 + omega) / v_max * 1000
+			/ totzeit; //TODO, nicht sicher, ob richtig abgeschrieben
 
 }

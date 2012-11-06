@@ -8,13 +8,8 @@
 #define MOUSESENSOR_H_
 
 #include "spi_1.h"
-#include "libfixmath/fixmath.h"
+#include "servo.h"
 
-
-typedef enum{
-	OUTDATED = 0,
-	UPDATED
-} DATA_STAT;
 
 struct Mouse_Data_All {
 	uint8_t motion;
@@ -33,13 +28,14 @@ struct Mouse_Data_All {
 	uint8_t fp_l;
 }__attribute__ ((packed)) __attribute__((__may_alias__));
 
-struct Mouse_Data_DeltaVal{
-	int delta_x;
-	int delta_y;
+struct Mouse_Data_DeltaVal {
+	int delta_x1;
+	int delta_y1;
+	int delta_x2;
+	int delta_y2;
 }__attribute__ ((packed)) __attribute__((__may_alias__));
 
-
-struct Mouse_Data_Delta2DPose{
+struct Mouse_Data_DeltaValOut {
 	float delta_x;
 	float delta_y;
 	float delta_theta;
@@ -92,15 +88,12 @@ struct Mouse_Data_Delta2DPose{
 #define REG_SROM_Load_Burst                      0x62
 #define REG_Pixel_Burst                          0x64
 
-
 extern volatile struct Mouse_Data_All mouse_data;
-extern volatile struct Mouse_Data_DeltaVal delta_vals1;
-extern volatile struct Mouse_Data_DeltaVal delta_vals2;
-void transformMouseToCoordinateSystem(fix16_t *sX,fix16_t *sY, fix16_t *sTheta,fix16_t r);
+extern volatile struct Mouse_Data_DeltaVal delta_vals;
+extern volatile struct Mouse_Data_DeltaValOut delta_valsOut;
 
-extern DATA_STAT spi1_datastat;
-extern DATA_STAT spi2_datastat;
-
+void transformMouseToCoordinateSystem(struct Mouse_Data_DeltaVal* data, struct Mouse_Data_DeltaValOut* dataOut);
+void transformToServoSpeed(struct Mouse_Data_DeltaVal* data, struct ServoSpeed* sOut, double totzeit);
 
 int Sensor_init(SPI spi);
 

@@ -5,7 +5,6 @@
  *      Author: simon, flo
  */
 
-#include "fixmath.h"
 #include "servo.h"
 #include "controller.h"
 
