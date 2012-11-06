@@ -3,7 +3,6 @@
 1.png and 17.png are matchable
 2.png and 3.png are matchable
 2.png and 4.png are NOT matchable
-2.png and 6.png are matchable xxxxxxxxxxxxxxxxxxxxxxx
 2.png and 17.png are matchable
 2.png and 18.png are matchable
 3.png and 4.png are matchable
@@ -16,7 +15,7 @@
 4.png and 18.png are matchable
 4.png and 19.png are matchable
 5.png and 6.png are matchable
-5.png and 7.png are matchable xxxxxxxxxxxxxxxxxxxxxxx
+5.png and 7.png are NOT matchable
 5.png and 19.png are matchable
 6.png and 7.png are matchable
 6.png and 8.png are NOT matchable

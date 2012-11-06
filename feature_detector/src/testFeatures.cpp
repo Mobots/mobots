@@ -97,7 +97,7 @@ void checkResult(){
 	Mat aff;
   
   findRotationMatrix2D(Point2d(gimage2.cols/2, gimage2.rows/2), -delta.theta, aff);
-  aff.at<double>(0,2) = delta.x;
+	aff.at<double>(0,2) = delta.x;
   aff.at<double>(1,2) = delta.y;
   cout << "aff:" << endl << aff << endl;
 	
@@ -123,7 +123,7 @@ void checkResult(){
   imshow("result with ransac", a);
   imshow("result2 with ransac", b);
 	
-	Mat result3;
+	/*Mat result3;
   Mat result4;
   result3.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
   result4.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
@@ -138,7 +138,7 @@ void checkResult(){
   warpPerspective(gimage2, result4, homo, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
   
   imshow("result with homo + ransac", result3);
-  imshow("result2 with homo + ransac", result4);
+  imshow("result2 with homo + ransac", result4);*/
  
   
   //imwrite("out.png", result);
