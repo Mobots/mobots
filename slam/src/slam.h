@@ -42,7 +42,7 @@ private:
     uint32_t last_id_[MOBOT_COUNT];
     uint32_t current_id_[MOBOT_COUNT];
     
-    static const uint ITERATIONS_PER_NEW_IMAGE = 7;
+    static const uint ITERATIONS_PER_NEW_IMAGE = 20;
 
     void callback1(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg);
     void callback2(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg);
