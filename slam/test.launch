@@ -8,8 +8,8 @@
 		<remap from="feature_detector/FeatureSetWithDeltaPoseAndID" to="FeatureSetWithDeltaPoseAndID" />
 	</node>
 
-	<!--<node name="slam" pkg="slam" type="slam" output="screen" >
-	</node>-->
+	<node name="slam" pkg="slam" type="slam" output="screen" >
+	</node>
 
 	<node name="rviz" pkg="rviz" type="rviz" output="screen" >
 	</node>

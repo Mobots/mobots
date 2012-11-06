@@ -5,6 +5,8 @@
 #include "mobots_msgs/FeatureSetWithPoseAndID.h"
 #include <treeoptimizer2.hh>
 #include <feature_detector/FeaturesMatcher.h>
+#include <utility>
+#include <mobots_common/constants.h>
 
 
 /**
@@ -28,25 +30,25 @@ public:
 
 private:
     ros::NodeHandle node_handle_;
-    ros::Subscriber subscriber1_;
-    ros::Subscriber subscriber2_;
-    ros::Subscriber subscriber3_;
+    ros::Subscriber subscriber_[mobots_common::constants::mobot_count];
     ros::Publisher publisher_;
 
     AISNavigation::TreeOptimizer2 pose_graph_;
 
     std::map<uint32_t, FeatureSet> feature_sets_;
     CpuFeaturesMatcher features_matcher_;
-
-    static const uint MOBOT_COUNT = 3;
-    uint32_t last_id_[MOBOT_COUNT];
-    uint32_t current_id_[MOBOT_COUNT];
     
-    static const uint ITERATIONS_PER_NEW_IMAGE = 20;
+    enum EdgeState {MATCHED, MATCHING_IMPOSSIBLE};
+    std::map< std::pair<uint32_t,uint32_t> , EdgeState > edge_states_; 
 
-    void callback1(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg);
+    uint32_t last_id_[mobots_common::constants::mobot_count];
+    uint32_t current_id_[mobots_common::constants::mobot_count];
+    
+    static const uint ITERATIONS_PER_NEW_IMAGE = 7;
+
+    /*void callback1(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg);
     void callback2(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg);
-    void callback3(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg);
+    vod callback3(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg);*/
     void callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg, uint mobot_id);
     void addNewVertexToGraph(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg, uint bot);
     void findEdgesBruteforce();

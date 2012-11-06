@@ -6,21 +6,28 @@
 #include <cmath>
 #include <feature_detector/MessageBridge.h>
 #include "mobots_msgs/PoseAndID.h"
-#include "mobots_common/constants.h"
+#include <boost/lexical_cast.hpp>
+
 
  /* Erlaube ich mir, weil darunter sowieso noch der Namespace TreeOptimizer2 liegt. */
 using namespace AISNavigation;
 
 Slam::Slam() :
   node_handle_(),
-  subscriber1_(node_handle_.subscribe("/mobot1/featureset_pose_id", 1000, &Slam::callback1, this)),
-  subscriber2_(node_handle_.subscribe("/mobot2/featureset_pose_id", 1000, &Slam::callback2, this)),
-  subscriber3_(node_handle_.subscribe("/mobot3/featureset_pose_id", 1000, &Slam::callback3, this)),
   publisher_(node_handle_.advertise<mobots_msgs::PoseAndID>("slam/abs_pose", 1000)),
   pose_graph_(),
-  features_matcher_(CpuFeaturesMatcher::ORB_DEFAULT)
+  feature_sets_(),
+  features_matcher_(CpuFeaturesMatcher::ORB_DEFAULT),
+  edge_states_()
 {
   pose_graph_.verboseLevel = 0;
+  
+  for(int bot = 0; bot < mobots_common::constants::mobot_count; bot++)
+  {
+    boost::function<void (const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg)> callback_function =
+      boost::bind(&Slam::callback, this, _1, bot);
+    subscriber_[bot] = node_handle_.subscribe("/mobot" + boost::lexical_cast<std::string>(bot) + "/featureset_pose_id", 1000, callback_function);
+  }
   
   for(uint bot = 1; bot <= 1; ++bot) //TODO: 1 durch MOBOT_COUNT ersetzten
   {
@@ -28,21 +35,6 @@ Slam::Slam() :
     current_id_[bot] = 0;
   }
   
-}
-
-void Slam::callback1(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg)
-{
-  callback(msg, 1);
-}
-
-void Slam::callback2(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg)
-{
-  callback(msg, 2);
-}
-
-void Slam::callback3(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg)
-{
-  callback(msg, 3);
 }
 
 void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg, uint bot)
@@ -54,7 +46,7 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
   findEdgesBruteforce();
   
   /* TODO: Nachfolgender Hack oder ähnliches wird auch nötig, wenn ein Bild reinkommt, das mit keinem gematcht wreden kann */
-  for(uint bot = 0; bot < MOBOT_COUNT; ++bot)
+  for(int bot = 0; bot < mobots_common::constants::mobot_count; bot++)
   {
     /* TORO kann nicht laufen, wenn es Vertexe ohne Kanten gibt. */
     if (!last_id_[bot])
@@ -116,50 +108,51 @@ void Slam::findEdgesBruteforce()
       /* Nur matchen, wenn die Bildmittelpunkte ausreichend nah beieinander liegen. */
       double norm = sqrt( TreeOptimizer2::Translation(w.second->pose.x() - v.second->pose.x(), w.second->pose.y() - v.second->pose.y()).norm2() );
       ROS_INFO_STREAM("Distance between image " << split(v.second->id).image_id << " and " << split(w.second->id).image_id << " is " << norm);
-      if (norm > 480) {
+      if (norm > mobots_common::constants::image_width_in_meters) {
         ROS_INFO_STREAM("Skipping combination because of to big distance.");
         continue;
       }
-      
+
       /* Nur matchen, wenn noch nicht gematcht wurde. */
-      uint edge_count = 0;
-      for ( TreeOptimizer2::EdgeList::iterator v_itr = v.second->edges.begin(); v_itr != v.second->edges.end(); ++v_itr )
-      {
-        for ( TreeOptimizer2::EdgeList::iterator w_itr = w.second->edges.begin(); w_itr != w.second->edges.end(); ++w_itr )
-        {
-          if ( *v_itr == *w_itr )
-            ++edge_count;
-        }
-      }
-      if (edge_count) {
+      if (edge_states_.find(std::make_pair(v.first,w.first)) != edge_states_.end()) {
         ROS_INFO_STREAM("Skipping combination because it has already an edge.");
         continue;
       }
       
-      /* Jetzt werfen wir Jonas sein Matcher an. */
-      geometry_msgs::Pose2D delta;        
-      if ( ! features_matcher_.match(feature_sets_[v.first], feature_sets_[w.first], delta) )
-      {
-        ROS_INFO_STREAM("Skippung combination because of matching error.");
-        continue;
-      }
       
-      /* Matching-Ergebnis als Edge zwischen den zwei Vertices einfügen */
-      
-      TreeOptimizer2::Transformation t = convertPixelsToMeters(delta);
-
-      // Lustige Covarianzmatrix erstellen
-      float varianz_translation = std::pow(0.5/2 * mobots_common::constants::image_height_in_meters / mobots_common::constants::image_height_in_meters, 2); // Schätzung: 2-fache Standardabweichung 10 Pixel
-      float varianz_rotation = std::pow(0.5/2 * M_PI/180, 2); // Schätzung: 2-fache Standardabweichung 10 Grad
-      
-      TreeOptimizer2::InformationMatrix m;
-      m.values[0][0] = varianz_translation; m.values[0][1] = 0;                   m.values[0][2] = 0;
-      m.values[1][0] = 0;                   m.values[1][1] = varianz_translation; m.values[1][2] = 0;
-      m.values[2][0] = 0;                   m.values[2][1] = 0;                   m.values[2][2] = varianz_rotation;
-
-      ROS_INFO_STREAM("Adding edge with x = " << t.translation().x() << ", y = " << t.translation().y() << ", theta = " << t.rotation() << ". Result: " << pose_graph_.addEdge(v.second, w.second, t, m) );
     }
   }
+}
+
+enum EdgeState Slam::tryToMatch(uint32_t v, uint32_t w)
+{
+  /* Jetzt werfen wir Jonas sein Matcher an. */
+  geometry_msgs::Pose2D delta;        
+  if ( ! features_matcher_.match(feature_sets_[v.first], feature_sets_[w.first], delta) )
+  {
+    ROS_INFO_STREAM("Skippung combination because of matching error.");
+    edge_states_[std::make_pair(v.first,w.first)] = MATCHING_IMPOSSIBLE;
+    return MATCHING_IMPOSSIBLE;
+  }
+  edge_states_[std::make_pair(v.first,w.first)] = MATCHED;
+
+  /* Matching-Ergebnis als Edge zwischen den zwei Vertices einfügen */
+
+  TreeOptimizer2::Transformation t = convertPixelsToMeters(delta);
+
+  // Lustige Covarianzmatrix erstellen
+  float varianz_translation = std::pow(10.0/2 * mobots_common::constants::image_height_in_meters / mobots_common::constants::image_height_in_meters, 2); // Schätzung: 2-fache Standardabweichung 10 Pixel
+  float varianz_rotation = std::pow(10.0/2 * M_PI/180, 2); // Schätzung: 2-fache Standardabweichung 10 Grad
+
+  TreeOptimizer2::InformationMatrix m;
+  m.values[0][0] = varianz_translation; m.values[0][1] = 0;                   m.values[0][2] = 0;
+  m.values[1][0] = 0;                   m.values[1][1] = varianz_translation; m.values[1][2] = 0;
+  m.values[2][0] = 0;                   m.values[2][1] = 0;                   m.values[2][2] = varianz_rotation;
+
+  TreeOptimizer2::Edge* result = pose_graph_.addEdge(v.second, w.second, t, m);
+  ROS_INFO_STREAM("Added edge with x = " << t.translation().x() << ", y = " << t.translation().y() << ", theta = " << t.rotation() << ". Result: " << result);
+  
+  return MATCHED;
 }
 
 void Slam::runToro()
