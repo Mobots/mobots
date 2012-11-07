@@ -50,7 +50,6 @@ int main(int argc, char** argv){
 	int maxFeaturesPerslice = 500;
 	ros::param::get("/feature_detector/slice_count", sliceCount);
 	ros::param::get("/feature_detector/features_per_slice", maxFeaturesPerslice);
-	cout << "slicecnt " << sliceCount << "  maxfeatures " << maxFeaturesPerslice << endl;
   detector = new OrbFeaturesFinder(maxFeaturesPerslice, sliceCount);
   ROS_INFO("%s now spinning", TAG);
   ros::spin();
