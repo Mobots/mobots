@@ -1,133 +1,88 @@
-#include "ros/ros.h"
-#include <iostream>
-#include <unistd.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <string.h>
-#include <pthread.h>
-#include <sys/types.h>
-
-
-#include "geometry_msgs/Pose2D.h"
-#include "geometry_msgs/PoseStamped.h"
-#include "mobots_msgs/Pose2DPrio.h"
-#include "mobots_msgs/InfraredScan.h"
-#include "hardware_driver/ChangeGlobalPose.h"
-
-#include "../stm32vl/Client/ComProtocol.hpp"
-#include "../stm32vl/Client/UARTCommunication.hpp"
-#include "../stm32vl/mousesensor.h"
+#include "hardware_driver.h"
+#include "mobots_common/utils.h"
 
 using namespace std;
 
-//=== constants ===
-const char TAG[] = "[hardware_driver] ";
-
-//=== global variables ===
-// -- values in Hz --
-int mouseFrequency = 10;
-int infraredFrequency = 10;
-
-geometry_msgs::Pose2D globalPose, currentTargetPose;
-list<geometry_msgs::Pose2D> targetPoses;
-
-ros::NodeHandle *nh;
-ros::Subscriber nextPoseSubRel, nextPoseSubAbs, speedSub;
-ros::Publisher mousePosePub, globalPosePub, infraredScanPub;
-ros::ServiceClient shutterClient;
-ros::ServiceServer setGlobalPoseServer;
-ComProtocol *proto;
-double rad;
-bool received;
-pthread_t receiveThread_t;
-
-//==== method declarations ====
-
-void* singleMouseReader(void*);
-void* dualMouseReader(void*);
-void* infraredReader(void*);
-/**
- * Service to be called by slam
- */
-bool changeGlobalPose(hardware_driver::ChangeGlobalPose::Request& req,
-							 hardware_driver::ChangeGlobalPose::Response& res);
-/**
- * Receives (absolute) waypoints with a priority 
- */
-void absPoseCallback(const mobots_msgs::Pose2DPrio&);
-/**
- * Receives (relative i.e. delta) waypoints with a priority 
- */
-void relPoseCallback(const mobots_msgs::Pose2DPrio&);
-/**
- * receives servo speeds as geometry pose
- */
-void sendSpeedCallback(const geometry_msgs::Pose2D&);
-
-/**
- * Handler method which gets called with the sensor data
- */
-void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
-		unsigned short size, Communication* com);
-/**
- * default Handler method which gets called if no other handler is set for the given id
- */
-void defaultHandler(enum PROTOCOL_IDS id, unsigned char *data,
-		unsigned short size, Communication* com);
-/**
- * Initialize the communication with the microcontroller
- */
-void initCom(); 
-/**
- * Start receiving sensor data
- */
-void startReceivingSensorVals();
-/**
- * Internal method which is used for threading
- */
-void* receiveMethod(void* data);
-
-
+int main(int argc, char** argv)
+{
+ros::init(argc, argv, "hardware_driver");
+  nh = new ros::NodeHandle;
+  if(!mobots_common::utils::parseNamespace(nh->getNamespace(), mobotID))
+    ROS_ERROR("%s mobotID cannot be parsed from namespace: %s", __PRETTY_FUNCTION__, nh->getNamespace().c_str());
+  startWeg();
+}
 
 //== begin methods ==
 
-int main(int argc, char **argv){
-  ros::init(argc, argv, "hardware_driver");
+void startWeg()
+{
   nh = new ros::NodeHandle;
-  
-  nextPoseSubRel = nh->subscribe("waypoint_rel", 5, relPoseCallback);
-  nextPoseSubAbs = nh->subscribe("waypoint_abs", 5, absPoseCallback);
-	speedSub = nh->subscribe("velocity", 2, sendSpeedCallback);
-  
-  mousePosePub = nh->advertise<geometry_msgs::Pose2D>("mouse", 2);
-  globalPosePub = nh->advertise<geometry_msgs::Pose2D>("pose", 2);
-  infraredScanPub = nh->advertise<mobots_msgs::InfraredScan>("infrared", 2);
-  
+
   //shutterClient = nh->serviceClient<shutter::delta>("getDelta");
   setGlobalPoseServer = nh->advertiseService("set_pose", changeGlobalPose);
-  ros::param::param<double>("rad",rad,0.14); //TODO, genauer Radius, messen Mitte- Räder-Bodenkontakt  
-	
-	initCom();
-	startReceivingSensorVals();
-	
-  ros::spin();
 
-}
+    ROS_INFO("Mobot %d: Weg angeben", mobotID);
+
+    //Publisher and Subscriber
+    nextPoseSubRel = nh->subscribe("waypoint_rel", 5, relPoseCallback);
+    nextPoseSubAbs = nh->subscribe("waypoint_abs", 5, absPoseCallback);
+    //speedSub = nh->subscribe("velocity", 2, sendSpeedCallback); interessiert eigntl nicht
+
+    mousePosePub = nh->advertise<geometry_msgs::Pose2D>("mouse", 1);
+    //globalPosePub = nh->advertise<geometry_msgs::Pose2D>("pose", 2);
+    infraredScanPub = nh->advertise<mobots_msgs::InfraredScan>("infrared", 2); //TODO Handler dafür
+
+
+    //Services
+      client = nh->serviceClient<shutter::delta>("getDelta");
+      service = nh->advertiseService("setGlobalPose", changeGlobalPose);
+
+    //Parameter übernehmen
+    ros::param::param<double>("sBrems",sBrems,0.2);
+    ros::param::param<double>("rootParam",rootParam,2.0);
+    ros::param::param<double>("dParam",dParam,0.4297);   //calculate: bParam=vMax/4/(desired start-to-break-point in degrees)*180/pi/radiusInnen
+    ros::param::param<double>("radiusInnen",radiusInnen,0.14); //TODO, genauer radiusInnenius, messen Mitte- Räder-Bodenkontakt
+    ros::param::param<double>("vMax",vMax,0.15); //theoretisch maximal 0.18, weniger, um nicht mit maximum zu laufen
+    ros::param::param<double>("minS",minS,0.02);	//Toleranz für erreichten Wegpunkt
+    ros::param::param<double>("minDegree",minDegree,1); //Toleranz für erreichte Drehrichtung
+    ros::param::param<double>("vFac", vFac, 0.00015);     //vFac ist der zusammenhang: Vmaximal/1000 zwischen promilledaten und realität
+
+    string wayTypeString;
+    ros::param::param<string>("fahrTyp",wayTypeString, "FAST");
+		
+	for(int i = 0; i < wayTypeString.size(); i++) {
+		wayTypeString[i] = toupper(wayTypeString[i]);
+	}
+	if(wayTypeString == string("FAST")) {
+		ros::param::param<double>("drehFac",drehFac,0.4);	//Bruchteil der vMax, mit der sich der mobot maximal drehen soll
+		wayType = FAST;
+	}
+	else if(wayTypeString == string("STIFF")) {
+		ros::param::param<double>("drehFac",drehFac,0.25);	//Bruchteil der vMax, mit der sich der mobot maximal drehen soll
+		wayType = STIFF;
+	}
+	else
+		ROS_ERROR("unknown type %s", wayTypeString.c_str());
+
+
+    bParam=pow(vMax,rootParam)/sBrems;
+
+    initCom();
+    pthread_create(&receiveThread_t, 0, receiveMethod, 0);
+    counter=0; //used to send mouse deltas every XXX incoming message
+    ros::spin();
+
+  }
+
 
 void initCom(){
-	UARTCommunication com;
 	proto = new ComProtocol(&com);
 	proto->protocol_init(defaultHandler);
-	proto->protocol_registerHandler(SensorData_DeltaVal, sensorValHandler);
-}
-
-void startReceivingSensorVals(){
-	pthread_create(&receiveThread_t, 0, receiveMethod, 0);
+	proto->protocol_registerHandler(SensorData_transformedDelta, sensorValHandler);
 }
 
 void* receiveMethod(void* data){
-#define schnauze 1
-	while(schnauze){
+    while(1){
 		proto->receiveData();
 	}
 	return 0;
@@ -142,87 +97,51 @@ void defaultHandler(enum PROTOCOL_IDS id, unsigned char *data,
 void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		unsigned short size, Communication* com) {
 
+
 	//std::cout <<"datavalHandler"<<std::endl;
 
-	if (id != SensorData_DeltaVal) {
-		std::cout << "Error, wrong ID\n" << std::endl;
-		return;
-	}
+	if (id == SensorData_transformedDelta) {
+		counter++;
+			//check:
+		int i = sizeof(struct Mouse_Data_Delta2DPose);
+		if (size != i) {
+			std::cout << "Error, wrong size\n" << std::endl;
+			return;
+		}
+		struct Mouse_Data_Delta2DPose *delta_vals = (struct Mouse_Data_Delta2DPose*) data;
+		 //publish
+		geometry_msgs::Pose2D deltaPose;
 
-	int i = sizeof(struct Mouse_Data_DeltaVal);
-	//printf("sizeof: %d\n", i);
-	//printf("size: %d\n", size);
-	if (size != i) {
-		std::cout << "Error, wrong size\n" << std::endl;
-		return;
-	}
+		deltaPose.x += delta_vals->delta_x;//xAvg;
+		deltaPose.y += delta_vals->delta_y;//yAvg;
+		deltaPose.theta += delta_vals->delta_theta;//theta;*/
+					//TODO globalPose aktualisieren
+	    globalPose.x+=deltaPose.x;
+	    globalPose.y+=deltaPose.y;
+	    globalPose.theta+=deltaPose.theta;
+	    double &tet=globalPose.theta;
+	    correctAngle(tet);
 
-	struct Mouse_Data_DeltaVal *delta_vals = (struct Mouse_Data_DeltaVal*) data;
-    
-  geometry_msgs::Pose2D deltaPose;
+		deltaPose.x = deltaPose.y = deltaPose.y = 0;
+		if (POST_EVERY_X_MESSAGE == counter) {
+			counter=0;
 
-     //publish
-	//entweder fertig aufbereitet vom stm oder hier implementiert auf ein päärchen warten:
-    
-    deltaPose.x = 0;//xAvg;
-    deltaPose.y = 0;//yAvg;
-    deltaPose.theta = 0;//theta;
-    globalPosePub.publish(deltaPose);
+			globalPosePub.publish(globalPose);
+		}
 
-    std::cout << delta_vals->delta_x << std::endl;
-	std::cout << delta_vals->delta_y << std::endl;
+		if (!targetPoses.empty()) {
+			regel();
+		}
+
+	} else {
+		//case: no mouse delta vals
+				return;
+		}
 }
 
 /*
-void readPrintfs(Communication* com) {
-	unsigned char buf;
-	while (com->read(&buf, sizeof(char)))
-		std::cout << buf << std::flush;
-}*/
-
-/*
-void* singleMouseReader(void* data){
-  ros::Rate rate(mouseFrequency);
-  ros::Publisher pub = nh->advertise<geometry_msgs::Pose2D>("mouse", 2);  //needs remapping
-  geometry_msgs::Pose2D deltaPose;
-  char data1[3];
-  while(ros::ok()){
-    read(mouse1FD, &data1, 3);
-    deltaPose.x = data1[1];
-    deltaPose.y = data1[2];
-    deltaPose.theta = 0;
-    pub.publish(deltaPose);
-    rate.sleep();
-  }
-}
-
-void* dualMouseReader(void* data){
-  char data1[3];
-  char data2[3];
-  ros::Rate rate(mouseFrequency);
- // ros::Publisher pub = nh->advertise<geometry_msgs::Pose2D>("mouse", 2); //needs remapping
-  geometry_msgs::Pose2D deltaPose;
-  while(ros::ok()){
-    char xAvg = 0;
-    char yAvg = 0;
-    char theta = 0;
-    read(mouse1FD, &data1, 3);
-    read(mouse2FD, &data2, 3);
-    xAvg = (data1[1]/2) + (data2[1]/2) + ((data1[1]&0x1) & (data2[1]&0x1)); // zweiter Teil um Rundungsfehler zu vermeiden
-    yAvg = (data1[2]/2) + (data2[2]/2) + ((data1[2]&0x1) & (data2[2]&0x1));
-    //das folgende muss noch durch nen induktionsbeweis verifiziert werden :D
-    theta = atan2(data2[2]-data1[2], data2[1]-data1[1]);
-    //cout << "x1=" << int(data1[1]) << " x2=" << int(data2[1]) << " y1=" << int(data1[2]) << " y2=" << int(data2[2]) << " theta=" << int(theta) << endl;
-    deltaPose.x = xAvg;
-    deltaPose.y = yAvg;
-    deltaPose.theta = theta;
-    pub.publish(deltaPose);
-    rate.sleep();
-  }
-}
-
 void* infraredReader(void* data){
-  /*ros::Rate rate(infraredFrequency);
+  ros::Rate rate(infraredFrequency);
   ros::Publisher pub = nh->advertise<>("", 2);
   while(ros::ok()){
     read(infraredFD, XX, X);
@@ -232,25 +151,26 @@ void* infraredReader(void* data){
 }*/
 
 
-void sendSpeedCallback(const geometry_msgs::Pose2D& msg) {
-    struct ServoSpeed sersp;
-	sersp.s1 = msg.x;
-	sersp.s2 = msg.y;
-	sersp.s3 = msg.theta;
-    proto->sendData(Servo, (unsigned char*) &sersp, sizeof(struct ServoSpeed));
-
+void correctAngle(double& theta) {
+	if(theta < -M_PI)
+		theta += 2*M_PI;
+	else if(theta > M_PI)
+		theta -= 2*M_PI;
 }
 
 /**
  *# prio == 0: pose vor allen anderen einfügen, rest verwerfen (default)
   # prio == -1: pose vor allen anderen einfügen
   # prio == -2: pose am ende der liste einfügen
-  # prio == sonst: pose an der prio-position einfügen
+  # prio == sonst: pose an der prio-position einfügen (zero based)
 */
 void absPoseCallback(const mobots_msgs::Pose2DPrio& next_pose){
   switch(next_pose.prio){
 	 case -2: 
 		targetPoses.push_back(next_pose.pose);
+		if (targetPoses.size() == 1) { //case: first element was just inserted
+			currentTargetPose = next_pose.pose;
+		}
 		break;
 	 case -1:
 		targetPoses.push_front(next_pose.pose);
@@ -264,20 +184,37 @@ void absPoseCallback(const mobots_msgs::Pose2DPrio& next_pose){
 	 default:
 		list<geometry_msgs::Pose2D>::iterator it = targetPoses.begin();
 		int prio = next_pose.prio;
-		if(prio > targetPoses.size())
-		  prio = targetPoses.size();
-		std::advance(it, 6);
+		if(prio >= targetPoses.size()) {
+			targetPoses.push_back(next_pose.pose);
+			break;
+		}
+		std::advance(it, prio);	//keep this zero-based, user gives prio==5, it goes to list[5]=> inserted as6th element
 		targetPoses.insert(it, next_pose.pose);
 		break;		
   }
   
 }
 
+
 void relPoseCallback(const mobots_msgs::Pose2DPrio& msg){
+
+  //retrieve position, to sum up with new delta pose:
   mobots_msgs::Pose2DPrio next;
-  next.pose = globalPose;
-  double cost = cos(next.pose.theta);
-  double sint = sin(next.pose.theta);
+  if (msg.prio == -1 || msg.prio == 0 || targetPoses.empty()) 	//current position, if set as current target positon or list empty
+  {
+	  next.pose = globalPose;
+  } else if (msg.prio == -2) {	//last position
+	  next.pose= targetPoses.back();
+  } else { // prio >=1 (default) s.o.
+	  int prio = msg.prio-1;
+		list<geometry_msgs::Pose2D>::iterator it = targetPoses.begin();
+	  if(prio >= targetPoses.size())
+		prio = targetPoses.size()-1;	//retrieve last element
+	  std::advance(it, prio);
+		next.pose = *it;
+  }
+  double cost = cos(globalPose.theta);
+  double sint = sin(globalPose.theta);
   next.pose.x += cost*msg.pose.x - sint*msg.pose.y;
   next.pose.y += sint*msg.pose.x + cost*msg.pose.y;
   next.pose.theta += msg.pose.theta;
@@ -313,4 +250,76 @@ bool changeGlobalPose(hardware_driver::ChangeGlobalPose::Request& req,
     return false;   //t
   }
   return true;
+}
+
+
+
+
+//Streckenregelung: Strecken in m
+/*************************************************************************************
+*
+*
+**************************************************************************************/
+void regel()
+{
+    double eX =  currentTargetPose.x - globalPose.x;
+    double eY =  currentTargetPose.y - globalPose.y;
+    double eTheta=0;
+    if (wayType == FAST) {
+    	eTheta =  tan(eY/eX) - M_PI/2 - globalPose.theta; 		//-Pi/2, um ziel mit y als hauptfahrrichtung anzufahren
+    } else {
+        eTheta =  currentTargetPose.theta - globalPose.theta;
+    }
+    correctAngle(eTheta);    // correct with 2Pi problem: (this also guarentees to turn optimal)
+    if (eX < minS && eY < minS && eTheta*radiusInnen < minDegree*(M_PI * radiusInnen / 180))
+    { //Ziel erreicht
+       //geometry_msgs::Pose2D p={0,0,0};
+			targetPoses.pop_front(); //aktuelles ziel erreicht => aus liste löschen
+			if(!targetPoses.empty())
+				currentTargetPose = targetPoses.front();
+			else
+				currentTargetPose = globalPose; //bleiben wir halt stehn
+		     struct ServoSpeed sersp;
+		     sersp.s1 = 0;
+		     sersp.s2 = 0;
+		     sersp.s3 = 0;
+		     proto->sendData(Debug_Controller, (unsigned char*) &sersp, sizeof(struct ServoSpeed));
+			return;
+    }
+     struct ServoSpeed sersp;
+     sersp.s1 = regelFkt(eX)/vFac; //in meter/s, s3 ist auch bahngeschwindigkeit, dann /vFac zur skalierung für servo geschw.
+     sersp.s2 = regelFkt(eY)/vFac;
+     sersp.s3 = regelFktDreh(eTheta)/vFac;
+     proto->sendData(Debug_Controller, (unsigned char*) &sersp, sizeof(struct ServoSpeed));
+
+}
+
+
+
+/*
+* Die Regelfunktion zwischen Strecke u. Geschwindigkeit stellt eine Wurzelfunktion dar.
+* Der Exponent wird mittels "rootParam" festgelegt.
+* bParam skaliert auf den gewünschten Bremsweg hoch, dieser kann durch bmax begrenzt werden.
+* V wird metrisch verrechnet.
+*/
+double regelFkt(double e)
+{
+if (e>0) {
+ double d = pow(e*bParam, 1.0/rootParam);
+ return (d>vMax) ? vMax :d;
+}
+if (e<0) {
+ double d =-(pow(-e*bParam, 1.0/rootParam));
+ return (d<-vMax) ? -vMax :d;
+}
+  return 0;
+}
+
+/*
+ * Linear steigende Regelfunktion, Steigung dParam.
+ * */
+double regelFktDreh(double e)
+{
+ double d = e*dParam*radiusInnen;		//von bogenmaß auf bahngeschwindigkeit //TODO so war das vorher  e*dParam*=radiusInnen;
+ return (d>(vMax*drehFac)) ? (vMax*drehFac) : ((d<(-(vMax*drehFac))) ? (-(vMax*drehFac)) :d);
 }

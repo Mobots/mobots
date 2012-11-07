@@ -1,13 +1,13 @@
 #include <fstream>
 #include <sys/stat.h>
-#include "mobots_util/util.h"
+#include "mobots_common/utils.h"
 #include "feature.h"
 #include "image_pose_data_types.h"
 
 namespace ser = ros::serialization;
 
 bool FeatureStore::loadFeatureSet(const IDT& idt, mobots_msgs::FeatureSetWithPoseAndID& featureSet){
-  std::string path = mobots_util::image_store::getPathForID(idt.sessionID, idt.mobotID, idt.imageID, ".feature");
+  std::string path = mobots_common::utils::getPathForID(idt.sessionID, idt.mobotID, idt.imageID, ".feature");
   struct stat filestatus;
   stat(path.c_str(), &filestatus);
   long size = filestatus.st_size;
@@ -34,7 +34,7 @@ bool FeatureStore::saveFeatureSet(const mobots_msgs::FeatureSetWithPoseAndID& fe
   idt.sessionID = featureSet.id.session_id;
   idt.imageID = featureSet.id.image_id;
   std::ofstream out;
-  out.open(mobots_util::image_store::getPathForID(idt.sessionID, idt.mobotID, idt.imageID, ".feature").c_str(), std::ios::binary);
+  out.open(mobots_common::utils::getPathForID(idt.sessionID, idt.mobotID, idt.imageID, ".feature").c_str(), std::ios::binary);
   if(!out)
 	 return false;
   out.write((const char*) data, serial_size);

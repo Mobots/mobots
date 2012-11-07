@@ -3,7 +3,6 @@
  * Writen by Moritz Ulmer, Hauke  Uni Bremen
  */
 
-#include <boost/filesystem.hpp>
 #include <iostream>
 #include <fstream>
 
@@ -17,6 +16,8 @@
 #include "mobots_msgs/ImageWithPoseAndID.h"
 #include "mobots_msgs/PoseAndID.h"
 #include "mobots_msgs/FeatureSetWithPoseAndID.h"
+#include <mobots_common/utils.h>
+#include <mobots_common/constants.h>
 
 // The NULL pose
 poseT zeroPose{0,0,0,1};
@@ -29,6 +30,7 @@ ros::Publisher* absolutePub;
 /**
  * When a new session is activated, the buffer for the delta pose to relative
  * pose conversion has to be updated.
+ * UNTESTED
  */
 void refreshDeltaPoseBuffer(){
 	ROS_INFO("[refreshDeltaPoseBuffer]");
@@ -49,7 +51,6 @@ void refreshDeltaPoseBuffer(){
  * TODO check if a session already has images
  */
 void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg){
-	ROS_INFO("deltaPose1");
 	imagePoseData infoData{
 		{msg->id.session_id, msg->id.mobot_id, msg->id.image_id},
 		{msg->pose.x, msg->pose.y, msg->pose.theta, 1}, // delPose (relative)
@@ -57,23 +58,18 @@ void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg)
 		{0,0,0,0}, // absPose (absolute)
 		{msg->image.width, msg->image.height, msg->image.encoding}
 	};
-	ROS_INFO("deltaPose2");
 	// Check if the correct session is used
 	if(currentSessionID != infoData.id.sessionID){
 		currentSessionID = infoData.id.sessionID;
 		refreshDeltaPoseBuffer();
 	}
-	ROS_INFO("deltaPose3");
 	// All delta poses exept the first one need to be added to the last one.
 	if(deltaPoseBuffer.count(infoData.id.mobotID) != 0){
 		infoData.relPose = infoData.delPose + deltaPoseBuffer[infoData.id.mobotID];
 	}
 	// If the delta pose buffer vector is too small
-	ROS_INFO("deltaPose5: image: %i", msg->image.data.size());
-	ROS_INFO("deltaPose5: buffer: %i", deltaPoseBuffer.size());
 	deltaPoseBuffer[infoData.id.mobotID] = infoData.relPose;
 	ImagePose imagePose(&infoData, msg->image.data);
-	ROS_INFO("deltaPose6");
 	// Relay the image and updated pose to Rviz
 	mobots_msgs::ImageWithPoseAndID relayMsg;
 	relayMsg.pose.x = infoData.relPose.x;
@@ -89,8 +85,6 @@ void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg)
 	relativePub->publish(relayMsg);
 	// Send message
 	ros::spinOnce();
-	
-	ROS_INFO("image_store: image saved: %i", msg->id.image_id);
 }
 
 /**
@@ -110,7 +104,6 @@ void absolutePoseHandler(const mobots_msgs::PoseAndID::ConstPtr& msg){
 	ImagePose imagePose(&infoData);
 	//absolutePub->publish(*msg);
 	//ros::spinOnce();
-	ROS_INFO("image_store: image saved: %i", msg->id.image_id);
 }
 
 /**
@@ -165,17 +158,19 @@ void featureSetHandler(const mobots_msgs::FeatureSetWithPoseAndID& msg){
  * "image_map_display".
  */
 int main(int argc, char **argv){
-  const int mobotCount = 3;
+  const int mobotCount = mobots_common::constants::mobot_count;
 	// The node is called image_store_server
 	ros::init(argc, argv, "image_store");
     currentSessionID = 0;
-	/*if(!ros::param::get("/sessionID", currentSessionID)){
+	if(!ros::param::get("/sessionID", currentSessionID)){
 		currentSessionID = 0;
-		ROS_ERROR("%s /sessionID is not set, sessionID set to 0", __FILE__);
-	}*/
-	std::stringstream stream;
-	stream << "mkdir ~/session-" << currentSessionID;
-	system(stream.str().c_str());
+		ROS_WARN("%s /sessionID is not set, sessionID set to 0", __FILE__);
+	}
+	if(!mobots_common::utils::createDirs(currentSessionID)){
+		ROS_ERROR("%s in %s cannot create mobot data dirs for session %d", __PRETTY_FUNCTION__, __FILE__, currentSessionID);
+		exit(1);
+	}
+	
 	ros::NodeHandle n;
 	// To save images: image_store_save
 	// To get images: image_store_get
@@ -186,7 +181,7 @@ int main(int argc, char **argv){
 		std::stringstream ss;
 		ss << "/mobot" << i << "/featureset_pose_id";
 		featuresetSubs[i] = n.subscribe(ss.str(), 10, featureSetHandler);
-        std::stringstream ss2;
+		std::stringstream ss2;
 		ss2 << "/mobot" << i << "/image_pose_id";
 		deltaSubs[i] = n.subscribe(ss2.str(), 10, imageDeltaPoseHandler);
 	}
@@ -196,7 +191,6 @@ int main(int argc, char **argv){
 	absolutePub = &absPub;
 	ros::ServiceServer service = n.advertiseService("image_store_get", imageHandlerOut);
 	
-	ROS_INFO("Image_store: Ready");
 	ros::spin();
 	return 0;
 }

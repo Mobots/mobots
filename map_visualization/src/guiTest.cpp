@@ -7,6 +7,7 @@
 #include "mobots_msgs/ImageWithPoseAndID.h"
 #include <mobots_msgs/Pose2DPrio.h>
 #include <geometry_msgs/Pose2D.h>
+#include "mobots_common/constants.h"
 
 using namespace std;
 
@@ -44,11 +45,10 @@ void* shutterThread(void* data){
   mobots_msgs::ImageWithPoseAndID msg;
   int imageID[4] = {0};
   int sessionID = 0;
-	int mobotCount = 3;
+	int mobotCount = mobots_common::constants::mobot_count;
   while(ros::ok()){
     cin.ignore(std::numeric_limits<streamsize>::max(),'\n');
-		for(int i = 1; i <= mobotCount; i++){
-			int mobotID = i;
+		for(int mobotID = 0; mobotID < mobotCount; mobotID++){
 			FILE* fp;
 			char result [1000];
 			fp = popen("rospack find slam","r");
@@ -71,21 +71,21 @@ void* shutterThread(void* data){
 			msg.image.is_bigendian = 0;
 			msg.image.step = img.cols * img.elemSize();
 			int sign = ((double)rand())/((double)RAND_MAX) > 0.5 ? 1 : -1;
-			bool usePose = true;//((double)rand())/((double)RAND_MAX) > 0.5;
-			if(usePose){
+			bool usePose = ((double)rand())/((double)RAND_MAX) > 0.5;
+			//if(usePose){
 				msg.pose.x = globalPoses[mobotID].x;
 				msg.pose.y = globalPoses[mobotID].y;
 				msg.pose.theta = globalPoses[mobotID].theta;
-			}else{
+			/*}else{
 				msg.pose.x = sign*pic*(double)((double)rand()/(double)RAND_MAX)*3;
 				msg.pose.y = sign*pic*(double)((double)rand()/(double)RAND_MAX)*3;
 				msg.pose.theta = sign*pic*(double)((double)rand()/(double)RAND_MAX)*2*M_PI;
-			}
-			imagePubs[i].publish(msg);
-			msg.id.image_id = imageID[i];
+			}*/
+			msg.id.image_id = imageID[mobotID];
 			msg.id.mobot_id = mobotID;
 			msg.id.session_id = sessionID;
-			imageID[i]++;
+			imagePubs[mobotID].publish(msg);
+			imageID[mobotID]++;
 			cout << "x " << msg.pose.x << " y " << msg.pose.y << " theta " << msg.pose.theta << endl;
 		}
   }

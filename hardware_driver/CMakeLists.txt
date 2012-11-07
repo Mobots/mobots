@@ -19,7 +19,6 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 rosbuild_add_executable(hardware_driver src/hardware_driver.cpp stm32vl/Client/ComProtocol.cpp stm32vl/Client/UARTCommunication.cpp stm32vl/Client/UARTCommunication.cpp stm32vl/crc.c)
-rosbuild_add_executable(mobot_keyboard_teleop src/mobot_keyboard_teleop.cpp)
 
 INCLUDE_DIRECTORIES( stm32vl/stm32_lib/inc )
 
@@ -30,6 +29,5 @@ INCLUDE_DIRECTORIES( stm32vl/stm32_lib/inc )
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)
 #rosbuild_add_boost_directories()
-rosbuild_link_boost(mobot_keyboard_teleop system thread)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})

@@ -32,7 +32,7 @@ void ImageMapDisplay::onInitialize(){
 void ImageMapDisplay::onEnable(){
 	subscribe();
     visual_ = new ImageMapVisual(vis_manager_->getSceneManager());
-    testVisual(visual_, "/home/moritz/TillEvil.jpg");
+    //testVisual(visual_, "/home/moritz/TillEvil.jpg");
 }
 
 void ImageMapDisplay::onDisable(){
