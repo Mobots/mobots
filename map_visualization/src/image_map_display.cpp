@@ -26,7 +26,6 @@ void ImageMapDisplay::clear(){
 // instantiate all the workings of the class.
 // TODO implement service
 void ImageMapDisplay::onInitialize(){
-    //ROS_INFO("[onInitialize]");
 	setStatus(rviz::status_levels::Warn, "Topic", "Finished Initializing");
 }
 
@@ -43,10 +42,8 @@ void ImageMapDisplay::onDisable(){
 }
 
 void ImageMapDisplay::reset(){
-    //ROS_INFO("reset");
     Display::reset();
     clear();
-    //ROS_INFO("reset");
 }
 
 /**
@@ -58,7 +55,6 @@ void ImageMapDisplay::reset(){
  *  - pose
  */
 void ImageMapDisplay::subscribe(){
-    //ROS_INFO("[subscribe]");
 	if(!isEnabled()){
 		return;
 	}
@@ -302,7 +298,7 @@ void ImageMapDisplay::testVisual(ImageMapVisual* visual_, std::string filePath){
     visual_->insertImage(0,0,2, 2,2,3.1415927, mat);
     visual_->insertImage(0,0,3, 3,3,4.712389, mat);
     visual_->insertImage(0,0,4, 4,4,6.2831853, mat);
-    visual_->setMobotModel(1,4,2,0);
+    visual_->setMobotModel(1,0.5,0.6,0);
 }
 
 } // end namespace rviz_plugin_display

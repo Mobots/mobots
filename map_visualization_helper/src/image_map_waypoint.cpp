@@ -1,3 +1,8 @@
+#include <map_visualization/definitions.h>
+#include <QCoreApplication>
+
+#include <ros/duration.h>
+
 #include "image_map_waypoint.h"
 
 namespace map_visualization{
@@ -10,15 +15,15 @@ ImageMapWaypoint::ImageMapWaypoint(int argc, char** argv):
 {
 }
 
-/**********************************************************
-  * Initialization
-  *********************************************************/
-
 ImageMapWaypoint::~ImageMapWaypoint(){
     if(ros::isStarted()) {
-        unsubscribe();
+        nh->shutdown();
     }
 }
+
+/**********************************************************
+  * Main Thread
+  *********************************************************/
 
 void ImageMapWaypoint::process(){
     ros::init(init_argc, init_argv, "image_map_info");
@@ -29,13 +34,7 @@ void ImageMapWaypoint::process(){
     // explicitly needed since our nodehandle is going out of scope.
     ros::NodeHandle nh_;
     nh = &nh_;
-    subscribe();
-    ros::spin();
-    Q_EMIT finished();
-}
 
-void ImageMapWaypoint::subscribe(){
-    ROS_INFO("[Map_Visualization_Helper] subscribing");
     // Input: User Waypoints from Rviz
     ros::Subscriber poseRelaySub_ = nh->subscribe("/image_map/pose", 10,
             &ImageMapWaypoint::poseRelayHandler, this);
@@ -55,19 +54,22 @@ void ImageMapWaypoint::subscribe(){
     ros::ServiceClient updateRvizClient_ = nh->serviceClient
             <map_visualization::RemoteProcedureCall>("/image_map/rpc");
     updateRvizClient = &updateRvizClient_;
-}
 
-void ImageMapWaypoint::unsubscribe(){
-    // Shutdown every handle created through this NodeHandle.
-    nh->shutdown();
+    while(ros::ok()){
+        QCoreApplication::processEvents();
+        ros::spinOnce();
+        ros::Duration(0.5).sleep();
+    }
+
+    Q_EMIT finished();
 }
 
 /**********************************************************
   * ROS Callbacks / Publishers / Service Clients
   *********************************************************/
 
+// Handles the incoming user waypoint (pose) from rviz. Adds the mobotID
 void ImageMapWaypoint::poseRelayHandler(const geometry_msgs::PoseStamped::ConstPtr& msgIn){
-    ROS_INFO("[poseRouterCallback]");
     mobots_msgs::PoseAndID msgOut;
 
     msgOut.pose.x = msgIn->pose.position.x;
@@ -79,34 +81,70 @@ void ImageMapWaypoint::poseRelayHandler(const geometry_msgs::PoseStamped::ConstP
     }
     msgOut.pose.theta = 2 * acos(theta);
     msgOut.id.mobot_id = activeMobotID;
-    ROS_INFO("Position(%f, %f, %f), Orientation(%f, %f, %f, %f) = Angle: %f",
-             msgIn->pose.position.x, msgIn->pose.position.y, msgIn->pose.position.z,
-             msgIn->pose.orientation.x, msgIn->pose.orientation.y, msgIn->pose.orientation.z,
-             msgIn->pose.orientation.w, msgOut.pose.theta * 180 / PI);
     poseRelayPub->publish(msgOut);
     ros::spinOnce();
     return;
 }
 
+// Handles the incoming updates about the 3D scene in Rviz
 void ImageMapWaypoint::updateInfoHandler(const mobots_msgs::IDKeyValue::ConstPtr& msg){
     ROS_INFO("[updateInfoHandler] s%im%ii%i: %i-%i", msg->id.session_id, msg->id.mobot_id,
              msg->id.image_id, msg->key, msg->value);
-    Q_EMIT dataChanged(msg->id.session_id, msg->id.mobot_id, msg->key, msg->value);
-    return;
-}
+    Q_EMIT rvizChanged(msg->id.session_id, msg->id.mobot_id, msg->key, msg->value);
+    return;}
 
-int ImageMapWaypoint::updateRviz(int function, std::string operands){
+// Sends commands (remote procedure calls) to the 3D scene in Rviz
+int ImageMapWaypoint::updateRviz(int sessionID, int mobotID, int key, int value){
     ROS_INFO("[updateRviz]");
     map_visualization::RemoteProcedureCall srv;
-    srv.request.function = function;
-    srv.request.operands = operands;
+    srv.request.id.session_id = sessionID;
+    srv.request.id.mobot_id = mobotID;
+    switch(key){
+    case ENABLED:
+        switch(value){
+        case -1:
+            srv.request.function = DELETE_MOBOT;
+            break;
+        case 0:
+            srv.request.function = HIDE_MOBOT;
+            break;
+        case 1:
+            srv.request.function = SHOW_MOBOT;
+            break;
+        }
+        break;
+    case RELATIVE:
+        switch(value){
+        case -1:
+            srv.request.function = DELETE_RELATIVE_MOBOT;
+            break;
+        case 0:
+            srv.request.function = SHOW_ABSOLUTE_MOBOT;
+            break;
+        case 1:
+            srv.request.function = SHOW_RELATIVE_MOBOT;
+            break;
+        }
+        break;
+    case ABSOLUTE:
+        switch(value){
+        case -1:
+            srv.request.function = DELETE_ABSOLUTE_MOBOT;
+            break;
+        case 0:
+            srv.request.function = SHOW_RELATIVE_MOBOT;
+            break;
+        case 1:
+            srv.request.function = SHOW_ABSOLUTE_MOBOT;
+            break;
+        }
+        break;
+    }
 
     if (updateRvizClient->call(srv)){
-        ROS_INFO("Called Rviz: %i(%s) = %i", function, operands.c_str(),
-                srv.response.result);
+        ROS_INFO("Called Rviz: %i() = %i", srv.request.function, srv.response.result);
     } else {
-        ROS_ERROR("Call Rviz failed: %i(%s) = %i", function,
-                operands.c_str(), srv.response.result);
+        ROS_ERROR("Call Rviz failed: %i() = %i", srv.request.function, srv.response.result);
         return -1;
     }
     return srv.response.result;

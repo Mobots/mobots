@@ -28,16 +28,14 @@ public:
     ~ImageMapWaypoint();
     void updateInfoHandler(const mobots_msgs::IDKeyValue::ConstPtr& msg);
     void poseRelayHandler(const geometry_msgs::PoseStamped::ConstPtr& msgIn);
-    int updateRviz(int function, std::string operands);
 public Q_SLOTS:
     void process();
     void setActiveMobot(QString mobotID);
+    int updateRviz(int sessionID, int mobotID, int key, int value);
 Q_SIGNALS:
     void finished();
-    void error(QString err);
-    void dataChanged(int sessionID, int mobotID, int key, int value);
+    void rvizChanged(int sessionID, int mobotID, int key, int value);
 private:
-    void subscribe();
     void unsubscribe();
 
     int init_argc;

@@ -37,6 +37,9 @@ class Rectangle2D;
 namespace map_visualization{
 	
 class ImageMapVisual{
+
+static const int RELATIVE_POSE_NODE = 0;
+static const int ABSOLUTE_POSE_NODE = 1;
 public:
 	// Creates the root node. Images are placed into a tree hierarchy.
 	// root -> sessions -> mobots -> images
@@ -67,9 +70,9 @@ public:
     int setMobotModel(int mobotID, float poseX, float poseY, float poseTheta);
 
   // If the node is not found, a the node and its path is created.
-	Ogre::SceneNode* getNode(int sessionID, int mobotID, int imageID);
+    Ogre::SceneNode* getNode(int sessionID, int mobotID, int imageID);
   // If the node is not found, a NULL pointer is returned.
-	Ogre::SceneNode* findNode(int sessionID, int mobotID, int imageID);
+    Ogre::SceneNode* findNode(int sessionID, int mobotID, int imageID);
 private:
 	Ogre::MaterialPtr material_;
 	Ogre::TexturePtr texture_;

@@ -342,7 +342,7 @@ Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID
 	}
 	// Get the specified mobot node
 	name += "m";
-	name += boost::lexical_cast<std::string>(mobotID);
+    name += boost::lexical_cast<std::string>(mobotID);
 	try{
 		node = node->getChild(name);
 	}catch(Ogre::Exception& e){
@@ -388,7 +388,7 @@ Ogre::SceneNode* ImageMapVisual::findNode(int sessionID, int mobotID, int imageI
 		return (Ogre::SceneNode*) node;
 	}
 	name += "m";
-	name += boost::lexical_cast<std::string>(mobotID);
+    name += boost::lexical_cast<std::string>(mobotID);
 	try{
 		node = node->getChild(name);
 	} catch(Ogre::Exception& e) {
@@ -451,13 +451,17 @@ void ImageMapVisual::createColourCube(int mobotID)
     Ogre::RGBA colours[nVertices];
     Ogre::RGBA *pColour = colours;
     // Use render system to convert colour value since colour packing varies
-    rs->convertColourValue(Ogre::ColourValue(1.0,0.0,0.0), pColour++); //0 colour
+    float color = 0.2 * mobotID + 0.1;
+    while(color >= 1){
+        color = color / 10;
+    }
+    rs->convertColourValue(Ogre::ColourValue(color, color, color), pColour++); //0 colour
     rs->convertColourValue(Ogre::ColourValue(1.0,1.0,0.0), pColour++); //1 colour
-    rs->convertColourValue(Ogre::ColourValue(0.0,1.0,0.0), pColour++); //2 colour
+    rs->convertColourValue(Ogre::ColourValue(color, color, color), pColour++); //2 colour
     rs->convertColourValue(Ogre::ColourValue(0.0,0.0,0.0), pColour++); //3 colour
-    rs->convertColourValue(Ogre::ColourValue(1.0,0.0,1.0), pColour++); //4 colour
+    rs->convertColourValue(Ogre::ColourValue(color, color, color), pColour++); //4 colour
     rs->convertColourValue(Ogre::ColourValue(1.0,1.0,1.0), pColour++); //5 colour
-    rs->convertColourValue(Ogre::ColourValue(0.0,1.0,1.0), pColour++); //6 colour
+    rs->convertColourValue(Ogre::ColourValue(color, color, color), pColour++); //6 colour
     rs->convertColourValue(Ogre::ColourValue(0.0,0.0,1.0), pColour++); //7 colour
 
     /// Define 12 triangles (two triangles per cube face)
