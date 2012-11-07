@@ -6,19 +6,11 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include <ros/console.h>
 #include <geometry_msgs/Pose2D.h>
-
-#include <boost/geometry.hpp> //for intersection calculation
-#include <boost/geometry/geometries/polygon.hpp>
-#include <boost/geometry/geometries/point_xy.hpp>
-#include <boost/geometry/geometries/adapted/c_array.hpp>
-#include <boost/assign.hpp>
-
 #include "draw.h"
 #include "profile.h"
 #include "mobots_msgs/FeatureSet.h"
 #include "feature_detector/FeaturesMatcher.h"
 #include "feature_detector/FeaturesFinder.h"
-#include <boost/concept_check.hpp>
 
 using namespace std;
 using namespace cv;
@@ -103,8 +95,8 @@ static void planeTest(const vector<Point2f>& points1, const vector<Point2f>& poi
 
 Mat affine3;
 Mat affine2;
-extern Mat gimage1;
-extern Mat gimage2;
+//extern Mat gimage1;
+//extern Mat gimage2;
 Mat mm1, mm2;
 Mat mega;
 Mat kpoints1;
@@ -167,6 +159,8 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, g
 		if(points1Refinedx2.size() < 10)
 			return false;
 		transformMatrix = estimateRigidTransform(points2Refinedx2, points1Refinedx2, false);
+		affine2 = transformMatrix;
+		cout << "before " << endl << transformMatrix;
 		//transformMatrix = homo;
 		cout << "size after homo " << points1Refinedx2.size() << endl;		
 		  /*drawing::drawMatches2(gimage1, points1Refinedx2, gimage2, points2Refinedx2,
@@ -195,8 +189,12 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, g
 	//delta.theta = (theta1-theta2)/2;
 	//if(delta.theta < 0)
 	//	delta.theta += 2*M_PI;
-  delta.x = transformMatrix.at<double>(0,2);
-  delta.y = transformMatrix.at<double>(1,2);
+  double x = transformMatrix.at<double>(0,2);
+  double y = transformMatrix.at<double>(1,2);
+	double cost = cos(delta.theta);
+	double sint = sin(delta.theta);
+	delta.x = x;
+	delta.y = y;
 	moduleEnded();
   
   /*Mat roi1;
@@ -231,204 +229,16 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, g
   double base_base2 = compareHist( hist3, hist4, 0 );
   cout << "histogram similarity without rois: " << base_base2 << endl;
   moduleEnded();*/
-  if(points1Refinedx2.empty())
+  /*if(points1Refinedx2.empty())
 		  drawing::drawMatches2(gimage1, points1Refined, gimage2, points2Refined,
                good_matches_r, Scalar::all(-1), Scalar::all(-1),
                DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);
 	else
 		drawing::drawMatches2(gimage1, points1Refinedx2, gimage2, points2Refinedx2,
                good_matches_r, Scalar::all(-1), Scalar::all(-1),
-               DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);
+               DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);*/
 
 
 
   return true;
 }
-
-
-
-using namespace boost::assign;
-
-typedef boost::geometry::model::d2::point_xy<double> point;
-typedef boost::geometry::model::polygon<point > polygon;
-typedef boost::geometry::model::ring<boost::geometry::model::d2::point_xy<double> > boost_ring;
-
-void rotatePoint(point& p, const point center, double angle){
-	float s = sin(angle);
-  float c = cos(angle);
-
-  // translate point back to origin:
-  p.x(p.x() - center.x());
-  p.y(p.y() - center.y());
-
-  // rotate point
-  float xnew = p.x() * c + p.y() * s;
-  float ynew = -p.x() * s + p.y() * c;
-
-  // translate point back:
-  p.x(xnew + center.x());
-  p.y(ynew + center.y());
-}
-void cvBoxPoints(Point2d center, double width, double height, double angle, boost_ring&);
-bool getIntersectionRois(const geometry_msgs::Pose2D& delta, Mat& roi1, Mat& roi2){
-  point vertices[5];
-  polygon poly1, poly2;
-  
-
-  boost_ring ring1, ring2;
-  //ring1 += point(0, 0), point(gimage1.cols, 0), point(gimage1.cols, gimage1.rows), point(0, gimage1.rows), point(0,0);
-  ring1 += point(0, 0), point(gimage1.cols, 0), point(gimage1.cols, gimage1.rows), point(0, gimage1.rows), point(0,0);
-	const double cost = cos(delta.theta);
-	const double sint = sin(delta.theta);
-	double centerX = gimage1.cols/2 ;
-	double centerY = gimage1.rows/2 ;
-	point pointsa[4];
-	/*double pointsdata[5][2];
-	double pointsdata1[5][2];
-	pointsa[0] = point(-centerX, -centerY);
-	pointsa[1] = point(-centerX, centerY);
-	pointsa[2] = point(centerX, centerY);
-	pointsa[3] = point(centerX, -centerY);
-	pointsdata[0][0] = 0;
-	pointsdata[0][1] = 0;
-	pointsdata[1][0] = 0;
-	pointsdata[1][1] = gimage1.rows;
-	pointsdata[2][0] = gimage1.cols;
-	pointsdata[2][1] = gimage1.rows;
-	pointsdata[3][0] = gimage1.cols;
-	pointsdata[3][1] = 0;
-	memcpy(pointsdata1, pointsdata, 10*sizeof(double));
-point pointsc[4];*/
-	pointsa[0] = point(0, 0);
-	pointsa[1] = point(0, gimage1.rows);
-	pointsa[2] = point(gimage1.cols, gimage1.rows);
-	pointsa[3] = point(gimage1.cols, 0);
-	/*pointsc[3] = point(0, 0);
-	pointsc[2] = point(0, gimage1.rows);
-	pointsc[1] = point(gimage1.cols, gimage1.rows);
-	pointsc[0] = point(gimage1.cols, 0);
-	//boost::geometry::correct(ring2);*/
-	for(int i = 0; i< 4; i++){
-
-		/*pointsa[i].x(x*cost + y*sint + delta.x + centerX);
-		pointsa[i].y(-x*sint + y*cost + delta.y + centerY);*/
-
-		rotatePoint(pointsa[i], point(centerX, -centerY), -delta.theta);
-		//cout << "(" << pointsc[i].x() << "," << pointsc[i].y() << ") => (" << pointsa[i].x() << "," << pointsa[i].y() << ")";
-		//co7ut << "with center (" << centerX << "," << centerY << ") with theta = " << delta.theta << endl;
-		double x = pointsa[i].x();
-		double y = pointsa[i].y();
-		pointsa[i].x(x - delta.x);
-		pointsa[i].y(y - delta.y);
-		cout << "x " << pointsa[i].x() << " y " << pointsa[i].y() << endl;
-	}
-	cv::Point* cvPoints3 = new cv::Point[5];
-  for(int i = 0; i < 4; i++){
-	 cvPoints3[i].x = pointsa[i].x();
-	 cvPoints3[i].y = pointsa[i].y();
-  }
-  	 cvPoints3[4].x = pointsa[0].x();
-	 cvPoints3[4].y = pointsa[0].y();
-	/*for(int i = 0; i < 5; i++){
-		ring1.at(i).x(ring1.at(i).x());
-		ring1.at(i).y(ring1.at(i).y());
-  }*/
-  mega.create(700, 700, CV_8UC1);
-  cv::fillConvexPoly(mega, cvPoints3, 5, cv::Scalar(192));
-	/*for(int i = 0; i< 4; i++){
-		double x = pointsdata[i][0] - centerX;
-		double y = pointsdata[i][1] - centerY;
-		pointsdata[i][0] = x*cost - y*sint + delta.x + centerX;
-		pointsdata[i][1] = x*sint + y*cost + delta.y + centerY;
-	}*/
-	ring2 += pointsa[0], pointsa[1], pointsa[2], pointsa[3], pointsa[0];
-	boost::geometry::correct(ring2);
-  boost::geometry::correct(ring1);
-  boost::geometry::correct(ring2);
-
-  std::deque<polygon > resultList;
-  boost::geometry::intersection(ring1, ring2, resultList);
-  if(resultList.empty()){
-	 cout << "empty list " << endl;
-	 return false;
-  }
-  roi1 = Mat::zeros(gimage1.size(), CV_8UC1);
-  roi2 = Mat::zeros(gimage1.size(), CV_8UC1);
-  polygon result = resultList.front();
-  const vector<point> points = result.outer();
-  cv::Point* cvPoints = new cv::Point[points.size()];
-  cv::Point* cvPoints2 = new cv::Point[points.size()];
-  for(int i = 0; i < points.size(); i++){
-	 cvPoints[i].x = points[i].x() -delta.x;
-	 cvPoints[i].y = points[i].y() +delta.y;
-	 
-	 cout << "x1 " << cvPoints[i].x << " y1 " << cvPoints[i].y << endl;
-  }
-	for(int i = 0; i < points.size(); i++){
-	 
-	 cvPoints2[i].x = points[i].x()*cost + points[i].y()*sint - delta.x;
-	 cvPoints2[i].y = -points[i].x()*sint + points[i].y()*cost - delta.y;
-	 cout << "x2 " << cvPoints2[i].x << " y2 " << cvPoints2[i].y << endl;
-  }
-  cv::fillConvexPoly(roi1, cvPoints, points.size(), cv::Scalar(1));
-  cv::fillConvexPoly(roi2, cvPoints2, points.size(), cv::Scalar(1));
-  mm1 = gimage1.clone();
-  mm2 = gimage2.clone();
-  cv::fillConvexPoly(mm1, cvPoints, points.size(), cv::Scalar(184));
-  cv::fillConvexPoly(mm2, cvPoints2, points.size(), cv::Scalar(192));
-  return true;
-}
-
-/**
- * copied from old opencv
- */
-/*void cvBoxPoints(Point2d center, double width, double height, double angle, boost_ring& ring){
-	float a = (float)cos(angle)*0.5f;
-	float b = (float)sin(angle)*0.5f;
-	 double x0 = center.x - a*height - b*width;
-	 double y0 = center.y + b*height - a*width;
-	 double x1 = center.x + a*height - b*width;
-	 double y1 = center.y - b*height - a*width;
-	 
-	 /*ring += point(x0, y0);
-	 ring += point(x1, y1);
-	 ring += point(2*center.x - x0, 2*center.y - y0);
-	 ring += point(2*center.x - x1, 2*center.y - y1);
-	 ring += point(x0, y0);*/
-	 /*ring += point(x0, y0);
-	 ring += point(2*center.x - x1, 2*center.y - y1);
-	 ring += point(2*center.x - x0, 2*center.y - y0);
-	 ring += point(x1, y1);
-	 ring += point(x0, y0);
-	 
-	 /*pt[0][0] = center.x - a*height - b*width;
-    pt[0][1] = center.y + b*height - a*width;
-    pt[1][0] = center.x + a*height - b*width;
-    pt[1][1] = center.y - b*height - a*width;
-    pt[2][0] = 2*center.x - pt[0][0];
-    pt[2][1] = 2*center.y - pt[0][1];
-    pt[3][0] = 2*center.x - pt[1][0];
-    pt[3][1] = 2*center.y - pt[1][1];*/
-//}
-
-
-/*
- * == unused old == */
-
-/*
- * from opencv cookbook
- *//*
-void ratioTest(vector<vector<DMatch> >& matches, float ratioThreshold){
-  int removed = 0;
-  for(vector<vector<DMatch> >::iterator matchIterator = matches.begin(); matchIterator != matches.end(); matchIterator++){
-    if(matchIterator->size() < 2)
-      matchIterator->clear();
-    else{
-      if((*matchIterator)[0].distance / (*matchIterator)[1].distance > ratioThreshold){
-	matchIterator->clear();
-	removed++;
-      }
-    }
-  }
-  cout << "removed: " << removed << endl;
-}*/

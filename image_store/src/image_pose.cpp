@@ -26,14 +26,14 @@ ImagePose::ImagePose(){
 ImagePose::ImagePose(const IDT* id_){
 	errorStatus = 0;
 	infoData.id = *id_;
-	infoPath = mobots_common::utils::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ".info");
+	infoPath = mobots_common::store::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ".info");
 	try{
 		infoData.load(infoPath);
 	}catch (std::exception &e){
 		ROS_INFO("Error: %s", e.what());
 		errorStatus = 102;
 	}
-	imagePath = mobots_common::utils::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, '.' + infoData.image.encoding);
+	imagePath = mobots_common::store::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, '.' + infoData.image.encoding);
 }
 
 /**
@@ -43,7 +43,7 @@ ImagePose::ImagePose(const IDT* id_){
 ImagePose::ImagePose(const imagePoseData* infoData_){
 	errorStatus = 0;
 	infoData.id = infoData_->id;
-	infoPath = mobots_common::utils::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ".info");
+	infoPath = mobots_common::store::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ".info");
 	try{
 		infoData.load(infoPath);
 		if(infoData_->delPose.enable == 1){
@@ -69,8 +69,8 @@ ImagePose::ImagePose(const imagePoseData* infoData_, const std::vector<unsigned 
 	errorStatus = 0;
 	infoData = *infoData_;
 	imageData = imageData_;
-	imagePath = mobots_common::utils::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, '.' + infoData.image.encoding);
-	infoPath = mobots_common::utils::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ".info");
+	imagePath = mobots_common::store::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, '.' + infoData.image.encoding);
+	infoPath = mobots_common::store::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ".info");
 	initWrite();
 }
 
@@ -135,19 +135,19 @@ int ImagePose::initWrite(){
 void ImagePose::loadLast(const IDT* id_){
 	infoData.id = *id_;
 	infoData.id.imageID = 0;
-	infoPath = mobots_common::utils::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ".info");
+	infoPath = mobots_common::store::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ".info");
 	if(!boost::filesystem::exists(infoPath)){
 		errorStatus = 102;
 		return;
 	}
 	infoData.id.imageID++;
-	infoPath = mobots_common::utils::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ".info");
+	infoPath = mobots_common::store::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ".info");
 	while(boost::filesystem::exists(infoPath)){
 		infoData.id.imageID++;
-		infoPath = mobots_common::utils::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ".info");
+		infoPath = mobots_common::store::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ".info");
 	}
 	infoData.id.imageID--;
-	infoPath = mobots_common::utils::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ".info");
+	infoPath = mobots_common::store::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ".info");
 	try{
 		infoData.load(infoPath);
 	}catch (std::exception &e){

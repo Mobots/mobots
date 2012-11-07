@@ -2,13 +2,12 @@
 #include "ros/ros.h"
 #include "cv_bridge/cv_bridge.h"
 #include <iostream>
-#include <fstream>
 
 #include "feature_detector/MessageBridge.h"
 #include "feature_detector/FeaturesFinder.h"
+#include "profile.h"
 #include "mobots_msgs/FeatureSetWithPoseAndID.h"
 #include "mobots_msgs/ImageWithPoseAndID.h"
-#include <boost/concept_check.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
 using namespace std;
@@ -20,7 +19,9 @@ char* TAG;
 
 
 void processImage(const mobots_msgs::ImageWithPoseAndID& msg){
-  ROS_INFO("%s processImage", TAG);
+#if DEBUG
+	ROS_INFO("%s processImage", TAG);
+#endif
 	FeatureSet features;
 	if(msg.image.encoding == string("png")){
 		cv::Mat img = cv::imdecode(msg.image.data, 0);
@@ -44,8 +45,12 @@ int main(int argc, char** argv){
   TAG = new char[ss.str().size()+1];
   strcpy(TAG, ss.str().c_str());
   ros::Subscriber subscriber = nodeHandle.subscribe("image_pose_id", 10, processImage);
-  publisher = nodeHandle.advertise<mobots_msgs::FeatureSetWithPoseAndID>("featureset_pose_id", 10); 
-  detector = FeaturesFinder::getDefault();
+  publisher = nodeHandle.advertise<mobots_msgs::FeatureSetWithPoseAndID>("featureset_pose_id", 10);
+	int sliceCount = 5;
+	int maxFeaturesPerslice = 500;
+	ros::param::get("/feature_detector/slice_count", sliceCount);
+	ros::param::get("/feature_detector/features_per_slice", maxFeaturesPerslice);
+  detector = new OrbFeaturesFinder(maxFeaturesPerslice, sliceCount);
   ROS_INFO("%s now spinning", TAG);
   ros::spin();
   return 0;
