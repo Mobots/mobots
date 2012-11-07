@@ -1,5 +1,7 @@
-#include "image_map_waypoint.h"
 #include <map_visualization/definitions.h>
+#include <QCoreApplication>
+
+#include "image_map_waypoint.h"
 
 namespace map_visualization{
 
@@ -51,7 +53,11 @@ void ImageMapWaypoint::process(){
             <map_visualization::RemoteProcedureCall>("/image_map/rpc");
     updateRvizClient = &updateRvizClient_;
 
-    ros::spin();
+    while(ros::ok()){
+        QCoreApplication::processEvents();
+        ros::spinOnce();
+    }
+
     Q_EMIT finished();
 }
 
