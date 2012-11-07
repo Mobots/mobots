@@ -1,6 +1,8 @@
 #include <map_visualization/definitions.h>
 #include <QCoreApplication>
 
+#include <ros/duration.h>
+
 #include "image_map_waypoint.h"
 
 namespace map_visualization{
@@ -56,6 +58,7 @@ void ImageMapWaypoint::process(){
     while(ros::ok()){
         QCoreApplication::processEvents();
         ros::spinOnce();
+        ros::Duration(0.5).sleep();
     }
 
     Q_EMIT finished();

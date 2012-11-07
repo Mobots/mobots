@@ -208,7 +208,7 @@ void ImageMapModel::removeSession(int sessionID){
 bool ImageMapModel::insertRows(int row, int count, const QModelIndex & parent){
     ROS_INFO("tableData.size() %i", tableData.size());
 
-    beginInsertRows(parent, row, row + count);
+    beginInsertRows(parent, row, row + count - 1);
     std::vector<int> dataEntry(COLUMN_COUNT, -1);
     std::vector< std::vector<int> >::iterator it;
     it = tableData.begin();
@@ -234,7 +234,7 @@ bool ImageMapModel::removeRows(int row, int count, const QModelIndex & parent){
 
     std::vector< std::vector<int> >::iterator it;
     it = tableData.begin();
-    beginRemoveRows(parent, row, row + count);
+    beginRemoveRows(parent, row, row + count - 1);
     if(row < 0){
         if(tableData.size() < count){
             tableData.erase(it, tableData.end() - 1);
