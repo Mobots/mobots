@@ -15,7 +15,7 @@ Ptr<FeaturesFinder> FeaturesFinder::getDefault(){
 
 OrbFeaturesFinder::OrbFeaturesFinder(int nfeatures, int sliceCount)
   :sliceCount(sliceCount){
-    orb = new cv::ORB(nfeatures);
+    orb = new cv::ORB(nfeatures, 1.2f, 8, 5, 0, 2, cv::ORB::HARRIS_SCORE, 31);
 	 extractor = cv::DescriptorExtractor::create("ORB");
   }
 
@@ -39,10 +39,10 @@ void OrbFeaturesFinder::computeFeatureSet(const Mat& image, FeatureSet& features
 #endif
   }
   extractor->compute(image, features.keyPoints, features.descriptors);
-	for(int i = features.keyPoints.size()-1; i >= 0; i--){
+	/*for(int i = features.keyPoints.size()-1; i >= 0; i--){
 		  features.keyPoints[i].pt.x +=  halfWidth;
 			features.keyPoints[i].pt.y +=  halfHeight;
-	}
+	}*/
 
   moduleEnded();
 }
