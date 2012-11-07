@@ -85,12 +85,13 @@ bool done = false;
 bool matchable = false;
 
 void featuresReceived(const mobots_msgs::FeatureSetWithPoseAndID& featuresMsg);
+
 int main(int argc, char** argv){
   ros::init(argc, argv, "schnauze");
   int picCount = 26;
   ros::NodeHandle nodeHandle;
-  subscriber = nodeHandle.subscribe("featureset_pose_id", 2, featuresReceived);
-  publisher = nodeHandle.advertise<mobots_msgs::ImageWithPoseAndID>("image_pose_id", 2);
+  subscriber = nodeHandle.subscribe("/mobot1/featureset_pose_id", 2, featuresReceived);
+  publisher = nodeHandle.advertise<mobots_msgs::ImageWithPoseAndID>("/mobot1/image_pose_id", 2);
 	FILE* pf = fopen("/dev/null", "r"); //stdout stfu
   *stdout = *pf;
   string base = string("/home/jonas/mobots/slam") + string("/pics/karte2/");

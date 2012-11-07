@@ -105,8 +105,11 @@ public:
                 else
                     inputType = VIDEO_FILE;
             }
-            if (inputType == CAMERA)
+            if (inputType == CAMERA){
                 inputCapture.open(cameraID);
+								inputCapture.set(CV_CAP_PROP_FRAME_WIDTH, 640);
+								inputCapture.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
+						}
             if (inputType == VIDEO_FILE)
                 inputCapture.open(input);
             if (inputType != IMAGE_LIST && !inputCapture.isOpened())
@@ -248,7 +251,7 @@ int main(int argc, char* argv[])
       bool blinkOutput = false;
 
       view = s.nextImage();
-			cout << "loop" << i << endl;
+//			cout << "loop" << i << endl;
       //-----  If no more image, or got enough, then stop calibration and show result -------------
       if( mode == CAPTURING && imagePoints.size() >= (unsigned)s.nrFrames )
       {
@@ -286,7 +289,7 @@ int main(int argc, char* argv[])
             found = findCirclesGrid( view, s.boardSize, pointBuf, CALIB_CB_ASYMMETRIC_GRID );
             break;
         }
-cout << "loop" << i << " " << found << endl;
+//cout << "loop" << i << " " << found << endl;
         if ( found)                // If done with success,
         {
               // improve the found corners' coordinate accuracy for chessboard
