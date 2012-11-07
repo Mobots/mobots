@@ -11,15 +11,12 @@ ImageMapDisplay::ImageMapDisplay()
 }
 
 ImageMapDisplay::~ImageMapDisplay(){
-    //ROS_INFO("delete");
 	unsubscribe();
 	delete visual_;
-    //ROS_INFO("delete");
 }
 
 // Clear the map by deleting image_map_visual object
 void ImageMapDisplay::clear(){
-    //ROS_INFO("clear");
 	delete visual_;
 	visual_ = new ImageMapVisual(vis_manager_->getSceneManager());
 }
@@ -29,31 +26,24 @@ void ImageMapDisplay::clear(){
 // instantiate all the workings of the class.
 // TODO implement service
 void ImageMapDisplay::onInitialize(){
-    //ROS_INFO("[onInitialize]");
 	setStatus(rviz::status_levels::Warn, "Topic", "Finished Initializing");
 }
 
 void ImageMapDisplay::onEnable(){
-    //ROS_INFO("onenable");
 	subscribe();
     visual_ = new ImageMapVisual(vis_manager_->getSceneManager());
     testVisual(visual_, "/home/moritz/TillEvil.jpg");
-    //ROS_INFO("onenable");
 }
 
 void ImageMapDisplay::onDisable(){
-    //ROS_INFO("[onDisable]");
 	unsubscribe();
 	delete visual_;
     visual_ = NULL;
-    //ROS_INFO("[onDisable]");
 }
 
 void ImageMapDisplay::reset(){
-    //ROS_INFO("reset");
     Display::reset();
     clear();
-    //ROS_INFO("reset");
 }
 
 /**
@@ -65,14 +55,12 @@ void ImageMapDisplay::reset(){
  *  - pose
  */
 void ImageMapDisplay::subscribe(){
-    //ROS_INFO("[subscribe]");
 	if(!isEnabled()){
 		return;
 	}
     setStatus(rviz::status_levels::Ok, "Topic", "OK");
 	if(!relPoseTopic.empty()){
 		try{
-            //ROS_INFO("Subscribing");
 			relPoseSub = update_nh_.subscribe(relPoseTopic, 3,
 				&ImageMapDisplay::relPoseCallback, this);
 		}
@@ -123,20 +111,16 @@ void ImageMapDisplay::subscribe(){
         }
     }
     return;
-    //ROS_INFO("[subscribe]");
 }
 
 void ImageMapDisplay::unsubscribe(){
-    ROS_INFO("[unsubscribe]");
 	relPoseSub.shutdown();
 	absPoseSub.shutdown();
     imageStoreClient.shutdown();
     for(int i = 0; i < mobotPoseSub.size(); i++){
         mobotPoseSub[i].shutdown();
     }
-    ROS_INFO("[unsubscribe]");
     mobotPoseSub.clear();
-    ROS_INFO("[unsubscribe]");
 }
 
 void ImageMapDisplay::setRelPoseTopic(const std::string& topic){
@@ -149,7 +133,6 @@ void ImageMapDisplay::setRelPoseTopic(const std::string& topic){
 	propertyChanged(relPoseTopicProperty);
 	// Make sure rviz renders the next time it gets a chance.
 	causeRender();
-    ROS_INFO("setRelPoseTopic: %s", relPoseTopic.c_str());
 }
 
 void ImageMapDisplay::setAbsPoseTopic(const std::string& topic){
@@ -160,7 +143,6 @@ void ImageMapDisplay::setAbsPoseTopic(const std::string& topic){
 	subscribe();
 	propertyChanged(absPoseTopicProperty);
 	causeRender();
-    ROS_INFO("setAbsPoseTopic");
 }
 
 void ImageMapDisplay::setImageStoreTopic(const std::string& topic){
@@ -171,7 +153,6 @@ void ImageMapDisplay::setImageStoreTopic(const std::string& topic){
     subscribe();
     propertyChanged(imageStoreTopicProperty);
     causeRender();
-    ROS_INFO("setImageStoreTopic");
 }
 
 void ImageMapDisplay::setMobotPoseCount(const std::string& topic){
@@ -229,9 +210,7 @@ void ImageMapDisplay::absPoseCallback(
 
 void ImageMapDisplay::mobotPoseCallback(int mobotID,
         const geometry_msgs::Pose2D::ConstPtr& msg){
-    ROS_INFO("[mobotPoseCallback]");
     visual_->setMobotModel(mobotID, msg->x, msg->y, msg->theta);
-    ROS_INFO("[mobotPoseCallback]");
 }
 
 // TODO implemented dual pose(rel + abs) storage
@@ -271,7 +250,6 @@ void ImageMapDisplay::retrieveImages(int sessionID, int mobotID){
 // ``property_prefix_``, and ``parent_category_`` are all initialized before
 // this is called.
 void ImageMapDisplay::createProperties(){
-    //ROS_INFO("properties");
     relPoseTopicProperty = property_manager_->createProperty<rviz::ROSTopicStringProperty>(
 		"RelativePoseTopic", property_prefix_,
 		boost::bind(&ImageMapDisplay::getRelPoseTopic, this),
@@ -306,11 +284,9 @@ void ImageMapDisplay::createProperties(){
         (ros::message_traits::datatype<mobots_msgs::PoseAndID>());
 //    imageStoreTopicProp->setMessageType
     //    (ros::message_traits::datatype<map_visualization::GetImageWithPose>());
-    //ROS_INFO("properties");
 }
 
 void ImageMapDisplay::testVisual(ImageMapVisual* visual_, std::string filePath){
-    //ROS_INFO("testVisual");
 	std::ifstream imageFile(filePath.c_str(), std::ios::binary);
 	if(!boost::filesystem::exists(filePath.c_str())){
         return;
@@ -328,8 +304,7 @@ void ImageMapDisplay::testVisual(ImageMapVisual* visual_, std::string filePath){
     visual_->insertImage(0,0,2, 2,2,3.1415927, mat);
     visual_->insertImage(0,0,3, 3,3,4.712389, mat);
     visual_->insertImage(0,0,4, 4,4,6.2831853, mat);
-    //ROS_INFO("testVisual");
-    visual_->setMobotModel(1,4,2,0);
+    visual_->setMobotModel(1,0.5,0.6,0);
 }
 
 } // end namespace rviz_plugin_display
