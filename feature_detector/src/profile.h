@@ -1,6 +1,7 @@
 #pragma once
 
 #define PROFILE 1
+#define DEBUG 1
 
 #ifdef PROFILE
   #include <iostream>

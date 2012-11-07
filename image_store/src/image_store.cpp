@@ -141,7 +141,8 @@ bool imageHandlerOut(map_visualization::GetImageWithPose::Request &req, map_visu
 }
 
 /**
- * Currently only saves the received Feature messages on hdd
+ * Handler for the incoming featuresets
+ * Currently just saves them on hdd
  */
 void featureSetHandler(const mobots_msgs::FeatureSetWithPoseAndID& msg){
   if(!FeatureStore::saveFeatureSet(msg))
@@ -161,12 +162,15 @@ int main(int argc, char **argv){
   const int mobotCount = mobots_common::constants::mobot_count;
 	// The node is called image_store_server
 	ros::init(argc, argv, "image_store");
-    currentSessionID = 0;
+	currentSessionID = 0;
 	if(!ros::param::get("/sessionID", currentSessionID)){
 		currentSessionID = 0;
-		ROS_WARN("%s /sessionID is not set, sessionID set to 0", __FILE__);
+		ROS_WARN("%s: /sessionID is not set, sessionID set to 0", __FILE__);
 	}
-	if(!mobots_common::utils::createDirs(currentSessionID)){
+	std::string savePathRoot;
+	if(ros::param::get("/image_store/path", savePathRoot))
+		mobots_common::store::setBasePath(savePathRoot);
+	if(!mobots_common::store::createDirs(currentSessionID)){
 		ROS_ERROR("%s in %s cannot create mobot data dirs for session %d", __PRETTY_FUNCTION__, __FILE__, currentSessionID);
 		exit(1);
 	}
