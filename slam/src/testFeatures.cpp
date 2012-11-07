@@ -69,8 +69,8 @@ int main(int argc, char** argv){
     mobot_image.id.session_id = 0;
     mobot_image.id.mobot_id = 1;
     mobot_image.id.image_id = i-1;
-    mobot_image.pose.x = 0.05;
-    mobot_image.pose.y = 0.05;
+    mobot_image.pose.x = 0.02;
+    mobot_image.pose.y = 0.02;
     mobot_image.pose.theta = 0;
     
     cout << "Press [Enter] for publishing " << i << ".png" << endl;

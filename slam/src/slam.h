@@ -38,7 +38,7 @@ private:
     std::map<uint32_t, FeatureSet> feature_sets_;
     CpuFeaturesMatcher features_matcher_;
     
-    enum EdgeState {MATCHED, MATCHING_IMPOSSIBLE};
+    enum EdgeState {MATCHING_IMPOSSIBLE = 0, MATCHED};
     std::map< std::pair<uint32_t,uint32_t> , EdgeState > edge_states_; 
 
     uint32_t last_id_[mobots_common::constants::mobot_count];
@@ -46,12 +46,10 @@ private:
     
     static const uint ITERATIONS_PER_NEW_IMAGE = 7;
 
-    /*void callback1(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg);
-    void callback2(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg);
-    vod callback3(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg);*/
     void callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg, uint mobot_id);
     void addNewVertexToGraph(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg, uint bot);
     void findEdgesBruteforce();
+    enum Slam::EdgeState tryToMatch(const uint32_t v, const uint32_t w);
     void publishOptimizedPoses();
     void runToro();
     

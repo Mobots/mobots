@@ -68,6 +68,7 @@ void Slam::addNewVertexToGraph(const boost::shared_ptr<mobots_msgs::FeatureSetWi
   /* FeatureSet in Map unter Key (concatenated) ID abspeichern */
   MessageBridge::copyToCvStruct( msg->features, feature_sets_[current_id_[bot]] );
 
+#if 0
   TreeOptimizer2::Pose current_pose = TreeOptimizer2::Pose();
   if (last_id_[bot]) // Nur, wenn wir schon eine letzte Nachricht haben...
   {
@@ -77,22 +78,22 @@ void Slam::addNewVertexToGraph(const boost::shared_ptr<mobots_msgs::FeatureSetWi
   }
   /* Neuen Vertex mit concatenated ID in TORO-Graph einfügen */
   pose_graph_.addVertex(current_id_[bot], current_pose);
-  ROS_INFO_STREAM("map size: " << pose_graph_.vertices.size());
-
-  
-#if 0 // Zwischen zwei Vertices kann anscheinend nur eine Edge je Richtung gesetzt werden...
-   /* DeltaPose als Edge zwischen den zwei Vertices einfügen */
-
-  TreeOptimizer2::Transformation t
-    = TreeOptimizer2::Transformation(msg->pose.x, msg->pose.y, msg->pose.theta);
-  
-  TreeOptimizer2::InformationMatrix m;
-  m.values[0][0] = 1; m.values[0][1] = 0; m.values[0][2] = 0;
-  m.values[1][0] = 0; m.values[1][1] = 1; m.values[1][2] = 0;
-  m.values[2][0] = 0; m.values[2][1] = 0; m.values[2][2] = 1;
-  
-  pose_graph_.addEdge(pose_graph_.vertex(last_id_[bot]), pose_graph_.vertex(current_id_[bot]), t, m);
 #endif
+  
+  if( last_id_[bot] || tryToMatch(last_id_[bot], current_id_[bot]) == MATCHING_IMPOSSIBLE )
+  {
+    /* DeltaPose als Edge zwischen den zwei Vertices einfügen */
+    TreeOptimizer2::Transformation t = TreeOptimizer2::Transformation(msg->pose.x, msg->pose.y, msg->pose.theta);
+  
+    TreeOptimizer2::InformationMatrix m;
+    m.values[0][0] = 1; m.values[0][1] = 0; m.values[0][2] = 0;
+    m.values[1][0] = 0; m.values[1][1] = 1; m.values[1][2] = 0;
+    m.values[2][0] = 0; m.values[2][1] = 0; m.values[2][2] = 1;
+    
+    pose_graph_.addIncrementalEdge(last_id_[bot], current_id_[bot], t, m);
+  }
+  
+  ROS_INFO_STREAM("map size: " << pose_graph_.vertices.size());
 }
 
 void Slam::findEdgesBruteforce()
@@ -107,7 +108,7 @@ void Slam::findEdgesBruteforce()
       
       /* Nur matchen, wenn die Bildmittelpunkte ausreichend nah beieinander liegen. */
       double norm = sqrt( TreeOptimizer2::Translation(w.second->pose.x() - v.second->pose.x(), w.second->pose.y() - v.second->pose.y()).norm2() );
-      ROS_INFO_STREAM("Distance between image " << split(v.second->id).image_id << " and " << split(w.second->id).image_id << " is " << norm);
+      ROS_INFO_STREAM("Distance between image " << split(v.first).image_id << " and " << split(w.first).image_id << " is " << norm);
       if (norm > mobots_common::constants::image_width_in_meters) {
         ROS_INFO_STREAM("Skipping combination because of to big distance.");
         continue;
@@ -119,22 +120,22 @@ void Slam::findEdgesBruteforce()
         continue;
       }
       
-      
+      tryToMatch(v.first, w.first);
     }
   }
 }
 
-enum EdgeState Slam::tryToMatch(uint32_t v, uint32_t w)
+enum Slam::EdgeState Slam::tryToMatch(const uint32_t v, const uint32_t w)
 {
   /* Jetzt werfen wir Jonas sein Matcher an. */
   geometry_msgs::Pose2D delta;        
-  if ( ! features_matcher_.match(feature_sets_[v.first], feature_sets_[w.first], delta) )
+  if ( ! features_matcher_.match(feature_sets_[v], feature_sets_[w], delta) )
   {
     ROS_INFO_STREAM("Skippung combination because of matching error.");
-    edge_states_[std::make_pair(v.first,w.first)] = MATCHING_IMPOSSIBLE;
+    edge_states_[std::make_pair(v,w)] = MATCHING_IMPOSSIBLE;
     return MATCHING_IMPOSSIBLE;
   }
-  edge_states_[std::make_pair(v.first,w.first)] = MATCHED;
+  edge_states_[std::make_pair(v,w)] = MATCHED;
 
   /* Matching-Ergebnis als Edge zwischen den zwei Vertices einfügen */
 
@@ -149,7 +150,7 @@ enum EdgeState Slam::tryToMatch(uint32_t v, uint32_t w)
   m.values[1][0] = 0;                   m.values[1][1] = varianz_translation; m.values[1][2] = 0;
   m.values[2][0] = 0;                   m.values[2][1] = 0;                   m.values[2][2] = varianz_rotation;
 
-  TreeOptimizer2::Edge* result = pose_graph_.addEdge(v.second, w.second, t, m);
+  TreeOptimizer2::Edge* result = pose_graph_.addIncrementalEdge(v, w, t, m);
   ROS_INFO_STREAM("Added edge with x = " << t.translation().x() << ", y = " << t.translation().y() << ", theta = " << t.rotation() << ". Result: " << result);
   
   return MATCHED;
