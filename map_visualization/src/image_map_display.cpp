@@ -124,7 +124,6 @@ void ImageMapDisplay::unsubscribe(){
 }
 
 void ImageMapDisplay::setRelPoseTopic(const std::string& topic){
-    ROS_INFO("setRelPoseTopic: %s", relPoseTopic.c_str());
     unsubscribe();
 	clear();
 	relPoseTopic = topic;
@@ -136,7 +135,6 @@ void ImageMapDisplay::setRelPoseTopic(const std::string& topic){
 }
 
 void ImageMapDisplay::setAbsPoseTopic(const std::string& topic){
-    ROS_INFO("setAbsPoseTopic: %s", topic.c_str());
 	unsubscribe();
 	clear();
 	absPoseTopic = topic;
@@ -146,7 +144,6 @@ void ImageMapDisplay::setAbsPoseTopic(const std::string& topic){
 }
 
 void ImageMapDisplay::setImageStoreTopic(const std::string& topic){
-    ROS_INFO("setImageStoreTopic: %s", topic.c_str());
     unsubscribe();
     clear();
     imageStoreTopic = topic;
@@ -156,19 +153,17 @@ void ImageMapDisplay::setImageStoreTopic(const std::string& topic){
 }
 
 void ImageMapDisplay::setMobotPoseCount(const std::string& topic){
-    ROS_INFO("setMobotPoseCount: %s", topic.c_str());
     unsubscribe();
     clear();
     try {
         mobotPoseCount = boost::lexical_cast<int>(topic);
     } catch( boost::bad_lexical_cast const& ) {
         mobotPoseCount = 0;
-        ROS_INFO("Error: mobot pose count was not valid %s", topic.c_str());
+        ROS_ERROR("Error: mobot pose count was not valid %s", topic.c_str());
     }
     subscribe();
     propertyChanged(mobotPoseCountProperty);
     causeRender();
-    ROS_INFO("setMobotPoseCount");
 }
 
 const std::string& ImageMapDisplay::getMobotPoseCount(){
@@ -180,7 +175,6 @@ const std::string& ImageMapDisplay::getMobotPoseCount(){
 // TODO retrieveImageSeries
 void ImageMapDisplay::relPoseCallback(
 	const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg){
-    ROS_INFO("[imageRelPoseCallback]");
     cv::Mat mat;
     if(msg->image.encoding == "jpg" || msg->image.encoding == "png"){
         mat = cv::imdecode(msg->image.data, 1);
@@ -188,8 +182,8 @@ void ImageMapDisplay::relPoseCallback(
         cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg->image, "rgb8");
         mat = cv_ptr->image;
     }
-    visual_->insertImage(msg->pose.x, msg->pose.y, msg->pose.theta,
-                         msg->id.session_id, msg->id.mobot_id, msg->id.image_id,
+    visual_->insertImage(msg->id.session_id, msg->id.mobot_id, msg->id.image_id,
+                         msg->pose.x, msg->pose.y, msg->pose.theta,
                          mat);
     // If the first image is missing(ID=0), get all until the recieved image.
     /*if(visual_->findNode(msg->id.session_id, msg->id.mobot_id, 0) == NULL){
@@ -201,10 +195,10 @@ void ImageMapDisplay::relPoseCallback(
 // TODO pass information to image_map_info
 void ImageMapDisplay::absPoseCallback(
 	const mobots_msgs::PoseAndID::ConstPtr& msg){
-    //ROS_INFO("[imageAbsPoseCallback]");
+    ROS_INFO("[absPoseCallback] pose(%f,%f,%f)", msg->pose.x, msg->pose.y, msg->pose.theta);
     if(visual_->setImagePose(msg->id.session_id, msg->id.mobot_id, msg->id.image_id,
                         msg->pose.x, msg->pose.y, msg->pose.theta) != 0){
-        ROS_INFO("[imageMapDisplay] No image to assign abs pose to");
+        ROS_ERROR("[imageMapDisplay] No image to assign abs pose to");
     }
 }
 
@@ -228,7 +222,7 @@ void ImageMapDisplay::retrieveImages(int sessionID, int mobotID){
                 srv.request.id.image_id);
         // End of images or error. Errors in image_store pkg
         if(srv.response.error){
-            ROS_INFO("[retrieveImages] error: %i", srv.response.error);
+            ROS_ERROR("[retrieveImages] error: %i", srv.response.error);
             return;
         }
         if(srv.response.image.encoding == "jpg" || srv.response.image.encoding == "png"){
@@ -237,9 +231,9 @@ void ImageMapDisplay::retrieveImages(int sessionID, int mobotID){
             cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(srv.response.image, "rgb8");
             mat = cv_ptr->image;
         }
-        visual_->insertImage(srv.response.rel_pose.x, srv.response.rel_pose.y,
-                srv.response.rel_pose.theta, srv.request.id.session_id,
-                srv.request.id.mobot_id, srv.request.id.image_id, mat);
+        visual_->insertImage(srv.request.id.session_id, srv.request.id.mobot_id,
+                srv.request.id.image_id, srv.response.rel_pose.x, srv.response.rel_pose.y,
+                srv.response.rel_pose.theta, mat);
         srv.request.id.image_id++;
     }
     return;
