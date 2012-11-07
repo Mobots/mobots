@@ -24,14 +24,13 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
     bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
     Qt::ItemFlags flags(const QModelIndex &index) const;
-
-    void clearData();
-private:
-    void addMobot(int sessionID, int mobotID, int key, int value);
     void removeMobot(int sessionID, int mobotID);
     void removeSession(int sessionID);
+    bool insertRows(int position, int rows, const QModelIndex &index = QModelIndex());
+    bool removeRows(int position, int rows, const QModelIndex &index = QModelIndex());
+
+private:
     // TODO support sessions properly
-    //{sessionID, mobotID,enabled,images,rel_pose,abs_pose}
     std::vector< std::vector<int> > tableData;
     int activeMobot;
 public Q_SLOTS:

@@ -20,24 +20,25 @@ void poseRelayTestHandler(const mobots_msgs::PoseAndID::ConstPtr& msg){
 void updateInfoTest(){
     ROS_INFO("updateInfoTest");
     mobots_msgs::IDKeyValue msg;
-    msg.id.session_id = 0;
-    msg.id.mobot_id = 0;
-    msg.id.image_id = 0;
-    int a;
+    int a = 5;
     std::cout << "Enter the session:" << std::endl;
     std::cin >> a;
-    msg.id.session_id = a;
+    msg.id.session_id = 0;
+    std::cout << a << std::endl;
     std::cout << "Enter the mobot:" << std::endl;
     std::cin >> a;
-    msg.id.mobot_id = a;
+    msg.id.mobot_id = 2;
+    std::cout << a << std::endl;
     while(ros::ok()){
         msg.id.mobot_id %= 3;
         std::cout << "Enter the key:" << std::endl;
         std::cin >> a;
-        msg.key = a;
+        msg.key = 2;
+        std::cout << a << std::endl;
         std::cout << "Enter the value:" << std::endl;
         std::cin >> a;
-        msg.value = a;
+        msg.value = 0;
+        std::cout << a << std::endl;
         updateInfoTestPub->publish(msg);
         ROS_INFO("spin");
         ros::spinOnce();

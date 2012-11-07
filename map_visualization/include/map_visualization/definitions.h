@@ -4,6 +4,7 @@ static const int ENABLED  = 2;
 static const int IMAGES   = 3;
 static const int RELATIVE = 4;
 static const int ABSOLUTE = 5;
+static const int COLUMN_COUNT = 6;
 
 static const int INSERT_IMAGE   = 1;
 static const int SHOW_IMAGE     = 2;
