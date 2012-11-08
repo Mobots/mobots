@@ -39,10 +39,10 @@ void OrbFeaturesFinder::computeFeatureSet(const Mat& image, FeatureSet& features
 #endif
   }
   extractor->compute(image, features.keyPoints, features.descriptors);
-	/*for(int i = features.keyPoints.size()-1; i >= 0; i--){
+	for(int i = features.keyPoints.size()-1; i >= 0; i--){
 		  features.keyPoints[i].pt.x +=  halfWidth;
 			features.keyPoints[i].pt.y +=  halfHeight;
-	}*/
+	}
 
   moduleEnded();
 }
