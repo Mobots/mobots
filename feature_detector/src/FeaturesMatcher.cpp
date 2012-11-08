@@ -24,10 +24,10 @@ const char CpuFeaturesMatcher::ORB_DEFAULT[] = "BruteForce-Hamming";
 static const double LENGTHDIFF_THRESHOLD = 2.0;    //if abs(distance(a) - distance(b)) > => outlier
 static const double MAX_ALLOWED_MATCH_DISTANCE = 600;
 static const char* TAG = "[FeaturesMatcher] ";
-static double minVarXY = 2;
-static double minVarTheta = 0.5;
-static double maxVarXY = 100;
-static double maxVarTheta = 20;
+static const double minVarXY = 2;
+static const double minVarTheta = 0.002;
+static const double maxVarXY = 100;
+static const double maxVarTheta = 0.35;
 
 
 CpuFeaturesMatcher::CpuFeaturesMatcher(const string& type){
