@@ -24,17 +24,15 @@ Slam::Slam() :
   
   for(int bot = 0; bot < mobots_common::constants::mobot_count; bot++)
   {
+    last_id_[bot] = NOT_EXISTENT_YET;
+    current_id_[bot] = NOT_EXISTENT_YET;
+
     boost::function<void (const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg)> callback_function =
       boost::bind(&Slam::callback, this, _1, bot);
     subscriber_[bot] = node_handle_.subscribe("/mobot" + boost::lexical_cast<std::string>(bot) + "/featureset_pose_id", 1000, callback_function);
+
+    
   }
-  
-  for(uint bot = 1; bot <= 1; ++bot) //TODO: 1 durch MOBOT_COUNT ersetzten
-  {
-    last_id_[bot] = 0;
-    current_id_[bot] = 0;
-  }
-  
 }
 
 void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg, uint bot)
@@ -63,10 +61,15 @@ void Slam::addNewVertexToGraph(const boost::shared_ptr<mobots_msgs::FeatureSetWi
 {
   /* last_id_ und current_id_ aktualisieren */
   last_id_[bot] = current_id_[bot];
-  current_id_[bot] = merge(msg->id);
+  current_id_[bot] = merge(msg.id);
   
   /* FeatureSet in Map unter Key (concatenated) ID abspeichern */
   MessageBridge::copyToCvStruct( msg->features, feature_sets_[current_id_[bot]] );
+
+  if(msg.id.image_id == 0)
+  {
+    
+  
 
 #if 0
   TreeOptimizer2::Pose current_pose = TreeOptimizer2::Pose();

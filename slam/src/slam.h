@@ -16,19 +16,20 @@
  * Implementiert einen Node und stellt somit die Schnittstelle der SLAM-Systems zum ROS-Framework dar.
  */
 class Slam {
+
 public:
-    /**
-     * @brief Constructor
-     */
     Slam();
 
-    /**
-     * \brief Enable this display
-     * @param force If false, does not re-enable if this display is already enabled.  If true, it does.
-     */
-//    void enable(bool force = false);
-
 private:
+/* Constants */
+    static const uint ITERATIONS_PER_NEW_IMAGE = 7;
+    enum EdgeState {MATCHING_IMPOSSIBLE = 0, MATCHED};
+    static const uint32_t NOT_EXISTENT_YET = 0xffffffff;
+
+/* Member variables */
+    uint32_t last_id_[mobots_common::constants::mobot_count];
+    uint32_t current_id_[mobots_common::constants::mobot_count];
+
     ros::NodeHandle node_handle_;
     ros::Subscriber subscriber_[mobots_common::constants::mobot_count];
     ros::Publisher publisher_;
@@ -38,14 +39,9 @@ private:
     std::map<uint32_t, FeatureSet> feature_sets_;
     CpuFeaturesMatcher features_matcher_;
     
-    enum EdgeState {MATCHING_IMPOSSIBLE = 0, MATCHED};
     std::map< std::pair<uint32_t,uint32_t> , EdgeState > edge_states_; 
 
-    uint32_t last_id_[mobots_common::constants::mobot_count];
-    uint32_t current_id_[mobots_common::constants::mobot_count];
-    
-    static const uint ITERATIONS_PER_NEW_IMAGE = 7;
-
+/* Member functions */
     void callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg, uint mobot_id);
     void addNewVertexToGraph(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg, uint bot);
     void findEdgesBruteforce();
@@ -53,6 +49,7 @@ private:
     void publishOptimizedPoses();
     void runToro();
     
+/* Helper functions */
     uint32_t merge(mobots_msgs::ID const &id);
     mobots_msgs::ID split(uint32_t id);
     AISNavigation::TreeOptimizer2::Transformation convertPixelsToMeters(geometry_msgs::Pose2D pose);
