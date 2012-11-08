@@ -1,5 +1,8 @@
 #include "image_map_visual.h"
+
+#include "definitions.h"
 #include "mobots_common/constants.h"
+#include "image_map_display.h"
 
 namespace map_visualization
 {
@@ -8,11 +11,12 @@ namespace map_visualization
  * Creates the root node. Images are placed into a tree hierarchy.
  * root -> sessions -> mobots -> images
  */
-ImageMapVisual::ImageMapVisual( Ogre::SceneManager* sceneManager_){
+ImageMapVisual::ImageMapVisual( Ogre::SceneManager* sceneManager_, ImageMapDisplay* display_){
 	sceneManager = sceneManager_;
 	// The root of the node tree containing all image nodes 
     rootImageNode = sceneManager->getRootSceneNode()->createChildSceneNode();
     rootMobotModelNode = sceneManager->getRootSceneNode()->createChildSceneNode();
+    display = display_;
 }
 
 /**
@@ -50,37 +54,37 @@ int ImageMapVisual::insertImage(int sessionID, int mobotID,	int imageID,
 	std::stringstream ss;
 	ss << "MapMaterial-" << imageNode->getName();
 	try{
-		material_ = Ogre::MaterialManager::getSingleton().create(ss.str(),
+        material = Ogre::MaterialManager::getSingleton().create(ss.str(),
 			Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	} catch(Ogre::Exception& e) {
 		Ogre::MaterialManager::getSingleton().remove(ss.str());
-		material_ = Ogre::MaterialManager::getSingleton().create(ss.str(),
+        material = Ogre::MaterialManager::getSingleton().create(ss.str(),
 			Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	}
-	material_->setReceiveShadows(false);
-	material_->getTechnique(0)->setLightingEnabled(false);
-	material_->setDepthBias(-16.0f, 0.0f);
-	material_->setCullingMode(Ogre::CULL_NONE);
-	material_->setDepthWriteEnabled(false);
+    material->setReceiveShadows(false);
+    material->getTechnique(0)->setLightingEnabled(false);
+    material->setDepthBias(-16.0f, 0.0f);
+    material->setCullingMode(Ogre::CULL_NONE);
+    material->setDepthWriteEnabled(false);
 	
 	// Create the texture
 	std::stringstream ss2;
 	ss2 << "MapTexture-" << imageNode->getName();
 	try{
-		texture_ = Ogre::TextureManager::getSingleton().createManual(
+        texture = Ogre::TextureManager::getSingleton().createManual(
 			ss2.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
 			Ogre::TEX_TYPE_2D, mat.cols, mat.rows, 0, Ogre::PF_X8R8G8B8,
 			Ogre::TU_DEFAULT);
     } catch(Ogre::Exception& e) {
 		Ogre::TextureManager::getSingleton().remove(ss2.str());
-		texture_ = Ogre::TextureManager::getSingleton().createManual(
+        texture = Ogre::TextureManager::getSingleton().createManual(
 			ss2.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
 			Ogre::TEX_TYPE_2D, mat.cols, mat.rows, 0, Ogre::PF_X8R8G8B8,
 			Ogre::TU_DEFAULT);
 	}
 	
 	// Get pixel buffer
-	Ogre::HardwarePixelBufferSharedPtr pixelBuffer = texture_->getBuffer();
+    Ogre::HardwarePixelBufferSharedPtr pixelBuffer = texture->getBuffer();
 	pixelBuffer->lock(Ogre::HardwareBuffer::HBL_NORMAL); // for best performance use HBL_DISCARD!
 	const Ogre::PixelBox& pixelBox = pixelBuffer->getCurrentLock();
 	Ogre::uint32* pDest = static_cast<Ogre::uint32*>(pixelBox.data);
@@ -96,75 +100,79 @@ int ImageMapVisual::insertImage(int sessionID, int mobotID,	int imageID,
 	pixelBuffer->unlock();
 	
 	// Get the current pass from the material
-	Ogre::Pass* pass = material_->getTechnique(0)->getPass(0);
+    Ogre::Pass* pass = material->getTechnique(0)->getPass(0);
 	if (pass->getNumTextureUnitStates() > 0){
-		tex_unit_ = pass->getTextureUnitState(0);
+        texUnit = pass->getTextureUnitState(0);
 	} else {
-		tex_unit_ = pass->createTextureUnitState();
+        texUnit = pass->createTextureUnitState();
 	}
-	tex_unit_->setTextureName(texture_->getName());
-	tex_unit_->setTextureFiltering( Ogre::TFO_NONE );
+    texUnit->setTextureName(texture->getName());
+    texUnit->setTextureFiltering( Ogre::TFO_NONE );
 
 	// Create the manual object
 	std::stringstream ss3;
 	ss3 << "MapObject-" << imageNode->getName();
 	try{
-		manual_object_ = sceneManager->createManualObject(ss3.str());
+        manualObject = sceneManager->createManualObject(ss3.str());
 	} catch(Ogre::Exception& e) {
 		sceneManager->destroyManualObject(ss3.str());
-		manual_object_ = sceneManager->createManualObject(ss3.str());
+        manualObject = sceneManager->createManualObject(ss3.str());
 	}
-	imageNode->attachObject(manual_object_);
+    imageNode->attachObject(manualObject);
 	
 	// Define the manual object as a rectangle
-	manual_object_->begin(material_->getName(),
+    manualObject->begin(material->getName(),
 		Ogre::RenderOperation::OT_TRIANGLE_LIST);
 	{
         // First triangle
         {
             // Bottom left
-            manual_object_->position( -mobots_common::constants::image_width_in_meters/2,
+            manualObject->position( -mobots_common::constants::image_width_in_meters/2,
                                       -mobots_common::constants::image_height_in_meters/2,
                                       0.0f );
-            manual_object_->textureCoord(0.0f, 1.0f);
-            manual_object_->normal( 0.0f, 0.0f, 1.0f );
+            manualObject->textureCoord(0.0f, 1.0f);
+            manualObject->normal( 0.0f, 0.0f, 1.0f );
             // Top right
-            manual_object_->position( mobots_common::constants::image_width_in_meters/2,
+            manualObject->position( mobots_common::constants::image_width_in_meters/2,
                                       mobots_common::constants::image_height_in_meters/2,
                                       0.0f );
-            manual_object_->textureCoord(1.0f, 0.0f);
-            manual_object_->normal( 0.0f, 0.0f, 1.0f );
+            manualObject->textureCoord(1.0f, 0.0f);
+            manualObject->normal( 0.0f, 0.0f, 1.0f );
             // Top left
-            manual_object_->position( -mobots_common::constants::image_width_in_meters/2,
+            manualObject->position( -mobots_common::constants::image_width_in_meters/2,
                                       mobots_common::constants::image_height_in_meters/2,
                                       0.0f );
-            manual_object_->textureCoord(0.0f, 0.0f);
-            manual_object_->normal( 0.0f, 0.0f, 1.0f );
+            manualObject->textureCoord(0.0f, 0.0f);
+            manualObject->normal( 0.0f, 0.0f, 1.0f );
         }
         // Second triangle
         {
             // Bottom left
-            manual_object_->position( -mobots_common::constants::image_width_in_meters/2,
+            manualObject->position( -mobots_common::constants::image_width_in_meters/2,
                                       -mobots_common::constants::image_height_in_meters/2,
                                       0.0f );
-            manual_object_->textureCoord(0.0f, 1.0f);
-            manual_object_->normal( 0.0f, 0.0f, 1.0f );
+            manualObject->textureCoord(0.0f, 1.0f);
+            manualObject->normal( 0.0f, 0.0f, 1.0f );
             // Bottom right
-            manual_object_->position( mobots_common::constants::image_width_in_meters/2,
+            manualObject->position( mobots_common::constants::image_width_in_meters/2,
                                       -mobots_common::constants::image_height_in_meters/2,
                                       0.0f );
-            manual_object_->textureCoord(1.0f, 1.0f);
-            manual_object_->normal( 0.0f, 0.0f, 1.0f );
+            manualObject->textureCoord(1.0f, 1.0f);
+            manualObject->normal( 0.0f, 0.0f, 1.0f );
             // Top right
-            manual_object_->position( mobots_common::constants::image_width_in_meters/2,
+            manualObject->position( mobots_common::constants::image_width_in_meters/2,
                                       mobots_common::constants::image_height_in_meters/2,
                                       0.0f );
-            manual_object_->textureCoord(1.0f, 0.0f);
-            manual_object_->normal( 0.0f, 0.0f, 1.0f );
+            manualObject->textureCoord(1.0f, 0.0f);
+            manualObject->normal( 0.0f, 0.0f, 1.0f );
         }
 	}
-	manual_object_->end();
-    setImagePose(sessionID, mobotID, imageID, poseX, poseY, poseTheta);
+    manualObject->end();
+    setImagePose(sessionID, mobotID, imageID, poseX, poseY, poseTheta, RELATIVE_POSE_NODE);
+    display->sendInfoUpdate(sessionID, mobotID, ENABLED, 1);
+    display->sendInfoUpdate(sessionID, mobotID, RELATIVE, 1);
+    Ogre::Node* imageNodeParent= imageNode->getParent();
+    display->sendInfoUpdate(sessionID, mobotID, IMAGES, imageNodeParent->numChildren());
 	return 0;
 }
 
@@ -253,11 +261,22 @@ int ImageMapVisual::deleteAllImages(){
 
 // Position and orientation are passed through to the SceneNode
 int ImageMapVisual::setImagePose(int sessionID, int mobotID, int imageID,
-                                 float poseX, float poseY, float poseTheta){
+                                 float poseX, float poseY, float poseTheta, int poseType){
 	Ogre::SceneNode* imageNode = findNode(sessionID, mobotID, imageID);
     if(imageNode == NULL){
         return 1;
     }
+    /*std::string poseName = imageNode->getName();
+    if(poseType == RELATIVE_POSE_NODE){
+        poseName += "r";
+    } else if(poseType == ABSOLUTE_POSE_NODE){
+        poseName += "a";
+    } else {
+        ROS_ERROR("[Rviz] Invalid pose Type");
+        return;
+    }
+    poseMap*/
+
 	// Set the orientation (theta)
 	Ogre::Radian rad(poseTheta);
     Ogre::Quaternion quat(rad, Ogre::Vector3::UNIT_Z);
@@ -328,7 +347,6 @@ void ImageMapVisual::deleteMobotModel(const std::string* nodeName){
  * Searches for the requested Node. Creates the path if it does not exist. 
  */
 Ogre::SceneNode* ImageMapVisual::getNode(int sessionID, int mobotID, int imageID){
-    ROS_INFO("[Get Node] (%i,%i,%i)", sessionID, mobotID, imageID);
 	// Get the specified session node
 	std::string name = "s";
 	name += boost::lexical_cast<std::string>(sessionID);
@@ -370,7 +388,7 @@ Ogre::SceneNode* ImageMapVisual::findNode(int sessionID, int mobotID, int imageI
     ROS_INFO("[Find Node] (%i,%i,%i)", sessionID, mobotID, imageID);
 	// Get the specified session node
 	if(sessionID < 0){
-        ROS_INFO("[Rviz] find node: Not found");
+        ROS_ERROR("[Rviz] find node: Not found");
 		return NULL;
 	}
 	std::string name = "s";
@@ -379,12 +397,11 @@ Ogre::SceneNode* ImageMapVisual::findNode(int sessionID, int mobotID, int imageI
 	try{
         node = rootImageNode->getChild(name);
 	} catch(Ogre::Exception& e) {
-        ROS_INFO("[Rviz] find node: Error %s", name.c_str());
+        ROS_ERROR("[Rviz] find node: Error %s", name.c_str());
 		return NULL;
 	}
 	// Get the specified mobot node
 	if(mobotID < 0){
-        ROS_INFO("[Rviz] find node: %s", name.c_str());
 		return (Ogre::SceneNode*) node;
 	}
 	name += "m";
@@ -392,12 +409,11 @@ Ogre::SceneNode* ImageMapVisual::findNode(int sessionID, int mobotID, int imageI
 	try{
 		node = node->getChild(name);
 	} catch(Ogre::Exception& e) {
-        ROS_INFO("[Rviz] find node: Error %s", name.c_str());
+        ROS_ERROR("[Rviz] find node: Error %s", name.c_str());
 		return NULL;
 	}
 	// Get the specified image node
 	if(imageID < 0){
-        ROS_INFO("[Rviz] find node: %s", name.c_str());
 		return (Ogre::SceneNode*) node;
 	}
 	name += "i";
@@ -405,10 +421,9 @@ Ogre::SceneNode* ImageMapVisual::findNode(int sessionID, int mobotID, int imageI
 	try{
 		node = node->getChild(name);
 	} catch(Ogre::Exception& e) {
-        ROS_INFO("[Rviz] find node: Error %s", name.c_str());
+        ROS_ERROR("[Rviz] find node: Error %s", name.c_str());
 		return NULL;
 	}
-    ROS_INFO("[Rviz] find node: %s", name.c_str());
 	return (Ogre::SceneNode*) node;
 }
 

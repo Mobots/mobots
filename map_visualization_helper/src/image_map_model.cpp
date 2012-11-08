@@ -106,7 +106,6 @@ Qt::ItemFlags ImageMapModel::flags(const QModelIndex &index) const{
   * The slot which recieves the updates from the waypoint/ROS interface
   */
 void ImageMapModel::updateTable(int sessionID, int mobotID, int key, int value){
-    ROS_INFO("[updateTable]");
     // Clear data
     if(key == -1){
         ROS_INFO("[updateTable] clear");
@@ -206,32 +205,23 @@ void ImageMapModel::removeSession(int sessionID){
 
 // has to be called after to sync the combotbox Q_EMIT addWaypointMobot(mobotID);
 bool ImageMapModel::insertRows(int row, int count, const QModelIndex & parent){
-    ROS_INFO("tableData.size() %i", tableData.size());
-
     beginInsertRows(parent, row, row + count - 1);
     std::vector<int> dataEntry(COLUMN_COUNT, -1);
     std::vector< std::vector<int> >::iterator it;
     it = tableData.begin();
     if(tableData.size() < row){ // row exceeds vector size
-        ROS_INFO("too big row");
         tableData.insert(it + tableData.size(), count, dataEntry);
     } else if(row < 0){ // row is less than 0
-        ROS_INFO("too small row");
         tableData.insert(it, count, dataEntry);
     } else { // row is within vector
-        ROS_INFO("standard row");
         tableData.insert(it + row, count, dataEntry);
     }
     endInsertRows();
-
-    ROS_INFO("tableData.size() %i", tableData.size());
     return true;
 }
 
 // has to be called after to sync the combotbox Q_EMIT removeWaypointMobot(mobotID);
 bool ImageMapModel::removeRows(int row, int count, const QModelIndex & parent){
-    ROS_INFO("tableData.size() %i", tableData.size());
-
     std::vector< std::vector<int> >::iterator it;
     it = tableData.begin();
     beginRemoveRows(parent, row, row + count - 1);
@@ -251,8 +241,6 @@ bool ImageMapModel::removeRows(int row, int count, const QModelIndex & parent){
         }
     }
     endRemoveRows();
-
-    ROS_INFO("tableData.size() %i", tableData.size());
     return true;
 }
 
