@@ -119,14 +119,10 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, M
   vector<Point2f> points2Refined;
 	vector<Point2f> points1Refinedx2;
 	vector<Point2f> points2Refinedx2;
-  //cout << img1.keyPoints.size() << " " << img1.descriptors.size() << cout << img2.keyPoints.size() << " " << img2.descriptors.size() << endl;
-  
-  
+  //cout << img1.keyPoints.size() << " " << img1.descriptors.size() << cout << img2.keyPoints.size() << " " << img2.descriptors.size() << endl;  
   matcher->match(img1.descriptors, img2.descriptors, matches1);
   matcher->match(img2.descriptors, img1.descriptors, matches2);
-  cout << "matches: " << matches1.size() << endl;
   symmetryTest(matches1, matches2, img1.keyPoints, img2.keyPoints, points1, points2);
-  cout << "symmetric matches: " << points1.size() << endl;
   /*gimage1 = image1;
 	gimage2 = image2;
   cv::drawKeypoints(image1, img1.keyPoints, kpoints1);
@@ -148,7 +144,6 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, M
 	 points1Refined.clear();
 	 points2Refined.clear();
   }
-  cout << "size after plane test " << points1Refined.size() << endl;
   Mat transformMatrix;
 	if(points1Refined.size() >= 7){
 		vector<uchar> status;
@@ -162,7 +157,7 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, M
 		if(points1Refinedx2.size() < 10)
 			return false;
 		transformMatrix = estimateRigidTransform(points2Refinedx2, points1Refinedx2, false);
-		cout << "size after plane " << points1Refined.size() << " and  after homo " << points1Refinedx2.size() << endl;		
+		cout << "symmetric " << points1.size() << " size after plane " << points1Refined.size() << " and  after homo " << points1Refinedx2.size() << endl;		
 	}else{
 		return false;
 	}
