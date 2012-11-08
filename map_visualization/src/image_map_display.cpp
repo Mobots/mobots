@@ -120,6 +120,9 @@ void ImageMapDisplay::subscribe(){
                 ("Error advertising publisher infoPub : ") + e.what());
         }
     }
+    if(true){
+        updateRvizServer = update_nh_.advertiseService("/image_map/rpc", &ImageMapDisplay::updateRvizCallback, this);
+    }
     return;
 }
 
@@ -256,6 +259,72 @@ void ImageMapDisplay::sendInfoUpdate(int sessionID, int mobotID, int key, int va
     msg.key = key;
     msg.value = value;
     infoPub.publish(msg);
+}
+
+bool ImageMapDisplay::updateRvizCallback(map_visualization::RemoteProcedureCall::Request &req,
+                                         map_visualization::RemoteProcedureCall::Response &res){
+    int function = req.function;
+    switch(function){
+    case INSERT_IMAGE:
+        ROS_INFO("[Rviz] Unsupported RPC: insert image");
+        //visual_->insertImage(req.id.session_id, req.id.mobot_id, req.id.image_id,0,0,0,0);
+        break;
+    case SHOW_IMAGE:
+        visual_->showImage(req.id.session_id, req.id.mobot_id, req.id.image_id);
+        break;
+    case HIDE_IMAGE:
+        visual_->hideImage(req.id.session_id, req.id.mobot_id, req.id.image_id);
+        break;
+    case DELETE_IMAGE:
+        ROS_INFO("[Rviz] Unsupported RPC: delete image");
+        //visual_->deleteImage(std::string);
+        break;
+
+    case SHOW_MOBOT:
+        visual_->showMobot(req.id.session_id, req.id.mobot_id);
+        break;
+    case HIDE_MOBOT:
+        visual_->hideMobot(req.id.session_id, req.id.mobot_id);
+        break;
+    case DELETE_MOBOT:
+        ROS_INFO("[Rviz] Unsupported RPC: delete mobot");
+        //visual_->deleteMobot(std::string);
+        break;
+
+    case SHOW_SESSION:
+        visual_->showSession(req.id.session_id);
+        break;
+    case HIDE_SESSION:
+        visual_->hideSession(req.id.session_id);
+        break;
+    case DELETE_SESSION:
+        ROS_INFO("[Rviz] Unsupported RPC: delete session");
+        //visual_->deleteSession(std::string);
+        break;
+
+    case DELETE_ALL_IMAGES:
+        visual_->deleteAllImages();
+        break;
+
+    case SET_IMAGE_POSE:
+        ROS_INFO("[Rviz] Unsupported RPC: set image pose");
+        //visual_->setImagePose(req.id.session_id, req.id.mobot_id, req.id.image_id, 0,0,0,0);
+        break;
+
+    case DELETE_MOBOT_MODEL:
+        ROS_INFO("[Rviz] Unsupported RPC: delete mobot model");
+        //visual_->deleteMobotModel(std::string);
+        break;
+    case DELETE_ALL_MOBOT_MODELS:
+        visual_->deleteAllMobotModels();
+        break;
+    case SET_MOBOT_MODEL:
+        ROS_INFO("[Rviz] Unsupported RPC: set mobot model");
+        //visual_->setMobotModel(0,0,0,0);
+        break;
+    }
+    res.result = 0;
+    return true;
 }
 
 // Override createProperties() to build and configure a Property

@@ -25,6 +25,7 @@
 #include "mobots_msgs/IDKeyValue.h"
 
 #include "map_visualization/GetImageWithPose.h"
+#include "map_visualization/RemoteProcedureCall.h"
 #include "image_map_visual.h"
 #include "../include/map_visualization/definitions.h"
 
@@ -88,11 +89,13 @@ private:
     // A helper to clear this display back to the initial state.
     void clear();
 
-    // ROS Subscriber Callbacks/Handlers
+    // ROS Subscriber/Publisher/Service Callbacks
     void relPoseCallback(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg);
     void absPoseCallback(const mobots_msgs::PoseAndID::ConstPtr& msg);
     void mobotPoseCallback(int mobotID, const geometry_msgs::Pose2D::ConstPtr &msg);
     void retrieveImages(int sessionID, int mobotID);
+    bool updateRvizCallback(RemoteProcedureCall::Request &req,
+                            RemoteProcedureCall::Response &res);
 
     // ROS data Input/Output
     ros::Subscriber relPoseSub;
@@ -100,6 +103,7 @@ private:
     ros::ServiceClient imageStoreClient;
     std::vector<ros::Subscriber> mobotPoseSub;
     ros::Publisher infoPub;
+    ros::ServiceServer updateRvizServer;
 
     // Test
     void testVisual(ImageMapVisual* visual_, std::string fileName);
