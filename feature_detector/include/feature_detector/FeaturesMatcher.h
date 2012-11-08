@@ -5,11 +5,19 @@
 #include "feature_detector/FeaturesFinder.h"
 
 #pragma once
+
+typedef struct{
+	geometry_msgs::Pose2D delta;
+	double varX; //units in m²
+	double varY;
+	double varTheta; //rad²
+}MatchResult;
+
 class FeaturesMatcher{
 public:
   FeaturesMatcher(){}
   virtual ~FeaturesMatcher(){}
-  virtual bool match(const FeatureSet& img1, const FeatureSet& img2, geometry_msgs::Pose2D& delta) const = 0;
+  virtual bool match(const FeatureSet& img1, const FeatureSet& img2, MatchResult& result) const = 0;
   /**
   * Use this method to retrieve the currently best matcher
   */
@@ -22,7 +30,7 @@ private:
 public:
   virtual ~CpuFeaturesMatcher(){}
   CpuFeaturesMatcher(const std::string& type);
-  virtual bool match(const FeatureSet& img1, const FeatureSet& img2, geometry_msgs::Pose2D& delta) const;
+  virtual bool match(const FeatureSet& img1, const FeatureSet& img2, MatchResult& result) const;
   
   static const char SURF_DEFAULT[];
   static const char ORB_DEFAULT[];
@@ -32,7 +40,7 @@ class GpuFeaturesMatcher : public FeaturesMatcher{
 public:
   virtual ~GpuFeaturesMatcher(){}
   GpuFeaturesMatcher(){}
-  virtual bool match(const FeatureSet& img1, const FeatureSet& img2, geometry_msgs::Pose2D& delta) const{
+  virtual bool match(const FeatureSet& img1, const FeatureSet& img2, MatchResult& result) const{
     return false;
   }
 };
