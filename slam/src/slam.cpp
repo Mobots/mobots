@@ -121,30 +121,9 @@ enum Slam::EdgeState Slam::tryToMatch(const uint32_t v, const uint32_t w)
     return edge_state->second;
   }
   
-
-#if 0
-  //Save position of current standard output
-  fpos_t pos;
-  fgetpos(stdout, &pos);
-  int fd = dup(fileno(stdout));
-  freopen("/dev/null", "w", stdout);
-#endif
-  
   /* Jetzt werfen wir Jonas sein Matcher an. */
   MatchResult delta;
-  bool success = features_matcher_.match(feature_sets_[v], feature_sets_[w], delta);
-  
-#if 0
-  //Flush stdout so any buffered messages are delivered
-  fflush(stdout);
-  //Close file and restore standard output to stdout - which should be the terminal
-  dup2(fd, fileno(stdout));
-  close(fd);
-  clearerr(stdout);
-  fsetpos(stdout, &pos);
-#endif
-  
-  if (!success)
+  if (!features_matcher_.match(feature_sets_[v], feature_sets_[w], delta))
   {
     MY_INFO_STREAM("Failed to match!");
     return edge_states_[std::make_pair(v, w)] = MATCHING_IMPOSSIBLE;;
@@ -198,7 +177,7 @@ void Slam::tryToMatchWithAllOthers(const TreeOptimizer2::VertexMap::value_type &
 void Slam::runToro()
 {
   /* Lass den TORO laufen! */
-  //pose_graph_.buildSimpleTree();
+  pose_graph_.buildSimpleTree();
   pose_graph_.initializeTreeParameters();
   pose_graph_.initializeOptimization(); // Es gibt noch eine Online-Variante von der Methode...
   for (uint i = 0; i < ITERATIONS_PER_NEW_IMAGE; ++i)
