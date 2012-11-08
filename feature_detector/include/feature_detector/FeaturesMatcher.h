@@ -8,7 +8,7 @@
 
 typedef struct{
 	geometry_msgs::Pose2D delta;
-	double varX; //units in m²
+	double varX; //units in pixel²
 	double varY;
 	double varTheta; //rad²
 }MatchResult;
