@@ -47,7 +47,7 @@ int main(int argc, char** argv){
   ros::Subscriber subscriber = nodeHandle.subscribe("image_pose_id", 10, processImage);
   publisher = nodeHandle.advertise<mobots_msgs::FeatureSetWithPoseAndID>("featureset_pose_id", 10);
 	int sliceCount = 5;
-	int maxFeaturesPerslice = 500;
+	int maxFeaturesPerslice = 450;
 	ros::param::get("/feature_detector/slice_count", sliceCount);
 	ros::param::get("/feature_detector/features_per_slice", maxFeaturesPerslice);
   detector = new OrbFeaturesFinder(maxFeaturesPerslice, sliceCount);

@@ -126,9 +126,9 @@ int main(int argc, char** argv){
 }
 
 void checkResult(){
-  geometry_msgs::Pose2D delta;
+  MatchResult mresult;
   Ptr<FeaturesMatcher> matcher = FeaturesMatcher::getDefault();
-  bool matchResult = matcher->match(features1, features2, delta);
+  bool matchResult = matcher->match(features1, features2, mresult);
   if(!matchResult){
   }
   matchable = matchResult;
@@ -143,9 +143,9 @@ void checkResult(){
   Mat aff;*/
 	Mat aff;
   
-  findRotationMatrix2D(Point2d(gimage2.cols/2, gimage2.rows/2), -delta.theta, aff);
-  aff.at<double>(0,2) = delta.x;
-  aff.at<double>(1,2) = delta.y;
+  findRotationMatrix2D(Point2d(gimage2.cols/2, gimage2.rows/2), -mresult.delta.theta, aff);
+  aff.at<double>(0,2) = mresult.delta.x;
+  aff.at<double>(1,2) = mresult.delta.y;
   cout << "aff:" << endl << aff << endl;
 	
 	//imshow("mm1", mm1);

@@ -79,15 +79,15 @@ extern Mat mega;
 extern Mat homo;
 
 void checkResult(){
-  geometry_msgs::Pose2D delta;
+  MatchResult result;
   Ptr<FeaturesMatcher> matcher = FeaturesMatcher::getDefault();
-  bool matchResult = matcher->match(features1, features2, delta);
+  bool matchResult = matcher->match(features1, features2, result);
   if(!matchResult){
     cout << "images do not overlap at all" << endl;
 	 waitKey(0);
     return;
   }
-	//imshow("good Matches with ransac", good_matches_r);
+	imshow("good Matches with ransac", good_matches_r);
 	//imshow("good Matches", good_matches);
 
   /*cout << "deltaX " << delta.x << endl;
@@ -96,29 +96,29 @@ void checkResult(){
   Mat aff;*/
 	Mat aff;
   
-  findRotationMatrix2D(Point2d(gimage2.cols/2, gimage2.rows/2), -delta.theta, aff);
-	aff.at<double>(0,2) = delta.x;
-  aff.at<double>(1,2) = delta.y;
+  findRotationMatrix2D(Point2d(gimage2.cols/2, gimage2.rows/2), -result.delta.theta, aff);
+	aff.at<double>(0,2) = result.delta.x;
+  aff.at<double>(1,2) = result.delta.y;
   cout << "aff:" << endl << aff << endl;
 	
 	//imshow("mm1", mm1);
 	//imshow("mm2", mm2);
 	//imshow("mega", mega);
 	
-  Mat result;
+  Mat result1;
   Mat result2;
   result2.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
-  result.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
-  Mat outImg1 = result(Rect(0, 0, gimage1.cols, gimage1.rows));
+  result1.create(Size(gimage1.cols+gimage2.cols, gimage1.rows+gimage2.rows), gimage2.type());
+  Mat outImg1 = result1(Rect(0, 0, gimage1.cols, gimage1.rows));
   Mat outImg21 = result2(Rect(0, 0, gimage1.cols, gimage1.rows));
 
-  warpAffine(gimage2, result, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  warpAffine(gimage2, result1, aff, result1.size(), INTER_CUBIC, BORDER_TRANSPARENT);
   gimage1.copyTo(outImg1);
   
   gimage1.copyTo(outImg21);
-  warpAffine(gimage2, result2, aff, result.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  warpAffine(gimage2, result2, aff, result1.size(), INTER_CUBIC, BORDER_TRANSPARENT);
   
-	Mat a = result.clone();
+	Mat a = result1.clone();
 	Mat b = result2.clone();
   imshow("result with ransac", a);
   imshow("result2 with ransac", b);
