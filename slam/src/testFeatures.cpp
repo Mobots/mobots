@@ -49,7 +49,7 @@ int main(int argc, char** argv){
   ros::NodeHandle nodeHandle;
   ros::Publisher publisher = nodeHandle.advertise<mobots_msgs::ImageWithPoseAndID>("image_pose_id", 2);
   
-  for (int i = 1; i <= 19; i++)
+  for (int i = 0; i <= 18; i++)
   {
     string slam_path = ros::package::getPath("slam");
     string filename = slam_path + "/pics/karte/" + boost::lexical_cast<string>(i) + ".png";
@@ -69,8 +69,8 @@ int main(int argc, char** argv){
     mobot_image.id.session_id = 0;
     mobot_image.id.mobot_id = 1;
     mobot_image.id.image_id = i-1;
-    mobot_image.pose.x = 0.05;
-    mobot_image.pose.y = 0.05;
+    mobot_image.pose.x = 0.02;
+    mobot_image.pose.y = 0.02;
     mobot_image.pose.theta = 0;
     
     cout << "Press [Enter] for publishing " << i << ".png" << endl;

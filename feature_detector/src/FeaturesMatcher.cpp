@@ -21,9 +21,13 @@ Mat H;
 
 const char CpuFeaturesMatcher::SURF_DEFAULT[] = "FlannBased";
 const char CpuFeaturesMatcher::ORB_DEFAULT[] = "BruteForce-Hamming";
-static const double LENGTHDIFF_THRESHOLD = 1.0;    //if abs(distance(a) - distance(b)) > => outlier
+static const double LENGTHDIFF_THRESHOLD = 2.0;    //if abs(distance(a) - distance(b)) > => outlier
 static const double MAX_ALLOWED_MATCH_DISTANCE = 600;
 static const char* TAG = "[FeaturesMatcher] ";
+static const double minVarXY = 2;
+static const double minVarTheta = 0.002;
+static const double maxVarXY = 100;
+static const double maxVarTheta = 0.35;
 
 
 CpuFeaturesMatcher::CpuFeaturesMatcher(const string& type){
@@ -82,12 +86,12 @@ static void planeTest(const vector<Point2f>& points1, const vector<Point2f>& poi
 		  continue;
       }
       if(i2 == i1)
-		  continue;
+				continue;
       curr++;
       if(curr >= threshold){
-		  out1.push_back(p11);
-		  out2.push_back(p21);
-		  break;
+				out1.push_back(p11);
+				out2.push_back(p21);
+				break;
       }
     }
   }
@@ -105,8 +109,7 @@ Mat good_matches;
 Mat good_matches_r;
 Mat homo;
 
-bool getIntersectionRois(const geometry_msgs::Pose2D&, Mat&, Mat&);
-bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, geometry_msgs::Pose2D& delta/*, Mat& image1, Mat& image2*/) const{  
+bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, MatchResult& result) const{  
   moduleStarted("cpu matcher + get transform");
   vector<DMatch> matches1;
   vector<DMatch> matches2;
@@ -116,14 +119,10 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, g
   vector<Point2f> points2Refined;
 	vector<Point2f> points1Refinedx2;
 	vector<Point2f> points2Refinedx2;
-  //cout << img1.keyPoints.size() << " " << img1.descriptors.size() << cout << img2.keyPoints.size() << " " << img2.descriptors.size() << endl;
-  
-  
+  //cout << img1.keyPoints.size() << " " << img1.descriptors.size() << cout << img2.keyPoints.size() << " " << img2.descriptors.size() << endl;  
   matcher->match(img1.descriptors, img2.descriptors, matches1);
   matcher->match(img2.descriptors, img1.descriptors, matches2);
-  cout << "matches: " << matches1.size() << endl;
   symmetryTest(matches1, matches2, img1.keyPoints, img2.keyPoints, points1, points2);
-  cout << "symmetric matches: " << points1.size() << endl;
   /*gimage1 = image1;
 	gimage2 = image2;
   cv::drawKeypoints(image1, img1.keyPoints, kpoints1);
@@ -132,7 +131,6 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, g
   int threshold = 4;
   int lastSize = -1;
   for(int i = 0; true; i++){
-	 cout << "round " << i << "size " << points1.size() << endl;
 	 planeTest(points1, points2, points1Refined, points2Refined, threshold);
 	 int size = points1.size();
 	 if(size == lastSize)
@@ -159,21 +157,10 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, g
 		if(points1Refinedx2.size() < 10)
 			return false;
 		transformMatrix = estimateRigidTransform(points2Refinedx2, points1Refinedx2, false);
-		affine2 = transformMatrix;
-		cout << "before " << endl << transformMatrix;
-		//transformMatrix = homo;
-		cout << "size after homo " << points1Refinedx2.size() << endl;		
-		  /*drawing::drawMatches2(gimage1, points1Refinedx2, gimage2, points2Refinedx2,
-               good_matches_r, Scalar::all(-1), Scalar::all(-1),
-               DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);*/
+		cout << "symmetric " << points1.size() << " size after plane " << points1Refined.size() << " and  after homo " << points1Refinedx2.size() << endl;		
 	}else{
-		//transformMatrix = estimateRigidTransform(points2Refined, points1Refined, false);
 		return false;
 	}
-  /*cout << "new d " << endl << d << endl;
-  affine3 = d;
-  d = estimateRigidTransform(points2Refined, a, true);
-  cout << "new d with true" << endl << d << endl;*/
   if(abs(transformMatrix.at<double>(0,0)) > 1.1
 	 || abs(transformMatrix.at<double>(0,1)) > 1.1
 	 || abs(transformMatrix.at<double>(1,0)) > 1.1
@@ -181,54 +168,27 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, g
 	 ROS_WARN_STREAM(__PRETTY_FUNCTION__ << ": faulty matrix detected (&rejected)!! : \n" << transformMatrix);
 		//return false;
   }
-  delta.theta = atan2(-transformMatrix.at<double>(0,1), transformMatrix.at<double>(0,0));
-	if(delta.theta < 0)
-		delta.theta += 2*M_PI;
-  //double theta1 = atan2(-transformMatrix.at<double>(0,1), transformMatrix.at<double>(0,0));
-	//double theta2 = atan2(-transformMatrix.at<double>(1,1), transformMatrix.at<double>(1,1));
-	//delta.theta = (theta1-theta2)/2;
-	//if(delta.theta < 0)
-	//	delta.theta += 2*M_PI;
-  double x = transformMatrix.at<double>(0,2);
-  double y = transformMatrix.at<double>(1,2);
-	double cost = cos(delta.theta);
-	double sint = sin(delta.theta);
-	delta.x = x;
-	delta.y = y;
+  result.delta.theta = -atan2(-transformMatrix.at<double>(0,1), transformMatrix.at<double>(0,0));
+	if(result.delta.theta < 0)
+		result.delta.theta += 2*M_PI;
+	
+	result.delta.x = transformMatrix.at<double>(0,2);
+	result.delta.y = transformMatrix.at<double>(1,2);
+	double confidence = 150/points1Refinedx2.size();
+	confidence = confidence*confidence;
+	if(confidence < 1)
+		confidence = 1;
+	result.varX = minVarXY*confidence;
+	result.varY = minVarXY*confidence;
+	result.varTheta = minVarTheta*confidence;
+	if(result.varX > maxVarXY)
+		result.varX = maxVarXY;
+	if(result.varY > maxVarXY)
+		result.varY = maxVarXY;
+	if(result.varTheta > maxVarTheta)
+		result.varTheta = maxVarTheta;
 	moduleEnded();
   
-  /*Mat roi1;
-  Mat roi2;
-  getIntersectionRois(delta, roi1, roi2);
-  
-  Mat hsv1;
-  Mat hsv2;
-  MatND hist1, hist2, hist3, hist4;
-  cvtColor(gimage1, hsv1, CV_BGR2HSV);
-  cvtColor(gimage2, hsv2, CV_BGR2HSV);
-  // Using 30 bins for hue and 32 for saturation
-  int h_bins = 50; int s_bins = 60;
-  int histSize[] = { h_bins, s_bins };
-  // hue varies from 0 to 256, saturation from 0 to 180
-  float h_ranges[] = { 0, 256 };
-  float s_ranges[] = { 0, 180 };
-
-  const float* ranges[] = { h_ranges, s_ranges };
-  // Use the o-th and 1-st channels
-  int channels[] = { 0, 1 };
-  calcHist( &hsv1, 1, channels, roi1, hist1, 2, histSize, ranges, true, false );
-  normalize( hist1, hist1, 0, 1, NORM_MINMAX, -1, Mat() );
-  calcHist( &hsv2, 1, channels, roi2, hist2, 2, histSize, ranges, true, false );
-  normalize( hist2, hist2, 0, 1, NORM_MINMAX, -1, Mat() );
-  double base_base = compareHist( hist1, hist2, 0 );
-  cout << "histogram similarity with rois: " << base_base << endl;
-  calcHist( &hsv1, 1, channels, Mat(), hist3, 2, histSize, ranges, true, false );
-  normalize( hist1, hist1, 0, 1, NORM_MINMAX, -1, Mat() );
-  calcHist( &hsv2, 1, channels, Mat(), hist4, 2, histSize, ranges, true, false );
-  normalize( hist2, hist2, 0, 1, NORM_MINMAX, -1, Mat() );
-  double base_base2 = compareHist( hist3, hist4, 0 );
-  cout << "histogram similarity without rois: " << base_base2 << endl;
-  moduleEnded();*/
   /*if(points1Refinedx2.empty())
 		  drawing::drawMatches2(gimage1, points1Refined, gimage2, points2Refined,
                good_matches_r, Scalar::all(-1), Scalar::all(-1),

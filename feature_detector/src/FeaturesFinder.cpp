@@ -15,7 +15,7 @@ Ptr<FeaturesFinder> FeaturesFinder::getDefault(){
 
 OrbFeaturesFinder::OrbFeaturesFinder(int nfeatures, int sliceCount)
   :sliceCount(sliceCount){
-    orb = new cv::ORB(nfeatures);
+    orb = new cv::ORB(nfeatures, 1.2f, 8, 0, 0, 2, cv::ORB::HARRIS_SCORE, 31);
 	 extractor = cv::DescriptorExtractor::create("ORB");
   }
 
