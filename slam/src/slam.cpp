@@ -198,7 +198,7 @@ void Slam::tryToMatchWithAllOthers(const TreeOptimizer2::VertexMap::value_type &
 void Slam::runToro()
 {
   /* Lass den TORO laufen! */
-  pose_graph_.buildSimpleTree();
+  //pose_graph_.buildSimpleTree();
   pose_graph_.initializeTreeParameters();
   pose_graph_.initializeOptimization(); // Es gibt noch eine Online-Variante von der Methode...
   for (uint i = 0; i < ITERATIONS_PER_NEW_IMAGE; ++i)
