@@ -35,15 +35,19 @@ class Rectangle2D;
 }
 
 namespace map_visualization{
-	
-class ImageMapVisual{
+class ImageMapDisplay;
 
-static const int RELATIVE_POSE_NODE = 0;
-static const int ABSOLUTE_POSE_NODE = 1;
+struct poseT{
+    float x;
+    float y;
+    float theta;
+};
+
+class ImageMapVisual{
 public:
 	// Creates the root node. Images are placed into a tree hierarchy.
 	// root -> sessions -> mobots -> images
-	ImageMapVisual(Ogre::SceneManager* scene_manager);
+    ImageMapVisual(Ogre::SceneManager* sceneManager_, ImageMapDisplay *display_);
 	virtual ~ImageMapVisual();
 
     int insertImage(int sessionID, int mobotID, int imageID,
@@ -62,31 +66,37 @@ public:
 	
 	int deleteAllImages();
 
-	
-    int setImagePose(int sessionID, int mobotID, int imageID, float poseX, float poseY, float poseTheta);
+    int setImagePose(int sessionID, int mobotID, int imageID, float poseX, float poseY, float poseTheta, int poseType);
+
+    static const int RELATIVE_POSE_NODE = 0;
+    static const int ABSOLUTE_POSE_NODE = 1;
 
     void deleteMobotModel(const std::string* nodeName);
     void deleteAllMobotModels();
     int setMobotModel(int mobotID, float poseX, float poseY, float poseTheta);
 
-  // If the node is not found, a the node and its path is created.
+    // If the node is not found, a the node and its path is created.
     Ogre::SceneNode* getNode(int sessionID, int mobotID, int imageID);
-  // If the node is not found, a NULL pointer is returned.
+    // If the node is not found, a NULL pointer is returned.
     Ogre::SceneNode* findNode(int sessionID, int mobotID, int imageID);
 private:
-	Ogre::MaterialPtr material_;
-	Ogre::TexturePtr texture_;
-	Ogre::TextureUnitState* tex_unit_;
-	Ogre::ManualObject* manual_object_;
-    Ogre::Rectangle2D* rectangle_;
+    // Used for publishing state changes to other ROS nodes(image_map_info)
+    ImageMapDisplay* display;
 
-	int width_;
-	int height_;
+    // Ogre scene objects
+    Ogre::MaterialPtr material;
+    Ogre::TexturePtr texture;
+    Ogre::TextureUnitState* texUnit;
+    Ogre::ManualObject* manualObject;
+    Ogre::Rectangle2D* rectangle;
 
-    Ogre::SceneNode* rootImageNode;
-    Ogre::SceneNode* rootMobotModelNode;
-	Ogre::SceneManager* sceneManager;
-	std::list<Ogre::ManualObject*> manualObjects;
+    // Ogre scene nodes
+    Ogre::SceneNode* rootImageNode; // root for all images
+    Ogre::SceneNode* rootMobotModelNode; // root for all mobot models
+    Ogre::SceneManager* sceneManager;
+    poseT pose;
+    std::map<std::string, poseT> poseMap;
+
     void createColourCube(int mobotID);
 };
 

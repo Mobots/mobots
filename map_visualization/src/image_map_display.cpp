@@ -18,7 +18,7 @@ ImageMapDisplay::~ImageMapDisplay(){
 // Clear the map by deleting image_map_visual object
 void ImageMapDisplay::clear(){
 	delete visual_;
-	visual_ = new ImageMapVisual(vis_manager_->getSceneManager());
+    visual_ = new ImageMapVisual(vis_manager_->getSceneManager(), this);
 }
 
 // After the parent rviz::Display::initialize() does its own setup, it
@@ -31,7 +31,7 @@ void ImageMapDisplay::onInitialize(){
 
 void ImageMapDisplay::onEnable(){
 	subscribe();
-    visual_ = new ImageMapVisual(vis_manager_->getSceneManager());
+    visual_ = new ImageMapVisual(vis_manager_->getSceneManager(), this);
     //testVisual(visual_, "/home/moritz/TillEvil.jpg");
 }
 
@@ -94,7 +94,7 @@ void ImageMapDisplay::subscribe(){
             ros::Subscriber sub;
             std::string topic;
             while(mobotPoseSub.size() < mobotPoseCount){
-                topic = "/mobot" + boost::lexical_cast<std::string>(mobotPoseSub.size() + 1);
+                topic = "/mobot" + boost::lexical_cast<std::string>(mobotPoseSub.size());
                 topic += "/pose";
 
                 boost::function<void(const geometry_msgs::Pose2D::ConstPtr&)> callback =
@@ -108,6 +108,16 @@ void ImageMapDisplay::subscribe(){
         catch(ros::Exception& e){
             setStatus(rviz::status_levels::Error, "Topic", std::string
                 ("Error connecting to mobot: ") + e.what());
+        }
+    }
+    if(true){
+        try{
+            infoPub = update_nh_.advertise<mobots_msgs::IDKeyValue>("/image_map/update_push", 10);
+        }
+        catch(ros::Exception& e){
+            ROS_ERROR("[Rviz] failed to create publisher");
+            setStatus(rviz::status_levels::Error, "Topic", std::string
+                ("Error advertising publisher infoPub : ") + e.what());
         }
     }
     return;
@@ -197,7 +207,7 @@ void ImageMapDisplay::absPoseCallback(
 	const mobots_msgs::PoseAndID::ConstPtr& msg){
     ROS_INFO("[absPoseCallback] pose(%f,%f,%f)", msg->pose.x, msg->pose.y, msg->pose.theta);
     if(visual_->setImagePose(msg->id.session_id, msg->id.mobot_id, msg->id.image_id,
-                        msg->pose.x, msg->pose.y, msg->pose.theta) != 0){
+                        msg->pose.x, msg->pose.y, msg->pose.theta, ImageMapVisual::ABSOLUTE_POSE_NODE) != 0){
         ROS_ERROR("[imageMapDisplay] No image to assign abs pose to");
     }
 }
@@ -237,6 +247,15 @@ void ImageMapDisplay::retrieveImages(int sessionID, int mobotID){
         srv.request.id.image_id++;
     }
     return;
+}
+
+void ImageMapDisplay::sendInfoUpdate(int sessionID, int mobotID, int key, int value){
+    mobots_msgs::IDKeyValue msg;
+    msg.id.session_id = sessionID;
+    msg.id.mobot_id = mobotID;
+    msg.key = key;
+    msg.value = value;
+    infoPub.publish(msg);
 }
 
 // Override createProperties() to build and configure a Property
@@ -294,10 +313,10 @@ void ImageMapDisplay::testVisual(ImageMapVisual* visual_, std::string filePath){
 	imageData.assign(buffer, buffer + sizeof(buffer) / sizeof(char));
     cv::Mat mat = cv::imdecode(imageData, 1);
     visual_->insertImage(0,0,0, 0,0,3.1415927, mat);
-    visual_->insertImage(0,0,1, 1,1,1.5707963, mat);
-    visual_->insertImage(0,0,2, 2,2,3.1415927, mat);
-    visual_->insertImage(0,0,3, 3,3,4.712389, mat);
-    visual_->insertImage(0,0,4, 4,4,6.2831853, mat);
+    visual_->insertImage(0,1,1, 1,1,1.5707963, mat);
+    visual_->insertImage(0,2,2, 2,2,3.1415927, mat);
+    visual_->insertImage(0,3,3, 3,3,4.712389, mat);
+    visual_->insertImage(0,4,4, 4,4,6.2831853, mat);
     visual_->setMobotModel(1,0.5,0.6,0);
 }
 

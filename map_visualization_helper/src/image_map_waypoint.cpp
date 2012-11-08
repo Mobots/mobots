@@ -30,7 +30,6 @@ void ImageMapWaypoint::process(){
     if ( ! ros::master::check() ) {
         return;
     }
-    ROS_INFO("[Map_Visualization_Helper] running");
     // explicitly needed since our nodehandle is going out of scope.
     ros::NodeHandle nh_;
     nh = &nh_;
@@ -88,8 +87,7 @@ void ImageMapWaypoint::poseRelayHandler(const geometry_msgs::PoseStamped::ConstP
 
 // Handles the incoming updates about the 3D scene in Rviz
 void ImageMapWaypoint::updateInfoHandler(const mobots_msgs::IDKeyValue::ConstPtr& msg){
-    ROS_INFO("[updateInfoHandler] s%im%ii%i: %i-%i", msg->id.session_id, msg->id.mobot_id,
-             msg->id.image_id, msg->key, msg->value);
+
     Q_EMIT rvizChanged(msg->id.session_id, msg->id.mobot_id, msg->key, msg->value);
     return;}
 
@@ -159,7 +157,7 @@ int ImageMapWaypoint::updateRviz(int sessionID, int mobotID, int key, int value)
 // TODO connect from QComboBox
 void ImageMapWaypoint::setActiveMobot(QString mobotID){
     activeMobotID = mobotID.toInt();
-    ROS_INFO("activeMobotID: %i", activeMobotID);
+    //ROS_INFO("activeMobotID: %i", activeMobotID);
     return;
 }
 

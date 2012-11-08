@@ -22,6 +22,7 @@
 
 #include "mobots_msgs/ImageWithPoseAndID.h"
 #include "mobots_msgs/PoseAndID.h"
+#include "mobots_msgs/IDKeyValue.h"
 
 #include "map_visualization/GetImageWithPose.h"
 #include "image_map_visual.h"
@@ -69,6 +70,8 @@ public:
     void setMobotPoseCount(const std::string& topic);
     const std::string& getMobotPoseCount();
 
+    void sendInfoUpdate(int sessionID, int mobotID, int key, int value);
+
 protected:
     virtual void onEnable();
     virtual void onDisable();
@@ -96,6 +99,7 @@ private:
     ros::Subscriber absPoseSub;
     ros::ServiceClient imageStoreClient;
     std::vector<ros::Subscriber> mobotPoseSub;
+    ros::Publisher infoPub;
 
     // Test
     void testVisual(ImageMapVisual* visual_, std::string fileName);

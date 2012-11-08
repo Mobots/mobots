@@ -56,8 +56,6 @@ ImageMapInfo::ImageMapInfo(int argc, char** argv, QWidget *parent)
     QObject::connect(&model, SIGNAL(removeWaypointMobot(int)),
                      this, SLOT(removeWaypointMobot(int)));
 
-    QObject::connect(waypointComboBox, SIGNAL(currentIndexChanged(QString)),
-                     this, SLOT(testSlot(QString)));
 }
 
 void ImageMapInfo::addWaypointMobot(int mobotID){
@@ -69,11 +67,6 @@ void ImageMapInfo::removeWaypointMobot(int mobotID){
     QString mobotID_ = QString::number(mobotID);
     int pos = waypointComboBox->findText(mobotID_);
     waypointComboBox->removeItem(pos);
-}
-
-void ImageMapInfo::testSlot(QString test){
-    std::string string = test.toStdString();
-    ROS_INFO("test: %s", string.c_str());
 }
 
 }

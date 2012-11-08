@@ -20,7 +20,6 @@ private:
 public Q_SLOTS:
     void removeWaypointMobot(int mobotID);
     void addWaypointMobot(int mobotID);
-    void testSlot(QString test);
 };
 
 }
