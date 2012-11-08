@@ -69,8 +69,8 @@ private:
     mobots_msgs::ID split(uint32_t id);
     std::string print(uint32_t id);
     
-    AISNavigation::TreeOptimizer2::Transformation convertPixelsToMeters(geometry_msgs::Pose2D pose);
-    geometry_msgs::Pose2D convert(AISNavigation::TreeOptimizer2::Pose toro_pose);
+    AISNavigation::TreeOptimizer2::Transformation convertPixelsToMeters(const MatchResult& result);
+    geometry_msgs::Pose2D convert(const AISNavigation::TreeOptimizer2::Pose& toro_pose);
 };
 
 #endif

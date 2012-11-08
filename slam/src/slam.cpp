@@ -131,7 +131,7 @@ enum Slam::EdgeState Slam::tryToMatch(const uint32_t v, const uint32_t w)
 #endif
   
   /* Jetzt werfen wir Jonas sein Matcher an. */
-  geometry_msgs::Pose2D delta;
+  MatchResult delta;
   bool success = features_matcher_.match(feature_sets_[v], feature_sets_[w], delta);
   
 #if 0
@@ -244,15 +244,15 @@ std::string Slam::print(uint32_t id)
   return '(' + boost::lexical_cast<std::string>(id_msg.mobot_id) + ',' + boost::lexical_cast<std::string>(id_msg.image_id) + ')';
 }
 
-TreeOptimizer2::Transformation Slam::convertPixelsToMeters(geometry_msgs::Pose2D pose)
+TreeOptimizer2::Transformation Slam::convertPixelsToMeters(const MatchResult& result)
 {
-  float x_in_meters = pose.x * mobots_common::constants::image_height_in_meters / mobots_common::constants::image_width_in_pixels;
-  float y_in_meters = -pose.y * mobots_common::constants::image_height_in_meters / mobots_common::constants::image_height_in_pixels;
-  assert(0 <= pose.theta && pose.theta < 2 * M_PI);
-  return TreeOptimizer2::Transformation(x_in_meters, y_in_meters, pose.theta);
+  float x_in_meters = result.delta.x * mobots_common::constants::image_height_in_meters / mobots_common::constants::image_width_in_pixels;
+  float y_in_meters = -result.delta.y * mobots_common::constants::image_height_in_meters / mobots_common::constants::image_height_in_pixels;
+  assert(0 <= result.delta.theta && result.delta.theta < 2 * M_PI);
+  return TreeOptimizer2::Transformation(x_in_meters, y_in_meters, result.delta.theta);
 }
 
-geometry_msgs::Pose2D Slam::convert(TreeOptimizer2::Pose toro_pose)
+geometry_msgs::Pose2D Slam::convert(const TreeOptimizer2::Pose& toro_pose)
 {
   geometry_msgs::Pose2D ros_pose;
   ros_pose.x = toro_pose.x();
