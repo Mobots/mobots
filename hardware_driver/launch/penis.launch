@@ -7,4 +7,5 @@
 	<remap from="hardware_driver/setGlobalPose" to="setGlobalPose" />
 	<remap from="hardware_driver/velocity" to="velocity" />
 </node>
+<node name="penis" pkg="mobots_teleop" type="mobot_keyboard_teleop" />
 </launch>
