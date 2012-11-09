@@ -26,7 +26,7 @@ void startWeg()
     //Publisher and Subscriber
     nextPoseSubRel = nh->subscribe("waypoint_rel", 5, relPoseCallback);
     nextPoseSubAbs = nh->subscribe("waypoint_abs", 5, absPoseCallback);
-    //speedSub = nh->subscribe("velocity", 2, sendSpeedCallback); interessiert eigntl nicht
+    speedSub = nh->subscribe("velocity", 5, speedCallback);
 
     mousePosePub = nh->advertise<geometry_msgs::Pose2D>("mouse", 1);
     //globalPosePub = nh->advertise<geometry_msgs::Pose2D>("pose", 2);
@@ -322,4 +322,17 @@ double regelFktDreh(double e)
 {
  double d = e*dParam*radiusInnen;		//von bogenmaß auf bahngeschwindigkeit //TODO so war das vorher  e*dParam*=radiusInnen;
  return (d>(vMax*drehFac)) ? (vMax*drehFac) : ((d<(-(vMax*drehFac))) ? (-(vMax*drehFac)) :d);
+}
+
+void speedCallback(const mobots_msgs::Twist2D& msg){
+	if(msg.x == -1){ //values are normalized between [0,1]
+		velocityControlled = false;
+		return;
+	}
+	velocityControlled = true;
+	sersp.s1 = regelFkt(eX)/vFac; //Flo skalier die Werte mal richtig, werte sind zwischen 0 und 1
+sersp.s2 = regelFkt(eY)/vFac;
+sersp.s3 = regelFktDreh(eTheta)/vFac;
+proto->sendData(Debug_Controller, (unsigned char*) &sersp, sizeof(struct ServoSpeed));
+	
 }
