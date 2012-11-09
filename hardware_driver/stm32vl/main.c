@@ -30,7 +30,6 @@
 #include "spi_1.h"
 #include "misc.h"
 #include "led.h"
-#include "fixmath.h"
 #include "util.h"
 #include "protocol.h"
 #include "engine.h"
@@ -93,7 +92,10 @@ int main() {
 	null.delta_x2 = 0;
 	null.delta_y2 = 0;
 	while (1) {
-		delay_ms(1000);
+		GPIO_SetBits(GPIOC, GPIO_Pin_9);
+		delay_ms(500);
+		GPIO_ResetBits(GPIOC, GPIO_Pin_9);
+		delay_ms(500);
 		protocol_receiveData();
 
 		if (delta_vals.delta_x1 || delta_vals.delta_y1 || delta_vals.delta_x2 || delta_vals.delta_y2) {

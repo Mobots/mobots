@@ -26,7 +26,9 @@ void setPointHandler(enum PROTOCOL_IDS id, unsigned char *data,
 }
 
 void setVelocityHandler(enum PROTOCOL_IDS id, unsigned char *data, unsigned short size) {
-	if (id != Servo) {
+	GPIO_ResetBits(GPIOC, GPIO_Pin_9);
+
+	if (id != VELOCITY) {
 		print("Error, wrong ID\n");
 		return;
 	}
@@ -87,7 +89,7 @@ void setRequestHandler(enum PROTOCOL_IDS id, unsigned char *data,
 
 	struct Request *req = (struct Request*) data;
 
-	switch (req->req_typ) {
+	/*switch (req->req_typ) {
 	case MouseData_All:
 		protocol_sendData(MouseData_All, (unsigned char*) &mouse_data,
 				sizeof(mouse_data));
@@ -99,7 +101,7 @@ void setRequestHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		break;
 	default:
 		break;
-	}
+	}*/
 
 }
 
