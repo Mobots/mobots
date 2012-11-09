@@ -25,8 +25,8 @@ static const TreeOptimizer2::InformationMatrix matching_covarianz_matrix =
   }
 };
 
-static const double mouse_varianz_translation = std::pow(0.005/2, 2); // Schätzung: 2-fache Standardabweichung = 5 mm
-static const double mouse_varianz_rotation = std::pow(5.0/2 * M_PI/180, 2); // Schätzung: 2-fache Standardabweichung = 5 Grad
+static const double mouse_varianz_translation = std::pow(0.5/2, 2); // Schätzung: 2-fache Standardabweichung = 5 mm
+static const double mouse_varianz_rotation = std::pow(45.0/2 * M_PI/180, 2); // Schätzung: 2-fache Standardabweichung = 5 Grad
 static const TreeOptimizer2::InformationMatrix mouse_covarianz_matrix =
 {
   {
@@ -84,6 +84,11 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
 
   addNewVertexToGraph(msg, bot);
 
+  if (last_id_[0] == NOT_RECEIVED_YET)
+  {
+    return;
+  }
+  
   findEdgesBruteforce();
 
   runToro();
@@ -126,7 +131,8 @@ enum Slam::EdgeState Slam::tryToMatch(const uint32_t v, const uint32_t w)
   if (!features_matcher_.match(feature_sets_[v], feature_sets_[w], delta))
   {
     MY_INFO_STREAM("Failed to match!");
-    return edge_states_[std::make_pair(v, w)] = MATCHING_IMPOSSIBLE;;
+    edge_states_[std::make_pair(v, w)] = MATCHING_IMPOSSIBLE;
+    return MATCHING_IMPOSSIBLE;
   }
 
   /* Matching-Ergebnis als Edge zwischen den zwei Vertices einfügen */
@@ -150,28 +156,26 @@ void Slam::addNewVertexFromMouseData(const boost::shared_ptr<mobots_msgs::Featur
 }
 
 void Slam::findEdgesBruteforce()
-{
-#if 0
+{  
   BOOST_FOREACH(TreeOptimizer2::VertexMap::value_type &v, pose_graph_.vertices)
   {
-    tryToMatchWithAllOthers(v);
+    BOOST_FOREACH(TreeOptimizer2::VertexMap::value_type &w, pose_graph_.vertices)
+    {
+      /* Jede Kombination nur einmal bilden. */
+      if (&v == &w)
+        break;
+      
+      /* Nur matchen, wenn die Bildmittelpunkte ausreichend nah beieinander liegen. */
+      double norm = sqrt( TreeOptimizer2::Translation(w.second->pose.x() - v.second->pose.x(), w.second->pose.y() - v.second->pose.y()).norm2() );
+      ROS_INFO_STREAM("Distance between image " << split(v.first).image_id << " and " << split(w.first).image_id << " is " << norm);
+      if (norm > mobots_common::constants::image_width_in_meters) {
+        ROS_INFO_STREAM("Skipping combination because of to big distance.");
+        continue;
+      }
+      
+      tryToMatch(v.first, w.first);
+    }
   }
-#endif
-}
-
-void Slam::tryToMatchWithAllOthers(const TreeOptimizer2::VertexMap::value_type &v, bool distance_check)
-{
-#if 0
-  BOOST_FOREACH(TreeOptimizer2::VertexMap::value_type &other, pose_graph_.vertices)
-  {
-    /* Jede Kombination nur einmal bilden. */
-    if (&v == &other)
-      break;
-    
-    tryToMatch(v.first, w.first);
-
-  }
-#endif
 }
 
 void Slam::runToro()
