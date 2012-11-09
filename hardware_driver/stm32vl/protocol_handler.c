@@ -25,27 +25,25 @@ void setPointHandler(enum PROTOCOL_IDS id, unsigned char *data,
 
 }
 
+void setVelocityHandler(enum PROTOCOL_IDS id, unsigned char *data, unsigned short size) {
+	if (id != Servo) {
+		print("Error, wrong ID\n");
+		return;
+	}
 
-void ControllerDebugHandler(enum PROTOCOL_IDS id, unsigned char *data,
-		unsigned short size) {
+	if (size != sizeof(struct Velocity)) {
+		print("Error, wrong size\n");
+		return;
+	}
 
-	if (id != Debug_Controller) {
-			print("Error, wrong ID\n");
-			return;
-		}
+	struct Velocity *velocity = (struct Velocity*) data;
 
-		if (size != sizeof(struct ServoSpeed)) {
-			print("Error, wrong size\n");
-			return;
-		}
-
-		struct ServoSpeed *servSp = (struct ServoSpeed*) data;
-
-		setSollV(servSp);
-
+	struct ServoSpeed servo_speed;
+	omniwheelTransformation(velocity, &servo_speed);
+	set(&servo_speed);
 }
 
-void setServoSpeedHandler(enum PROTOCOL_IDS id, unsigned char *data,
+void setServoHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		unsigned short size) {
 
 	if (id != Servo) {
@@ -58,11 +56,9 @@ void setServoSpeedHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		return;
 	}
 
-	struct ServoSpeed *servSp = (struct ServoSpeed*) data;
+	struct ServoSpeed *servo_speed = (struct ServoSpeed*) data;
 
-	servo_setAngle(Servo_1, servSp->s1);
-	servo_setAngle(Servo_2, servSp->s2);
-	servo_setAngle(Servo_3, servSp->s3);
+	set(servo_speed);
 }
 
 /*
@@ -72,12 +68,10 @@ void setServoSpeedHandler(enum PROTOCOL_IDS id, unsigned char *data,
 void setTrajektoryHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		unsigned short size) {
 
-
-
 }
 
 // Wird eine Anfrage gestellt wird sie in folgender Funktion abgearbeitet
-void RequestHandler(enum PROTOCOL_IDS id, unsigned char *data,
+void setRequestHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		unsigned short size) {
 	//print("Receive a request\n");
 
@@ -95,14 +89,14 @@ void RequestHandler(enum PROTOCOL_IDS id, unsigned char *data,
 
 	switch (req->req_typ) {
 	case MouseData_All:
-		//protocol_sendData(MouseData_All, (unsigned char*) &mouse_data,
-			//	sizeof(mouse_data));
+		protocol_sendData(MouseData_All, (unsigned char*) &mouse_data,
+				sizeof(mouse_data));
 		break;
-	//case MouseData_DeltaVal:
+	case MouseData_DeltaVal:
 		//print("MouseData_DeltaVal");
-	//	protocol_sendData(SensorData_DeltaVal, (unsigned char*) &delta_vals,
-	//			sizeof(struct Mouse_Data_DeltaVal));
-	//	break;
+		protocol_sendData(SensorData_DeltaVal, (unsigned char*) &delta_vals,
+				sizeof(struct Mouse_Data_DeltaVal));
+		break;
 	default:
 		break;
 	}
@@ -110,14 +104,17 @@ void RequestHandler(enum PROTOCOL_IDS id, unsigned char *data,
 }
 
 //Wird eine Warnung gesendet wird sie in folgender Funktion abgearbeitet
+void setWarningHandler(enum PROTOCOL_IDS id, unsigned char *data,
+		unsigned short size) {
 
+}
 
 void protocol_handler_init() {
-
 	protocol_registerHandler(SET_POINT, setPointHandler);
 	protocol_registerHandler(SET_TRAJEKTORY, setTrajektoryHandler);
-	protocol_registerHandler(REQUEST, RequestHandler);
-	protocol_registerHandler(Servo, setServoSpeedHandler);
-	protocol_registerHandler(Debug_Controller, ControllerDebugHandler);
+	protocol_registerHandler(REQUEST, setRequestHandler);
+	protocol_registerHandler(WARNING, setWarningHandler);
+	protocol_registerHandler(Servo, setServoHandler);
+	protocol_registerHandler(VELOCITY, setVelocityHandler);
 }
 

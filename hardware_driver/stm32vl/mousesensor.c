@@ -11,9 +11,11 @@
 #include "stm32f10x_gpio.h"
 #include "util.h"
 
-volatile struct Mouse_Data_DeltaVal delta_vals;
-volatile struct Mouse_Data_DeltaValOut delta_valsOut;
+volatile struct Mouse_Data_All mouse_data;
+volatile struct Mouse_Data_DeltaVal delta_vals = { 0, 0, 0, 0};
 
+DATA_STAT spi1_datastat;
+DATA_STAT spi2_datastat;
 
 //void DMA_init() {
 //	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
@@ -50,6 +52,12 @@ volatile struct Mouse_Data_DeltaValOut delta_valsOut;
 //	DMA_Cmd(DMA1_Channel2, ENABLE);
 //
 //}
+
+void SPI_init() {
+	spi1_datastat = OUTDATED;
+	spi2_datastat = OUTDATED;
+	spi_init();
+}
 
 unsigned char download_firmware(SPI spi) {
 
@@ -214,7 +222,7 @@ void Sensor_ReadByBurst(SPI spi) {
 		;
 	delay_us(120);
 
-	//spi_GetData((unsigned char *) &mouse_data, 14);
+	spi_GetData((unsigned char *) &mouse_data, 14);
 	spi_DeselectChip(spi);
 	delay_us(15);
 }
@@ -228,6 +236,7 @@ void EXTI15_10_IRQHandler(void) {
 
 void EXTI3_IRQHandler(void) {
 	if (EXTI_GetITStatus(EXTI_Line3)) {
+		spi1_datastat = UPDATED;
 		EXTI_ClearITPendingBit(EXTI_Line3);
 	}
 }
@@ -271,12 +280,11 @@ int Sensor_init(SPI spi) {
 	spi_WriteRegister(REG_Frame_Period_Max_Bound_Upper, 0x5d, spi); //0x5d
 
 	//Resolution
-	// auflösung auf ~2520 dpi => 1 pixel ~10,08um
+	spi_WriteRegister(REG_Configuration_I, 0x38, spi); // auflösung auf ~5040 dpi => 1 pixel ~10,08um
 
 	clear_bits_addr(REG_LASER_CTRL0, 0x01, spi);
 	clear_bits_addr(REG_LASER_CTRL0, 0x0e, spi);
 
-	spi_WriteRegister(REG_Configuration_I, 0x38, spi);
 	clear_bits_addr(REG_LASER_CTRL0, 0x01, spi);
 
 	delay_ms(10);
@@ -285,40 +293,4 @@ int Sensor_init(SPI spi) {
 
 	return 1;
 }
-#define r_aussen 0.125
-#define r_innen  0.10
-//
-////gibt die pixel als strecke in meter im mobot_koordinatensystem aus
-void transformMouseToCoordinateSystem(struct Mouse_Data_DeltaVal* data,
-		struct Mouse_Data_DeltaValOut* dataOut) {
 
-	double x1 = -data->delta_y1;
-	double y1 = -data->delta_x1;
-	double x2 = -data->delta_y2;
-	//transform
-	dataOut->delta_x = ((x1 - x2) / 3 - y1 * 1.1547) * 0.0254 / 5040; //TODO correct dpi insert
-	dataOut->delta_y = (x1 - x2) / 3 * 0.0254 / 5040;
-	dataOut->delta_theta = (y1 * 0.5774 + 0.6667 * x2 + x1 * 0.3333) / r_aussen
-			* 0.0254 / 5040; //TODO eventuell nicht bogenmass
-
-}
-#define v_max 0.15
-
-void transformToServoSpeed(struct Mouse_Data_DeltaVal* data,
-		struct ServoSpeed* sOut, double totzeit) {
-
-	double x1 = -data->delta_y1;
-	double y1 = -data->delta_x1;
-	double x2 = -data->delta_y2;
-
-#define sqrt3 1,73205081
-#define omega -r_innen/r_aussen*y1/sqrt3-r_innen/r_aussen*2/3*x2-r_innen/r_aussen*x1/3
-
-	sOut->s1 = ((x1 / 3 - x2 / 3 - 2 / sqrt3 * y1 + omega) / v_max * 1000
-			/ totzeit);
-	sOut->s2 = (x1 / sqrt3 - x2 / 3 + y1 / sqrt3 + omega) / v_max * 1000
-			/ totzeit;
-	sOut->s3 = (-y1 / sqrt3 - 2 / 3 * x1 + 2 / 3 * x2 + omega) / v_max * 1000
-			/ totzeit; //TODO, nicht sicher, ob richtig abgeschrieben
-
-}

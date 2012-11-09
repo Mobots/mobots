@@ -8,6 +8,9 @@
 #ifndef ENGINE_H_
 #define ENGINE_H_
 
+#include "libfixmath/fixmath.h"
+#include "mousesensor.h"
+#include "controller.h"
 
 #define MAX_TRAJECTORY_SIZE 16
 #define MAX_ACCELERATION 0.2 // m/s²
@@ -30,10 +33,9 @@ struct Trajectory {
 }__attribute__ ((packed)) __attribute__((__may_alias__));
 
 
-
-/*
- * Wandelt Weltkoordinaten in Roboterkoordinaten um
- */
-void coord_Transformation(struct nextPoint worldCoord, struct robotCoord *rc);
+void transformToServoSpeed(struct Mouse_Data_DeltaVal* data,
+		struct ServoSpeed* sOut, float totzeit);
+void transformMouseToCoordinateSystem(struct Mouse_Data_DeltaVal* data,
+		struct Mouse_Data_DeltaValOut* dataOut);
 
 #endif /* ENGINE_H_ */

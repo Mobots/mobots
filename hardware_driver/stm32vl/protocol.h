@@ -14,14 +14,14 @@ enum PROTOCOL_IDS
     WARNING,
     SensorData_All,
     SensorData_DeltaVal,
-    SensorData_transformedDelta,
     Servo,
-    Debug_Controller,
+    VELOCITY,
     NUM_IDS // muss immer an letzter stelle stehen
 };
 
 typedef enum{
-	MouseData_All = 0
+	MouseData_All = 0,
+	MouseData_DeltaVal
 } REQUEST_TYP;
 
 typedef enum{

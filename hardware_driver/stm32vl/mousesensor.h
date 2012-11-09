@@ -8,8 +8,10 @@
 #define MOUSESENSOR_H_
 
 #include "spi_1.h"
-#include "servo.h"
 
+typedef enum {
+	OUTDATED = 0, UPDATED
+} DATA_STAT;
 
 struct Mouse_Data_All {
 	uint8_t motion;
@@ -90,10 +92,9 @@ struct Mouse_Data_DeltaValOut {
 
 extern volatile struct Mouse_Data_All mouse_data;
 extern volatile struct Mouse_Data_DeltaVal delta_vals;
-extern volatile struct Mouse_Data_DeltaValOut delta_valsOut;
 
-void transformMouseToCoordinateSystem(struct Mouse_Data_DeltaVal* data, struct Mouse_Data_DeltaValOut* dataOut);
-void transformToServoSpeed(struct Mouse_Data_DeltaVal* data, struct ServoSpeed* sOut, double totzeit);
+extern DATA_STAT spi1_datastat;
+extern DATA_STAT spi2_datastat;
 
 int Sensor_init(SPI spi);
 
