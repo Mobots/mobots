@@ -39,7 +39,7 @@ int main() {
 		}
 
 		struct Velocity v_mobot = {input[0], input[1], input[2]};
-		std::cout << "sending: (" << v_mobot.x << ',' << v_mobot.y << ',' << v_mobot.theta << ')' << std::endl;
+		std::cout << "sending: (" << v_mobot.x << ',' << v_mobot.y << ',' << v_mobot.theta << " schnauze )" << std::endl;
 
 		proto.sendData(VELOCITY, (unsigned char*) &v_mobot, sizeof(struct Velocity));
 
