@@ -5,12 +5,12 @@ namespace map_visualization{
 ImageMapModel::ImageMapModel(QObject *parent) :
     QAbstractTableModel(parent)
 {
-    int char1[] = {0,1,1,23,1,-1};
-    int char2[] = {0,2,0,3,1,0};
+    /*int char1[] = {0,0,1,23,1,-1};
+    int char2[] = {0,1,0,3,1,0};
     std::vector<int> vect1(char1, char1 + sizeof(char1) / sizeof(int) );
     std::vector<int> vect2(char2, char2 + sizeof(char2) / sizeof(int) );
     tableData.push_back(vect1);
-    tableData.push_back(vect2);
+    tableData.push_back(vect2);*/
 }
 
 int ImageMapModel::rowCount(const QModelIndex & /*parent*/) const{
@@ -19,7 +19,7 @@ int ImageMapModel::rowCount(const QModelIndex & /*parent*/) const{
 
 int ImageMapModel::columnCount(const QModelIndex & /*parent*/) const
 {
-    return tableData[0].size();
+    return COLUMN_COUNT;
 }
 
 QVariant ImageMapModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -77,10 +77,12 @@ QVariant ImageMapModel::data(const QModelIndex &index, int role) const
 
 bool ImageMapModel::setData(const QModelIndex & index, const QVariant & value, int role)
 {
-    if (role == Qt::EditRole)
-    {
+    if (role == Qt::EditRole){
+        int row = index.row();
+        int col = index.column();
         //save value from editor to member m_gridData
-        tableData[index.row()][index.column()] = value.toInt();
+        tableData[row][col] = value.toInt();
+        Q_EMIT tableChanged(tableData[row][SESSION], tableData[row][MOBOT], col, value.toInt());
     }
     return true;
 }
@@ -103,13 +105,15 @@ Qt::ItemFlags ImageMapModel::flags(const QModelIndex &index) const{
 /**
   * The slot which recieves the updates from the waypoint/ROS interface
   */
-void ImageMapModel::updateData(int sessionID, int mobotID, int key, int value){
+void ImageMapModel::updateTable(int sessionID, int mobotID, int key, int value){
     // Clear data
     if(key == -1){
-        clearData();
+        ROS_INFO("[updateTable] clear");
+        removeRows(0,tableData.size());
     }
     // Negative sign -> delete mobot/session entry
     if(sessionID < 0){
+        ROS_INFO("[updateTable] delete");
         sessionID *= -1;
         if(mobotID < 0){
             mobotID *= -1;
@@ -128,49 +132,116 @@ void ImageMapModel::updateData(int sessionID, int mobotID, int key, int value){
             }
         }
     }
-
-    addMobot(sessionID, mobotID, key, value);
-    return;
-}
-
-void ImageMapModel::addMobot(int sessionID, int mobotID, int key, int value){
-    std::vector<int> dataEntry;
-    dataEntry[SESSION] = sessionID;
-    dataEntry[MOBOT] = mobotID;
-    dataEntry[key] = value;
-    tableData.push_back(dataEntry);
-
-    Q_EMIT addWaypointMobot(mobotID);
+    // Add a mobot Entry
+    insertRows(mobotID, 1);
+    for(int i = 0; i < tableData.size(); i++){
+        if(tableData[i][SESSION] == -1){
+            for(int j = i; j < tableData.size(); j++){
+                if(tableData[j][MOBOT] == -1){
+                    tableData[j][SESSION] = sessionID;
+                    tableData[j][MOBOT] = mobotID;
+                    tableData[j][key] = value;
+                    Q_EMIT addWaypointMobot(mobotID);
+                    return;
+                }
+            }
+        }
+    }
     return;
 }
 
 void ImageMapModel::removeMobot(int sessionID, int mobotID){
-    for(int i = 0; i < tableData.size(); i++){
+    for(int i = 0; i < tableData.size(), i++;){
         if(tableData[i][SESSION] == sessionID){
-            if(tableData[i][MOBOT] == mobotID){
-                tableData.erase(tableData.begin() + i);
+            for(int j = i; j < tableData.size(); j++){
+                if(tableData[j][MOBOT] == mobotID){
+                    if(tableData.back()[SESSION] == sessionID){
+                        if(tableData.back()[MOBOT] == mobotID){
+                            tableData.erase(tableData.begin() + j, tableData.end() - 1);
+                            return;
+                        }
+                        for(int l = j; l < tableData.size(); l++){
+                            if(tableData[l][MOBOT] != mobotID){
+                                l--;
+                                tableData.erase(tableData.begin() + j, tableData.begin() + l);
+                                return;
+                            }
+                        }
+                    }
+                    for(int k = j; k < tableData.size(); k++){
+                        if(tableData[k][SESSION] != sessionID){
+                            for(int l = k; l < tableData.size(); l++){
+                                if(tableData[l][MOBOT] != mobotID){
+                                    l--;
+                                    tableData.erase(tableData.begin() + j, tableData.begin() + l);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
-
-    Q_EMIT removeWaypointMobot(mobotID);
-    return;
 }
 
 void ImageMapModel::removeSession(int sessionID){
-    for(int i = 0; i < tableData.size(); i++){
+    for(int i = 0; i < tableData.size(), i++;){
         if(tableData[i][SESSION] == sessionID){
-            tableData.erase(tableData.begin() + i);
-            Q_EMIT removeWaypointMobot(tableData[i][MOBOT]);
+            if(tableData.back()[SESSION] == sessionID){
+                tableData.erase(tableData.begin() + i, tableData.end() - 1);
+                return;
+            }
+            for(int j = i; j < tableData.size(); j++){
+                if(tableData[j][SESSION] != sessionID){
+                    j--;
+                    tableData.erase(tableData.begin() + i, tableData.begin() + j);
+                    return;
+                }
+            }
         }
     }
-    return;
 }
 
-void ImageMapModel::clearData(){
-    tableData.clear();
-    Q_EMIT clearWaypointMobot();
-    return;
+// has to be called after to sync the combotbox Q_EMIT addWaypointMobot(mobotID);
+bool ImageMapModel::insertRows(int row, int count, const QModelIndex & parent){
+    beginInsertRows(parent, row, row + count - 1);
+    std::vector<int> dataEntry(COLUMN_COUNT, -1);
+    std::vector< std::vector<int> >::iterator it;
+    it = tableData.begin();
+    if(tableData.size() < row){ // row exceeds vector size
+        tableData.insert(it + tableData.size(), count, dataEntry);
+    } else if(row < 0){ // row is less than 0
+        tableData.insert(it, count, dataEntry);
+    } else { // row is within vector
+        tableData.insert(it + row, count, dataEntry);
+    }
+    endInsertRows();
+    return true;
+}
+
+// has to be called after to sync the combotbox Q_EMIT removeWaypointMobot(mobotID);
+bool ImageMapModel::removeRows(int row, int count, const QModelIndex & parent){
+    std::vector< std::vector<int> >::iterator it;
+    it = tableData.begin();
+    beginRemoveRows(parent, row, row + count - 1);
+    if(row < 0){
+        if(tableData.size() < count){
+            tableData.erase(it, tableData.end() - 1);
+        } else {
+            tableData.erase(it, it + count - 1);
+        }
+    } else if(row > tableData.size()){
+        return true;
+    } else {
+        if(tableData.size() < count + row){
+            tableData.erase(it + row, tableData.end() - 1);
+        } else {
+            tableData.erase(it + row, it + count - 1);
+        }
+    }
+    endRemoveRows();
+    return true;
 }
 
 }

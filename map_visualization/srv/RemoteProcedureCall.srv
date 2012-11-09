@@ -1,5 +1,6 @@
-# Calls up a function on the server node and returns the int return value
+# Calls up a function on the server node and returns the
+
+mobots_msgs/ID id
 int8 function
-string operands
 ---
 int8 result

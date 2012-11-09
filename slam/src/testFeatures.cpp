@@ -47,12 +47,12 @@ int main(int argc, char** argv){
   ros::init(argc, argv, "testFeatures");
 
   ros::NodeHandle nodeHandle;
-  ros::Publisher publisher = nodeHandle.advertise<mobots_msgs::ImageWithPoseAndID>("image_pose_id", 2);
+  ros::Publisher publisher = nodeHandle.advertise<mobots_msgs::ImageWithPoseAndID>("/mobot0/image_pose_id", 2);
   
-  for (int i = 1; i <= 19; i++)
+  for (int i = 0; i <= 25; i++)
   {
     string slam_path = ros::package::getPath("slam");
-    string filename = slam_path + "/pics/karte/" + boost::lexical_cast<string>(i) + ".png";
+    string filename = slam_path + "/pics/karte2/" + boost::lexical_cast<string>(i) + ".png";
     Mat image = imread(filename, 1); //1 for colours
     if (image.data == NULL) {
       cerr << "Error loading pic " << filename << "!" << endl;
@@ -67,10 +67,10 @@ int main(int argc, char** argv){
     mobots_msgs::ImageWithPoseAndID mobot_image;
     copyMatToImageMSg(image, mobot_image);
     mobot_image.id.session_id = 0;
-    mobot_image.id.mobot_id = 1;
-    mobot_image.id.image_id = i-1;
-    mobot_image.pose.x = 11;
-    mobot_image.pose.y = 11;
+    mobot_image.id.mobot_id = 0;
+    mobot_image.id.image_id = i;
+    mobot_image.pose.x = 0.02;
+    mobot_image.pose.y = 0.02;
     mobot_image.pose.theta = 0;
     
     cout << "Press [Enter] for publishing " << i << ".png" << endl;

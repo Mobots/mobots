@@ -72,6 +72,7 @@ typedef enum{STIFF,FAST} way_type;
     double regelFktDreh(double e);
     void startWeg();
     void regel();
+    void correctAngle(double& theta);
 
     // -- values in Hz --
     int mouseFrequency;
@@ -99,7 +100,7 @@ typedef enum{STIFF,FAST} way_type;
     shutter::delta srv;
 		
       way_type wayType;
-      double sBrems,bParam,vParam,dParam,rootParam, radiusInnen, vMax, minS, minDegree;
+      double sBrems,bParam,vFac,dParam,rootParam, radiusInnen, vMax, minS, minDegree,drehFac;
 
       int mobotID, counter;
 

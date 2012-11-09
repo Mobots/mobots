@@ -9,18 +9,13 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <ros/console.h>
+#include <mobots_common/utils.h>
 
 #include "image_pose_data_types.h"
 #include "image_pose.h"
 
-// Filename ending for the files
-std::string savePathRoot(""); // save path root
-std::string fileConvention("mobotID%i-%i.%s"); // mobotID2-12.jpg
-std::string folderConvention("%ssession-%i/"); // /home/john/session-1/
-std::string infoEnding("info");
 
 ImagePose::ImagePose(){
-	savePath = savePathRoot;
 	errorStatus = 0;
 }
 
@@ -30,16 +25,15 @@ ImagePose::ImagePose(){
  */
 ImagePose::ImagePose(const IDT* id_){
 	errorStatus = 0;
-	savePath = savePathRoot;
 	infoData.id = *id_;
-	infoPath = concPath(infoEnding.c_str());
+	infoPath = mobots_common::store::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ".info");
 	try{
 		infoData.load(infoPath);
 	}catch (std::exception &e){
 		ROS_INFO("Error: %s", e.what());
 		errorStatus = 102;
 	}
-	imagePath = concPath(infoData.image.encoding.c_str());
+	imagePath = mobots_common::store::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, '.' + infoData.image.encoding);
 }
 
 /**
@@ -49,7 +43,7 @@ ImagePose::ImagePose(const IDT* id_){
 ImagePose::ImagePose(const imagePoseData* infoData_){
 	errorStatus = 0;
 	infoData.id = infoData_->id;
-	infoPath = concPath(infoEnding.c_str());
+	infoPath = mobots_common::store::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ".info");
 	try{
 		infoData.load(infoPath);
 		if(infoData_->delPose.enable == 1){
@@ -73,11 +67,10 @@ ImagePose::ImagePose(const imagePoseData* infoData_){
  */
 ImagePose::ImagePose(const imagePoseData* infoData_, const std::vector<unsigned char> imageData_){
 	errorStatus = 0;
-	savePath = savePathRoot;
 	infoData = *infoData_;
 	imageData = imageData_;
-	imagePath = concPath(infoData.image.encoding.c_str());
-	infoPath = concPath(infoEnding.c_str());
+	imagePath = mobots_common::store::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, '.' + infoData.image.encoding);
+	infoPath = mobots_common::store::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ".info");
 	initWrite();
 }
 
@@ -109,10 +102,13 @@ int ImagePose::initReadImage(){
  * Save an image and its info file to disk.
  */
 int ImagePose::initWrite(){
-	// Create the directory
+#if 0
+  // Create the directory
 	char* infoFolderPath = concPath();
 	boost::filesystem::create_directories(infoFolderPath);
 	delete[] infoFolderPath;
+#endif
+  
 	// Save info to disk
 	try{
 		infoData.save(infoPath);
@@ -139,19 +135,19 @@ int ImagePose::initWrite(){
 void ImagePose::loadLast(const IDT* id_){
 	infoData.id = *id_;
 	infoData.id.imageID = 0;
-	infoPath = concPath(infoEnding.c_str());
+	infoPath = mobots_common::store::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ".info");
 	if(!boost::filesystem::exists(infoPath)){
 		errorStatus = 102;
 		return;
 	}
 	infoData.id.imageID++;
-	infoPath = concPath(infoEnding.c_str());
+	infoPath = mobots_common::store::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ".info");
 	while(boost::filesystem::exists(infoPath)){
 		infoData.id.imageID++;
-		infoPath = concPath(infoEnding.c_str());
+		infoPath = mobots_common::store::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ".info");
 	}
 	infoData.id.imageID--;
-	infoPath = concPath(infoEnding.c_str());
+	infoPath = mobots_common::store::getPathForID(infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ".info");
 	try{
 		infoData.load(infoPath);
 	}catch (std::exception &e){
@@ -160,28 +156,6 @@ void ImagePose::loadLast(const IDT* id_){
 	}
 }
 
-/**
- * Takes the ID's needed to identify an image and then concatinates them
- * into a filepath.
- * TODO calculate pathlength
- */
-char* ImagePose::concPath(const char* ending){
-	char* path = new char[1000];
-	std::string pathConvention = folderConvention + fileConvention;
-	sprintf(path, pathConvention.c_str(), savePath.c_str(), infoData.id.sessionID, infoData.id.mobotID, infoData.id.imageID, ending);
-	return path;
-}
-
-/**
- * Takes the sessionID and concatinates the root path plus the session folder
- * into a filepath.
- * TODO calculate pathlength
- */
-char* ImagePose::concPath(){
-	char* path = new char[1000];
-	sprintf(path, folderConvention.c_str(), savePath.c_str(), infoData.id.sessionID);
-	return path;
-}
 
 /**
  * If the image is not loaded, it will be loaded from the disk.

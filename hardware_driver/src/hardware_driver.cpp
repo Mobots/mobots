@@ -40,25 +40,30 @@ void startWeg()
     //Parameter übernehmen
     ros::param::param<double>("sBrems",sBrems,0.2);
     ros::param::param<double>("rootParam",rootParam,2.0);
-    //ros::param::param<double>("bParam",bParam,0.06);   //calculate: bParam=vMax/4/(desired start-to-break-point in degrees)*180/pi/radiusInneniusInnenius
+    ros::param::param<double>("dParam",dParam,0.4297);   //calculate: bParam=vMax/4/(desired start-to-break-point in degrees)*180/pi/radiusInnen
     ros::param::param<double>("radiusInnen",radiusInnen,0.14); //TODO, genauer radiusInnenius, messen Mitte- Räder-Bodenkontakt
     ros::param::param<double>("vMax",vMax,0.15); //theoretisch maximal 0.18, weniger, um nicht mit maximum zu laufen
     ros::param::param<double>("minS",minS,0.02);	//Toleranz für erreichten Wegpunkt
     ros::param::param<double>("minDegree",minDegree,1); //Toleranz für erreichte Drehrichtung
-    // ros::param::param<double>("vFac",vFac,1);  //anderes Konzept
-    //vFac ist der zusammenhang: Vmaximal/1000 zwischen promilledaten und realität
-    ros::param::param<double>("vParam", vParam, 1); 
-		string wayTypeString;
+    ros::param::param<double>("vFac", vFac, 0.00015);     //vFac ist der zusammenhang: Vmaximal/1000 zwischen promilledaten und realität
+
+    string wayTypeString;
     ros::param::param<string>("fahrTyp",wayTypeString, "FAST");
 		
-		for(int i = 0; i < wayTypeString.size(); i++)
-			wayTypeString[i] = toupper(wayTypeString[i]);
-		if(wayTypeString == string("FAST"))
-			wayType = FAST;
-		else if(wayTypeString == string("STIFF"))
-			wayType = STIFF;
-		else
-			ROS_ERROR("unknown type %s", wayTypeString.c_str());
+	for(int i = 0; i < wayTypeString.size(); i++) {
+		wayTypeString[i] = toupper(wayTypeString[i]);
+	}
+	if(wayTypeString == string("FAST")) {
+		ros::param::param<double>("drehFac",drehFac,0.4);	//Bruchteil der vMax, mit der sich der mobot maximal drehen soll
+		wayType = FAST;
+	}
+	else if(wayTypeString == string("STIFF")) {
+		ros::param::param<double>("drehFac",drehFac,0.25);	//Bruchteil der vMax, mit der sich der mobot maximal drehen soll
+		wayType = STIFF;
+	}
+	else
+		ROS_ERROR("unknown type %s", wayTypeString.c_str());
+
 
     bParam=pow(vMax,rootParam)/sBrems;
 
@@ -114,10 +119,9 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 	    globalPose.x+=deltaPose.x;
 	    globalPose.y+=deltaPose.y;
 	    globalPose.theta+=deltaPose.theta;
-			if(globalPose.theta < 0)
-				globalPose.theta += 2*M_PI;
-			else if(globalPose.theta > 2*M_PI)
-				globalPose.theta -= 2*M_PI;
+	    double &tet=globalPose.theta;
+	    correctAngle(tet);
+
 		deltaPose.x = deltaPose.y = deltaPose.y = 0;
 		if (POST_EVERY_X_MESSAGE == counter) {
 			counter=0;
@@ -147,7 +151,12 @@ void* infraredReader(void* data){
 }*/
 
 
-
+void correctAngle(double& theta) {
+	if(theta < -M_PI)
+		theta += 2*M_PI;
+	else if(theta > M_PI)
+		theta -= 2*M_PI;
+}
 
 /**
  *# prio == 0: pose vor allen anderen einfügen, rest verwerfen (default)
@@ -205,7 +214,7 @@ void relPoseCallback(const mobots_msgs::Pose2DPrio& msg){
 		next.pose = *it;
   }
   double cost = cos(globalPose.theta);
-  double sint = sin(globalPose.theta);
+  double sint=sin(globalPose.theta);
   next.pose.x += cost*msg.pose.x - sint*msg.pose.y;
   next.pose.y += sint*msg.pose.x + cost*msg.pose.y;
   next.pose.theta += msg.pose.theta;
@@ -261,6 +270,16 @@ void regel()
     } else {
         eTheta =  currentTargetPose.theta - globalPose.theta;
     }
+	//transform to mobot coordinate system
+	//------------------------------------------
+	double eXTemp = eX;
+	double eYTemp = eY;
+	 double cost = cos(globalPose.theta);
+  double sint=sin(globalPose.theta);
+  eX = cost*eXTemp - sint*eYTemp;
+  eY = sint*eXTemp + cost*eYTemp;
+	//.------------------------------------------
+    correctAngle(eTheta);    // correct with 2Pi problem: (this also guarentees to turn optimal)
     if (eX < minS && eY < minS && eTheta*radiusInnen < minDegree*(M_PI * radiusInnen / 180))
     { //Ziel erreicht
        //geometry_msgs::Pose2D p={0,0,0};
@@ -277,9 +296,9 @@ void regel()
 			return;
     }
      struct ServoSpeed sersp;
-     sersp.s1 = regelFkt(eX); //in meter und rad
-     sersp.s2 = regelFkt(eY);
-     sersp.s3 = regelFktDreh(eTheta);
+     sersp.s1 = regelFkt(eX)/vFac; //in meter/s, s3 ist auch bahngeschwindigkeit, dann /vFac zur skalierung für servo geschw.
+     sersp.s2 = regelFkt(eY)/vFac;
+     sersp.s3 = regelFktDreh(eTheta)/vFac;
      proto->sendData(Debug_Controller, (unsigned char*) &sersp, sizeof(struct ServoSpeed));
 
 }
@@ -296,12 +315,10 @@ double regelFkt(double e)
 {
 if (e>0) {
  double d = pow(e*bParam, 1.0/rootParam);
- d=d/vParam;
  return (d>vMax) ? vMax :d;
 }
 if (e<0) {
  double d =-(pow(-e*bParam, 1.0/rootParam));
- d=d/vParam;
  return (d<-vMax) ? -vMax :d;
 }
   return 0;
@@ -313,5 +330,5 @@ if (e<0) {
 double regelFktDreh(double e)
 {
  double d = e*dParam*radiusInnen;		//von bogenmaß auf bahngeschwindigkeit //TODO so war das vorher  e*dParam*=radiusInnen;
- return (d>(vMax/4.0)) ? vMax/4.0 : ((d<(-(vMax/4.0))) ? -vMax/4.0 :d);
+ return (d>(vMax*drehFac)) ? (vMax*drehFac) : ((d<(-(vMax*drehFac))) ? (-(vMax*drehFac)) :d);
 }

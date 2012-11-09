@@ -1,8 +1,9 @@
 #pragma once
 
 #define PROFILE 1
+#define DEBUG 1
 
-#ifdef PROFILE
+#if PROFILE
   #include <iostream>
   #include <opencv2/core/core.hpp>
 

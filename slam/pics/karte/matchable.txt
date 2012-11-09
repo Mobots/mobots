@@ -1,0 +1,46 @@
+1.png and 2.png are matchable
+1.png and 3.png are matchable
+1.png and 17.png are matchable
+2.png and 3.png are matchable
+2.png and 4.png are NOT matchable
+2.png and 6.png are matchable xxxxxxxxxxxxxxxxxxxxxxx
+2.png and 17.png are matchable
+2.png and 18.png are matchable
+3.png and 4.png are matchable
+3.png and 5.png are NOT matchable
+3.png and 17.png are matchable
+3.png and 18.png are matchable
+3.png and 19.png are matchable
+4.png and 5.png are matchable
+4.png and 6.png are NOT matchable
+4.png and 18.png are matchable
+4.png and 19.png are matchable
+5.png and 6.png are matchable
+5.png and 7.png are matchable xxxxxxxxxxxxxxxxxxxxxxx
+5.png and 19.png are matchable
+6.png and 7.png are matchable
+6.png and 8.png are NOT matchable
+7.png and 8.png are matchable
+7.png and 9.png are NOT matchable
+8.png and 9.png are matchable
+8.png and 10.png are NOT matchable
+9.png and 10.png are matchable
+9.png and 11.png are NOT matchable
+10.png and 11.png are matchable
+10.png and 12.png are NOT matchable
+11.png and 12.png are matchable
+11.png and 13.png are NOT matchable
+12.png and 13.png are matchable
+12.png and 14.png are NOT matchable
+13.png and 14.png are matchable
+13.png and 15.png are NOT matchable
+14.png and 15.png are matchable
+14.png and 16.png are NOT matchable
+15.png and 16.png are matchable
+15.png and 17.png are matchable
+15.png and 18.png are matchable
+16.png and 17.png are matchable
+16.png and 18.png are matchable
+17.png and 18.png are matchable
+17.png and 19.png are NOT matchable
+18.png and 19.png are matchable
