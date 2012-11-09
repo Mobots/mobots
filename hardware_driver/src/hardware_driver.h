@@ -15,6 +15,7 @@
 #include "geometry_msgs/PoseStamped.h"
 #include "mobots_msgs/Pose2DPrio.h"
 #include "mobots_msgs/InfraredScan.h"
+#include "mobots_msgs/Twist2D.h"
 #include "hardware_driver/ChangeGlobalPose.h"
 #include "shutter/delta.h"
 
@@ -47,7 +48,7 @@ typedef enum{STIFF,FAST} way_type;
     void relPoseCallback(const mobots_msgs::Pose2DPrio&);
     /**
      * receives servo speeds as geometry pose     */
-    void sendSpeedCallback(const geometry_msgs::Pose2D&);
+    void speedCallback(const mobots_msgs::Twist2D&);
     /**
      * Handler method which gets called with the sensor data     */
     void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
@@ -62,6 +63,9 @@ typedef enum{STIFF,FAST} way_type;
     /**
      * Start receiving sensor data     */
     void* receiveMethod(void* data);
+		/**
+		 * stop the mobot */
+		void stopMobot();
 
 
     //Subscriber
@@ -99,10 +103,12 @@ typedef enum{STIFF,FAST} way_type;
     ros::ServiceServer service;
     shutter::delta srv;
 		
-      way_type wayType;
-      double sBrems,bParam,vFac,dParam,rootParam, radiusInnen, vMax, minS, minDegree,drehFac;
+		way_type wayType;
+		double sBrems,bParam,vFac,dParam,rootParam, radiusInnen, vMax, minS, minDegree,drehFac;
 
-      int mobotID, counter;
+		int mobotID, counter;
+		
+		bool velocityControlled;
 
 
 #endif // HARDWARE_DRIVER_H
