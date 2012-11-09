@@ -1,7 +1,7 @@
 #ifndef _PROTOCOL_H__
 #define _PROTOCOL_H__
 
-#include "engine.h"
+//#include "engine.h"
 #include "stm32f10x.h"
 
 enum PROTOCOL_IDS
@@ -45,7 +45,11 @@ struct ProtocolHeader
     unsigned short headerCRC;
 }__attribute__((packed)) __attribute__((__may_alias__));
 
-
+struct Mouse_Data_DeltaValOut {
+	float delta_x;
+	float delta_y;
+	float delta_theta;
+}__attribute__ ((packed)) __attribute__((__may_alias__));
 
 
 void protocol_init(bool crc);

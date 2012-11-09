@@ -12,12 +12,16 @@ void readPrintfs(Communication* com) {
 		std::cout << buf << std::flush;
 }
 
+void defaultHandler(enum PROTOCOL_IDS id, unsigned char *data, unsigned short size, Communication* com) {
+	std::cerr << "no handler specified for id: " << id << std::endl;
+}
+
 int main() {
 
 	Communication* com;
 	com = new UARTCommunication();
 	ComProtocol proto(com);
-	proto.protocol_init();
+	proto.protocol_init(defaultHandler);
 
 	std::cout << "begin\n" << std::flush;
 

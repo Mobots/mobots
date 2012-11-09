@@ -8,7 +8,6 @@
 #ifndef ENGINE_H_
 #define ENGINE_H_
 
-#include "libfixmath/fixmath.h"
 #include "mousesensor.h"
 #include "controller.h"
 
