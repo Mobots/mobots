@@ -18,7 +18,7 @@ UARTCommunication::UARTCommunication()
     tio.c_cc[VMIN]=1;
     tio.c_cc[VTIME]=5;
 
-    tty_fd=open("/dev/ttyAMA0", O_RDWR | O_NONBLOCK);
+    tty_fd=open("/dev/ttyUSB0", O_RDWR | O_NONBLOCK);
     cfsetospeed(&tio,B115200);            // 115200 baud
     cfsetispeed(&tio,B115200);            // 115200 baud
 
@@ -56,7 +56,7 @@ int UARTCommunication::write(unsigned char* data, size_t size)
     {
         if(0 >= ::write(tty_fd,data + i, sizeof(char)))
         {
-            std::cout << "Send failed at " << i << std::endl;
+            perror(std::string("Send failed at " + i).c_str());
             return i;
         }
     }
