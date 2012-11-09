@@ -99,11 +99,10 @@ void ImageMapDisplay::subscribe(){
 
                 boost::function<void(const geometry_msgs::Pose2D::ConstPtr&)> callback =
                         boost::bind(&ImageMapDisplay::mobotPoseCallback, this,
-                        mobotPoseSub.size() + 1, _1);
+                        mobotPoseSub.size(), _1);
                 sub = update_nh_.subscribe<geometry_msgs::Pose2D>(topic, 10, callback);
                 mobotPoseSub.push_back(sub);
             }
-            ROS_INFO("mobotPoseSub size: %i", mobotPoseSub.size());
         }
         catch(ros::Exception& e){
             setStatus(rviz::status_levels::Error, "Topic", std::string
@@ -120,7 +119,7 @@ void ImageMapDisplay::subscribe(){
                 ("Error advertising publisher infoPub : ") + e.what());
         }
     }
-    if(true){
+    if(updateRvizServer){
         updateRvizServer = update_nh_.advertiseService("/image_map/rpc", &ImageMapDisplay::updateRvizCallback, this);
     }
     return;
@@ -134,6 +133,7 @@ void ImageMapDisplay::unsubscribe(){
         mobotPoseSub[i].shutdown();
     }
     mobotPoseSub.clear();
+    updateRvizServer.shutdown();
 }
 
 void ImageMapDisplay::setRelPoseTopic(const std::string& topic){

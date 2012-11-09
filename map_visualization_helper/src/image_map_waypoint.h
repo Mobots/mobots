@@ -20,6 +20,12 @@
 
 namespace map_visualization{
 
+struct poseT{
+    float x;
+    float y;
+    float theta;
+};
+
 class ImageMapWaypoint : public QObject{
     Q_OBJECT
 
@@ -28,6 +34,7 @@ public:
     ~ImageMapWaypoint();
     void updateInfoHandler(const mobots_msgs::IDKeyValue::ConstPtr& msg);
     void poseRelayHandler(const geometry_msgs::PoseStamped::ConstPtr& msgIn);
+    void mobotPoseHandler(int mobotID, const geometry_msgs::Pose2D::ConstPtr &msg);
 public Q_SLOTS:
     void process();
     void setActiveMobot(QString mobotID);
@@ -42,10 +49,13 @@ private:
     char** init_argv;
     int activeMobotID;
     int activeSessionID;
+    int mobotPoseCount;
+    std::vector<poseT> mobotPoseBuffer;
     ros::Subscriber* poseRelaySub;
     ros::Subscriber* updateInfoSub;
     ros::Publisher* poseRelayPub;
     ros::ServiceClient* updateRvizClient;
+    std::vector<ros::Subscriber> mobotPoseSub;
     ros::NodeHandle *nh;
 };
 
