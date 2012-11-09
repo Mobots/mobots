@@ -13,6 +13,7 @@ void protocol_defaultHandler(enum PROTOCOL_IDS id, unsigned char *data,
 	std::cout << "Warning, packet with id %hu was not handled \n" << std::flush;
 }
 
+/*
 int i = 0;
 int j = 0;
 void setDataValHandler(enum PROTOCOL_IDS id, unsigned char *data,
@@ -38,3 +39,4 @@ void setDataValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 	std::cout << "X: " << i << std::flush;
 	std::cout << " Y: " << j << std::endl;
 }
+*/

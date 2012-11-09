@@ -18,7 +18,7 @@ UARTCommunication::UARTCommunication()
     tio.c_cc[VMIN]=1;
     tio.c_cc[VTIME]=5;
 
-    tty_fd=open("/dev/ttyUSB0", O_RDWR | O_NONBLOCK);
+    tty_fd=open("/dev/ttyAMA0", O_RDWR | O_NONBLOCK);
     cfsetospeed(&tio,B115200);            // 115200 baud
     cfsetispeed(&tio,B115200);            // 115200 baud
 

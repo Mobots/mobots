@@ -60,6 +60,20 @@ void servo_init()
 	TIM_Cmd(TIM4, ENABLE);
 }
 
+void set(const struct ServoSpeed * const servo_speed)
+{
+	int value[3];
+
+	int i;
+	for(i = 0; i < 3; i++)
+	{
+		value[i] = 3000 + servo_speed->v[i] * 400;
+	}
+
+	TIM_SetCompare1(TIM4, value[0]);
+	TIM_SetCompare2(TIM4, value[1]);
+	TIM_SetCompare3(TIM4, value[2]);
+}
 void servo_setAngle(enum Servos servo, int value)
 {
 	//1,3 ms <-> 1,7 ms

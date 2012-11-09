@@ -10,9 +10,9 @@
 #include "printf.h"
 #include "stm32f10x_gpio.h"
 #include "util.h"
-#include "fixmath.h"
 
 volatile struct Mouse_Data_All mouse_data;
+volatile struct Mouse_Data_DeltaVal delta_vals = { 0, 0, 0, 0};
 
 DATA_STAT spi1_datastat;
 DATA_STAT spi2_datastat;
@@ -53,6 +53,11 @@ DATA_STAT spi2_datastat;
 //
 //}
 
+void SPI_init() {
+	spi1_datastat = OUTDATED;
+	spi2_datastat = OUTDATED;
+	spi_init();
+}
 
 unsigned char download_firmware(SPI spi) {
 
@@ -275,12 +280,11 @@ int Sensor_init(SPI spi) {
 	spi_WriteRegister(REG_Frame_Period_Max_Bound_Upper, 0x5d, spi); //0x5d
 
 	//Resolution
-	// auflösung auf ~2520 dpi => 1 pixel ~10,08um
+	spi_WriteRegister(REG_Configuration_I, 0x38, spi); // auflösung auf ~5040 dpi => 1 pixel ~10,08um
 
 	clear_bits_addr(REG_LASER_CTRL0, 0x01, spi);
 	clear_bits_addr(REG_LASER_CTRL0, 0x0e, spi);
 
-	spi_WriteRegister(REG_Configuration_I, 0x38, spi);
 	clear_bits_addr(REG_LASER_CTRL0, 0x01, spi);
 
 	delay_ms(10);
@@ -290,47 +294,3 @@ int Sensor_init(SPI spi) {
 	return 1;
 }
 
-//gibt die pixel als strecke in meter im mobot_koordinatensystem aus
-struct Mouse_Data_Delta2DPose transformMouseToCoordinateSystem(double r_aussen) {
-	struct Mouse_Data_Delta2DPose s;
-
-
-	static const double sin_120 = -0.5;
-	static const double cos_120 = 0.866028;
-	double fuenf_sechstel = 0.83333;
-
-	//get current mouse data
-	double x1=delta_vals1.delta_x;
-	double y1=delta_vals1.delta_y;
-	double x2=delta_vals2.delta_x;
-	double y2=delta_vals2.delta_y;
-
-	//transform
-	s.delta_x=((x1-x2)/3-y1*1.1547)*0.0254/5040; //TODO correct dpi insert
-	s.delta_y=(x1-x2)/3*0.0254/5040;
-	s.delta_theta=(y1*0.5774+0.6667*x2+x1*0.3333))/r*0.0254/5040; //TODO eventuell nicht bogenmass
-	return s;
-
-}
-
-struct Servospeed transformToServoSpeed(double r_innen, double r_aussen, double v_max, double totzeit){
-
-
-	double x1=delta_vals1.delta_x;
-	double y1=delta_vals1.delta_y;
-	double x2=delta_vals2.delta_x;
-	double y2=delta_vals2.delta_y;
-
-	#define sqrt3 1,73205081
-	#define omega -r_innen/r_aussen*y1/sqrt3-r_innen/r_aussen*2/3*x2-r_innen/r_aussen*x1/3
-	struct Servospeed s;
-
-	s.s1 = (x1/3-x2/3-2/sqrt3*y1 + omega)/v_max*1000/totzeit;
-	s.s2 =  (x1/sqrt3-x2/3+y1/sqrt3 + omega)/v_max*1000/totzeit;
-	s.s3 =  (-y1/sqrt3-2/3*x1 + 2/3*x2 + omega)/v_max*1000/totzeit; 	//TODO, nicht sicher, ob richtig abgeschrieben
-
-    return s;
-
-
-
-}

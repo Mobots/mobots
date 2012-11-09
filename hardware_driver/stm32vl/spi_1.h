@@ -14,7 +14,7 @@ typedef enum {
 	SPI_2
 }SPI;
 
-
+void SPI_init();
 void spi_init(void);
 int spi_SendData(const unsigned char *buffer, const unsigned int count);
 int spi_GetData(unsigned char *buffer, const unsigned int buffer_length);

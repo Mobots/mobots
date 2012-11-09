@@ -11,7 +11,8 @@ ImageMapWaypoint::ImageMapWaypoint(int argc, char** argv):
     init_argc(argc) ,
     init_argv(argv) ,
     activeMobotID(0) ,
-    activeSessionID(0)
+    activeSessionID(0) ,
+    mobotPoseCount(3)
 {
 }
 
@@ -54,6 +55,28 @@ void ImageMapWaypoint::process(){
             <map_visualization::RemoteProcedureCall>("/image_map/rpc");
     updateRvizClient = &updateRvizClient_;
 
+    // Subscribe to the pose topic of each mobot
+    if(mobotPoseCount > 0){
+        try{
+            ros::Subscriber sub;
+            std::string topic;
+            while(mobotPoseSub.size() < mobotPoseCount){
+                topic = "/mobot" + boost::lexical_cast<std::string>(mobotPoseSub.size());
+                topic += "/pose";
+
+                boost::function<void(const geometry_msgs::Pose2D::ConstPtr&)> handler =
+                        boost::bind(&ImageMapWaypoint::mobotPoseHandler, this,
+                        mobotPoseSub.size(), _1);
+                sub = nh->subscribe<geometry_msgs::Pose2D>(topic, 1, handler);
+                mobotPoseSub.push_back(sub);
+            }
+        }
+        catch(ros::Exception& e){
+            std::string error = e.what();
+            ROS_ERROR("Error connecting to mobot: %s", error.c_str());
+        }
+    }
+
     while(ros::ok()){
         QCoreApplication::processEvents();
         ros::spinOnce();
@@ -69,11 +92,16 @@ void ImageMapWaypoint::process(){
 
 // Handles the incoming user waypoint (pose) from rviz. Adds the mobotID
 void ImageMapWaypoint::poseRelayHandler(const geometry_msgs::PoseStamped::ConstPtr& msgIn){
+    if(mobotPoseBuffer.size() <= activeMobotID){
+        poseT zeroPose = {0,0,0};
+        mobotPoseBuffer.resize(activeMobotID + 1, zeroPose);
+    }
     mobots_msgs::PoseAndID msgOut;
 
-    msgOut.pose.x = msgIn->pose.position.x;
-    msgOut.pose.y = msgIn->pose.position.y;
-    // Extract rotation out of quaternion
+    msgOut.pose.x = msgIn->pose.position.x - mobotPoseBuffer[activeMobotID].x;
+    msgOut.pose.y = msgIn->pose.position.y - mobotPoseBuffer[activeMobotID].y;;
+    // Extract rotation out of quaternion. Undefined behavior of pose rotation.
+    // Check out 2d Nav Goal behavior of Rviz (fuerte)
     float theta = msgIn->pose.orientation.w;
     if(msgIn->pose.orientation.z < 0){
         theta *= -1;
@@ -148,6 +176,15 @@ int ImageMapWaypoint::updateRviz(int sessionID, int mobotID, int key, int value)
     return srv.response.result;
 }
 
+void ImageMapWaypoint::mobotPoseHandler(int mobotID, const geometry_msgs::Pose2D::ConstPtr &msg){
+    if(mobotPoseBuffer.size() <= mobotID){
+        poseT zeroPose = {0,0,0};
+        mobotPoseBuffer.resize(mobotID + 1, zeroPose);
+    }
+    poseT pose = {msg->x, msg->y, msg->theta};
+    mobotPoseBuffer[mobotID] = pose;
+}
+
 /**********************************************************
   * Qt Slots
   *********************************************************/
@@ -157,7 +194,6 @@ int ImageMapWaypoint::updateRviz(int sessionID, int mobotID, int key, int value)
 // TODO connect from QComboBox
 void ImageMapWaypoint::setActiveMobot(QString mobotID){
     activeMobotID = mobotID.toInt();
-    //ROS_INFO("activeMobotID: %i", activeMobotID);
     return;
 }
 

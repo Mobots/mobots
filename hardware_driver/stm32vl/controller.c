@@ -1,18 +1,15 @@
 /*
- * movement.c
+ * controller.c
  *
  *  Created on: 20.07.2012
  *      Author: simon, flo
  */
 
-#include "fixmath.h"
 #include "servo.h"
 #include "controller.h"
 
-static const double V_MAX = 1000;
-static const double sin_120 = -0.5;
-static const double cos_120 = 0.866028;
-double eSum1, eSum2, eSum3, tA, kI, kP;
+#if 0
+float eSum1, eSum2, eSum3, tA, kI, kP;
 
 volatile struct ServoSpeed sollV = {0,0,0};
 
@@ -28,17 +25,20 @@ void init(int delay) {
 //input: soll x,y,theta  Wird verschoben
 
 
+/*
+wird durch den systick zyklisch aufgerufen und bekommt als übergabe wert den ist-wert von den maussensoren
+*/
 void control(struct ServoSpeed *vIst) {
 
 
 //PI Controller
-	double e1 = vIst->s1 - sollV.s1;
+	float e1 = vIst->s1 - sollV.s1;
 	int s1 = kP * e1 + kI * tA * eSum1;
 
-	double e2 = vIst->s2 - sollV.s2;
+	float e2 = vIst->s2 - sollV.s2;
 	int s2 = kP * e2 + kI * tA * eSum2;
 
-	double e3 = vIst->s3 - sollV.s3;
+	float e3 = vIst->s3 - sollV.s3;
 	int s3 = kP * e3 + kI * tA * eSum3;
 
 	servo_setAngle(Servo_1, s1);
@@ -46,34 +46,45 @@ void control(struct ServoSpeed *vIst) {
 	servo_setAngle(Servo_3, s3);
 }
 
-void referenceLogic(double Vx, double Vy, double omega) { //Erwartungswerte 0-1000. omega <=250. Betrag(Vx,Vy) nach Möglichkeit kleiner, gleich 1000
+/*
+brechnet aus den übergebenen x-, y-, theta-werten die geschwindigkeit für jeden mobot
+*/
 
-	double v0, v1, v2, a0, a1, a2, a;
+#endif
 
-	v0 = (Vx - omega);
-	v1 = sin_120 * Vx + cos_120 * Vy - omega;
-	v2 = sin_120 * Vx - cos_120 * Vy - omega;
+void omniwheelTransformation(const struct Velocity * const velocity, struct ServoSpeed * const servo_speed)
+{
+	static const float R = 0.1; // in m
+
+	servo_speed->v[0] = (velocity->x - velocity->theta) * R;
+	servo_speed->v[1] = -0.5 * velocity->y + cos_120 * velocity->y - velocity->theta * R;
+	servo_speed->v[2] = sin_120 * velocity->y - cos_120 * velocity->y - velocity->theta * R;
+
+	return;
+
+#if 0
+	float v0, v1, v2, a0, a1, a2, a;
 
 	if (v0 > V_MAX) {
-		a0 = (V_MAX + omega) / (Vx);
+		a0 = (V_MAX + velocity->theta) / (velocity->x);
 	}
 
 	if (v0 < (-V_MAX)) {
-		a0 = (-V_MAX + omega) / (Vx);
+		a0 = (-V_MAX + velocity->theta) / (velocity->x);
 	}
 	if (v1 > V_MAX) {
-		a1 = (V_MAX + 100 * omega) / (-50 * Vx + 86 * Vy);
+		a1 = (V_MAX + 100 * velocity->theta) / (-50 * velocity->x + 86 * velocity->y);
 	}
 
 	if (v1 < (-V_MAX)) {
-		a1 = (-V_MAX + omega) / (sin_120 * Vx + cos_120 * Vy);
+		a1 = (-V_MAX + velocity->theta) / (sin_120 * velocity->x + cos_120 * velocity->y);
 	}
 	if (v2 > V_MAX) {
-		a2 = (V_MAX + omega) / (sin_120 * Vx - cos_120 * Vy);
+		a2 = (V_MAX + velocity->theta) / (sin_120 * velocity->x - cos_120 * velocity->y);
 	}
 
 	if (v2 < (-V_MAX)) {
-		a2 = (-V_MAX + omega) / (sin_120 * Vx - cos_120 * Vy);
+		a2 = (-V_MAX + velocity->theta) / (sin_120 * velocity->x - cos_120 * velocity->y);
 	}
 
 	a = 100; //Minimum Prüfung des Skalierungswert
@@ -82,22 +93,21 @@ void referenceLogic(double Vx, double Vy, double omega) { //Erwartungswerte 0-10
 	a = (a2 < a) ? a2 : a;
 
 	Vx = Vx * a / 100;
-	Vy = Vy * a / 100;
+	velocity->y = velocity->y * a / 100;
 
-	sollV.s1 = Vx - omega;
-	sollV.s2 = sin_120 * Vx + cos_120 * Vy - omega;
-	sollV.s3 = sin_120 * Vx - cos_120 * Vy - omega;
-
+	sollV.s1 = Vx - velocity->theta;
+	sollV.s2 = sin_120 * Vx + cos_120 * velocity->y - velocity->theta;
+	sollV.s3 = sin_120 * Vx - cos_120 * velocity->y - velocity->theta;
+#endif
 }
 
-//erwartet die x,y,theta geschwindigkeiten, wobei theta bahngeschwindigkeit ist (mit radius bis zud en rädern eingerechnete winkelgeschw.)
-//ausserdem jeweils werte [-1000:1000]
+#if 0
+/*
+schiebt den mobot an indem sollwerte als struct übergeben werden. diese können von einer engine oder dem client kommen.
+*/
 void setSollV(struct ServoSpeed *soll) {
 	//calculate the single servo speed
 	sollV = *soll;
 	referenceLogic(sollV.s1, sollV.s2, sollV.s3);
 }
-
-void feedback() {
-
-}
+#endif
