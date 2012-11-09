@@ -28,9 +28,9 @@ void startWeg()
     nextPoseSubAbs = nh->subscribe("waypoint_abs", 5, absPoseCallback);
     speedSub = nh->subscribe("velocity", 5, speedCallback);
 
-    mousePosePub = nh->advertise<geometry_msgs::Pose2D>("mouse", 1);
+    mousePosePub = nh->advertise<geometry_msgs::Pose2D>("mouse", 5);
     //globalPosePub = nh->advertise<geometry_msgs::Pose2D>("pose", 2);
-    infraredScanPub = nh->advertise<mobots_msgs::InfraredScan>("infrared", 2); //TODO Handler dafür
+    infraredScanPub = nh->advertise<mobots_msgs::InfraredScan>("infrared", 5); //TODO Handler dafür
 
 
     //Services
@@ -78,7 +78,7 @@ void startWeg()
 void initCom(){
 	proto = new ComProtocol(&com);
 	proto->protocol_init(defaultHandler);
-	proto->protocol_registerHandler(SensorData_transformedDelta, sensorValHandler);
+	proto->protocol_registerHandler(SensorData_All, sensorValHandler);
 }
 
 void* receiveMethod(void* data){
@@ -100,27 +100,26 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 
 	//std::cout <<"datavalHandler"<<std::endl;
 
-	if (id == SensorData_transformedDelta) {
+	if (id == SensorData_All) {
 		counter++;
 			//check:
-		int i = sizeof(struct Mouse_Data_Delta2DPose);
+		int i = sizeof(struct Mouse_Data_DeltaVal);
 		if (size != i) {
 			std::cout << "Error, wrong size\n" << std::endl;
 			return;
 		}
-		struct Mouse_Data_Delta2DPose *delta_vals = (struct Mouse_Data_Delta2DPose*) data;
+		struct Mouse_Data_DeltaVal *delta_vals = (struct Mouse_Data_DeltaVal*) data;
 		 //publish
 		geometry_msgs::Pose2D deltaPose;
 
-		deltaPose.x += delta_vals->delta_x;//xAvg;
-		deltaPose.y += delta_vals->delta_y;//yAvg;
-		deltaPose.theta += delta_vals->delta_theta;//theta;*/
+		deltaPose.x += delta_vals->delta_x1;//xAvg; noch falsch aber ok
+		deltaPose.y += delta_vals->delta_y1;//yAvg;
+		deltaPose.theta += atan2(delta_vals->delta_y2-delta_vals->delta_y1, delta_vals->delta_x2-delta_vals->delta_x1);//theta;*/
 					//TODO globalPose aktualisieren
 	    globalPose.x+=deltaPose.x;
 	    globalPose.y+=deltaPose.y;
 	    globalPose.theta+=deltaPose.theta;
-	    double &tet=globalPose.theta;
-	    correctAngle(tet);
+	    correctAngle(*(&globalPose.theta));
 
 		deltaPose.x = deltaPose.y = deltaPose.y = 0;
 		if (POST_EVERY_X_MESSAGE == counter) {
@@ -130,7 +129,8 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		}
 
 		if (!targetPoses.empty()) {
-			regel();
+			if(!velocityControlled)
+				regel();
 		}
 
 	} else {
@@ -214,7 +214,7 @@ void relPoseCallback(const mobots_msgs::Pose2DPrio& msg){
 		next.pose = *it;
   }
   double cost = cos(globalPose.theta);
-  double sint=sin(globalPose.theta);
+  double sint = sin(globalPose.theta);
   next.pose.x += cost*msg.pose.x - sint*msg.pose.y;
   next.pose.y += sint*msg.pose.x + cost*msg.pose.y;
   next.pose.theta += msg.pose.theta;
@@ -270,15 +270,6 @@ void regel()
     } else {
         eTheta =  currentTargetPose.theta - globalPose.theta;
     }
-	//transform to mobot coordinate system
-	//------------------------------------------
-	double eXTemp = eX;
-	double eYTemp = eY;
-	 double cost = cos(globalPose.theta);
-  double sint=sin(globalPose.theta);
-  eX = cost*eXTemp - sint*eYTemp;
-  eY = sint*eXTemp + cost*eYTemp;
-	//.------------------------------------------
     correctAngle(eTheta);    // correct with 2Pi problem: (this also guarentees to turn optimal)
     if (eX < minS && eY < minS && eTheta*radiusInnen < minDegree*(M_PI * radiusInnen / 180))
     { //Ziel erreicht
@@ -288,19 +279,23 @@ void regel()
 				currentTargetPose = targetPoses.front();
 			else
 				currentTargetPose = globalPose; //bleiben wir halt stehn
-		     struct ServoSpeed sersp;
-		     sersp.s1 = 0;
-		     sersp.s2 = 0;
-		     sersp.s3 = 0;
-		     proto->sendData(Debug_Controller, (unsigned char*) &sersp, sizeof(struct ServoSpeed));
+				stopMobot();
 			return;
     }
-     struct ServoSpeed sersp;
-     sersp.s1 = regelFkt(eX)/vFac; //in meter/s, s3 ist auch bahngeschwindigkeit, dann /vFac zur skalierung für servo geschw.
-     sersp.s2 = regelFkt(eY)/vFac;
-     sersp.s3 = regelFktDreh(eTheta)/vFac;
-     proto->sendData(Debug_Controller, (unsigned char*) &sersp, sizeof(struct ServoSpeed));
+     struct Velocity vel;
+     vel.x = regelFkt(eX)/vFac; //in meter/s, s3 ist auch bahngeschwindigkeit, dann /vFac zur skalierung für servo geschw.
+     vel.y = regelFkt(eY)/vFac;
+     vel.theta = regelFktDreh(eTheta)/vFac;
+     proto->sendData(VELOCITY, (unsigned char*) &vel, sizeof(struct Velocity));
 
+}
+
+void stopMobot(){
+	struct Velocity vel;
+	vel.x = 0;
+	vel.y = 0;
+	vel.theta = 0;
+	proto->sendData(VELOCITY, (unsigned char*) &vel, sizeof(struct Velocity));
 }
 
 
@@ -336,12 +331,14 @@ double regelFktDreh(double e)
 void speedCallback(const mobots_msgs::Twist2D& msg){
 	if(msg.x == -1){ //values are normalized between [0,1]
 		velocityControlled = false;
+		cerr << "disabling velocity control" << endl;
 		return;
 	}
 	velocityControlled = true;
-	sersp.s1 = regelFkt(eX)/vFac; //Flo skalier die Werte mal richtig, werte sind zwischen 0 und 1
-sersp.s2 = regelFkt(eY)/vFac;
-sersp.s3 = regelFktDreh(eTheta)/vFac;
-proto->sendData(Debug_Controller, (unsigned char*) &sersp, sizeof(struct ServoSpeed));
-	
+	struct Velocity vel;
+	vel.x = msg.x; //Flo skalier die Werte mal richtig, werte sind zwischen 0 und 1
+	vel.y = msg.y;
+	vel.theta = msg.theta;
+	cerr << "vel x " << vel.x << " y " << vel.y << " theta " << vel.theta << endl;
+	proto->sendData(VELOCITY, (unsigned char*) &vel, sizeof(struct Velocity));
 }
