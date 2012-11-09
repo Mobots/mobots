@@ -39,10 +39,11 @@ int main() {
 		}
 
 		struct Velocity v_mobot = {input[0], input[1], input[2]};
+		std::cout << "sending: (" << v_mobot.x << ',' << v_mobot.y << ',' << v_mobot.theta << ')' << std::endl;
 
 		proto.sendData(VELOCITY, (unsigned char*) &v_mobot, sizeof(struct Velocity));
 
-		readPrintfs(com);
+		//readPrintfs(com);
 	}
 
 	return 0;

@@ -39,7 +39,7 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/Pose2D.h>
-#include "mobots_msgs/Pose2DPrio.h"
+#include "mobots_msgs/Twist2D.h"
 #include "path_planner/KeyboardRequest.h"
 
 
@@ -57,14 +57,13 @@
 
 using namespace std;
 
-double linear_vel = 0.01;
-double angular_vel = 0.1;
-double linear_vel_fast = 0.03;
-double angular_vel_fast = 0.3;
+double linear_vel = 0.5;
+double angular_vel = 0.5;
+double linear_vel_fast = 1;
+double angular_vel_fast = 1;
 int mobotID;
 
-ros::Publisher targetPose_pub;
-ros::Subscriber globalPose_sub;
+ros::Publisher velocity_pub;
 ros::ServiceClient client;
 ros::NodeHandle* nh;
 
@@ -81,6 +80,11 @@ void siginthandler(int param){
 	if(!client.call(req, res))
 		ROS_WARN("[mobot_keyboard_teleop] No path_planner found while detaching teleop");
 	tcsetattr(kfd, TCSANOW, &cooked);
+	mobots_msgs::Twist2D msg;
+	msg.x = -1;
+	msg.y = -1;
+	msg.theta = -1;
+	velocity_pub.publish(msg);
 	exit(1);
 }
 
@@ -96,7 +100,7 @@ int main(int argc, char** argv){
 	string waypointPath;
 	string globalPosePath;
 	stringstream ss;
-	ss << "/mobot" << mobotID << "/waypoint_rel";
+	ss << "/mobot" << mobotID << "/velocity";
 	waypointPath = ss.str();
 	/*ss.clear();
 	ss.str("");
@@ -115,7 +119,7 @@ int main(int argc, char** argv){
 		ROS_WARN("[%s] No path_planner found while attaching teleop", namess.str().c_str());
 	}
 	globalPosePath = ss.str();
-    targetPose_pub = nh->advertise<mobots_msgs::Pose2DPrio>(ss.str(), 2);
+	velocity_pub = nh->advertise<mobots_msgs::Twist2D>(ss.str(), 2);
 	cout << "paths: " << endl << waypointPath << endl;
 	signal(SIGINT, siginthandler);
   //boost::thread t = boost::thread(keyboardLoop);
@@ -163,7 +167,7 @@ void keyboardLoop(){
     // get the next event from the keyboard
     int num;
     
-    if((num = poll(&ufd, 1, 250)) < 0){
+    if((num = poll(&ufd, 1, 500)) < 0){
       perror("poll():");
       return;
     }
@@ -175,7 +179,13 @@ void keyboardLoop(){
     }
     else{
       if (dirty == true){
-	  dirty = false;
+				mobots_msgs::Twist2D pub_pose;
+				pub_pose.x = 0;
+				pub_pose.y = 0;
+				pub_pose.theta = 0;
+				velocity_pub.publish(pub_pose);
+				cout << "stopping robot" << endl;
+				dirty = false;
       }
       continue;
     }
@@ -236,12 +246,11 @@ void keyboardLoop(){
 	  turn = 0;
 	  break;*/
     }
-    mobots_msgs::Pose2DPrio pub_pose;
-    pub_pose.pose.x = /*currentPosition.x + (heading)**/speed*max_tv;
-    pub_pose.pose.y = /*currentPosition.y + (heading)**/0;
-    pub_pose.pose.theta =/*currentPosition.theta +*/ turn*max_rv;
-    pub_pose.prio = 0;
+    mobots_msgs::Twist2D pub_pose;
+    pub_pose.x = /*currentPosition.x + (heading)**/speed*max_tv;
+    pub_pose.y = /*currentPosition.y + (heading)**/0;
+    pub_pose.theta =/*currentPosition.theta +*/ turn*max_rv;
 		//cout << pub_pose.pose.x << " and " << speed*max_tv << endl;
-	 targetPose_pub.publish(pub_pose);
+	 velocity_pub.publish(pub_pose);
   }
 }

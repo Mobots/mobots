@@ -43,7 +43,6 @@ void OrbFeaturesFinder::computeFeatureSet(const Mat& image, FeatureSet& features
 		  features.keyPoints[i].pt.x -=  halfWidth;
 			features.keyPoints[i].pt.y -=  halfHeight;
 	}
-
   moduleEnded();
 }
 
