@@ -214,7 +214,7 @@ void relPoseCallback(const mobots_msgs::Pose2DPrio& msg){
 		next.pose = *it;
   }
   double cost = cos(globalPose.theta);
-  double sint = sin(globalPose.theta);
+  double sint=sin(globalPose.theta);
   next.pose.x += cost*msg.pose.x - sint*msg.pose.y;
   next.pose.y += sint*msg.pose.x + cost*msg.pose.y;
   next.pose.theta += msg.pose.theta;
@@ -270,6 +270,15 @@ void regel()
     } else {
         eTheta =  currentTargetPose.theta - globalPose.theta;
     }
+	//transform to mobot coordinate system
+	//------------------------------------------
+	double eXTemp = eX;
+	double eYTemp = eY;
+	 double cost = cos(globalPose.theta);
+  double sint=sin(globalPose.theta);
+  eX = cost*eXTemp - sint*eYTemp;
+  eY = sint*eXTemp + cost*eYTemp;
+	//.------------------------------------------
     correctAngle(eTheta);    // correct with 2Pi problem: (this also guarentees to turn optimal)
     if (eX < minS && eY < minS && eTheta*radiusInnen < minDegree*(M_PI * radiusInnen / 180))
     { //Ziel erreicht
