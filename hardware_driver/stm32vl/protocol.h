@@ -6,35 +6,30 @@
 
 enum PROTOCOL_IDS
 {
-    ACK = 0,
-    NACK,
-    SET_POINT,
-    SET_TRAJEKTORY,
-    REQUEST,
-    WARNING,
-    SensorData_All,
-    SensorData_DeltaVal,
-    Servo,
     VELOCITY,
+    SERVO_SPEED,
+    MOUSE_DATA,
     NUM_IDS // muss immer an letzter stelle stehen
 };
 
-typedef enum{
-	MouseData_All = 0,
-	MouseData_DeltaVal
-} REQUEST_TYP;
-
-typedef enum{
-	UnknownRequest = 0,
-	UnknownPointFormat,
-	UnknownTrajektory,
-	UnknownWarning
-} WARNING_TYP;
-
-struct Request
+struct Velocity
 {
-	REQUEST_TYP req_typ;
-};
+	float x;
+	float y;
+	float theta;
+} __attribute__((packed)) __attribute__((__may_alias__));
+
+struct ServoSpeed
+{
+	float v[3]; // v0, v1, v2
+} __attribute__((packed)) __attribute__((__may_alias__));
+
+struct MouseData
+{
+	float delta_x;
+	float delta_y;
+	float delta_theta;
+} __attribute__ ((packed)) __attribute__((__may_alias__));
 
 struct ProtocolHeader
 {
@@ -43,13 +38,7 @@ struct ProtocolHeader
     enum PROTOCOL_IDS id;
     unsigned short payloadCRC;
     unsigned short headerCRC;
-}__attribute__((packed)) __attribute__((__may_alias__));
-
-struct Mouse_Data_DeltaValOut {
-	float delta_x;
-	float delta_y;
-	float delta_theta;
-}__attribute__ ((packed)) __attribute__((__may_alias__));
+} __attribute__((packed)) __attribute__((__may_alias__));
 
 
 void protocol_init(bool crc);

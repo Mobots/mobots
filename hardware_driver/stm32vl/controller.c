@@ -61,17 +61,17 @@ brechnet aus den übergebenen x-, y-, theta-werten die geschwindigkeit für jede
  */
 void omniwheelTransformation(struct Velocity * const velocity, struct ServoSpeed * const servo_speed)
 {
-	static const float R = 0.1; // in m
+	static const float R = 1; // in m
 
 	/* Die Eingabewerte werden mit diesem Faktor herunterskaliert, um die maximal möglichen "Verluste" der Omniwheelanordnung zu berücksichtigen. */
 	static const float scaler = 0.5 + M_SQRT3/2;
 
-	velocity->x *= scaler;
-	velocity->y *= scaler;
+	velocity->x /= scaler;
+	velocity->y /= scaler;
 
-	servo_speed->v[0] = velocity->x - velocity->theta * R;
-	servo_speed->v[1] = -0.5 * velocity->y + M_SQRT3/2 * velocity->y - velocity->theta * R;
-	servo_speed->v[2] = -0.5 * velocity->y - M_SQRT3/2 * velocity->y - velocity->theta * R;
+	servo_speed->v[0] =        velocity->x                           - velocity->theta * R;
+	servo_speed->v[1] = -0.5 * velocity->x + M_SQRT3/2 * velocity->y - velocity->theta * R;
+	servo_speed->v[2] = -0.5 * velocity->x - M_SQRT3/2 * velocity->y - velocity->theta * R;
 
 	return;
 

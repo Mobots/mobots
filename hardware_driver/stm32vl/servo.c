@@ -5,11 +5,11 @@
  *      Author: simon
  */
 
+#include "servo.h"
+
 #include "stm32f10x_gpio.h"
 #include "stm32f10x_tim.h"
 #include "stm32f10x_rcc.h"
-#include "servo.h"
-
 
 
 void servo_init()
@@ -60,7 +60,7 @@ void servo_init()
 	TIM_Cmd(TIM4, ENABLE);
 }
 
-void set(const struct ServoSpeed * const servo_speed)
+void servo_set(const struct ServoSpeed * const servo_speed)
 {
 	int value[3];
 
@@ -73,26 +73,4 @@ void set(const struct ServoSpeed * const servo_speed)
 	TIM_SetCompare1(TIM4, value[0]);
 	TIM_SetCompare2(TIM4, value[1]);
 	TIM_SetCompare3(TIM4, value[2]);
-}
-void servo_setAngle(enum Servos servo, int value)
-{
-	//1,3 ms <-> 1,7 ms
-
-	assert_param(value >= -1000);
-	assert_param(value <= 1000);
-
-	int valueIntern = 3000 + value * 2 / 5; //1,5ms / 500ns = 3000,
-
-	switch (servo)
-	{
-	case Servo_1:
-		TIM_SetCompare1(TIM4, valueIntern);
-		break;
-	case Servo_2:
-		TIM_SetCompare2(TIM4, valueIntern);
-		break;
-	case Servo_3:
-		TIM_SetCompare3(TIM4, valueIntern);
-		break;
-	}
 }

@@ -2,11 +2,10 @@
 #define COMPROTOCOL_HPP
 
 #include "Communication.hpp"
+
 extern "C" {
 #include "../protocol.h"
-#include "../mousesensor.h"
 #include "../crc.h"
-#include "../servo.h"
 }
 
 class ComProtocol

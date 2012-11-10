@@ -7,6 +7,7 @@
 #ifndef MOUSESENSOR_H_
 #define MOUSESENSOR_H_
 
+#include "protocol.h"
 #include "spi_1.h"
 
 typedef enum {
@@ -28,15 +29,15 @@ struct Mouse_Data_All {
 	uint8_t s_l;
 	uint8_t fp_h;
 	uint8_t fp_l;
-}__attribute__ ((packed)) __attribute__((__may_alias__));
+} __attribute__ ((packed)) __attribute__((__may_alias__));
 
 
-struct Mouse_Data_DeltaVal {
-	int delta_x1;
-	int delta_y1;
-	int delta_x2;
-	int delta_y2;
-}__attribute__ ((packed)) __attribute__((__may_alias__));
+struct DualMouseData {
+	int x1;
+	int y1;
+	int x2;
+	int y2;
+} __attribute__ ((packed)) __attribute__((__may_alias__));
 
 
 
@@ -88,11 +89,12 @@ struct Mouse_Data_DeltaVal {
 #define REG_Pixel_Burst                          0x64
 
 extern volatile struct Mouse_Data_All mouse_data;
-extern volatile struct Mouse_Data_DeltaVal delta_vals;
+extern volatile struct DualMouseData mouse_integral;
 
 extern DATA_STAT spi1_datastat;
 extern DATA_STAT spi2_datastat;
 
 int Sensor_init(SPI spi);
+void mouse_transformation(const struct DualMouseData * const dual, struct MouseData * const dataOut);
 
 #endif /* MOUSESENSOR_H_ */
