@@ -16,6 +16,7 @@
     <!-- only works if usb_cam is running on the mobots -->
     <!--<node name="camView0" pkg="image_view" type="image_view" args="image:=/mobot0/usb_cam/image_raw"/>
     <node name="camView1" pkg="image_view" type="image_view" args="image:=/mobot1/usb_cam/image_raw"/>
-    <node name="camView2" pkg="image_view" type="image_view" args="image:=/mobot2/usb_cam/image_raw"/>-->
+    <node name="camView2" pkg="image_view" type="image_view" args="image:=/mobot2/usb_cam/image_raw"/>
+		<include file="$(find shutter)/launch/usb_cam.launch" />-->
     
 </launch>

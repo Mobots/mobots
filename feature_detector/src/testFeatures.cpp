@@ -87,7 +87,7 @@ void checkResult(){
 	 waitKey(0);
     return;
   }
-	imshow("good Matches with ransac", good_matches_r);
+	//imshow("good Matches with ransac", good_matches_r);
 	//imshow("good Matches", good_matches);
 
   /*cout << "deltaX " << delta.x << endl;
@@ -96,13 +96,39 @@ void checkResult(){
   Mat aff;*/
 	Mat aff;
   
-  findRotationMatrix2D(Point2d(gimage2.cols/2, gimage2.rows/2), -result.delta.theta, aff);
+  findRotationMatrix2D(Point2d(gimage2.cols/2, gimage2.rows/2), result.delta.theta, aff);
+	Point2f center(gimage2.cols/2, gimage2.rows/2);
+	Mat rotMatrix = getRotationMatrix2D(center, -result.delta.theta*180/M_PI, 1);
+	Mat g2;
+	warpAffine(gimage2, g2, rotMatrix, gimage2.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+	Point2f p1[3];
+	p1[0] = Point2f(-1, 0);
+	p1[1] = Point2f(0, 1);
+	p1[2] = Point2f(1, 0);
+	Point2f p2[3];
+	for(int i = 0; i < 3; i++){
+		p2[i].x = p1[i].x + result.delta.x;// - gimage2.rows/2;
+		p2[i].y = p1[i].y + result.delta.y;// + gimage2.cols/2;
+	}
+	Mat shift = getAffineTransform(p1, p2);
+	/*Mat shiftMatrix;
+	shiftMatrix.create(2, 3, CV_64F);
+	shiftMatrix.at<double>(0,0) = 1;
+	shiftMatrix.at<double>(0,1) = 0;
+	shiftMatrix.at<double>(0,2) = -result.delta.x + gimage1.cols/2;
+	shiftMatrix.at<double>(1,0) = 0;
+	shiftMatrix.at<double>(1,1) = 1;
+	shiftMatrix.at<double>(1,2) = -result.delta.y + gimage1.rows/2;*/
+	
 	aff.at<double>(0,2) = result.delta.x;
   aff.at<double>(1,2) = result.delta.y;
+	//rotMatrix.at<double>(0,2) = result.delta.x;
+  //rotMatrix.at<double>(1,2) = result.delta.y;
   cout << "aff:" << endl << aff << endl;
+	cout << "varX: " << result.varX << " varY: " << result.varY << " varTheta: " << result.varTheta << endl;
 	
-	//imshow("mm1", mm1);
-	//imshow("mm2", mm2);
+	imshow("mm1", mm1);
+	imshow("mm2", mm2);
 	//imshow("mega", mega);
 	
   Mat result1;
@@ -112,11 +138,11 @@ void checkResult(){
   Mat outImg1 = result1(Rect(0, 0, gimage1.cols, gimage1.rows));
   Mat outImg21 = result2(Rect(0, 0, gimage1.cols, gimage1.rows));
 
-  warpAffine(gimage2, result1, aff, result1.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  warpAffine(g2, result1, shift, result1.size(), INTER_CUBIC, BORDER_TRANSPARENT);
   gimage1.copyTo(outImg1);
   
   gimage1.copyTo(outImg21);
-  warpAffine(gimage2, result2, aff, result1.size(), INTER_CUBIC, BORDER_TRANSPARENT);
+  warpAffine(g2, result2, shift, result1.size(), INTER_CUBIC, BORDER_TRANSPARENT);
   
 	Mat a = result1.clone();
 	Mat b = result2.clone();

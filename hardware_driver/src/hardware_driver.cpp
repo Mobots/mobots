@@ -329,16 +329,16 @@ double regelFktDreh(double e)
 }
 
 void speedCallback(const mobots_msgs::Twist2D& msg){
-	if(msg.x == -1){ //values are normalized between [0,1]
+	if(msg.x > 1){ //values are normalized between [-1,1]
 		velocityControlled = false;
 		cerr << "disabling velocity control" << endl;
 		return;
 	}
 	velocityControlled = true;
 	struct Velocity vel;
-	vel.x = msg.x; //Flo skalier die Werte mal richtig, werte sind zwischen 0 und 1
-	vel.y = msg.y;
-	vel.theta = msg.theta;
-	cerr << "vel x " << vel.x << " y " << vel.y << " theta " << vel.theta << endl;
+	vel.x = msg.x * 100;
+	vel.y = msg.y * 100;
+	vel.theta = msg.theta * 100;
+	cerr << "vel x " << msg.x << " y " << msg.y << " theta " << msg.theta << endl;
 	proto->sendData(VELOCITY, (unsigned char*) &vel, sizeof(struct Velocity));
 }

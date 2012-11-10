@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+	<node name="usb_cam" pkg="usb_cam" type="usb_cam_node" args="image:=/mobot2/usb_cam/image_raw" ns="$(env ROS_NAMESPACE)">
+		<param name="pixel_format" type="string" value="yuyv" />
+	</node>
+</launch>

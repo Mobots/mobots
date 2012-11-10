@@ -17,3 +17,4 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 rosbuild_add_executable(mobot_keyboard_teleop src/mobot_keyboard_teleop.cpp)
+rosbuild_add_executable(mobot_sixaxis_teleop src/mobot_sixaxis_teleop.cpp)

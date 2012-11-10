@@ -81,9 +81,9 @@ void siginthandler(int param){
 		ROS_WARN("[mobot_keyboard_teleop] No path_planner found while detaching teleop");
 	tcsetattr(kfd, TCSANOW, &cooked);
 	mobots_msgs::Twist2D msg;
-	msg.x = -1;
-	msg.y = -1;
-	msg.theta = -1;
+	msg.x = 100;
+	msg.y = 100;
+	msg.theta = 100;
 	velocity_pub.publish(msg);
 	exit(1);
 }
@@ -127,10 +127,6 @@ int main(int argc, char** argv){
   //t.join();
  //ros::spin();
     keyboardLoop();
-  
-
- 
-  
 
   return(0);
 }
