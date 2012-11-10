@@ -81,6 +81,8 @@ void Shutter2::mouseCallback(const geometry_msgs::Pose2D &mouse_data) {
     dY += mouse_data.y;
     dTheta += mouse_data.theta;
 		
+		std::cout << "dx " << dX << " dy " << dY << std::endl;
+		
 		callbackCount++;
 		if(callbackCount >= Shutter2::MOUSE_THRESHOLD){
 			callbackCount = 0;

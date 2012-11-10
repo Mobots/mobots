@@ -1,4 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-<node name="shutter" pkg="shutter" type="shutter" output="screen" ns="$(env ROS_NAMESPACE)" />
+	<!-- 0 for poll method, 1 for usb_cam -->
+	<param name="/slam/camera_method" type="int" value="0" />
+	<node name="shutter" pkg="shutter" type="shutter" output="screen" ns="$(env ROS_NAMESPACE)" />
 </launch>
