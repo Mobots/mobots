@@ -11,6 +11,7 @@
   <depend package="geometry_msgs" />
   <depend package="mobots_msgs" />
   <depend package="path_planner" />
+	<depend package="ps3joy" />
   <url>http://ros.org/wiki/hardware_driver</url>
 
 </package>

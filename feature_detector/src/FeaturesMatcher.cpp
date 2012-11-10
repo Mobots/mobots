@@ -11,6 +11,8 @@
 #include "mobots_msgs/FeatureSet.h"
 #include "feature_detector/FeaturesMatcher.h"
 #include "feature_detector/FeaturesFinder.h"
+#include "gpc.h"
+#include "gpc.c"
 
 using namespace std;
 using namespace cv;
@@ -99,8 +101,8 @@ static void planeTest(const vector<Point2f>& points1, const vector<Point2f>& poi
 
 Mat affine3;
 Mat affine2;
-//extern Mat gimage1;
-//extern Mat gimage2;
+extern Mat gimage1;
+extern Mat gimage2;
 Mat mm1, mm2;
 Mat mega;
 Mat kpoints1;
@@ -108,6 +110,70 @@ Mat kpoints2;
 Mat good_matches;
 Mat good_matches_r;
 Mat homo;
+
+void getIntersectionRois(const geometry_msgs::Pose2D& delta, Mat& roi1, Mat& roi2){
+	gpc_vertex verticesA[4];
+	gpc_vertex verticesB[4];
+	gpc_vertex_list listA;
+	gpc_vertex_list listB;
+	listA.num_vertices = 4;
+	listB.num_vertices = 4;
+	listA.vertex = verticesA;
+	listB.vertex = verticesB;
+	const int halfWidth = gimage1.cols/2;
+	const int halfHeight = gimage1.rows/2;
+	verticesA[0] = {-halfWidth, +halfHeight};
+	verticesA[1] = {+halfWidth, +halfHeight};
+	verticesA[2] = {+halfWidth, -halfHeight};
+	verticesA[3] = {-halfWidth, -halfHeight};
+	
+	double cost = cos(delta.theta);
+	double sint = sin(delta.theta);
+	cout << "dx " << delta.x << " dy " << delta.y << endl;
+	for(int i = 0; i < 4; i++){
+		double x = verticesA[i].x;
+		double y = verticesA[i].y;
+		verticesB[i].x = x*cost - sint*y + delta.x;
+		verticesB[i].y = x*sint + cost*y + delta.y;
+		cout << "x " << verticesB[i].x << " y " << verticesB[i].y << endl;
+	}
+	
+	gpc_polygon rectA, rectB, rectResult;
+	int hole = 0;
+	rectA.hole = &hole;
+	rectA.num_contours = 1;
+	rectA.contour = &listA;
+	
+	rectB.hole = &hole;
+	rectB.num_contours = 1;
+	rectB.contour = &listB;
+	
+ 	gpc_polygon_clip(GPC_INT, &rectA, &rectB, &rectResult);
+	cout << "gpc count " << rectResult.num_contours << " and list count " << rectResult.contour->num_vertices << endl;;
+	int resultListCount = rectResult.contour->num_vertices;
+	cv::Point* cvPointsA = new cv::Point[resultListCount];
+	cv::Point* cvPointsB = new cv::Point[resultListCount];
+	gpc_vertex_list* resultList = rectResult.contour;
+	for(int i = 0; i < resultListCount; i++){
+		cout << "x " << resultList->vertex[i].x << " y " << resultList->vertex[i].y << endl;
+		cvPointsA[i].x = resultList->vertex[i].x;
+		cvPointsA[i].y = resultList->vertex[i].y;
+		
+		cvPointsB[i].x =  cvPointsA[i].x*cost + cvPointsA[i].y*sint - delta.x + halfWidth;
+		cvPointsB[i].y = -cvPointsA[i].x*sint + cvPointsA[i].y*cost - delta.y + halfHeight;
+		
+		cvPointsA[i].x += halfWidth;
+		cvPointsA[i].y += halfHeight;
+	}
+	roi1 = Mat::zeros(gimage1.size(), CV_8UC1);
+	roi2 = Mat::zeros(gimage1.size(), CV_8UC1);
+	cv::fillConvexPoly(roi1, cvPointsA, resultListCount, cv::Scalar(1));
+  cv::fillConvexPoly(roi2, cvPointsB, resultListCount, cv::Scalar(1));
+  mm1 = gimage1.clone();
+  mm2 = gimage2.clone();
+  cv::fillConvexPoly(mm1, cvPointsA, resultListCount, cv::Scalar(1));
+  cv::fillConvexPoly(mm2, cvPointsB, resultListCount, cv::Scalar(1));
+}
 
 bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, MatchResult& result) const{  
   moduleStarted("cpu matcher + get transform");
@@ -145,7 +211,7 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, M
 	 points2Refined.clear();
   }
   Mat transformMatrix;
-	if(points1Refined.size() >= 7){
+	if(points1Refined.size() >= 10){
 		vector<uchar> status;
 		homo = findHomography(points2Refined, points1Refined, CV_RANSAC, 3, status);
 		for(int i = 0; i < status.size(); i++){
@@ -166,14 +232,57 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, M
 	 || abs(transformMatrix.at<double>(1,0)) > 1.1
 	 || abs(transformMatrix.at<double>(1,1)) > 1.1){
 	 ROS_WARN_STREAM(__PRETTY_FUNCTION__ << ": faulty matrix detected (&rejected)!! : \n" << transformMatrix);
-		//return false;
+		return false;
   }
-  result.delta.theta = -atan2(-transformMatrix.at<double>(0,1), transformMatrix.at<double>(0,0));
+
+
+  result.delta.theta = atan2(-transformMatrix.at<double>(0,1), transformMatrix.at<double>(0,0));
 	if(result.delta.theta < 0)
 		result.delta.theta += 2*M_PI;
 	
 	result.delta.x = transformMatrix.at<double>(0,2);
 	result.delta.y = transformMatrix.at<double>(1,2);
+	
+	  Mat roi1, roi2;
+  getIntersectionRois(result.delta, roi1, roi2);
+	
+		Mat hsv1, hsv2, hsv3, hsv4;
+	Mat mg1, mg2;
+	Mat zeros = Mat::ones(640, 480, CV_8UC1);
+	gimage1.copyTo(mg1, zeros);
+	gimage2.copyTo(mg2, roi2);
+	cout << mg1 << endl;
+	cout << "cols " << mg1.cols << " rows " << mg1.rows << endl;
+	MatND hist1, hist2, hist3, hist4;
+	cvtColor(gimage1, hsv1, CV_BGR2HSV);
+	cvtColor(gimage2, hsv2, CV_BGR2HSV);
+	cvtColor(mg1, hsv3, CV_BGR2HSV);
+	cvtColor(mg2, hsv4, CV_BGR2HSV);
+	// Using 30 bins for hue and 32 for saturation
+	int h_bins = 50; int s_bins = 60;
+	int histSize[] = { h_bins, s_bins };
+	// hue varies from 0 to 256, saturation from 0 to 180
+	float h_ranges[] = { 0, 256 };
+	float s_ranges[] = { 0, 180 };
+
+	const float* ranges[] = { h_ranges, s_ranges };
+	// Use the o-th and 1-st channels
+	int channels[] = { 0, 1 };
+	
+	calcHist( &hsv3, 1, channels, Mat(), hist1, 2, histSize, ranges, true, false );
+	normalize( hist1, hist1, 0, 1, NORM_MINMAX, -1, Mat() );
+	calcHist( &hsv4, 1, channels, Mat(), hist2, 2, histSize, ranges, true, false );
+	normalize( hist2, hist2, 0, 1, NORM_MINMAX, -1, Mat() );
+	double base_base = compareHist( hist1, hist2, 2 );
+	cout << "histogram similarity with rois: " << base_base << endl;
+	
+	calcHist( &hsv1, 1, channels, Mat(), hist3, 2, histSize, ranges, true, false );
+	normalize( hist3, hist3, 0, 1, NORM_MINMAX, -1, Mat() );
+	calcHist( &hsv2, 1, channels, Mat(), hist4, 2, histSize, ranges, true, false );
+	normalize( hist4, hist4, 0, 1, NORM_MINMAX, -1, Mat() );
+	double base_base2 = compareHist( hist3, hist4, 2 );
+	cout << "histogram similarity without rois: " << base_base2 << endl;
+	
 	double confidence = 150/points1Refinedx2.size();
 	confidence = confidence*confidence;
 	if(confidence < 1)
