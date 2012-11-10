@@ -11,6 +11,7 @@
 #include "stm32f10x_gpio.h"
 #include "util.h"
 #include "protocol.h"
+#include <math.h>
 
 volatile struct Mouse_Data_All mouse_data;
 volatile struct DualMouseData mouse_integral = {0, 0, 0, 0};
@@ -25,9 +26,27 @@ DATA_STAT spi2_datastat;
 #define omega -r_innen/r_aussen*y1/sqrt3-r_innen/r_aussen*2/3*x2-r_innen/r_aussen*x1/3
 
 /* gibt die pixel als strecke in meter im mobot_koordinatensystem aus */
-void mouse_transformation(const struct DualMouseData * const dual, struct MouseData * const dataOut) {
+void mouse_transformation(const struct DualMouseData * const dual, struct MouseData * const fusion) {
+	// Workaround: Rückkopplung der Sollwerte als Mausmesswerte
+	fusion->x = last_velocity_command.x * 0.100;
+	fusion->y = last_velocity_command.y * 0.100;
+	fusion->theta = last_velocity_command.theta * 0.100;
 
-	float x1 = -dual->y1;
+
+	/*static const float ALPHA = 30;
+
+	fusion->x = cos(ALPHA) * dual->x2 - sin(ALPHA) * dual->y2;
+	fusion->y = sin(ALPHA) * dual->x2 + cos(ALPHA) * dual->y2;
+	fusion->theta = 0;
+
+	return;
+
+	fusion->x = (dual->x1 + dual->x2) / 2.0;
+	fusion->y = (dual->y1 + dual->y2) / 2.0;
+	fusion->theta = 0;
+	*/
+
+	/*float x1 = -dual->y1;
 	float y1 = -dual->x1;
 	float x2 = -dual->y2;
 
@@ -35,6 +54,7 @@ void mouse_transformation(const struct DualMouseData * const dual, struct MouseD
 	dataOut->x = ((x1 - x2) / 3 - y1 * 1.1547) * 5040 / 0.0254; //TODO correct dpi insert
 	dataOut->y = (x1 - x2) / 3 * 5040 / 0.0254;
 	dataOut->theta = (y1 * 0.5774 + 0.6667 * x2 + x1 * 0.3333) / r_aussen	* 5040 / 0.0254; //TODO eventuell nicht bogenmass
+	*/
 }
 
 

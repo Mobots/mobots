@@ -68,9 +68,16 @@ int main() {
 
 	if (Sensor_init(SPI_1) && Sensor_init(SPI_2)) {
 		//print("Sensor Initialisierung erfolgreich!\n");
-		GPIO_SetBits(GPIOC, GPIO_Pin_9); // läuft der Sensorinit durch geht die grüne led an
 	} else {
 		//print("Sensor Initialisierung fehlgeschlagen!\n");
+		while (1)
+		{
+			GPIO_SetBits(GPIOC, GPIO_Pin_9);
+			delay_ms(50);
+			GPIO_ResetBits(GPIOC, GPIO_Pin_9);
+			delay_ms(50);
+
+		}
 	}
 
 	SysTick_Config(SystemCoreClock / 100); // Systick auf 10 ms stellen
@@ -157,6 +164,11 @@ void assert_failed(uint8_t* file, uint32_t line)
 	/* Infinite loop */
 	while (1)
 	{
+		GPIO_SetBits(GPIOC, GPIO_Pin_9);
+		delay_ms(50);
+		GPIO_ResetBits(GPIOC, GPIO_Pin_9);
+		delay_ms(50);
+
 	}
 }
 #endif

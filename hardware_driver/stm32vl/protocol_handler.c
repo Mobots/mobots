@@ -10,6 +10,8 @@
 #include "servo.h"
 #include "controller.h"
 
+volatile struct Velocity last_velocity_command = {0, 0, 0};
+
 void protocol_defaultHandler(enum PROTOCOL_IDS id, unsigned char *data, unsigned short size) {
 	unsigned short idl = id;
 	printf("Warning, packet with id %hu was not handled \n", idl);
@@ -27,6 +29,9 @@ void setVelocityHandler(enum PROTOCOL_IDS id, unsigned char *data, unsigned shor
 	}
 
 	struct Velocity *velocity = (struct Velocity*) data;
+
+	// Workaround: Rückkopplung der Sollwerte als Mausmesswerte
+	last_velocity_command = *velocity;
 
 	struct ServoSpeed servo_speed;
 	omniwheelTransformation(velocity, &servo_speed);
