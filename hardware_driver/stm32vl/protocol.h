@@ -26,9 +26,9 @@ struct ServoSpeed
 
 struct MouseData
 {
-	float delta_x;
-	float delta_y;
-	float delta_theta;
+	float x;
+	float y;
+	float theta;
 } __attribute__ ((packed)) __attribute__((__may_alias__));
 
 struct ProtocolHeader

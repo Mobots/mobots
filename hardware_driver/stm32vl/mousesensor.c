@@ -32,9 +32,9 @@ void mouse_transformation(const struct DualMouseData * const dual, struct MouseD
 	float x2 = -dual->y2;
 
 	//transform
-	dataOut->delta_x = ((x1 - x2) / 3 - y1 * 1.1547) * 5040 / 0.0254; //TODO correct dpi insert
-	dataOut->delta_y = (x1 - x2) / 3 * 5040 / 0.0254;
-	dataOut->delta_theta = (y1 * 0.5774 + 0.6667 * x2 + x1 * 0.3333) / r_aussen	* 5040 / 0.0254; //TODO eventuell nicht bogenmass
+	dataOut->x = ((x1 - x2) / 3 - y1 * 1.1547) * 5040 / 0.0254; //TODO correct dpi insert
+	dataOut->y = (x1 - x2) / 3 * 5040 / 0.0254;
+	dataOut->theta = (y1 * 0.5774 + 0.6667 * x2 + x1 * 0.3333) / r_aussen	* 5040 / 0.0254; //TODO eventuell nicht bogenmass
 }
 
 

@@ -11,13 +11,9 @@
 #include <iostream>
 extern "C" {
 #include "../protocol.h"
-#include "../mousesensor.h"
 }
 
 
-void protocol_defaultHandler(enum PROTOCOL_IDS id, unsigned char *data,
-		unsigned short size, class Communication* com);
-void setDataValHandler(enum PROTOCOL_IDS id, unsigned char *data,
-		unsigned short size,  Communication* com);
+void protocol_defaultHandler(enum PROTOCOL_IDS id, unsigned char *data, unsigned short size, class Communication* com);
 
 #endif /* PROTOCOL_HANDLER_HPP_ */
