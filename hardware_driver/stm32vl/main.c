@@ -92,12 +92,13 @@ int main() {
 	null.delta_x2 = 0;
 	null.delta_y2 = 0;
 	while (1) {
-		GPIO_SetBits(GPIOC, GPIO_Pin_9);
+		/*GPIO_SetBits(GPIOC, GPIO_Pin_9);
 		delay_ms(500);
 		GPIO_ResetBits(GPIOC, GPIO_Pin_9);
-		delay_ms(500);
+		delay_ms(500);*/
 		protocol_receiveData();
 
+#if 0
 		if (delta_vals.delta_x1 || delta_vals.delta_y1 || delta_vals.delta_x2 || delta_vals.delta_y2) {
 			temp = delta_vals;
 			delta_vals = null;
@@ -105,6 +106,7 @@ int main() {
 			protocol_sendData(SensorData_DeltaVal, (unsigned char*) &out,
 					sizeof(struct Mouse_Data_DeltaValOut));
 		}
+#endif
 	}
 	return 0;
 }

@@ -26,8 +26,6 @@ void setPointHandler(enum PROTOCOL_IDS id, unsigned char *data,
 }
 
 void setVelocityHandler(enum PROTOCOL_IDS id, unsigned char *data, unsigned short size) {
-	GPIO_ResetBits(GPIOC, GPIO_Pin_9);
-
 	if (id != VELOCITY) {
 		print("Error, wrong ID\n");
 		return;

@@ -58,7 +58,7 @@ void omniwheelTransformation(const struct Velocity * const velocity, struct Serv
 
 	servo_speed->v[0] = (velocity->x - velocity->theta) * R;
 	servo_speed->v[1] = -0.5 * velocity->y + cos_120 * velocity->y - velocity->theta * R;
-	servo_speed->v[2] = sin_120 * velocity->y - cos_120 * velocity->y - velocity->theta * R;
+	servo_speed->v[2] = -0.5 * velocity->y - cos_120 * velocity->y - velocity->theta * R;
 
 	return;
 
