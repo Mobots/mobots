@@ -7,6 +7,7 @@
 
 #include "servo.h"
 #include "controller.h"
+#include <math.h>
 
 #if 0
 float eSum1, eSum2, eSum3, tA, kI, kP;
@@ -52,13 +53,25 @@ brechnet aus den übergebenen x-, y-, theta-werten die geschwindigkeit für jede
 
 #endif
 
-void omniwheelTransformation(const struct Velocity * const velocity, struct ServoSpeed * const servo_speed)
+/* Die Funktion rechnet die gewünschte velocity im Koordinatensystem des Mobots auf Gechwindigkeiten für die servos um.
+ *
+ * Wertebereich für die Eingabe:
+ * velocity.x und velocity.y: [-1, 1]
+ * velocity.theta = ?
+ */
+void omniwheelTransformation(struct Velocity * const velocity, struct ServoSpeed * const servo_speed)
 {
 	static const float R = 0.1; // in m
 
-	servo_speed->v[0] = (velocity->x - velocity->theta) * R;
-	servo_speed->v[1] = -0.5 * velocity->y + cos_120 * velocity->y - velocity->theta * R;
-	servo_speed->v[2] = -0.5 * velocity->y - cos_120 * velocity->y - velocity->theta * R;
+	/* Die Eingabewerte werden mit diesem Faktor herunterskaliert, um die maximal möglichen "Verluste" der Omniwheelanordnung zu berücksichtigen. */
+	static const float scaler = 0.5 + M_SQRT3/2;
+
+	velocity->x *= scaler;
+	velocity->y *= scaler;
+
+	servo_speed->v[0] = velocity->x - velocity->theta * R;
+	servo_speed->v[1] = -0.5 * velocity->y + M_SQRT3/2 * velocity->y - velocity->theta * R;
+	servo_speed->v[2] = -0.5 * velocity->y - M_SQRT3/2 * velocity->y - velocity->theta * R;
 
 	return;
 

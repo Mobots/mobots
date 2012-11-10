@@ -8,6 +8,8 @@
 #ifndef SPI_1_H_
 #define SPI_1_H_
 
+#include <stdint.h>
+
 
 typedef enum {
 	SPI_1 = 0,

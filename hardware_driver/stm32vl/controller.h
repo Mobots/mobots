@@ -12,6 +12,6 @@ void setSollV(struct ServoSpeed *sollV);
 void control_init(int delay);
 void control(struct ServoSpeed *vIst);
 
-void omniwheelTransformation(const struct Velocity * const velocity, struct ServoSpeed * const servo_speed);
+void omniwheelTransformation(struct Velocity * const velocity, struct ServoSpeed * const servo_speed);
 
 #endif
