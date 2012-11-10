@@ -42,6 +42,7 @@ int main(int argc, char *argv[]) {
 	UARTCommunication com;
 	ComProtocol protocol(&com);
 	protocol.protocol_init(defaultHandler);
+	protocol.protocol_registerHandler(MOUSE_DATA, mouseDataHandler);
 
 	struct Velocity v_mobot = {0, 0, 0};
 
