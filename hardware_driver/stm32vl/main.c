@@ -32,7 +32,6 @@
 #include "led.h"
 #include "util.h"
 #include "protocol.h"
-#include "engine.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -62,68 +61,67 @@ int main() {
 	SPI_init();
 	delay_ms(100);
 	protocol_init(TRUE);
+
 	servo_init();
-	servo_setAngle(Servo_1, 0);
-	servo_setAngle(Servo_2, 0);
-	servo_setAngle(Servo_3, 0);
+	struct ServoSpeed initial_speed = {{0, 0, 0}};
+	servo_set(&initial_speed);
+
 	if (Sensor_init(SPI_1) && Sensor_init(SPI_2)) {
 		//print("Sensor Initialisierung erfolgreich!\n");
 		GPIO_SetBits(GPIOC, GPIO_Pin_9); // läuft der Sensorinit durch geht die grüne led an
 	} else {
 		//print("Sensor Initialisierung fehlgeschlagen!\n");
 	}
-	SysTick_Config(SystemCoreClock / 200); // Systick auf 10ms stellen
 
-	GPIO_SetBits(GPIOC, GPIO_Pin_8);
+	SysTick_Config(SystemCoreClock / 100); // Systick auf 10 ms stellen
+
+
 	//---------------------------------------------------------------------
 
-	print("Init done\n");
+	print("Initialisation done.\n");
 
-	printf("%d", sizeof(struct Mouse_Data_DeltaVal));
 
-	struct Mouse_Data_DeltaVal temp, null;
-	struct Mouse_Data_DeltaValOut out;
-	temp.delta_x1 = 0;
-	temp.delta_y1 = 0;
-	null.delta_x1 = 0;
-	null.delta_y1 = 0;
-	temp.delta_x2 = 0;
-	temp.delta_y2 = 0;
-	null.delta_x2 = 0;
-	null.delta_y2 = 0;
-	while (1) {
-		/*GPIO_SetBits(GPIOC, GPIO_Pin_9);
-		delay_ms(500);
-		GPIO_ResetBits(GPIOC, GPIO_Pin_9);
-		delay_ms(500);*/
+	while (1)
+	{
 		protocol_receiveData();
-
-#if 0
-		if (delta_vals.delta_x1 || delta_vals.delta_y1 || delta_vals.delta_x2 || delta_vals.delta_y2) {
-			temp = delta_vals;
-			delta_vals = null;
-			transformMouseToCoordinateSystem(&temp,&out);
-			protocol_sendData(SensorData_DeltaVal, (unsigned char*) &out,
-					sizeof(struct Mouse_Data_DeltaValOut));
-		}
-#endif
 	}
+
 	return 0;
 }
 
 void SysTick_Handler() {
-	//time_in_ms++;
+	time_in_ms += 10;
+	if (time_in_ms >= 1000)
+		time_in_ms = 0;
+
 	if (spi_ReadRegister(REG_Motion, SPI_1)) {
-		delta_vals.delta_x1 += (s16) spi_ReadRegister(REG_Delta_X_L, SPI_1)
-				| (s16) (spi_ReadRegister(REG_Delta_X_H, SPI_1) << 8);
-		delta_vals.delta_y1 += (s16) spi_ReadRegister(REG_Delta_Y_L, SPI_1)
-				| (s16) (spi_ReadRegister(REG_Delta_Y_H, SPI_1) << 8);
+		mouse_integral.x1 += (s16) spi_ReadRegister(REG_Delta_X_L, SPI_1)	| (s16) (spi_ReadRegister(REG_Delta_X_H, SPI_1) << 8);
+		mouse_integral.y1 += (s16) spi_ReadRegister(REG_Delta_Y_L, SPI_1)	| (s16) (spi_ReadRegister(REG_Delta_Y_H, SPI_1) << 8);
 	}
 	if (spi_ReadRegister(REG_Motion, SPI_2)) {
-		delta_vals.delta_x2 += (s16) spi_ReadRegister(REG_Delta_X_L, SPI_2)
-				| (s16) (spi_ReadRegister(REG_Delta_X_H, SPI_2) << 8);
-		delta_vals.delta_y2 += (s16) spi_ReadRegister(REG_Delta_Y_L, SPI_2)
-				| (s16) (spi_ReadRegister(REG_Delta_Y_H, SPI_2) << 8);
+		mouse_integral.x2 += (s16) spi_ReadRegister(REG_Delta_X_L, SPI_2)	| (s16) (spi_ReadRegister(REG_Delta_X_H, SPI_2) << 8);
+		mouse_integral.y2 += (s16) spi_ReadRegister(REG_Delta_Y_L, SPI_2)	| (s16) (spi_ReadRegister(REG_Delta_Y_H, SPI_2) << 8);
+	}
+
+	// Alle 100 ms
+	if (time_in_ms % 100 == 0) {
+		static const struct DualMouseData reset = {0, 0, 0, 0};
+		static struct DualMouseData cache = {0, 0, 0, 0};
+		static struct MouseData output = {0, 0, 0};
+
+		cache = mouse_integral;
+	    mouse_integral = reset;
+
+		mouse_transformation(&cache, &output);
+		protocol_sendData(MOUSE_DATA, (unsigned char*) &output, sizeof(struct MouseData));
+	}
+
+	// LED mit 1 Hz blinken lassen
+	if (time_in_ms == 10) {
+		GPIO_SetBits(GPIOC, GPIO_Pin_8);
+	}
+	if (time_in_ms == 510) {
+		GPIO_ResetBits(GPIOC, GPIO_Pin_8);
 	}
 }
 

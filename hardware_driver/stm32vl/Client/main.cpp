@@ -17,12 +17,32 @@ void defaultHandler(enum PROTOCOL_IDS id, unsigned char *data, unsigned short si
 	std::cerr << "no handler specified for id: " << id << std::endl;
 }
 
+
+void mouseDataHandler(enum PROTOCOL_IDS id, unsigned char *data, unsigned short size, Communication* com) {
+	if (id != MOUSE_DATA) {
+		std::cout << "Error, wrong ID\n" << std::endl;
+		return;
+	}
+
+	if (size != sizeof(struct MouseData)) {
+		std::cout << "Error, wrong size\n" << std::endl;
+		return;
+	}
+
+	struct MouseData *mouse = (struct MouseData*) data;
+
+	std::cout << "mouse->x: " << mouse->x << std::endl;
+	std::cout << "mouse->y: " << mouse->y << std::endl;
+	std::cout << "mouse->theta:" << mouse->theta << std::endl << std::endl;
+}
+
+
 int main(int argc, char *argv[]) {
 
-	Communication* com;
-	com = new UARTCommunication();
-	ComProtocol proto(com);
-	proto.protocol_init(defaultHandler);
+	UARTCommunication com;
+	ComProtocol protocol(&com);
+	protocol.protocol_init(defaultHandler);
+	protocol.protocol_registerHandler(MOUSE_DATA, mouseDataHandler);
 
 	struct Velocity v_mobot = {0, 0, 0};
 
@@ -42,29 +62,12 @@ int main(int argc, char *argv[]) {
 	}
 
 	std::cout << "sending: v_mobot = (" << v_mobot.x << ',' << v_mobot.y << ',' << v_mobot.theta << ")" << std::endl;
-	proto.sendData(VELOCITY, (unsigned char*) &v_mobot, sizeof(struct Velocity));
+	protocol.sendData(VELOCITY, (unsigned char*) &v_mobot, sizeof(struct Velocity));
 
-
-	/*while (1)
+	while (1)
 	{
-
-		usleep(10000);
-		//proto.receiveData();
-		float input[3] = {0.0, 0.0, 0.0};
-
-		for(int i = 0; i < 3; i++)
-		{
-			std::cout << "input[" << i << "]" << std::endl;
-			std::cin >> input[i];
-		}
-
-		struct Velocity v_mobot = {input[0], input[1], input[2]};
-		std::cout << "sending: (" << v_mobot.x << ',' << v_mobot.y << ',' << v_mobot.theta << " schnauze )" << std::endl;
-
-		proto.sendData(VELOCITY, (unsigned char*) &v_mobot, sizeof(struct Velocity));
-
-		//readPrintfs(com);
-	}*/
+		protocol.receiveData();
+	}
 
 	return EXIT_SUCCESS;
 }
