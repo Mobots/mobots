@@ -10,6 +10,7 @@
 #include "printf.h"
 #include "stm32f10x_gpio.h"
 #include "util.h"
+#include "protocol.h"
 
 volatile struct Mouse_Data_All mouse_data;
 volatile struct Mouse_Data_DeltaVal delta_vals = { 0, 0, 0, 0};

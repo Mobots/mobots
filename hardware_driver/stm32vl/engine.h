@@ -32,9 +32,10 @@ struct Trajectory {
 }__attribute__ ((packed)) __attribute__((__may_alias__));
 
 
-void transformToServoSpeed(struct Mouse_Data_DeltaVal* data,
+/*void transformToServoSpeed(struct Mouse_Data_DeltaVal* data,
 		struct ServoSpeed* sOut, float totzeit);
 void transformMouseToCoordinateSystem(struct Mouse_Data_DeltaVal* data,
 		struct Mouse_Data_DeltaValOut* dataOut);
+*/
 
 #endif /* ENGINE_H_ */

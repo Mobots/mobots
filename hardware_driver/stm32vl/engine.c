@@ -13,6 +13,7 @@
 #define sqrt3 1,73205081
 #define omega -r_innen/r_aussen*y1/sqrt3-r_innen/r_aussen*2/3*x2-r_innen/r_aussen*x1/3
 
+/*
 ////gibt die pixel als strecke in meter im mobot_koordinatensystem aus
 void transformMouseToCoordinateSystem(struct Mouse_Data_DeltaVal* data,
 		struct Mouse_Data_DeltaValOut* dataOut) {
@@ -27,8 +28,9 @@ void transformMouseToCoordinateSystem(struct Mouse_Data_DeltaVal* data,
 			* 5040 / 0.0254; //TODO eventuell nicht bogenmass
 
 }
+*/
 
-void transformToServoSpeed(struct Mouse_Data_DeltaVal* data,
+/*void transformToServoSpeed(struct Mouse_Data_DeltaVal* data,
 		struct ServoSpeed* sOut, float totzeit) {
 
 	float x1 = -data->delta_y1;
@@ -44,4 +46,4 @@ void transformToServoSpeed(struct Mouse_Data_DeltaVal* data,
 	sOut->s3 = (-y1 / sqrt3 - 2 / 3 * x1 + 2 / 3 * x2 + omega) / v_max * 1000
 			/ totzeit; //TODO, nicht sicher, ob richtig abgeschrieben
 
-}
+}*/

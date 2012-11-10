@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <boost/lexical_cast.hpp>
 
 void readPrintfs(Communication* com) {
 	unsigned char buf;
@@ -16,16 +17,35 @@ void defaultHandler(enum PROTOCOL_IDS id, unsigned char *data, unsigned short si
 	std::cerr << "no handler specified for id: " << id << std::endl;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
 
 	Communication* com;
 	com = new UARTCommunication();
 	ComProtocol proto(com);
 	proto.protocol_init(defaultHandler);
 
-	std::cout << "begin\n" << std::flush;
+	struct Velocity v_mobot = {0, 0, 0};
 
-	while (1)
+	switch(argc)
+	{
+	case 1:
+		v_mobot = {0, 0, 0};
+		break;
+
+	case 1+3:
+		v_mobot = { boost::lexical_cast<float>(argv[1]), boost::lexical_cast<float>(argv[2]), boost::lexical_cast<float>(argv[3]) };
+		break;
+
+	default:
+		std::cout << "Wrong number of arguments!" << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	std::cout << "sending: v_mobot = (" << v_mobot.x << ',' << v_mobot.y << ',' << v_mobot.theta << ")" << std::endl;
+	proto.sendData(VELOCITY, (unsigned char*) &v_mobot, sizeof(struct Velocity));
+
+
+	/*while (1)
 	{
 
 		usleep(10000);
@@ -44,8 +64,8 @@ int main() {
 		proto.sendData(VELOCITY, (unsigned char*) &v_mobot, sizeof(struct Velocity));
 
 		//readPrintfs(com);
-	}
+	}*/
 
-	return 0;
+	return EXIT_SUCCESS;
 }
 

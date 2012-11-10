@@ -13,7 +13,7 @@ typedef enum {
 	OUTDATED = 0, UPDATED
 } DATA_STAT;
 
-/*struct Mouse_Data_All {
+struct Mouse_Data_All {
 	uint8_t motion;
 	uint8_t observation;
 	uint8_t d_xl;
@@ -29,7 +29,7 @@ typedef enum {
 	uint8_t fp_h;
 	uint8_t fp_l;
 }__attribute__ ((packed)) __attribute__((__may_alias__));
-*/
+
 
 struct Mouse_Data_DeltaVal {
 	int delta_x1;
