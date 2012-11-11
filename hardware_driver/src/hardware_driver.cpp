@@ -119,9 +119,9 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		if (POST_EVERY_X_MESSAGE == counter) { //yoda condition ftw
 			counter=0;
 			geometry_msgs::Pose2D mouse;
-			mouse.x = delta_vals->x;
-			mouse.y = delta_vals->y;
-			mouse.theta = delta_vals->theta;
+			mouse.x = delta_vals->x/100;
+			mouse.y = delta_vals->y/100;
+			mouse.theta = delta_vals->theta/100;
 			mousePosePub.publish(mouse);
 			globalPosePub.publish(globalPose);
 		}
