@@ -87,7 +87,7 @@ void Shutter2::mouseCallback(const geometry_msgs::Pose2D &mouse_data) {
 		if(callbackCount >= Shutter2::MOUSE_THRESHOLD){
 			callbackCount = 0;
 			double currentOverlap = g.checkPicture(dX, dY, dTheta); //entspricht der derzeitigen überlappung
-			std::cout << "dx " << dX << " dy " << dY << " overlap " << currentOverlap << " need < " << overlap << std::endl;
+			std::cout << "dx " << dX << " dy " << dY  << " dTheta " << dTheta << " overlap " << currentOverlap << " need < " << overlap << std::endl;
 			if (currentOverlap < overlap) {
 				std::cout << __FILE__ << "shuttering" << std::endl;
 				grabImageMsg(ipid);
