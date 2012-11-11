@@ -2,7 +2,7 @@
 #include "shutter.h"
 #include <sensor_msgs/fill_image.h>
 
-const int Shutter2::MOUSE_THRESHOLD = 5;
+const int Shutter2::MOUSE_THRESHOLD = 2;
 const int Shutter2::CAM_QUERY_THRESHOLD = 6;
 
 Shutter2::Shutter2(int mobotID, double l, double b): Shutter(mobotID, l, b){
