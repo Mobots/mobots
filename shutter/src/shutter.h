@@ -9,10 +9,28 @@
 
 #pragma once
 
+static inline bool fillImage(sensor_msgs::Image& image,
+						const std::string& encoding_arg,
+						uint32_t rows_arg,
+						uint32_t cols_arg,
+						uint32_t step_arg,
+						const void* data_arg){
+	image.encoding = encoding_arg;
+	image.height   = rows_arg;
+	image.width    = cols_arg;
+	image.step     = step_arg;
+	size_t st0 = (step_arg * rows_arg);
+	image.data.resize(st0);
+	memcpy(&image.data[0], data_arg, st0);
+
+	image.is_bigendian = 0;
+	return true;
+}
+
 class Shutter {
-
-
+	
 public:
+	
     Shutter(int mobotID, double l, double b);
     virtual ~Shutter();
     virtual void startShutter();

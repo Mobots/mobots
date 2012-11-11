@@ -1,5 +1,4 @@
 #include "shutter.h"
-#include <sensor_msgs/fill_image.h>
 
 const int Shutter2::CAM_QUERY_THRESHOLD = 6;
 

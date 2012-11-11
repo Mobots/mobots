@@ -1,7 +1,6 @@
 #include "shutter.h"
 #include <iostream>
 #include <pthread.h>
-#include <sensor_msgs/fill_image.h>
 
 using namespace std;
 
