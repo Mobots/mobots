@@ -1,5 +1,8 @@
 #include "shutter.h"
 #include "mobots_common/utils.h"
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 
 int main(int argc, char** argv){
 	ros::init(argc, argv, "shutter");
@@ -54,6 +57,13 @@ void Shutter::startShutter()
 
 }
 
+void Shutter::deflate(){
+	ipid.image.encoding = std::string("png");
+	std::vector<uchar> data;
+	cv::imencode(std::string(".png"), ipid.image.data, data);
+	ipid.image.data = data;
+}
+
 bool Shutter::getDelta(shutter::delta::Request &req, shutter::delta::Response &res)
 {
   res.x = dX;
@@ -72,6 +82,7 @@ void Shutter::publishMessage(double x, double y, double theta, const sensor_msgs
 
     ipid.pose = pose;
 	 ipid.id.image_id = imageID;
+	 deflate();
     poseImage_pub.publish(ipid);
 	 imageID++;
 }

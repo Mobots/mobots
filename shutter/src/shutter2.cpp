@@ -67,6 +67,7 @@ inline void Shutter2::publishMessage(double x, double y, double theta) {
 
 	ipid.pose = pose;
 	ipid.id.image_id = imageID;
+	deflate();
 	poseImage_pub.publish(ipid);
 	imageID++;
 }
