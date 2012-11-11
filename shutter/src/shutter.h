@@ -41,7 +41,7 @@ public:
 	 * treshold - run the geometry overlap check after every 'treshold' times the 
 	 * mouse callback has been called
 	 */
-		static const int MOUSE_THRESHOLD = 1;
+		static const int MOUSE_THRESHOLD = 0;
 		
 protected:
     ros::Subscriber pose_sub;
