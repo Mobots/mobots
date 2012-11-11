@@ -11,17 +11,22 @@ int main(int argc, char** argv){
 	if(!mobots_common::utils::parseNamespace(nh.getNamespace(), mobotID))
 		ROS_ERROR("%s mobotID cannot be parsed from namespace: %s", __PRETTY_FUNCTION__, nh.getNamespace().c_str());
 
-	int method = 0; //0 = poll, 1 = usb_cam
+	int method = 2; //0 = poll, 1 = usb_cam
 	ros::param::get("/shutter/camera_method", method);
 	//Shutter shutter(0,1.06805,0.80104); //l/b für Simulator: 1.06805,0.80104
 	//Shutter shutter(mobotID, 3000.06805, 2500.80104);
-	if(method == 0){
-		Shutter2 shutter(mobotID, 3000.06805, 2500.80104);
-		shutter.startShutter();
-	}else{
-		Shutter shutter(mobotID, 3000.06805, 2500.80104);
-		shutter.startShutter();
+	Shutter* shutter;
+	switch(method){
+		case 0:
+			shutter = new Shutter(mobotID, 0, 0);
+			break;
+		case 1:
+			shutter = new Shutter2(mobotID, 0, 0);
+		case 2:
+			shutter = new Shutter3(mobotID, 0, 0);
+			break;
 	}
+	shutter->startShutter();
 }
 
 Shutter::Shutter(int mobotID, double l, double b): mobotID(mobotID), g(l,b) //Instanzierung von Geometry

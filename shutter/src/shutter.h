@@ -5,17 +5,24 @@
 #include <mobots_msgs/ImageWithPoseAndID.h>
 #include <math.h>
 #include "geometry.h"
-#include "usb_cam/usb_cam.h"
+#include "libusb_cam/usb_cam.h"
 
 #pragma once
 
 class Shutter {
+
 
 public:
     Shutter(int mobotID, double l, double b);
     virtual ~Shutter();
     virtual void startShutter();
 
+				/**
+	 * treshold - run the geometry overlap check after every 'treshold' times the 
+	 * mouse callback has been called
+	 */
+		static const int MOUSE_THRESHOLD = 3;
+		
 protected:
     ros::Subscriber pose_sub;
     ros::Subscriber image_sub;
@@ -52,11 +59,6 @@ public:
     virtual void startShutter();
 		
 private:
-	/**
-	 * treshold - run the geometry overlap check after every 'treshold' times the 
-	 * mouse callback has been called
-	 */
-		static const int MOUSE_THRESHOLD;
 		/**
 		 * attempt at least CAM_QUERY_THRESHOLD-times to query an image from webcam to get 
 		 * a valid pictures (bug in v4l2?)
@@ -69,4 +71,22 @@ private:
 		virtual void mouseCallback(const geometry_msgs::Pose2D &mouse_data);
 				//getDelta-Service:
 		virtual bool getDelta(shutter::delta::Request &req, shutter::delta::Response &res);
+};
+
+/**
+ * ftw
+ */
+class Shutter3 : public Shutter , public UsbCamErrorHandler{
+public:	
+    Shutter3(int mobotID, double l, double b);
+		void handleError(const char* error);
+		void initCamera();
+		virtual ~Shutter3();
+    virtual void startShutter();
+		
+private:
+		int imageWidth, imageHeight;
+		int callbackCount;
+		inline void publishMessage(double x, double y, double theta);
+		virtual void mouseCallback(const geometry_msgs::Pose2D &mouse_data);
 };

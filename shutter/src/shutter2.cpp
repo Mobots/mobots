@@ -1,8 +1,6 @@
-#include "usb_cam/usb_cam.h"
 #include "shutter.h"
 #include <sensor_msgs/fill_image.h>
 
-const int Shutter2::MOUSE_THRESHOLD = 2;
 const int Shutter2::CAM_QUERY_THRESHOLD = 6;
 
 Shutter2::Shutter2(int mobotID, double l, double b): Shutter(mobotID, l, b){
@@ -90,7 +88,7 @@ void Shutter2::mouseCallback(const geometry_msgs::Pose2D &mouse_data) {
     dTheta += mouse_data.theta;
 		
 		callbackCount++;
-		if(callbackCount >= Shutter2::MOUSE_THRESHOLD){
+		if(callbackCount >= Shutter::MOUSE_THRESHOLD){
 			callbackCount = 0;
 			double currentOverlap = g.checkPicture(dX, dY, dTheta); //entspricht der derzeitigen überlappung
 			std::cout << "dx " << dX << " dy " << dY  << " dTheta " << dTheta << " overlap " << currentOverlap << " need < " << overlap << std::endl;
