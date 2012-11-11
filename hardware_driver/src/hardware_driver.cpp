@@ -29,7 +29,7 @@ void startWeg()
     speedSub = nh->subscribe("velocity", 5, speedCallback);
 
     mousePosePub = nh->advertise<geometry_msgs::Pose2D>("mouse", 5);
-    //globalPosePub = nh->advertise<geometry_msgs::Pose2D>("pose", 2);
+    globalPosePub = nh->advertise<geometry_msgs::Pose2D>("pose", 2);
     infraredScanPub = nh->advertise<mobots_msgs::InfraredScan>("infrared", 5); //TODO Handler dafür
 
 
