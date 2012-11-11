@@ -26,9 +26,6 @@ rosbuild_add_boost_directories()
 #SET_TARGET_PROPERTIES(geometry PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/lib/libgeometry32.a)
 #endif()
 
-EXEC_PROGRAM("rosstack find mobots" OUTPUT_VARIABLE MOBOT_PATH)
-include_directories(${MOBOT_PATH}/util/include/)
-
 rosbuild_add_executable(shutter src/shutter.cpp src/shutter2.cpp src/geometry.cpp)
 #rosbuild_add_executable(manualShutter src/manualShutter.cpp)
 #rosbuild_link_boost(shutter geometry)

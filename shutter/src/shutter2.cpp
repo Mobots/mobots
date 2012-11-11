@@ -6,11 +6,6 @@ const int Shutter2::MOUSE_THRESHOLD = 2;
 const int Shutter2::CAM_QUERY_THRESHOLD = 6;
 
 Shutter2::Shutter2(int mobotID, double l, double b): Shutter(mobotID, l, b){
-	camera_image_ = usb_cam_camera_start("/dev/video0",
-			IO_METHOD_MMAP,
-			PIXEL_FORMAT_YUYV,
-			640,
-			480);
 }
 
 Shutter2::~Shutter2(){
@@ -26,6 +21,16 @@ void Shutter2::startShutter(){
     
 		overlap = 0.3;
 		ros::param::get("/shutter/overlap", overlap);
+		int width = 640;
+		int height = 480;
+		ros::param::get("/shutter/height", height);
+		ros::param::get("/shutter/width", width);
+		
+			camera_image_ = usb_cam_camera_start("/dev/video0",
+			IO_METHOD_MMAP,
+			PIXEL_FORMAT_YUYV,
+			width,
+			height);
 		
     dX = 0;
     dY = 0;
@@ -67,7 +72,7 @@ inline void Shutter2::publishMessage(double x, double y, double theta) {
 
 	ipid.pose = pose;
 	ipid.id.image_id = imageID;
-	deflate();
+	//deflate();
 	poseImage_pub.publish(ipid);
 	imageID++;
 }
