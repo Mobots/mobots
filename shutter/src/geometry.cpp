@@ -55,8 +55,8 @@ Geometry::Geometry(double l, double b)
 	
 	a = mobots_common::constants::image_width_in_meters*mobots_common::constants::image_height_in_meters;
 	double c[5][2];
-	const int halfWidth = mobots_common::constants::image_width_in_meters/2;
-	const int halfHeight = mobots_common::constants::image_height_in_meters/2;
+	const double halfWidth = mobots_common::constants::image_width_in_meters/2;
+	const double halfHeight = mobots_common::constants::image_height_in_meters/2;
 	c[0][0] = -halfWidth;
 	c[0][1] = halfHeight;
 
@@ -101,8 +101,8 @@ polygon calcPol(double dx, double dy, double angle)
     double c[5][2];
 		double cost = cos(angle);
 		double sint = sin(angle);
-		const int halfWidth = mobots_common::constants::image_width_in_meters/2;
-		const int halfHeight = mobots_common::constants::image_height_in_meters/2;
+		const double halfWidth = mobots_common::constants::image_width_in_meters/2;
+		const double halfHeight = mobots_common::constants::image_height_in_meters/2;
 		c[0][0] = -halfWidth;
 		c[0][1] = halfHeight;
 	
