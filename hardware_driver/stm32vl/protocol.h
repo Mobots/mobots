@@ -1,7 +1,6 @@
 #ifndef _PROTOCOL_H__
 #define _PROTOCOL_H__
 
-//#include "engine.h"
 #include "stm32f10x.h"
 
 enum PROTOCOL_IDS
@@ -18,6 +17,8 @@ struct Velocity
 	float y;
 	float theta;
 } __attribute__((packed)) __attribute__((__may_alias__));
+
+extern volatile struct Velocity last_velocity_command;
 
 struct ServoSpeed
 {
