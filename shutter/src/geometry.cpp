@@ -7,7 +7,7 @@
 #include <boost/geometry/geometries/adapted/c_array.hpp>
 
 typedef boost::geometry::model::d2::point_xy<double> point;
-typedef boost::geometry::model::polygon<point, true> polygon;
+typedef boost::geometry::model::polygon<point> polygon;
 
 using namespace boost::geometry;
 
@@ -73,6 +73,7 @@ Geometry::Geometry(double l, double b)
 	c[4][1] = c[0][1];
 	
 	append(referencePoly, c);
+	correct(referencePoly);
 }
 
 double Geometry::checkPicture(double x, double y, double theta)
@@ -125,6 +126,7 @@ polygon calcPol(double dx, double dy, double angle)
 		}
     polygon pol;
     append(pol,c);
+		correct(pol);
     return pol;
 }
 
