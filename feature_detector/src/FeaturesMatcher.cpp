@@ -101,8 +101,8 @@ static void planeTest(const vector<Point2f>& points1, const vector<Point2f>& poi
 
 Mat affine3;
 Mat affine2;
-extern Mat gimage1;
-extern Mat gimage2;
+ Mat gimage1;
+ Mat gimage2;
 Mat mm1, mm2;
 Mat mega;
 Mat kpoints1;
@@ -165,18 +165,19 @@ void getIntersectionRois(const geometry_msgs::Pose2D& delta, Mat& roi1, Mat& roi
 		cvPointsA[i].x += halfWidth;
 		cvPointsA[i].y += halfHeight;
 	}
-	roi1 = Mat::zeros(gimage1.size(), CV_8UC1);
+	/*roi1 = Mat::zeros(gimage1.size(), CV_8UC1);
 	roi2 = Mat::zeros(gimage1.size(), CV_8UC1);
 	cv::fillConvexPoly(roi1, cvPointsA, resultListCount, cv::Scalar(1));
   cv::fillConvexPoly(roi2, cvPointsB, resultListCount, cv::Scalar(1));
   mm1 = gimage1.clone();
   mm2 = gimage2.clone();
   cv::fillConvexPoly(mm1, cvPointsA, resultListCount, cv::Scalar(1));
-  cv::fillConvexPoly(mm2, cvPointsB, resultListCount, cv::Scalar(1));
+  cv::fillConvexPoly(mm2, cvPointsB, resultListCount, cv::Scalar(1));*/
 }
 
 bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, MatchResult& result) const{  
   moduleStarted("cpu matcher + get transform");
+  cout << img1.keyPoints.size() << " - " << img1.descriptors.rows << " and " << img2.keyPoints.size() << " - " << img2.descriptors.rows << endl;
   vector<DMatch> matches1;
   vector<DMatch> matches2;
   vector<Point2f> points1;
@@ -243,16 +244,16 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, M
 	result.delta.x = transformMatrix.at<double>(0,2);
 	result.delta.y = transformMatrix.at<double>(1,2);
 	
-	  Mat roi1, roi2;
+	/*  Mat roi1, roi2;
   getIntersectionRois(result.delta, roi1, roi2);
 	
-		Mat hsv1, hsv2, hsv3, hsv4;
+	 Mat hsv1, hsv2, hsv3, hsv4;
 	Mat mg1, mg2;
 	Mat zeros = Mat::ones(640, 480, CV_8UC1);
 	gimage1.copyTo(mg1, zeros);
 	gimage2.copyTo(mg2, roi2);
-	cout << mg1 << endl;
-	cout << "cols " << mg1.cols << " rows " << mg1.rows << endl;
+	//cout << mg1 << endl;
+	//cout << "cols " << mg1.cols << " rows " << mg1.rows << endl;
 	MatND hist1, hist2, hist3, hist4;
 	cvtColor(gimage1, hsv1, CV_BGR2HSV);
 	cvtColor(gimage2, hsv2, CV_BGR2HSV);
@@ -281,7 +282,7 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, M
 	calcHist( &hsv2, 1, channels, Mat(), hist4, 2, histSize, ranges, true, false );
 	normalize( hist4, hist4, 0, 1, NORM_MINMAX, -1, Mat() );
 	double base_base2 = compareHist( hist3, hist4, 2 );
-	cout << "histogram similarity without rois: " << base_base2 << endl;
+	cout << "histogram similarity without rois: " << base_base2 << endl;*/
 	
 	double confidence = 150/points1Refinedx2.size();
 	confidence = confidence*confidence;
