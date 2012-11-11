@@ -9,6 +9,8 @@
 
 #pragma once
 
+//license notice missing
+//pi fuckup behauptete sonst die funktion wär schonmal woanders definiert
 static inline bool fillImage(sensor_msgs::Image& image,
 						const std::string& encoding_arg,
 						uint32_t rows_arg,
@@ -39,7 +41,7 @@ public:
 	 * treshold - run the geometry overlap check after every 'treshold' times the 
 	 * mouse callback has been called
 	 */
-		static const int MOUSE_THRESHOLD = 3;
+		static const int MOUSE_THRESHOLD = 1;
 		
 protected:
     ros::Subscriber pose_sub;

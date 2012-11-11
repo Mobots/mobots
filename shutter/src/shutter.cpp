@@ -22,6 +22,7 @@ int main(int argc, char** argv){
 			break;
 		case 1:
 			shutter = new Shutter2(mobotID, 0, 0);
+			break;
 		case 2:
 			shutter = new Shutter3(mobotID, 0, 0);
 			break;
