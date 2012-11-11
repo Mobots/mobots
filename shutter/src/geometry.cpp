@@ -13,10 +13,10 @@ using namespace boost::geometry;
 
 polygon referencePoly;
 
-
+#if 0
 polygon calcPol(double x, double y,double alpha, double tb, double rb); 
-
-
+#endif
+polygon calcPol(double, double, double); 
 
 /*
 int main()
@@ -54,7 +54,7 @@ Geometry::Geometry(double l, double b)
   //a = l*b;
 	
 	a = mobots_common::constants::image_width_in_meters*mobots_common::constants::image_height_in_meters;
-	
+	double c[5][2];
 	const int halfWidth = mobots_common::constants::image_width_in_meters/2;
 	const int halfHeight = mobots_common::constants::image_height_in_meters/2;
 	c[0][0] = -halfWidth;
