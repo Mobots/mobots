@@ -78,7 +78,7 @@ void startWeg()
 void initCom(){
 	proto = new ComProtocol(&com);
 	proto->protocol_init(defaultHandler);
-	proto->protocol_registerHandler(SensorData_All, sensorValHandler);
+	proto->protocol_registerHandler(MOUSE_DATA, sensorValHandler);
 }
 
 void* receiveMethod(void* data){
@@ -100,29 +100,23 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 
 	//std::cout <<"datavalHandler"<<std::endl;
 
-	if (id == SensorData_All) {
+	if (id == MOUSE_DATA) {
 		counter++;
 			//check:
-		int i = sizeof(struct Mouse_Data_DeltaVal);
+		int i = sizeof(struct MouseData);
 		if (size != i) {
 			std::cout << "Error, wrong size\n" << std::endl;
 			return;
 		}
-		struct Mouse_Data_DeltaVal *delta_vals = (struct Mouse_Data_DeltaVal*) data;
+		struct MouseData *delta_vals = (struct MouseData*) data;
 		 //publish
-		geometry_msgs::Pose2D deltaPose;
+		
+		globalPose.x += delta_vals->x;
+		globalPose.y += delta_vals->y;
+		globalPose.theta += delta_vals->theta;
+		correctAngle(*(&globalPose.theta));
 
-		deltaPose.x += delta_vals->delta_x1;//xAvg; noch falsch aber ok
-		deltaPose.y += delta_vals->delta_y1;//yAvg;
-		deltaPose.theta += atan2(delta_vals->delta_y2-delta_vals->delta_y1, delta_vals->delta_x2-delta_vals->delta_x1);//theta;*/
-					//TODO globalPose aktualisieren
-	    globalPose.x+=deltaPose.x;
-	    globalPose.y+=deltaPose.y;
-	    globalPose.theta+=deltaPose.theta;
-	    correctAngle(*(&globalPose.theta));
-
-		deltaPose.x = deltaPose.y = deltaPose.y = 0;
-		if (POST_EVERY_X_MESSAGE == counter) {
+		if (POST_EVERY_X_MESSAGE == counter) { //yoda condition ftw
 			counter=0;
 
 			globalPosePub.publish(globalPose);
