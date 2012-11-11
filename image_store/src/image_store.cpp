@@ -46,7 +46,7 @@ void refreshDeltaPoseBuffer(){
 }
 
 /**
- * Callback to save the image and its poses, calculate the relative pose,
+ * Handler to save the image and its poses, calculate the relative pose,
  * and relay the image with the relative pose. 
  * TODO check if a session already has images
  */
@@ -88,7 +88,7 @@ void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg)
 }
 
 /**
- * Callback to save the absolute the pose, and relay it to all Rviz instances
+ * Handler to save the absolute the pose, and relay it to all Rviz instances
  */
 void absolutePoseHandler(const mobots_msgs::PoseAndID::ConstPtr& msg){
 	imagePoseData infoData{
@@ -107,7 +107,7 @@ void absolutePoseHandler(const mobots_msgs::PoseAndID::ConstPtr& msg){
 }
 
 /**
- * Callback to send an image and/or its poses.
+ * Handler to send an image and/or its poses.
  * Type: 0 - Image + Pose, 1 - Pose
  */
 bool imageHandlerOut(map_visualization::GetImageWithPose::Request &req, map_visualization::GetImageWithPose::Response &res){
@@ -159,8 +159,8 @@ void featureSetHandler(const mobots_msgs::FeatureSetWithPoseAndID& msg){
  * "image_map_display".
  */
 int main(int argc, char **argv){
-  const int mobotCount = mobots_common::constants::mobot_count;
-	// The node is called image_store_server
+    const int mobotCount = mobots_common::constants::mobot_count;
+    // The node is called image_store_server
 	ros::init(argc, argv, "image_store");
 	currentSessionID = 0;
 	if(!ros::param::get("/sessionID", currentSessionID)){
