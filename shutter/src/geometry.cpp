@@ -115,15 +115,16 @@ polygon calcPol(double dx, double dy, double angle)
 		c[3][0] = -halfWidth;
 		c[3][1] = -halfHeight;
 		
-		c[4][0] = c[0][0];
-		c[4][1] = c[0][1];
-		
 		for(int i = 0; i < 4; i++){
 			double x = c[i][0];
 			double y = c[i][1];
 			c[i][0] = x*cost - sint*y + dx;
 			c[i][1] = x*sint + cost*y + dy;
 		}
+		
+		c[4][0] = c[0][0];
+		c[4][1] = c[0][1];
+		
     polygon pol;
     append(pol,c);
 		correct(pol);
