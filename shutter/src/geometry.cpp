@@ -1,14 +1,17 @@
 #include "geometry.h"
-#include<math.h>
+#include <math.h>
+#include "mobots_common/constants.h"
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/polygon.hpp>
 #include <boost/geometry/geometries/point_xy.hpp>
 #include <boost/geometry/geometries/adapted/c_array.hpp>
 
 typedef boost::geometry::model::d2::point_xy<double> point;
-typedef boost::geometry::model::polygon<point> polygon;
+typedef boost::geometry::model::polygon<point, true> polygon;
 
 using namespace boost::geometry;
+
+polygon referencePoly;
 
 
 polygon calcPol(double x, double y,double alpha, double tb, double rb); 
@@ -48,15 +51,37 @@ Geometry::Geometry(double l, double b)
   this->b = b;
   t = atan2(l,b);
   r = sqrt((l*l/4) + (b*b/4));
-  a = l*b;
+  //a = l*b;
+	
+	a = mobots_common::constants::image_width_in_meters*mobots_common::constants::image_height_in_meters;
+	
+	const int halfWidth = mobots_common::constants::image_width_in_meters/2;
+	const int halfHeight = mobots_common::constants::image_height_in_meters/2;
+	c[0][0] = -halfWidth;
+	c[0][1] = halfHeight;
+
+	c[1][0] = halfWidth;
+	c[1][1] = halfHeight;
+	
+	c[2][0] = halfWidth;
+	c[2][1] = -halfHeight;
+	
+	c[3][0] = -halfWidth;
+	c[3][1] = -halfHeight;
+	
+	c[4][0] = c[0][0];
+	c[4][1] = c[0][1];
+	
+	append(referencePoly, c);
 }
 
 double Geometry::checkPicture(double x, double y, double theta)
 {
-    polygon pol1 = calcPol(0,0,0,t,r);
-    polygon pol2 = calcPol(x,y,theta,t,r);
+    //polygon pol1 = calcPol(0,0,0,t,r);
+    //polygon pol2 = calcPol(x,y,theta,t,r);
+    polygon poly = calcPol(x, y, theta);
     std::deque<polygon> pol_list;
-    intersection(pol1 , pol2, pol_list);
+    intersection(referencePoly , poly, pol_list);
     double a1 =0;
     if (!pol_list.empty()) {
 	
@@ -65,8 +90,46 @@ double Geometry::checkPicture(double x, double y, double theta)
     return a1 / a;
 }
 
+/**
+ * input values in m and radian or gtfo
+ */
+polygon calcPol(double dx, double dy, double angle)
+{
+		double d;
+    int i;
+    double c[5][2];
+		double cost = cos(angle);
+		double sint = sin(angle);
+		const int halfWidth = mobots_common::constants::image_width_in_meters/2;
+		const int halfHeight = mobots_common::constants::image_height_in_meters/2;
+		c[0][0] = -halfWidth;
+		c[0][1] = halfHeight;
+	
+		c[1][0] = halfWidth;
+		c[1][1] = halfHeight;
+		
+		c[2][0] = halfWidth;
+		c[2][1] = -halfHeight;
+		
+		c[3][0] = -halfWidth;
+		c[3][1] = -halfHeight;
+		
+		c[4][0] = c[0][0];
+		c[4][1] = c[0][1];
+		
+		for(int i = 0; i < 4; i++){
+			double x = c[i][0];
+			double y = c[i][1];
+			c[i][0] = x*cost - sint*y + dx;
+			c[i][1] = x*sint + cost*y + dy;
+		}
+    polygon pol;
+    append(pol,c);
+    return pol;
+}
 
 
+#if 0
 polygon calcPol(double x, double y, double alpha, double tb, double rb)
 {
     double t=tb;
@@ -102,3 +165,4 @@ polygon calcPol(double x, double y, double alpha, double tb, double rb)
     append(pol,c);
     return pol;
 }
+#endif

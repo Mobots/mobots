@@ -22,9 +22,11 @@ void Shutter2::startShutter(){
 		
     pose_sub = nh.subscribe("mouse", 100, &Shutter2::mouseCallback, this);
 
-    ros::ServiceServer service = nh.advertiseService("getDelta", &Shutter2::getDelta, this);
+    //ros::ServiceServer service = nh.advertiseService("getDelta", &Shutter2::getDelta, this);
     
-    ros::param::param<double>("overlap", overlap, 0.3);
+		overlap = 0.3;
+		ros::param::get("/shutter/overlap", overlap);
+		
     dX = 0;
     dY = 0;
     dTheta = 0;
