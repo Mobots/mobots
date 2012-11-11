@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="." default="default">
+
+  <property file="ros.properties" />
+
+  <property name="dist" location="dist" />
+  <property name="build" location="build" />
+  <property name="src" location="src" />
+
+  <path id="classpath">
+    <pathelement path="${ros.compile.classpath}" />
+  </path>
+
+  <echo message="${toString:classpath}" />
+
+  <target name="default" depends="init, compile" />
+
+  <target name="init">
+    <fail unless="ros.compile.classpath" message="ros.properties is missing.  Please type 'rosmake' first "/>
+    <mkdir dir="${build}" />
+    <mkdir dir="${dist}" />
+  </target>
+
+  <target name="compile" depends="init">
+
+    <javac destdir="${build}">
+      <classpath refid="classpath" />
+      <src path="${src}" />
+    </javac>
+  </target>
+
+  <target name="clean">
+    <delete dir="${build}" />
+    <delete dir="${dist}" />
+  </target>
+
+  <!-- required entry point -->
+  <target name="test" />
+
+</project>
