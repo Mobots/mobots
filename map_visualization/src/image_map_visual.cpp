@@ -179,12 +179,18 @@ int ImageMapVisual::insertImage(int sessionID, int mobotID,	int imageID,
 // Make an image visible
 int ImageMapVisual::showImage(int sessionID, int mobotID, int imageID){
 	Ogre::SceneNode* imageNode = findNode(sessionID, mobotID, imageID);
+    if(imageNode == NULL){
+        return 1;
+    }
 	imageNode->setVisible(true, true);
 	return 0;
 }
 // Make an image invisible
 int ImageMapVisual::hideImage(int sessionID, int mobotID, int imageID){
 	Ogre::SceneNode* imageNode = findNode(sessionID, mobotID, imageID);
+    if(imageNode == NULL){
+        return 1;
+    }
 	imageNode->setVisible(false, true);
 	return 0;
 }
@@ -196,17 +202,31 @@ int ImageMapVisual::deleteImage(const std::string* nodeName){
 	sceneManager->destroySceneNode(*nodeName);
 	return 0;
 }
+int ImageMapVisual::deleteImage(int sessionID, int mobotID, int imageID){
+    Ogre::SceneNode* imageNode = findNode(sessionID, mobotID, imageID);
+    if(imageNode == NULL){
+        return 1;
+    }
+    deleteImage(&imageNode->getName());
+    return 0;
+}
 
 // Make all images of a mobot visible
 int ImageMapVisual::showMobot(int sessionID, int mobotID){
-	Ogre::SceneNode* imageNode = findNode(sessionID, mobotID, -1);
-	imageNode->setVisible(true, true);
+    Ogre::SceneNode* mobotNode = findNode(sessionID, mobotID, -1);
+    if(mobotNode == NULL){
+        return 1;
+    }
+    mobotNode->setVisible(true, true);
 	return 0;
 }
 // Make all images of a mobot invisible
 int ImageMapVisual::hideMobot(int sessionID, int mobotID){
-	Ogre::SceneNode* imageNode = findNode(sessionID, mobotID, -1);
-	imageNode->setVisible(false, true);
+    Ogre::SceneNode* mobotNode = findNode(sessionID, mobotID, -1);
+    if(mobotNode == NULL){
+        return 1;
+    }
+    mobotNode->setVisible(false, true);
 	return 0;
 }
 // Delete all images belonging to a mobot
@@ -221,17 +241,30 @@ int ImageMapVisual::deleteMobot(const std::string* nodeName){
 	sceneManager->destroySceneNode(*nodeName);
 	return 0;
 }
+int ImageMapVisual::deleteMobot(int sessionID, int mobotID){
+    Ogre::SceneNode* mobotNode = findNode(sessionID, mobotID, -1);
+    if(mobotNode == NULL){
+        return 1;
+    }
+    return deleteMobot(&mobotNode->getName());
+}
 
 // Make all images of a session visible
 int ImageMapVisual::showSession(int sessionID){
-	Ogre::SceneNode* imageNode = findNode(sessionID, -1, -1);
-	imageNode->setVisible(true, true);
+    Ogre::SceneNode* sessionNode = findNode(sessionID, -1, -1);
+    if(sessionNode == NULL){
+        return 1;
+    }
+    sessionNode->setVisible(true, true);
 	return 0;
 }
 // Make all images of a session invisible
 int ImageMapVisual::hideSession(int sessionID){
-	Ogre::SceneNode* imageNode = findNode(sessionID, -1, -1);
-	imageNode->setVisible(false, true);
+    Ogre::SceneNode* sessionNode = findNode(sessionID, -1, -1);
+    if(sessionNode == NULL){
+        return 1;
+    }
+    sessionNode->setVisible(false, true);
 	return 0;
 }
 // Delete all images belonging to a session
@@ -245,6 +278,14 @@ int ImageMapVisual::deleteSession(const std::string* nodeName){
 	}
 	sceneManager->destroySceneNode(*nodeName);
 	return 0;
+}
+// Delete all images belonging to a session
+int ImageMapVisual::deleteSession(int sessionID){
+    Ogre::SceneNode* sessionNode = findNode(sessionID, -1, -1);
+    if(sessionNode == NULL){
+        return 1;
+    }
+    return deleteSession(&sessionNode->getName());
 }
 /**
  * Deletes all nodes, images, and resources except the rootNode.
@@ -266,16 +307,19 @@ int ImageMapVisual::setImagePose(int sessionID, int mobotID, int imageID,
     if(imageNode == NULL){
         return 1;
     }
-    /*std::string poseName = imageNode->getName();
-    if(poseType == RELATIVE_POSE_NODE){
-        poseName += "r";
-    } else if(poseType == ABSOLUTE_POSE_NODE){
-        poseName += "a";
-    } else {
-        ROS_ERROR("[Rviz] Invalid pose Type");
-        return;
+    std::string poseName = imageNode->getName();
+    if(poseType != -1){
+        if(poseType == RELATIVE_POSE_NODE){
+            poseName += "r";
+        } else if(poseType == ABSOLUTE_POSE_NODE){
+            poseName += "a";
+        } else {
+            ROS_ERROR("[Rviz] Invalid pose Type");
+            return 1;
+        }
+        poseT pose = {poseX, poseY, poseTheta};
+        poseMap[poseName] = pose;
     }
-    poseMap*/
 
 	// Set the orientation (theta)
 	Ogre::Radian rad(poseTheta);
@@ -284,6 +328,58 @@ int ImageMapVisual::setImagePose(int sessionID, int mobotID, int imageID,
 	// Set the position (x and y)
 	Ogre::Vector3 vect(poseX, poseY, 0);
 	imageNode->setPosition(vect);
+    return 0;
+}
+
+int ImageMapVisual::imageToAbsPose(int sessionID, int mobotID, int imageID){
+    return imageToPose(sessionID, mobotID, imageID, RELATIVE_POSE_NODE);
+}
+int ImageMapVisual::imageToRelPose(int sessionID, int mobotID, int imageID){
+    return imageToPose(sessionID, mobotID, imageID, ABSOLUTE_POSE_NODE);
+}
+int ImageMapVisual::imageToPose(int sessionID, int mobotID, int imageID, int poseType){
+    Ogre::SceneNode* imageNode = findNode(sessionID, mobotID, imageID);
+    if(imageNode == NULL){
+        return 1;
+    }
+    std::string poseName = imageNode->getName();
+    if(poseType == RELATIVE_POSE_NODE){
+        poseName += "r";
+    } else if(poseType == ABSOLUTE_POSE_NODE){
+        poseName += "a";
+    } else {
+        ROS_ERROR("[Rviz] Invalid pose type: imageToPose(%i, %i, %i, %i)",
+                sessionID, mobotID, imageID, poseType);
+        return 1;
+    }
+    if(poseMap.find(poseName) == poseMap.end()){
+        ROS_INFO("[Rviz] Pose not found in map: imageToPose(%i, %i, %i, %i)",
+                sessionID, mobotID, imageID, poseType);
+        return 1;
+    }
+    poseT pose = poseMap[poseName];
+
+    // Set the orientation (theta)
+    Ogre::Radian rad(pose.theta);
+    Ogre::Quaternion quat(rad, Ogre::Vector3::UNIT_Z);
+    imageNode->setOrientation(quat);
+    // Set the position (x and y)
+    Ogre::Vector3 vect(pose.x, pose.y, 0);
+    imageNode->setPosition(vect);
+    return 0;
+}
+
+int ImageMapVisual::mobotToAbsPose(int sessionID, int mobotID){
+    return 0;
+}
+int ImageMapVisual::mobotToRelPose(int sessionID, int mobotID){
+    return 0;
+}
+
+int ImageMapVisual::sessionToAbsPose(int sessionID){
+    return 0;
+}
+int ImageMapVisual::sessionToRelPose(int sessionID){
     return 0;
 }
 

@@ -55,18 +55,30 @@ public:
 	int showImage(int sessionID, int mobotID, int imageID);
 	int hideImage(int sessionID, int mobotID, int imageID);
 	int deleteImage(const std::string* nodeName);
+    int deleteImage(int sessionID, int mobotID, int imageID);
 	
 	int showMobot(int sessionID, int mobotID);
 	int hideMobot(int sessionID, int mobotID);
 	int deleteMobot(const std::string* nodeName);
+    int deleteMobot(int sessionID, int mobotID);
 	
 	int showSession(int sessionID);
 	int hideSession(int sessionID);
     int deleteSession(const std::string* nodeName);
+    int deleteSession(int sessionID);
 	
 	int deleteAllImages();
 
     int setImagePose(int sessionID, int mobotID, int imageID, float poseX, float poseY, float poseTheta, int poseType);
+
+    int imageToAbsPose(int sessionID, int mobotID, int imageID);
+    int imageToRelPose(int sessionID, int mobotID, int imageID);
+
+    int mobotToAbsPose(int sessionID, int mobotID);
+    int mobotToRelPose(int sessionID, int mobotID);
+
+    int sessionToAbsPose(int sessionID);
+    int sessionToRelPose(int sessionID);
 
     static const int RELATIVE_POSE_NODE = 0;
     static const int ABSOLUTE_POSE_NODE = 1;
@@ -80,6 +92,8 @@ public:
     // If the node is not found, a NULL pointer is returned.
     Ogre::SceneNode* findNode(int sessionID, int mobotID, int imageID);
 private:
+    int imageToPose(int sessionID, int mobotID, int imageID, int poseType);
+
     // Used for publishing state changes to other ROS nodes(image_map_info)
     ImageMapDisplay* display;
 

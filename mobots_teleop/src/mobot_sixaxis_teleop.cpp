@@ -122,8 +122,9 @@ int main(int argc, char** argv){
 mobots_msgs::Twist2D twist;
 
 void joyCallback(const sensor_msgs::Joy& msg){
-	twist.x = msg.axes[PS3_BUTTON_STICK_LEFT];
-	twist.theta = msg.axes[PS3_BUTTON_STICK_LEFT];
+    twist.y = msg.axes[PS3_AXIS_STICK_LEFT_UPWARDS];
+    twist.x = msg.axes[PS3_AXIS_STICK_LEFT_LEFTWARDS];
+	twist.theta = msg.axes[PS3_AXIS_STICK_RIGHT_LEFTWARDS];
 	velocity_pub.publish(twist);
 	cout << "x " << twist.x << " y " << twist.y << " theta " << twist.theta << endl;
 }
