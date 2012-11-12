@@ -52,6 +52,7 @@ ros::Subscriber joySub;
 ros::ServiceClient client;
 ros::NodeHandle* nh;
 int mobotID;
+int indexRight;
 
 void siginthandler(int param){
 	path_planner::KeyboardRequest::Request req;
@@ -74,6 +75,9 @@ void joyCallback(const sensor_msgs::Joy& msg);
 int main(int argc, char** argv){
 	cout << "specify a mobot to control (enter the mobot id): ";
 	cin >> mobotID;
+	cout << endl;
+	cout << "index for right stick? (sixaxis = 2, davids shit = 3):";
+	cin >> indexRight;
 	cout << endl;
 	std::stringstream namess;
 	namess << "mobot_sixaxis_teleop_" << mobotID;
@@ -124,7 +128,7 @@ mobots_msgs::Twist2D twist;
 void joyCallback(const sensor_msgs::Joy& msg){
     twist.x = -msg.axes[PS3_AXIS_STICK_LEFT_LEFTWARDS];
     twist.y = msg.axes[PS3_AXIS_STICK_LEFT_UPWARDS];
-	twist.theta = msg.axes[3];
+	twist.theta = -msg.axes[indexRight];
 	velocity_pub.publish(twist);
 	cout << "x " << twist.x << " y " << twist.y << " theta " << twist.theta << endl;
 }
