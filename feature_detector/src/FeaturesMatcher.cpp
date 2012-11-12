@@ -101,8 +101,8 @@ static void planeTest(const vector<Point2f>& points1, const vector<Point2f>& poi
 
 Mat affine3;
 Mat affine2;
- Mat gimage1;
- Mat gimage2;
+// Mat gimage1;
+// Mat gimage2;
 Mat mm1, mm2;
 Mat mega;
 Mat kpoints1;
@@ -111,6 +111,7 @@ Mat good_matches;
 Mat good_matches_r;
 Mat homo;
 
+#if 0
 void getIntersectionRois(const geometry_msgs::Pose2D& delta, Mat& roi1, Mat& roi2){
 	gpc_vertex verticesA[4];
 	gpc_vertex verticesB[4];
@@ -174,10 +175,10 @@ void getIntersectionRois(const geometry_msgs::Pose2D& delta, Mat& roi1, Mat& roi
   cv::fillConvexPoly(mm1, cvPointsA, resultListCount, cv::Scalar(1));
   cv::fillConvexPoly(mm2, cvPointsB, resultListCount, cv::Scalar(1));*/
 }
+#endif
 
 bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, MatchResult& result) const{  
   moduleStarted("cpu matcher + get transform");
-  cout << img1.keyPoints.size() << " - " << img1.descriptors.rows << " and " << img2.keyPoints.size() << " - " << img2.descriptors.rows << endl;
   vector<DMatch> matches1;
   vector<DMatch> matches2;
   vector<Point2f> points1;
