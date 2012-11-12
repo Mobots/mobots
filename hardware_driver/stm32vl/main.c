@@ -120,8 +120,7 @@ void SysTick_Handler() {
 		mouse_integral = reset;
 
 		mouse_transformation(&cache, &output);
-		if(output.x != 0 || output.y != 0 || output.theta != 0)
-			protocol_sendData(MOUSE_DATA, (unsigned char*) &output, sizeof(struct MouseData));
+		protocol_sendData(MOUSE_DATA, (unsigned char*) &output, sizeof(struct MouseData));
 	}
 
 	// LED mit 1 Hz blinken lassen
