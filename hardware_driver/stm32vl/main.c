@@ -117,7 +117,7 @@ void SysTick_Handler() {
 		static struct MouseData output = {0, 0, 0};
 
 		cache = mouse_integral;
-	    mouse_integral = reset;
+		mouse_integral = reset;
 
 		mouse_transformation(&cache, &output);
 		protocol_sendData(MOUSE_DATA, (unsigned char*) &output, sizeof(struct MouseData));

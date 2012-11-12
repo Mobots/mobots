@@ -243,9 +243,9 @@ void keyboardLoop(){
 	  break;*/
     }
     mobots_msgs::Twist2D pub_pose;
-    pub_pose.x = /*currentPosition.x + (heading)**/speed*max_tv;
+    pub_pose.x = /*currentPosition.x + (heading)**/speed*max_tv/100;
     pub_pose.y = /*currentPosition.y + (heading)**/0;
-    pub_pose.theta =/*currentPosition.theta +*/ turn*max_rv;
+    pub_pose.theta =/*currentPosition.theta +*/ turn*max_rv/100;
 		//cout << pub_pose.pose.x << " and " << speed*max_tv << endl;
 	 velocity_pub.publish(pub_pose);
   }

@@ -7,7 +7,7 @@ using namespace std;
 
 
 ParallelMatcher::ParallelMatcher(ParallelMatcher::ResultListener* listener, int threadCount, int lowWatermark, int highWatermark)
-:listener(listener), threadCount(threadCount), lowWatermark(lowWatermark), highWatermark(highWatermark){
+:listener(listener), threadCount(threadCount), lowWatermark(lowWatermark), highWatermark(highWatermark), ok(true){
 	if(sem_init(&counterSem, 0, 0) < 0 || sem_init(&queue_sem, 0, 1) < 0)
 	 cerr << __PRETTY_FUNCTION__ << " error: semaphore" << endl;
 	if(sem_init(&resultCounterSem, 0, 0) < 0 || sem_init(&result_queue_sem, 0, 1) < 0)
@@ -17,7 +17,7 @@ ParallelMatcher::ParallelMatcher(ParallelMatcher::ResultListener* listener, int 
   for(int i = 0; i < threadCount; i++){
 	 workers.push_back(new Worker(this));
   }
-  deliverThread = boost::thread(&ParallelMatcher::deliverThread, this);
+  deliverThread = boost::thread(&ParallelMatcher::resultDeliverer, this);
 }
 
 void ParallelMatcher::enqueueResult(const MatchResultEntry& entry){
@@ -29,12 +29,12 @@ void ParallelMatcher::enqueueResult(const MatchResultEntry& entry){
 }
 
 const ParallelMatcher::FeaturesEntry ParallelMatcher::dequeueFeaturePair(){
+  
 	sem_wait(&counterSem);
 	
 	sem_wait(&queue_sem);
 	FeaturesEntry entry = queue.front();
 	queue.pop_front();
-	cout << "dequeing " << entry.id1 << "-" << entry.id2 << endl;
 	sem_post(&queue_sem);
 	
 	return entry;
@@ -56,15 +56,11 @@ void ParallelMatcher::enqueue(const FeatureSet* set1, const FeatureSet* set2, in
 	
 	if(queue.size() > highWatermark)
 		listener->onHighWatermark();
-	
-	cout << "queue size " << queue.size() << "got " << set1 << " and " << set2 << endl;
 		
 }
 
 void ParallelMatcher::resultDeliverer(){
-  cout << "deliverer" << endl;
-	while(ok){
-		
+	while(true){
 		sem_wait(&resultCounterSem);
 		
 		sem_wait(&result_queue_sem);
@@ -73,7 +69,6 @@ void ParallelMatcher::resultDeliverer(){
 		sem_post(&result_queue_sem);
 		
 		sem_wait(&result_deliver_sem);
-		cout << "sending result" << entry.id1 << "-" << entry.id2 << " is " << entry.matchable << endl;
 		listener->onResult(entry.matchResult, entry.matchable, entry.id1, entry.id2);
 		sem_post(&result_deliver_sem);
 		
@@ -93,16 +88,13 @@ ParallelMatcher::Worker::Worker(ParallelMatcher* parent):parent(parent) {
 }
 
 void ParallelMatcher::Worker::spinMethod(){
-  cout << "spinMethod" << endl;
 	cv::Ptr<FeaturesMatcher> matcher = FeaturesMatcher::getDefault();
-	while(parent->ok){
+	while(parent->ok || true){
 		FeaturesEntry entry = parent->dequeueFeaturePair();
 		MatchResultEntry matchEntry;
-		cout << "matching " << entry.set1 << " and " << entry.set2 << endl;
 		matchEntry.matchable = matcher->match(*entry.set1, *entry.set2, matchEntry.matchResult);
 		matchEntry.id1 = entry.id1;
 		matchEntry.id2 = entry.id2;
-		cout << "trying to enqueue result" << matchEntry.id1 << "-" << matchEntry.id2 << " is " << matchEntry.matchable << endl;
 		parent->enqueueResult(matchEntry);
 	}
 }
