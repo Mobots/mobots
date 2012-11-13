@@ -57,15 +57,15 @@ public:
 	int deleteImage(const std::string* nodeName);
     int deleteImage(int sessionID, int mobotID, int imageID);
 	
-	int showMobot(int sessionID, int mobotID);
-	int hideMobot(int sessionID, int mobotID);
-	int deleteMobot(const std::string* nodeName);
-    int deleteMobot(int sessionID, int mobotID);
+    int showMobotImages(int sessionID, int mobotID);
+    int hideMobotImages(int sessionID, int mobotID);
+    int deleteMobotImages(const std::string* nodeName);
+    int deleteMobotImages(int sessionID, int mobotID);
 	
-	int showSession(int sessionID);
-	int hideSession(int sessionID);
-    int deleteSession(const std::string* nodeName);
-    int deleteSession(int sessionID);
+    int showSessionImages(int sessionID);
+    int hideSessionImages(int sessionID);
+    int deleteSessionImages(const std::string* nodeName);
+    int deleteSessionImages(int sessionID);
 	
 	int deleteAllImages();
 
@@ -83,17 +83,11 @@ public:
     static const int RELATIVE_POSE_NODE = 0;
     static const int ABSOLUTE_POSE_NODE = 1;
 
-    void deleteMobotModel(const std::string* nodeName);
+    void deleteMobotModel(int mobotID);
     void deleteAllMobotModels();
     int setMobotModel(int mobotID, float poseX, float poseY, float poseTheta);
 
-    // If the node is not found, a the node and its path is created.
-    Ogre::SceneNode* getNode(int sessionID, int mobotID, int imageID);
-    // If the node is not found, a NULL pointer is returned.
-    Ogre::SceneNode* findNode(int sessionID, int mobotID, int imageID);
 private:
-    int imageToPose(int sessionID, int mobotID, int imageID, int poseType);
-
     // Used for publishing state changes to other ROS nodes(image_map_info)
     ImageMapDisplay* display;
 
@@ -110,6 +104,17 @@ private:
     Ogre::SceneManager* sceneManager;
     poseT pose;
     std::map<std::string, poseT> poseMap;
+
+    int imageToPose(Ogre::SceneNode* imageNode, int poseType);
+    int mobotToPose(Ogre::SceneNode* mobotNode, int poseType);
+    int sessionToPose(Ogre::SceneNode* sessionNode, int poseType);
+
+    void deleteMobotModel(const std::string* nodeName);
+
+    // If the node is not found, a the node and its path is created.
+    Ogre::SceneNode* getNode(int sessionID, int mobotID, int imageID);
+    // If the node is not found, a NULL pointer is returned.
+    Ogre::SceneNode* findNode(int sessionID, int mobotID, int imageID);
 
     void createColourCube(int mobotID);
 };

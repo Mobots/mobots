@@ -129,13 +129,13 @@ int ImageMapWaypoint::updateRviz(int sessionID, int mobotID, int key, int value)
     case ENABLED:
         switch(value){
         case -1:
-            srv.request.function = DELETE_MOBOT;
+            srv.request.function = DELETE_MOBOT_IMAGES;
             break;
         case 0:
-            srv.request.function = HIDE_MOBOT;
+            srv.request.function = HIDE_MOBOT_IMAGES;
             break;
         case 1:
-            srv.request.function = SHOW_MOBOT;
+            srv.request.function = SHOW_MOBOT_IMAGES;
             break;
         }
         break;
@@ -165,7 +165,11 @@ int ImageMapWaypoint::updateRviz(int sessionID, int mobotID, int key, int value)
             break;
         }
         break;
+    default:
+        ROS_ERROR("[ImageMapInfo] Unkown RPC (session,mobot,key,value):(%i,%i,%i,%i)", );
     }
+//    export ROS_MASTER_URI=http://192.168.0.10:11311
+//    export ROS_IP=192.168.0.52
 
     if (updateRvizClient->call(srv)){
         ROS_INFO("Called Rviz: %i() = %i", srv.request.function, srv.response.result);

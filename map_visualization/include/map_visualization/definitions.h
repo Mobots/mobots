@@ -13,13 +13,13 @@ static const int SHOW_IMAGE     = 2;
 static const int HIDE_IMAGE     = 3;
 static const int DELETE_IMAGE   = 4;
 
-static const int SHOW_MOBOT     = 5;
-static const int HIDE_MOBOT     = 6;
-static const int DELETE_MOBOT   = 7;
+static const int SHOW_MOBOT_IMAGES     = 5;
+static const int HIDE_MOBOT_IMAGES     = 6;
+static const int DELETE_MOBOT_IMAGES   = 7;
 
-static const int SHOW_SESSION   = 8;
-static const int HIDE_SESSION   = 9;
-static const int DELETE_SESSION = 10;
+static const int SHOW_SESSION_IMAGES   = 8;
+static const int HIDE_SESSION_IMAGES   = 9;
+static const int DELETE_SESSION_IMAGES = 10;
 
 static const int DELETE_ALL_IMAGES  = 11;
 

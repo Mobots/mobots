@@ -65,23 +65,23 @@ bool updateRvizTest(map_visualization::RemoteProcedureCall::Request &req,
         ROS_INFO("d");
         break;
 
-    case SHOW_MOBOT:
+    case SHOW_MOBOT_IMAGES:
         ROS_INFO("e");
         break;
-    case HIDE_MOBOT:
+    case HIDE_MOBOT_IMAGES:
         ROS_INFO("f");
         break;
-    case DELETE_MOBOT:
+    case DELETE_MOBOT_IMAGES:
         ROS_INFO("g");
         break;
 
-    case SHOW_SESSION:
+    case SHOW_SESSION_IMAGES:
         ROS_INFO("h");
         break;
-    case HIDE_SESSION:
+    case HIDE_SESSION_IMAGES:
         ROS_INFO("i");
         break;
-    case DELETE_SESSION:
+    case DELETE_SESSION_IMAGES:
         ROS_INFO("j");
         break;
 
