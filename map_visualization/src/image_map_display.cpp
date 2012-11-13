@@ -18,7 +18,7 @@ ImageMapDisplay::~ImageMapDisplay(){
 // Clear the map by deleting image_map_visual object
 void ImageMapDisplay::clear(){
 	delete visual_;
-    visual_ = new ImageMapVisual(vis_manager_->getSceneManager(), this);
+    //visual_ = new ImageMapVisual(vis_manager_->getSceneManager(), this);
 }
 
 // After the parent rviz::Display::initialize() does its own setup, it
