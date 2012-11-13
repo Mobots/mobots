@@ -119,7 +119,7 @@ void ImageMapDisplay::subscribe(){
                 ("Error advertising publisher infoPub : ") + e.what());
         }
     }
-    if(updateRvizServer){
+    if(true){
         updateRvizServer = update_nh_.advertiseService("/image_map/rpc", &ImageMapDisplay::updateRvizCallback, this);
     }
     return;
@@ -276,30 +276,27 @@ bool ImageMapDisplay::updateRvizCallback(map_visualization::RemoteProcedureCall:
         visual_->hideImage(req.id.session_id, req.id.mobot_id, req.id.image_id);
         break;
     case DELETE_IMAGE:
-        ROS_INFO("[Rviz] Unsupported RPC: delete image");
-        //visual_->deleteImage(std::string);
+        visual_->deleteImage(req.id.session_id, req.id.mobot_id, req.id.image_id);
         break;
 
-    case SHOW_MOBOT:
-        visual_->showMobot(req.id.session_id, req.id.mobot_id);
+    case SHOW_MOBOT_IMAGES:
+        visual_->showMobotImages(req.id.session_id, req.id.mobot_id);
         break;
-    case HIDE_MOBOT:
-        visual_->hideMobot(req.id.session_id, req.id.mobot_id);
+    case HIDE_MOBOT_IMAGES:
+        visual_->hideMobotImages(req.id.session_id, req.id.mobot_id);
         break;
-    case DELETE_MOBOT:
-        ROS_INFO("[Rviz] Unsupported RPC: delete mobot");
-        //visual_->deleteMobot(std::string);
+    case DELETE_MOBOT_IMAGES:
+        visual_->deleteMobotImages(req.id.session_id, req.id.mobot_id);
         break;
 
-    case SHOW_SESSION:
-        visual_->showSession(req.id.session_id);
+    case SHOW_SESSION_IMAGES:
+        visual_->showSessionImages(req.id.session_id);
         break;
-    case HIDE_SESSION:
-        visual_->hideSession(req.id.session_id);
+    case HIDE_SESSION_IMAGES:
+        visual_->hideSessionImages(req.id.session_id);
         break;
-    case DELETE_SESSION:
-        ROS_INFO("[Rviz] Unsupported RPC: delete session");
-        //visual_->deleteSession(std::string);
+    case DELETE_SESSION_IMAGES:
+        visual_->deleteSessionImages(req.id.session_id);
         break;
 
     case DELETE_ALL_IMAGES:
@@ -322,6 +319,34 @@ bool ImageMapDisplay::updateRvizCallback(map_visualization::RemoteProcedureCall:
         ROS_INFO("[Rviz] Unsupported RPC: set mobot model");
         //visual_->setMobotModel(0,0,0,0);
         break;
+    case SHOW_RELATIVE_MOBOT:
+        visual_->mobotToRelPose(req.id.session_id, req.id.mobot_id);
+        break;
+    case SHOW_RELATIVE_SESSION:
+        visual_->sessionToRelPose(req.id.session_id);
+        break;
+    case DELETE_RELATIVE_MOBOT:
+        ROS_INFO("[Rviz] Unsupported RPC: delete relative mobot pose");
+        break;
+    case DELETE_RELATIVE_SESSION:
+        ROS_INFO("[Rviz] Unsupported RPC: delete relative session pose");
+        break;
+    case SHOW_ABSOLUTE_MOBOT:
+        visual_->mobotToAbsPose(req.id.session_id, req.id.mobot_id);
+        break;
+    case SHOW_ABSOLUTE_SESSION:
+        visual_->sessionToAbsPose(req.id.session_id);
+        break;
+    case DELETE_ABSOLUTE_MOBOT:
+        ROS_INFO("[Rviz] Unsupported RPC: delete absolute mobot pose");
+        break;
+    case DELETE_ABSOLUTE_SESSION:
+        ROS_INFO("[Rviz] Unsupported RPC: delete absolute session pose");
+        break;
+    default:
+        ROS_INFO("[Rviz] Unsupported RPC: unknown call");
+        res.result = -1;
+        return true;
     }
     res.result = 0;
     return true;
