@@ -407,11 +407,17 @@ void ImageMapDisplay::testVisual(ImageMapVisual* visual_, std::string filePath){
 	imageData.assign(buffer, buffer + sizeof(buffer) / sizeof(char));
     cv::Mat mat = cv::imdecode(imageData, 1);
     visual_->insertImage(0,0,0, 0,0,3.1415927, mat);
-    visual_->insertImage(0,1,1, 1,1,1.5707963, mat);
-    visual_->insertImage(0,2,2, 2,2,3.1415927, mat);
-    visual_->insertImage(0,3,3, 3,3,4.712389, mat);
-    visual_->insertImage(0,4,4, 4,4,6.2831853, mat);
-    visual_->setMobotModel(1,0.5,0.6,0);
+    visual_->insertImage(0,1,0, 1,1,1.5707963, mat);
+    visual_->insertImage(0,2,0, 2,2,3.1415927, mat);
+    visual_->insertImage(0,3,0, 3,3,4.712389, mat);
+    visual_->insertImage(0,4,0, 4,4,6.2831853, mat);
+    visual_->setImagePose(0,0,0,0,0.5,0,ImageMapVisual::ABSOLUTE_POSE_NODE);
+    visual_->setImagePose(0,1,0,1,1.5,0,ImageMapVisual::ABSOLUTE_POSE_NODE);
+    visual_->setImagePose(0,2,0,2,2.5,0,ImageMapVisual::ABSOLUTE_POSE_NODE);
+    visual_->setImagePose(0,3,0,3,3.5,0,ImageMapVisual::ABSOLUTE_POSE_NODE);
+    visual_->setMobotModel(0,0.5,0.6,0);
+    visual_->setMobotModel(1,-0.5,0.6,0);
+    visual_->setMobotModel(2,-1,0.6,0);
 }
 
 } // end namespace rviz_plugin_display

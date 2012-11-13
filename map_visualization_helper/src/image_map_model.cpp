@@ -82,6 +82,22 @@ bool ImageMapModel::setData(const QModelIndex & index, const QVariant & value, i
         int col = index.column();
         //save value from editor to member m_gridData
         tableData[row][col] = value.toInt();
+        switch(col){
+        case ABSOLUTE: // Flip flop between absolute and relative
+            if(value == 1){
+                if(tableData[row][RELATIVE] == 1){
+                    tableData[row][RELATIVE] = 0;
+                }
+            }
+            break;
+        case RELATIVE: // Flip flop between absolute and relative
+            if(value == 1){
+                if(tableData[row][ABSOLUTE] == 1){
+                    tableData[row][ABSOLUTE] = 0;
+                }
+            }
+            break;
+        }
         Q_EMIT tableChanged(tableData[row][SESSION], tableData[row][MOBOT], col, value.toInt());
     }
     return true;
@@ -128,6 +144,24 @@ void ImageMapModel::updateTable(int sessionID, int mobotID, int key, int value){
         if(tableData[i][SESSION] == sessionID){
             if(tableData[i][MOBOT] == mobotID){
                 tableData[i][key] = value;
+                // Entry specific behavoir
+                switch(key){
+                case ABSOLUTE: // Flip flop between absolute and relative
+                    if(value == 1){
+                        if(tableData[i][RELATIVE] == 1){
+                            tableData[i][RELATIVE] = 0;
+                        }
+                    }
+                    break;
+                case RELATIVE: // Flip flop between absolute and relative
+                    if(value == 1){
+                        if(tableData[i][ABSOLUTE] == 1){
+                            tableData[i][ABSOLUTE] = 0;
+                        }
+                    }
+                    break;
+                }
+
                 return;
             }
         }
