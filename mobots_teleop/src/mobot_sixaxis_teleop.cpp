@@ -82,15 +82,7 @@ int main(int argc, char** argv){
 	std::stringstream namess;
 	namess << "mobot_sixaxis_teleop_" << mobotID;
 	ros::init(argc, argv, namess.str(), ros::init_options::NoSigintHandler);
-    nh = new ros::NodeHandle;
-	string waypointPath;
-	string globalPosePath;
-	stringstream ss;
-	ss << "/mobot" << mobotID << "/velocity";
-	waypointPath = ss.str();
-	/*ss.clear();
-	ss.str("");
-	ss << "/mobot" << mobotID << "/mouse";*/
+  nh = new ros::NodeHandle;
 	joySub = nh->subscribe("/joy", 2, joyCallback);
 	cout << "searching for sixaxis driver..." << flush;
 	sleep(1);
@@ -113,9 +105,9 @@ int main(int argc, char** argv){
 	}else{
 		ROS_WARN("[%s] No path_planner found while attaching teleop", namess.str().c_str());
 	}
-	globalPosePath = ss.str();
+	stringstream ss;
+	ss << "/mobot" << mobotID << "/velocity";
 	velocity_pub = nh->advertise<mobots_msgs::Twist2D>(ss.str(), 2);
-	cout << "paths: " << endl << waypointPath << endl;
 	signal(SIGINT, siginthandler);
 
 	ros::spin();
@@ -124,11 +116,15 @@ int main(int argc, char** argv){
 }
 
 mobots_msgs::Twist2D twist;
+mobots_msgs::Twist2D lastTwist;
 
 void joyCallback(const sensor_msgs::Joy& msg){
-    twist.x = -msg.axes[PS3_AXIS_STICK_LEFT_LEFTWARDS];
-    twist.y = msg.axes[PS3_AXIS_STICK_LEFT_UPWARDS];
+	twist.x = -msg.axes[PS3_AXIS_STICK_LEFT_LEFTWARDS];
+	twist.y = msg.axes[PS3_AXIS_STICK_LEFT_UPWARDS];
 	twist.theta = -msg.axes[indexRight];
+	if(twist.x == lastTwist.x && twist.y == lastTwist.y && twist.theta == lastTwist.theta)
+		return;
 	velocity_pub.publish(twist);
-	cout << "x " << twist.x << " y " << twist.y << " theta " << twist.theta << endl;
+	lastTwist = twist;
+	//cout << "x " << twist.x << " y " << twist.y << " theta " << twist.theta << endl;
 }

@@ -337,6 +337,6 @@ void speedCallback(const mobots_msgs::Twist2D& msg){
 	vel.x = msg.x;
 	vel.y = msg.y;
 	vel.theta = msg.theta;
-	cerr << "vel x " << msg.x << " y " << msg.y << " theta " << msg.theta << endl;
+	//cerr << "vel x " << msg.x << " y " << msg.y << " theta " << msg.theta << endl;
 	proto->sendData(VELOCITY, (unsigned char*) &vel, sizeof(struct Velocity));
 }
