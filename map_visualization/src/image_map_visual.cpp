@@ -226,6 +226,7 @@ int ImageMapVisual::showMobotImages(int sessionID, int mobotID){
         return 1;
     }
     mobotNode->setVisible(true, true);
+    display->sendInfoUpdate(sessionID, mobotID, ENABLED, 1);
 	return 0;
 }
 // Make all images of a mobot invisible
@@ -235,6 +236,7 @@ int ImageMapVisual::hideMobotImages(int sessionID, int mobotID){
         return 1;
     }
     mobotNode->setVisible(false, true);
+    display->sendInfoUpdate(sessionID, mobotID, ENABLED, 0);
 	return 0;
 }
 // Delete all images belonging to a mobot
@@ -254,7 +256,9 @@ int ImageMapVisual::deleteMobotImages(int sessionID, int mobotID){
     if(mobotNode == NULL){
         return 1;
     }
-    return deleteMobotImages(&mobotNode->getName());
+    int result = deleteMobotImages(&mobotNode->getName());
+    display->sendInfoUpdate(sessionID, mobotID*-1, 0, 0);
+    return result;
 }
 
 // Make all images of a session visible
@@ -293,7 +297,10 @@ int ImageMapVisual::deleteSessionImages(int sessionID){
     if(sessionNode == NULL){
         return 1;
     }
-    return deleteSessionImages(&sessionNode->getName());
+
+    int result = deleteSessionImages(&sessionNode->getName());
+    display->sendInfoUpdate(sessionID*-1, 0, 0, 0);
+    return result;
 }
 /**
  * Deletes all nodes, images, and resources except the rootNode.
@@ -340,6 +347,17 @@ int ImageMapVisual::setImagePose(int sessionID, int mobotID, int imageID,
 	// Set the position (x and y)
 	Ogre::Vector3 vect(poseX, poseY, 0);
 	imageNode->setPosition(vect);
+    switch(poseType){
+    case ABSOLUTE_POSE_NODE:
+        display->sendInfoUpdate(sessionID, mobotID, ABSOLUTE, 1);
+        break;
+    case RELATIVE_POSE_NODE:
+        display->sendInfoUpdate(sessionID, mobotID, RELATIVE, 0);
+        break;
+    default:
+        ROS_WARN("[Rviz] Unknown pose type: setImagePose");
+        break;
+    }
     return 0;
 }
 
@@ -458,7 +476,7 @@ int ImageMapVisual::setMobotModel(int mobotID, float poseX, float poseY, float p
         Ogre::Entity* thisEntity = sceneManager->createEntity("cc-" + id, "ColourCube-" + id);
         thisEntity->setMaterialName("Test/ColourTest-" + id);
         sceneNode->attachObject(thisEntity);
-        sceneNode->setScale(0.001, 0.001, 0.0005);
+        sceneNode->setScale(0.0006, 0.0006, 0.0003);
         node = (Ogre::Node*) sceneNode;
     }
     // Set position
