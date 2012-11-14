@@ -43,11 +43,9 @@ namespace map_visualization{
 class ImageMapVisual;
 
 /**
- * Plugin base. Wraps the 3D scene (ImageMapVisual) and the panel
- * (ImageMapInfo).
- * The ImageMapDisplay class itself just implements the ROS
- * communication, editable parameters, and Display subclass
- * machinery.
+ * Plugin main class. Wraps the 3D scene (ImageMapVisual). The ImageMapDisplay
+ * class itself implements the ROS communication, editable parameters, and the
+ * Display subclass machinery.
  */
 class ImageMapDisplay : public rviz::Display
 {

@@ -38,10 +38,9 @@ ImageMapVisual::~ImageMapVisual()
   * Image Interfaces
   ********************************************************/
 
-/**
- * Insert an image into Rviz and set the pose.
- * @Notes All resources are named;enabling a clean deletion
- * TODO variable image resolution
+/*!
+ Insert an image into Rviz and set the pose.
+ All resources are uniquely named, enabling a clean deletion
  */
 int ImageMapVisual::insertImage(int sessionID, int mobotID,	int imageID,
         float poseX, float poseY, float poseTheta, cv::Mat mat)

@@ -1,11 +1,11 @@
 <package>
-  <description brief="Map Visualization">
-    Displays map tiles with the image_map_display plugin for rviz
+  <description brief="Image Map Display">
+      A plugin in Rviz to visualize a map from image tiles.
   </description>
   <author>Moritz Ulmer</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/visualization</url>
+  <url>http://pc3.bime.de/dokuwiki/doku.php</url>
   <depend package="std_msgs"/>
   <depend package="mobots_msgs"/>
   <depend package="opencv2"/>
@@ -14,7 +14,6 @@
   <depend package="rviz"/>
   <depend package="mobots_common"/>
   <export>
-    <rosdoc config="${prefix}/rosdoc.yaml"/>
     <rviz plugin="${prefix}/plugin_description.xml"/>
     <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -Wl,-rpath,${prefix}/lib -lutil"/>
   </export>
