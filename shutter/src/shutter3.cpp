@@ -5,8 +5,11 @@
 using namespace std;
 
 static usb_cam_camera_image_t* camera_image_;
+static pthread_t cameraThread;
 
 static void* cameraThread(void* data);
+
+static bool ok = false;
 
 Shutter3::Shutter3(int mobotID, double l, double b): Shutter(mobotID, l, b){
 }
@@ -33,29 +36,33 @@ void Shutter3::startShutter(){
 		
 		usb_cam_setErrorHandler(this);
 		
-		initCamera();
-		
-		pthread_t camThread;
-		pthread_create(&camThread, 0, cameraThread, 0);
-		
+		startCamera();
 
     ros::spin();
 
 }
 
 static void* cameraThread(void* data){
-	while(true){
+	while(ok){
 		usb_cam_camera_grab_image(camera_image_);
 	}
 	return 0;
 }
 
-void Shutter3::initCamera(){
+void Shutter3::startCamera(){
 	camera_image_ = usb_cam_camera_start("/dev/video0",
 		IO_METHOD_MMAP,
 		PIXEL_FORMAT_YUYV,
 		imageWidth,
 		imageHeight);
+	ok = true;
+	pthread_create(&cameraThread, 0, cameraThread, 0);
+}
+
+void Shutter3::stopCamera(){
+	ok = false;
+	pthread_join(&cameraThread, NULL);
+	usb_cam_camera_shutdown();
 }
 
 inline void Shutter3::publishMessage(double x, double y, double theta) {
@@ -95,6 +102,7 @@ void Shutter3::mouseCallback(const geometry_msgs::Pose2D &mouse_data) {
 void Shutter3::handleError(const char* error){
 	//like we give a fuck
 	//just restart the damn camera
-	initCamera();
+	stopCamera();
+	startCamera();
 	cout << "restarting camera" << endl;
 }
