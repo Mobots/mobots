@@ -100,7 +100,8 @@ class Shutter3 : public Shutter , public UsbCamErrorHandler{
 public:	
     Shutter3(int mobotID, double l, double b);
 		void handleError(const char* error);
-		void initCamera();
+		void startCamera();
+		void stopCamera();
 		virtual ~Shutter3();
     virtual void startShutter();
 		
