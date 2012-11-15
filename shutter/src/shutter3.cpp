@@ -5,7 +5,7 @@
 using namespace std;
 
 static usb_cam_camera_image_t* camera_image_;
-static pthread_t cameraThread;
+static pthread_t cameraThread_t;
 
 static void* cameraThread(void* data);
 
@@ -35,7 +35,6 @@ void Shutter3::startShutter(){
     dTheta = 0;
 		
 		usb_cam_setErrorHandler(this);
-		
 		startCamera();
 
     ros::spin();
@@ -56,12 +55,12 @@ void Shutter3::startCamera(){
 		imageWidth,
 		imageHeight);
 	ok = true;
-	pthread_create(&cameraThread, 0, cameraThread, 0);
+	pthread_create(&cameraThread_t, 0, cameraThread, 0);
 }
 
 void Shutter3::stopCamera(){
 	ok = false;
-	pthread_join(&cameraThread, NULL);
+	pthread_join(cameraThread_t, NULL);
 	usb_cam_camera_shutdown();
 }
 
