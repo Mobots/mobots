@@ -1,5 +1,11 @@
 #include "image_map_display.h"
 
+//! Contains classes used to visualize a map
+/*!
+  These classes visualize a map of image tiles. They are are placed together to
+  create a large map of the ground. The images are classified with thier ID so
+  that they can later be manipulated (hidden, poses changed, deleted).
+  */
 namespace map_visualization{
 	
 ImageMapDisplay::ImageMapDisplay()
@@ -15,44 +21,69 @@ ImageMapDisplay::~ImageMapDisplay(){
 	delete visual_;
 }
 
-// Clear the map by deleting image_map_visual object
+
+//! Clear the map
+/*!
+  Clear the map by deleting and creating a new image_map_visual object
+ */
 void ImageMapDisplay::clear(){
 	delete visual_;
-    //visual_ = new ImageMapVisual(vis_manager_->getSceneManager(), this);
+    visual_ = new ImageMapVisual(vis_manager_->getSceneManager(), this);
 }
 
-// After the parent rviz::Display::initialize() does its own setup, it
-// calls the subclass's onInitialize() function.  This is where we
-// instantiate all the workings of the class.
-// TODO implement service
+//! Instatiate the class
+/*!
+  After the parent (Rviz) instatiates itself, the plugin's onInitialize function
+  is called and initializes its components.
+ */
 void ImageMapDisplay::onInitialize(){
 	setStatus(rviz::status_levels::Warn, "Topic", "Finished Initializing");
 }
 
+//! Called on enabling the class
+/*!
+  The ROS and Ogre interfaces are started.
+  */
 void ImageMapDisplay::onEnable(){
 	subscribe();
-    visual_ = new ImageMapVisual(vis_manager_->getSceneManager(), this);
+    if(visual_ == NULL){
+        visual_ = new ImageMapVisual(vis_manager_->getSceneManager(), this);
+    }
     testVisual(visual_, "/home/moritz/TillEvil.jpg");
 }
 
+//! Called on disabling the class
+/*!
+  The ROS interfaces are shutdown and Ogre cleared.
+  */
 void ImageMapDisplay::onDisable(){
 	unsubscribe();
 	delete visual_;
     visual_ = NULL;
 }
 
+//! Called on reseting the class
+/*!
+  The plugin parent is reset and the plugin's state is reset.
+  \sa clear()
+  */
 void ImageMapDisplay::reset(){
     Display::reset();
     clear();
 }
 
-/**
- * Subscription to 3 static topics:
- *  - relative pose with image
- *  - absolute pose
- *  - image store get image and pose service
- * Subscription to each Mobot's topic:
- *  - pose
+//! Start ROS interfaces: subscribers, publishers, service server and client
+/*!
+ Subscription to 3 static topics:
+  - relative pose with image from the shutter through image store
+  - absolute pose from toro
+  - get image and pose service from image store
+  - remote procedure calls from image map info
+ Subscription to each Mobot's topic:
+  - pose
+
+  Topics can be changed through the Rviz interface. On change all interfaces
+  are shutdown and restarted.
  */
 void ImageMapDisplay::subscribe(){
 	if(!isEnabled()){
@@ -125,6 +156,11 @@ void ImageMapDisplay::subscribe(){
     return;
 }
 
+//! Shutdown all ROS interfaces
+/*!
+  All ROS interfaces are shutdown and the pose subscribers are deleted, since
+  thier count is variable.
+  */
 void ImageMapDisplay::unsubscribe(){
 	relPoseSub.shutdown();
 	absPoseSub.shutdown();
@@ -136,6 +172,11 @@ void ImageMapDisplay::unsubscribe(){
     updateRvizServer.shutdown();
 }
 
+//! Set the topic name for the image with relative pose and ID subscriber
+/*!
+  All ROS interfaces are shutdown and then restarted after the topic name has
+  been changed. By shutting down all interfaces, it simplifies the process
+  */
 void ImageMapDisplay::setRelPoseTopic(const std::string& topic){
     unsubscribe();
 	clear();
@@ -147,6 +188,11 @@ void ImageMapDisplay::setRelPoseTopic(const std::string& topic){
 	causeRender();
 }
 
+//! Set the topic name for the absolute pose and ID subscriber
+/*!
+  All ROS interfaces are shutdown and then restarted after the topic name has
+  been changed. By shutting down all interfaces, it simplifies the process
+  */
 void ImageMapDisplay::setAbsPoseTopic(const std::string& topic){
 	unsubscribe();
 	clear();
@@ -156,6 +202,11 @@ void ImageMapDisplay::setAbsPoseTopic(const std::string& topic){
 	causeRender();
 }
 
+//! Set the topic name for the image store service client
+/*!
+  All ROS interfaces are shutdown and then restarted after the topic name has
+  been changed. By shutting down all interfaces, it simplifies the process
+  */
 void ImageMapDisplay::setImageStoreTopic(const std::string& topic){
     unsubscribe();
     clear();
@@ -165,6 +216,11 @@ void ImageMapDisplay::setImageStoreTopic(const std::string& topic){
     causeRender();
 }
 
+//! Set the number of mobots for which pose changes are subscribed to
+/*!
+  All ROS interfaces are shutdown and then restarted after the topic name has
+  been changed. By shutting down all interfaces, it simplifies the process
+  */
 void ImageMapDisplay::setMobotPoseCount(const std::string& topic){
     unsubscribe();
     clear();
@@ -179,13 +235,20 @@ void ImageMapDisplay::setMobotPoseCount(const std::string& topic){
     causeRender();
 }
 
+//! Getter function for the mobotPoseCount variable
+/*!
+  All ROS interfaces are shutdown and then restarted after the topic name has
+  been changed. By shutting down all interfaces, it simplifies the process
+  */
 const std::string& ImageMapDisplay::getMobotPoseCount(){
     mobotPoseCountStr = boost::lexical_cast<std::string>(mobotPoseCount);
     return mobotPoseCountStr;
 }
 
-// TODO pass information to image_map_info
-// TODO retrieveImageSeries
+//! The callback for image with relative pose and ID subscriber
+/*!
+  An image is inserted into the 3D scene with the ID and pose provided.
+  */
 void ImageMapDisplay::relPoseCallback(
 	const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg){
     cv::Mat mat;
@@ -198,6 +261,7 @@ void ImageMapDisplay::relPoseCallback(
     visual_->insertImage(msg->id.session_id, msg->id.mobot_id, msg->id.image_id,
                          msg->pose.x, msg->pose.y, msg->pose.theta,
                          mat);
+    // TODO retrieveImageSeries
     // If the first image is missing(ID=0), get all until the recieved image.
     /*if(visual_->findNode(msg->id.session_id, msg->id.mobot_id, 0) == NULL){
         ROS_INFO("[ImageMapDisplay] Attemting to retrieve missing images");
@@ -205,7 +269,11 @@ void ImageMapDisplay::relPoseCallback(
     }*/
 }
 
-// TODO pass information to image_map_info
+//! The callback for the absolute pose and ID subscriber
+/*!
+  A new pose is added and set for the image identified with the ID. If the
+  image does not exist the pose is not added.
+  */
 void ImageMapDisplay::absPoseCallback(
 	const mobots_msgs::PoseAndID::ConstPtr& msg){
     ROS_INFO("[absPoseCallback] pose(%f,%f,%f)", msg->pose.x, msg->pose.y, msg->pose.theta);
@@ -215,13 +283,16 @@ void ImageMapDisplay::absPoseCallback(
     }
 }
 
+//! The callback for setting the pose of the mobot model
 void ImageMapDisplay::mobotPoseCallback(int mobotID,
         const geometry_msgs::Pose2D::ConstPtr& msg){
     visual_->setMobotModel(mobotID, msg->x, msg->y, msg->theta);
 }
 
-// TODO implemented dual pose(rel + abs) storage
-// Long method. Through in thread? -> locking of visual...
+//! Retrieves the images sent before the plugin initialized.
+/*!
+  Implementation not complete nor tested.
+  */
 void ImageMapDisplay::retrieveImages(int sessionID, int mobotID){
     GetImageWithPose srv;
     srv.request.id.session_id = sessionID;
@@ -252,6 +323,11 @@ void ImageMapDisplay::retrieveImages(int sessionID, int mobotID){
     return;
 }
 
+//! Output ROS interface to image_map_info
+/*!
+  Changes in the 3D scene are sent to image_map_info nodes. They include
+  updates of the image count, changing the pose types, and deletion of images
+  */
 void ImageMapDisplay::sendInfoUpdate(int sessionID, int mobotID, int key, int value){
     mobots_msgs::IDKeyValue msg;
     msg.id.session_id = sessionID;
@@ -261,6 +337,11 @@ void ImageMapDisplay::sendInfoUpdate(int sessionID, int mobotID, int key, int va
     infoPub.publish(msg);
 }
 
+//! Input ROS interface to image_map_info
+/*!
+  Requests to change the 3D scene recieved from image_map_info nodes. They include
+  showing and hiding images, changing the pose types, and deletion of images
+  */
 bool ImageMapDisplay::updateRvizCallback(map_visualization::RemoteProcedureCall::Request &req,
                                          map_visualization::RemoteProcedureCall::Response &res){
     int function = req.function;
@@ -352,10 +433,12 @@ bool ImageMapDisplay::updateRvizCallback(map_visualization::RemoteProcedureCall:
     return true;
 }
 
-// Override createProperties() to build and configure a Property
-// object for each user-editable property.  ``property_manager_``,
-// ``property_prefix_``, and ``parent_category_`` are all initialized before
-// this is called.
+//! Initialize Rviz properties
+/*!
+  Override createProperties() to build and configure a Property object for each
+  user-editable property.  ``property_manager_``, ``property_prefix_``, and
+  ``parent_category_`` are all initialized before this is called.
+  */
 void ImageMapDisplay::createProperties(){
     relPoseTopicProperty = property_manager_->createProperty<rviz::ROSTopicStringProperty>(
 		"RelativePoseTopic", property_prefix_,
@@ -393,6 +476,10 @@ void ImageMapDisplay::createProperties(){
     //    (ros::message_traits::datatype<map_visualization::GetImageWithPose>());
 }
 
+//! Test class
+/*!
+  Sample images, poses, and mobot models are loaded into the scene
+  */
 void ImageMapDisplay::testVisual(ImageMapVisual* visual_, std::string filePath){
 	std::ifstream imageFile(filePath.c_str(), std::ios::binary);
 	if(!boost::filesystem::exists(filePath.c_str())){
@@ -420,7 +507,7 @@ void ImageMapDisplay::testVisual(ImageMapVisual* visual_, std::string filePath){
     visual_->setMobotModel(2,-1,0.6,0);
 }
 
-} // end namespace rviz_plugin_display
+}
 
 // Tell pluginlib about this class.  It is important to do this in
 // global scope, outside our package's namespace.
