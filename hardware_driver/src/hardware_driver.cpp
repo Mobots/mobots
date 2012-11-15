@@ -111,20 +111,23 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		struct MouseData *delta_vals = (struct MouseData*) data;
 		 //publish
 		
-		globalPose.x += delta_vals->x;
-		globalPose.y += delta_vals->y;
-		globalPose.theta += delta_vals->theta;
-		correctAngle(*(&globalPose.theta));
+		if(delta_vals->x != 0 || delta_vals->y != 0 || delta_vals->theta != 0){ //das kann wieder raus, wenn stm keine 0 daten mehr schickt
+			globalPose.x += delta_vals->x;
+			globalPose.y += delta_vals->y;
+			globalPose.theta += delta_vals->theta;
+			correctAngle(*(&globalPose.theta));
 
-		if (POST_EVERY_X_MESSAGE == counter) { //yoda condition ftw
-			counter=0;
-			geometry_msgs::Pose2D mouse;
-			mouse.x = delta_vals->x;
-			mouse.y = delta_vals->y;
-			mouse.theta = delta_vals->theta;
-			mousePosePub.publish(mouse);
-			globalPosePub.publish(globalPose);
+			if (POST_EVERY_X_MESSAGE == counter) { //yoda condition ftw
+				counter=0;
+				geometry_msgs::Pose2D mouse;
+				mouse.x = delta_vals->x;
+				mouse.y = delta_vals->y;
+				mouse.theta = delta_vals->theta;
+				mousePosePub.publish(mouse);
+				globalPosePub.publish(globalPose);
+			}
 		}
+		
 
 		if (!targetPoses.empty()) {
 			if(!velocityControlled)
