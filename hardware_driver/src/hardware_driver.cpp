@@ -195,7 +195,7 @@ void absPoseCallback(const mobots_msgs::Pose2DPrio& next_pose){
 
 
 void relPoseCallback(const mobots_msgs::Pose2DPrio& msg){
-
+	cout << "relPoseCallback x " << msg.pose.x << " y " << msg.pose.y << " theta " << msg.pose.theta;
   //retrieve position, to sum up with new delta pose:
   mobots_msgs::Pose2DPrio next;
   if (msg.prio == -1 || msg.prio == 0 || targetPoses.empty()) 	//current position, if set as current target positon or list empty

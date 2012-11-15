@@ -53,6 +53,7 @@ ros::ServiceClient client;
 ros::NodeHandle* nh;
 int mobotID;
 int indexRight;
+int rightStickSign = 1;
 
 void siginthandler(int param){
 	path_planner::KeyboardRequest::Request req;
@@ -78,6 +79,8 @@ int main(int argc, char** argv){
 	cout << endl;
 	cout << "index for right stick? (sixaxis = 2, davids shit = 3):";
 	cin >> indexRight;
+	if(indexRight == 3)
+		rightStickSign = -1;
 	cout << endl;
 	std::stringstream namess;
 	namess << "mobot_sixaxis_teleop_" << mobotID;
@@ -121,7 +124,7 @@ mobots_msgs::Twist2D lastTwist;
 void joyCallback(const sensor_msgs::Joy& msg){
 	twist.x = -msg.axes[PS3_AXIS_STICK_LEFT_LEFTWARDS];
 	twist.y = msg.axes[PS3_AXIS_STICK_LEFT_UPWARDS];
-	twist.theta = -msg.axes[indexRight];
+	twist.theta = rightStickSign*msg.axes[indexRight];
 	if(twist.x == lastTwist.x && twist.y == lastTwist.y && twist.theta == lastTwist.theta)
 		return;
 	velocity_pub.publish(twist);
