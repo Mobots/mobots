@@ -59,12 +59,13 @@ void Shutter3::startCamera(){
 		imageWidth,
 		imageHeight);
 	ok = true;
-	usleep(500);
+	sleep(1);
 	pthread_create(&cameraThread_t, 0, cameraThread, 0);
 }
 
 void Shutter3::stopCamera(){
 	ok = false;
+	pthread_mutex_unlock(&mutex);
 	pthread_join(cameraThread_t, NULL);
 	usb_cam_camera_shutdown();
 	free(camera_image_);

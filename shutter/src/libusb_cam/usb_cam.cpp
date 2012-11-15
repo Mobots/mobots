@@ -910,7 +910,7 @@ void usb_cam_camera_grab_image(usb_cam_camera_image_t *image)
 
   if (0==r) {
     fprintf(stderr, "select timeout\n");
-    exit(EXIT_FAILURE);
+    //exit(EXIT_FAILURE);
   }
 
   read_frame(image);
