@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 	std::cout << "sending: v_mobot = (" << v_mobot.x << ',' << v_mobot.y << ',' << v_mobot.theta << ")" << std::endl;
 	protocol.sendData(VELOCITY, (unsigned char*) &v_mobot, sizeof(struct Velocity));
 
-	return EXIT_SUCCESS;
+	//return EXIT_SUCCESS;
 
 	while (1)
 	{

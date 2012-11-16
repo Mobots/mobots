@@ -1,3 +1,5 @@
+#pragma once
+
 // Columns in the image_map_model table
 static const int SESSION  = 0;
 static const int MOBOT    = 1;
