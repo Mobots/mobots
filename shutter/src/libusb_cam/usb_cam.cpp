@@ -80,7 +80,7 @@ static int avframe_rgb_size = 0;
 
 struct SwsContext *video_sws = NULL;
 
-UsbCamErrorHandler* errorHandler;
+static UsbCamErrorHandler* errorHandler;
 
 static void errno_exit(const char * s)
 {
@@ -910,7 +910,7 @@ void usb_cam_camera_grab_image(usb_cam_camera_image_t *image)
 
   if (0==r) {
     fprintf(stderr, "select timeout\n");
-    exit(EXIT_FAILURE);
+    //exit(EXIT_FAILURE);
   }
 
   read_frame(image);

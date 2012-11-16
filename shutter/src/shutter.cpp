@@ -35,6 +35,7 @@ Shutter::Shutter(int mobotID, double l, double b): mobotID(mobotID), g(l,b) //In
 		sessionID = 0;
 		if(!ros::param::get("/sessionID", sessionID))
 		ROS_ERROR("[%s] /sessionID or gtfo, sessionID set to 0", __PRETTY_FUNCTION__);
+		imageID = 0;
 		ipid.id.session_id = sessionID;
 		ipid.id.mobot_id = mobotID;
 }

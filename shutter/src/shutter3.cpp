@@ -5,11 +5,13 @@
 using namespace std;
 
 static usb_cam_camera_image_t* camera_image_;
-static pthread_t cameraThread;
+static pthread_t cameraThread_t;
 
 static void* cameraThread(void* data);
 
 static bool ok = false;
+
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 Shutter3::Shutter3(int mobotID, double l, double b): Shutter(mobotID, l, b){
 }
@@ -35,7 +37,6 @@ void Shutter3::startShutter(){
     dTheta = 0;
 		
 		usb_cam_setErrorHandler(this);
-		
 		startCamera();
 
     ros::spin();
@@ -44,7 +45,9 @@ void Shutter3::startShutter(){
 
 static void* cameraThread(void* data){
 	while(ok){
+		pthread_mutex_lock(&mutex);
 		usb_cam_camera_grab_image(camera_image_);
+		pthread_mutex_unlock(&mutex);
 	}
 	return 0;
 }
@@ -56,13 +59,16 @@ void Shutter3::startCamera(){
 		imageWidth,
 		imageHeight);
 	ok = true;
-	pthread_create(&cameraThread, 0, cameraThread, 0);
+	sleep(1);
+	pthread_create(&cameraThread_t, 0, cameraThread, 0);
 }
 
 void Shutter3::stopCamera(){
 	ok = false;
-	pthread_join(&cameraThread, NULL);
+	pthread_mutex_unlock(&mutex);
+	pthread_join(cameraThread_t, NULL);
 	usb_cam_camera_shutdown();
+	free(camera_image_);
 }
 
 inline void Shutter3::publishMessage(double x, double y, double theta) {
@@ -90,7 +96,9 @@ void Shutter3::mouseCallback(const geometry_msgs::Pose2D &mouse_data) {
 			std::cout << "dx " << dX << " dy " << dY  << " dTheta " << dTheta << " overlap " << currentOverlap << " need < " << overlap << std::endl;
 			if (currentOverlap < overlap) {
 				std::cout << __FILE__ << "shuttering" << std::endl;
+				pthread_mutex_lock(&mutex);
 				fillImage(ipid.image, "rgb8", camera_image_->height, camera_image_->width, 3 * camera_image_->width, camera_image_->image);
+				pthread_mutex_unlock(&mutex);
 				publishMessage(dX, dY, dTheta);
 				dX = 0;
 				dY = 0;
