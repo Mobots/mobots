@@ -42,6 +42,7 @@ rosbuild_add_executable(testParallelMatcher src/test/testParallelMatcher.cpp)
 rosbuild_add_executable(makeMatch src/test/makeMatch.cpp)
 rosbuild_add_executable(testFeatures src/test/testFeatures.cpp)
 rosbuild_add_executable(testPics src/test/testPics.cpp)
+rosbuild_add_executable(imgtest src/test/imgtest.cpp)
 
 target_link_libraries(feature_detector messageBridge)
 target_link_libraries(testFeatures messageBridge featuresMatcher)
