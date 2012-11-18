@@ -157,7 +157,7 @@ void mouseCallback2(const geometry_msgs::Pose2D &mouse_data) {
 			double currentOverlap = g->checkPicture(dX, dY, dTheta); //entspricht der derzeitigen überlappung
 			std::cout << "dx " << dX << " dy " << dY  << " dTheta " << dTheta << " overlap " << currentOverlap << " need < " << overlap << std::endl;
 			if (currentOverlap < overlap){
-			  int index = circle_buffer_index-1;
+			  int index = circle_buffer_index-2;
 			  if(index >= circle_buffer_count) //possible because we don't use mutex
 				 index = circle_buffer_count-1;
 				if(index < 0)
