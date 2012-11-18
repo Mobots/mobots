@@ -71,7 +71,7 @@ int main(int argc, char** argv){
 		
 		for(int i = 0; i < circle_buffer_count; i++){
 		  images_circle_buffer[i].image.encoding = string("rgb8");
-		  images_circle_buffer[i].image.data.resize(imageWidth*imageHeight*24);
+		  images_circle_buffer[i].image.data.resize(imageWidth*imageHeight*3);
 		  images_circle_buffer[i].image.is_bigendian = 0;
 		  images_circle_buffer[i].image.width = imageWidth;
 		  images_circle_buffer[i].image.height = imageHeight;

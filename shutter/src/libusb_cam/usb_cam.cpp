@@ -371,12 +371,12 @@ mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
 
 static void process_image(const void * src, int len, usb_cam_camera_image_t *dest)
 {
-  /*if(pixelformat==V4L2_PIX_FMT_YUYV)*/
+  if(pixelformat==V4L2_PIX_FMT_YUYV)
     yuyv2rgb((char*)src, dest->image, dest->width*dest->height);
-  /*else if(pixelformat==V4L2_PIX_FMT_UYVY)
+  else if(pixelformat==V4L2_PIX_FMT_UYVY)
     uyvy2rgb((char*)src, dest->image, dest->width*dest->height);
   else if(pixelformat==V4L2_PIX_FMT_MJPEG)
-    mjpeg2rgb((char*)src, len, dest->image, dest->width*dest->height);*/
+    mjpeg2rgb((char*)src, len, dest->image, dest->width*dest->height);
 }
 
 static int read_frame(usb_cam_camera_image_t *image)
@@ -384,7 +384,7 @@ static int read_frame(usb_cam_camera_image_t *image)
   struct v4l2_buffer buf;
   unsigned int i;
   int len;
-#if 0
+
   switch (io) {
   case IO_METHOD_READ:
     len = read(fd, buffers[0].start, buffers[0].length);
@@ -407,8 +407,7 @@ static int read_frame(usb_cam_camera_image_t *image)
 
     break;
 
-  case IO_METHOD_MMAP: 
-#endif
+  case IO_METHOD_MMAP:
     CLEAR (buf);
 
     buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -435,7 +434,7 @@ static int read_frame(usb_cam_camera_image_t *image)
 
     if (-1==xioctl(fd, VIDIOC_QBUF, &buf))
       errno_exit("VIDIOC_QBUF");
-#if 0
+
     break;
 
   case IO_METHOD_USERPTR:
@@ -472,7 +471,6 @@ static int read_frame(usb_cam_camera_image_t *image)
 
     break;
   }
-#endif
 
   return 1;
 }
@@ -906,17 +904,17 @@ void usb_cam_camera_grab_image(usb_cam_camera_image_t *image)
     if (EINTR==errno)
       return;
 
-    errno_exit("select interrupt");
+    errno_exit("select");
   }
 
   if (0==r) {
     //fprintf(stderr, "select timeout\n");
-    errno_exit("select timeout");
+    errno_exit("select");
     //exit(EXIT_FAILURE);
   }
 
   read_frame(image);
-  //image->is_new = 1;
+  image->is_new = 1;
 }
 
 // enables/disables auto focus
@@ -950,3 +948,6 @@ void usb_cam_camera_set_auto_focus(int value)
     }
   }
 }
+
+
+
