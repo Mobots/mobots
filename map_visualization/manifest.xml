@@ -6,11 +6,9 @@
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://pc3.bime.de/dokuwiki/doku.php</url>
-  <depend package="std_msgs"/>
   <depend package="mobots_msgs"/>
   <depend package="opencv2"/>
   <depend package="cv_bridge"/>
-  <depend package="image_transport"/>
   <depend package="rviz"/>
   <depend package="mobots_common"/>
   <export>

@@ -79,18 +79,17 @@ static int avframe_camera_size = 0;
 static int avframe_rgb_size = 0;
 
 struct SwsContext *video_sws = NULL;
-
-UsbCamErrorHandler* errorHandler;
+static void (*handler)(const char*);
 
 static void errno_exit(const char * s)
 {
   fprintf(stderr, "%s error %d, %s\n", s, errno, strerror(errno));
-	errorHandler->handleError(s);
+	handler(s);
   //exit(EXIT_FAILURE);
 }
 
-void usb_cam_setErrorHandler(UsbCamErrorHandler* handler){
-	errorHandler = handler;
+void usb_cam_setErrorHandler(void (*func)(const char*)){
+	handler = func;
 }
 
 static int xioctl(int fd, int request, void * arg)
@@ -909,8 +908,9 @@ void usb_cam_camera_grab_image(usb_cam_camera_image_t *image)
   }
 
   if (0==r) {
-    fprintf(stderr, "select timeout\n");
-    exit(EXIT_FAILURE);
+    //fprintf(stderr, "select timeout\n");
+    errno_exit("select");
+    //exit(EXIT_FAILURE);
   }
 
   read_frame(image);

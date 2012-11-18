@@ -60,11 +60,6 @@ typedef enum {
   PIXEL_FORMAT_MJPEG,
 } usb_cam_pixel_format;
 
-class UsbCamErrorHandler{
-public:
-	virtual void handleError(const char* error) = 0;
-};
-
 // start camera
 usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, usb_cam_io_method io, usb_cam_pixel_format pf, int image_width, int image_height);
 // shutdown camera
@@ -74,6 +69,6 @@ void usb_cam_camera_grab_image(usb_cam_camera_image_t *image);
 // enables/disable auto focus
 void usb_cam_camera_set_auto_focus(int value);
 
-void usb_cam_setErrorHandler(UsbCamErrorHandler* handler);
+void usb_cam_setErrorHandler(void (*handler)(const char*));
 
 #endif
