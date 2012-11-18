@@ -127,8 +127,8 @@ void checkResult(){
   cout << "aff:" << endl << aff << endl;
 	cout << "varX: " << result.varX << " varY: " << result.varY << " varTheta: " << result.varTheta << endl;
 	
-	imshow("mm1", mm1);
-	imshow("mm2", mm2);
+	//imshow("mm1", mm1);
+	//imshow("mm2", mm2);
 	//imshow("mega", mega);
 	
   Mat result1;
