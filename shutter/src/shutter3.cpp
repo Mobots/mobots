@@ -123,8 +123,6 @@ static void copyImage(){
 
 void startCamera(){
 	camera_image_ = usb_cam_camera_start("/dev/video0",
-		IO_METHOD_MMAP,
-		PIXEL_FORMAT_YUYV,
 		imageWidth,
 		imageHeight);
 	ok = true;
@@ -165,9 +163,7 @@ void mouseCallback2(const geometry_msgs::Pose2D &mouse_data) {
 			  if(index >= circle_buffer_count) //possible because we don't use mutex
 				 index = circle_buffer_count-1;
 				fillImage(images_circle_buffer[index].image, "rgb8", imageHeight, imageWidth, 3 * imageWidth, camera_image_->image);
-			  
-								std::cout << __FILE__ << "shuttering "  << endl;
-								cout << " size of struct rows " << camera_image_->height << "cols " << camera_image_->width <<  std::endl;
+				std::cout << __FILE__ << "shuttering "  << endl;
 				publishMessage(dX, dY, dTheta, index);
 				dX = 0;
 				dY = 0;
