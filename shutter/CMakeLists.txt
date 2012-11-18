@@ -3,7 +3,7 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 
 rosbuild_init()
 rosbuild_gensrv()
-
+set(ROS_BUILD_TYPE Debug)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
@@ -27,7 +27,7 @@ rosbuild_add_boost_directories()
 #endif()
 rosbuild_add_library(new_usb_cam_lib src/libusb_cam/usb_cam.cpp)
 target_link_libraries(new_usb_cam_lib avcodec swscale)
-rosbuild_add_executable(shutter src/shutter.cpp src/shutter2.cpp src/shutter3.cpp src/geometry.cpp)
+rosbuild_add_executable(shutter src/shutter3.cpp src/geometry.cpp)
 target_link_libraries(shutter new_usb_cam_lib)
 #rosbuild_add_executable(manualShutter src/manualShutter.cpp)
 #rosbuild_link_boost(shutter geometry)
