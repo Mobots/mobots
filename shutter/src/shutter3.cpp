@@ -1,7 +1,5 @@
-#include <cstdio>
 #include <iostream>
 #include <ros/ros.h>
-#include "shutter/delta.h"
 #include <mobots_msgs/ImageWithPoseAndID.h>
 #include <math.h>
 #include "geometry.h"

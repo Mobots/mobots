@@ -5,7 +5,7 @@
 #include <mobots_msgs/ImageWithPoseAndID.h>
 #include <math.h>
 #include "geometry.h"
-#include "libusb_cam/usb_cam.h"
+#include "usb_cam/usb_cam.h"
 
 #pragma once
 
@@ -95,7 +95,7 @@ private:
 
 /**
  * ftw
- */
+ 
 class Shutter3 : public Shutter , public UsbCamErrorHandler{
 public:	
     Shutter3(int mobotID, double l, double b);
@@ -109,5 +109,5 @@ private:
 		int imageWidth, imageHeight;
 		int callbackCount;
 		inline void publishMessage(double x, double y, double theta);
-		virtual void mouseCallback(const geometry_msgs::Pose2D &mouse_data);
-};
+		virtual void mouseCallback2(const geometry_msgs::Pose2D &mouse_data);
+};*/

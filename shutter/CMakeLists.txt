@@ -29,6 +29,8 @@ rosbuild_add_library(new_usb_cam_lib src/libusb_cam/usb_cam.cpp)
 target_link_libraries(new_usb_cam_lib avcodec swscale)
 rosbuild_add_executable(shutter src/shutter3.cpp src/geometry.cpp)
 target_link_libraries(shutter new_usb_cam_lib)
+rosbuild_add_executable(shutterold src/shutter.cpp src/shutter2.cpp src/geometry.cpp)
+target_link_libraries(shutterold new_usb_cam_lib)
 #rosbuild_add_executable(manualShutter src/manualShutter.cpp)
 #rosbuild_link_boost(shutter geometry)
 
