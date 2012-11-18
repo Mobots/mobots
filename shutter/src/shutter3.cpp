@@ -10,7 +10,7 @@
 
 using namespace std;
 
-static const int circle_buffer_count = 50;
+static const int circle_buffer_count = 3;
 static usb_cam_camera_image_t* camera_image_;
 static mobots_msgs::ImageWithPoseAndID images_circle_buffer[circle_buffer_count];
 static int circle_buffer_index = 0;
