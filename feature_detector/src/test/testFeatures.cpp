@@ -204,7 +204,7 @@ int main(int argc, char** argv){
   copyMatToImageMSg(image2Gray, i2);
   ros::NodeHandle nodeHandle;
   ros::Subscriber subscriber = nodeHandle.subscribe("/mobot1/featureset_pose_id", 2, featuresReceived);
-  ros::Publisher publisher = nodeHandle.advertise<mobots_msgs::ImageWithPoseAndID>("/mobot1/image_pose_id", 2);
+  ros::Publisher publisher = nodeHandle.advertise<mobots_msgs::ImageWithPoseAndID>("/mobot1/image_pose_id_relay", 2);
   cout << "now sending" << endl;
   sleep(1);
   publisher.publish(i1);
