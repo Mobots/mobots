@@ -44,7 +44,7 @@ int main(int argc, char** argv){
   ss << "[" << nodeHandle.getNamespace() << "/feature_detector]";
   TAG = new char[ss.str().size()+1];
   strcpy(TAG, ss.str().c_str());
-  ros::Subscriber subscriber = nodeHandle.subscribe("image_pose_id", 10, processImage);
+  ros::Subscriber subscriber = nodeHandle.subscribe("image_pose_id_relay", 10, processImage);
   publisher = nodeHandle.advertise<mobots_msgs::FeatureSetWithPoseAndID>("featureset_pose_id", 10);
 	int sliceCount = 5;
 	int maxFeaturesPerslice = 450;

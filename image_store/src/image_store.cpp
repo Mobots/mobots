@@ -7,6 +7,12 @@
 #include <fstream>
 
 #include <ros/ros.h>
+#include <image_transport/image_transport.h>
+#include <cv_bridge/cv_bridge.h>
+#include <cv_bridge/CvBridge.h>
+#include <opencv2/opencv.hpp>
+//#include <image_transport/image_transport.h>
+//#include <opencv2/core/core.hpp>
 
 #include "image_pose_data_types.h"
 #include "image_pose.h"
@@ -26,6 +32,8 @@ std::map<int, poseT> deltaPoseBuffer;
 int currentSessionID;
 ros::Publisher* relativePub;
 ros::Publisher* absolutePub;
+ros::Publisher* deltaPubs;
+image_transport::Publisher* imagePubs;
 
 /**
  * When a new session is activated, the buffer for the delta pose to relative
@@ -83,6 +91,22 @@ void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg)
 	relayMsg.image.encoding = infoData.image.encoding;
 	relayMsg.image.data = msg->image.data;
 	relativePub->publish(relayMsg);
+    // Relay images through image_transport
+    if(imagePubs[msg->id.mobot_id].getNumSubscribers() != 0){
+        cv::Mat mat;
+        if(msg->image.encoding == "jpg" || msg->image.encoding == "png"){
+            mat = cv::imdecode(msg->image.data, 1);
+        } else {
+            cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg->image, "rgb8");
+            mat = cv_ptr->image;
+        }
+        IplImage mat_ipl = mat;
+        sensor_msgs::ImagePtr imageMsg = sensor_msgs::CvBridge::cvToImgMsg(&mat_ipl, "bgr8");
+        imagePubs[msg->id.mobot_id].publish(imageMsg);
+    }
+    if(deltaPubs[msg->id.mobot_id].getNumSubscribers() != 0){
+        deltaPubs[msg->id.mobot_id].publish(*msg);
+    }
 	// Send message
 	ros::spinOnce();
 }
@@ -181,6 +205,9 @@ int main(int argc, char **argv){
 	ros::Subscriber absoluteSub = n.subscribe("/slam/abs_pose", 10, absolutePoseHandler);
 	ros::Subscriber* deltaSubs = new ros::Subscriber[mobotCount];
 	ros::Subscriber* featuresetSubs = new ros::Subscriber[mobotCount];
+    imagePubs = new image_transport::Publisher[mobotCount];
+    deltaPubs = new ros::Publisher[mobotCount];
+    image_transport::ImageTransport it(n);
 	for(int i = 0; i < mobotCount; i++){
 		std::stringstream ss;
 		ss << "/mobot" << i << "/featureset_pose_id";
@@ -188,12 +215,21 @@ int main(int argc, char **argv){
 		std::stringstream ss2;
 		ss2 << "/mobot" << i << "/image_pose_id";
 		deltaSubs[i] = n.subscribe(ss2.str(), 10, imageDeltaPoseHandler);
+        std::stringstream ss3;
+        ss3 << "/mobot" << i << "/image";
+        image_transport::Publisher imagePub = it.advertise(ss3.str(), 1);
+        imagePubs[i] = imagePub;
+        std::stringstream ss4;
+        ss4 << "/mobot" << i << "/image_pose_id_relay";
+        ros::Publisher deltaPub = n.advertise<mobots_msgs::ImageWithPoseAndID>(ss4.str(), 5);
+        deltaPubs[i] = deltaPub;
 	}
-	ros::Publisher relPub = n.advertise<mobots_msgs::ImageWithPoseAndID>("image_store_rel_pose", 10);
+	ros::Publisher relPub = n.advertise<mobots_msgs::ImageWithPoseAndID>("/image_store/rel_pose", 10);
 	relativePub = &relPub;
-	ros::Publisher absPub = n.advertise<mobots_msgs::PoseAndID> ("image_store_abs_pose", 10);
+    
+	ros::Publisher absPub = n.advertise<mobots_msgs::PoseAndID> ("/image_store/abs_pose", 10);
 	absolutePub = &absPub;
-	ros::ServiceServer service = n.advertiseService("image_store_get", imageHandlerOut);
+	ros::ServiceServer service = n.advertiseService("/image_store/get", imageHandlerOut);
 	
 	ros::spin();
 	return 0;

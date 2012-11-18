@@ -49,7 +49,6 @@ class ImageMapVisual;
  */
 class ImageMapDisplay : public rviz::Display
 {
-    Q_OBJECT
 public:
     ImageMapDisplay();
     virtual ~ImageMapDisplay();
