@@ -43,6 +43,8 @@ void stopCamera();
 void mouseCallback2(const geometry_msgs::Pose2D &mouse_data);
 void publishMessage(double x, double y, double theta, int index);
 static void copyImage();
+void handleError(const char* error);
+
 
 static const int imageWidth = 640;
 static const int imageHeight = 480;
@@ -80,7 +82,7 @@ int main(int argc, char** argv){
 		  images_circle_buffer[i].id.session_id = sessionID;
 		}
 		
-		
+		usb_cam_setErrorHandler(handleError);
 
 	startShutter();
 }
