@@ -61,7 +61,7 @@ typedef enum {
 } usb_cam_pixel_format;
 
 // start camera
-usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, int image_width, int image_height);
+usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, usb_cam_io_method io, usb_cam_pixel_format pf, int image_width, int image_height);
 // shutdown camera
 void usb_cam_camera_shutdown(void);
 // grabs a new image from the camera

@@ -10,7 +10,7 @@
 
 using namespace std;
 
-static const int circle_buffer_count = 100;
+static const int circle_buffer_count = 50;
 static usb_cam_camera_image_t* camera_image_;
 static mobots_msgs::ImageWithPoseAndID images_circle_buffer[circle_buffer_count];
 static int circle_buffer_index = 0;
@@ -71,7 +71,7 @@ int main(int argc, char** argv){
 		
 		for(int i = 0; i < circle_buffer_count; i++){
 		  images_circle_buffer[i].image.encoding = string("rgb8");
-		  images_circle_buffer[i].image.data.reserve(imageWidth*imageHeight*3);
+		  images_circle_buffer[i].image.data.resize(imageWidth*imageHeight*24);
 		  images_circle_buffer[i].image.is_bigendian = 0;
 		  images_circle_buffer[i].image.width = imageWidth;
 		  images_circle_buffer[i].image.height = imageHeight;
@@ -79,7 +79,6 @@ int main(int argc, char** argv){
 		  images_circle_buffer[i].id.mobot_id = mobotID;
 		  images_circle_buffer[i].id.session_id = sessionID;
 		}
-		
 		usb_cam_setErrorHandler(handleError);
 
 	startShutter();
@@ -98,7 +97,6 @@ void startShutter(){
     dY = 0;
     dTheta = 0;
 		g = new Geometry(1,1);
-		//usb_cam_setErrorHandler(this);
 		startCamera();
 
     ros::spin();
@@ -123,16 +121,16 @@ static void copyImage(){
 
 void startCamera(){
 	camera_image_ = usb_cam_camera_start("/dev/video0",
+		IO_METHOD_MMAP,
+		PIXEL_FORMAT_YUYV,
 		imageWidth,
 		imageHeight);
 	ok = true;
-	sleep(1);
 	pthread_create(&cameraThread_t, 0, cameraThread, 0);
 }
 
 void stopCamera(){
 	ok = false;
-	pthread_mutex_unlock(&mutex);
 	pthread_join(cameraThread_t, NULL);
 	usb_cam_camera_shutdown();
 	free(camera_image_);
@@ -158,11 +156,13 @@ void mouseCallback2(const geometry_msgs::Pose2D &mouse_data) {
 			//callbackCount = 0;
 			double currentOverlap = g->checkPicture(dX, dY, dTheta); //entspricht der derzeitigen überlappung
 			std::cout << "dx " << dX << " dy " << dY  << " dTheta " << dTheta << " overlap " << currentOverlap << " need < " << overlap << std::endl;
-			if (currentOverlap < overlap) {
-			  int index = circle_buffer_index;
+			if (currentOverlap < overlap){
+			  int index = circle_buffer_index-1;
 			  if(index >= circle_buffer_count) //possible because we don't use mutex
 				 index = circle_buffer_count-1;
-				fillImage(images_circle_buffer[index].image, "rgb8", imageHeight, imageWidth, 3 * imageWidth, camera_image_->image);
+				if(index < 0)
+					index = circle_buffer_count-1;
+				//msg.image.data = camera_circle_buffer[index].image;
 				std::cout << __FILE__ << "shuttering "  << endl;
 				publishMessage(dX, dY, dTheta, index);
 				dX = 0;

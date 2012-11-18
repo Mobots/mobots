@@ -66,6 +66,8 @@ struct buffer {
 };
 
 static char *camera_dev;
+static unsigned int pixelformat;
+static usb_cam_io_method io = IO_METHOD_MMAP;
 static int fd = -1;
 struct buffer * buffers = NULL;
 static unsigned int n_buffers = 0;
@@ -280,9 +282,101 @@ yuyv2rgb(char *YUV, char *RGB, int NumPixels) {
     }
 }
 
+static int init_mjpeg_decoder(int image_width, int image_height)
+{
+  avcodec_init();
+  avcodec_register_all();
+
+  avcodec = avcodec_find_decoder(CODEC_ID_MJPEG);
+  if (!avcodec)
+  {
+    fprintf(stderr,"Could not find MJPEG decoder\n");
+    return 0;
+  }
+
+  avcodec_context = avcodec_alloc_context();
+  avframe_camera = avcodec_alloc_frame();
+  avframe_rgb = avcodec_alloc_frame();
+
+  avpicture_alloc((AVPicture *)avframe_rgb, PIX_FMT_RGB24, image_width, image_height);
+
+  avcodec_context->codec_id = CODEC_ID_MJPEG;
+  avcodec_context->width = image_width;
+  avcodec_context->height = image_height;
+
+#if LIBAVCODEC_VERSION_MAJOR > 52
+  avcodec_context->pix_fmt = PIX_FMT_YUV422P;
+  avcodec_context->codec_type = AVMEDIA_TYPE_VIDEO;
+#endif
+
+  avframe_camera_size = avpicture_get_size(PIX_FMT_YUV422P, image_width, image_height);
+  avframe_rgb_size = avpicture_get_size(PIX_FMT_RGB24, image_width, image_height);
+
+  /* open it */
+  if (avcodec_open(avcodec_context, avcodec) < 0)
+  {
+    fprintf(stderr,"Could not open MJPEG Decoder\n");
+    return 0;
+  }
+  return 1;
+}
+
+static void
+mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
+{
+  int got_picture;
+
+  memset(RGB, 0, avframe_rgb_size);
+
+#if LIBAVCODEC_VERSION_MAJOR > 52
+  int decoded_len;
+  AVPacket avpkt;
+  av_init_packet(&avpkt);
+  
+  avpkt.size = len;
+  avpkt.data = (unsigned char*)MJPEG;
+  decoded_len = avcodec_decode_video2(avcodec_context, avframe_camera, &got_picture, &avpkt);
+
+  if (decoded_len < 0) {
+      fprintf(stderr, "Error while decoding frame.\n");
+      return;
+  }
+#else
+  avcodec_decode_video(avcodec_context, avframe_camera, &got_picture, (uint8_t *) MJPEG, len);
+#endif
+
+  if (!got_picture) {
+    fprintf(stderr,"Webcam: expected picture but didn't get it...\n");
+    return;
+  }
+
+  int xsize = avcodec_context->width;
+  int ysize = avcodec_context->height;
+  int pic_size = avpicture_get_size(avcodec_context->pix_fmt, xsize, ysize);
+  if (pic_size != avframe_camera_size) {
+    fprintf(stderr,"outbuf size mismatch.  pic_size: %d bufsize: %d\n",pic_size,avframe_camera_size);
+    return;
+  }
+
+  video_sws = sws_getContext( xsize, ysize, avcodec_context->pix_fmt, xsize, ysize, PIX_FMT_RGB24, SWS_BILINEAR, NULL, NULL, NULL);
+  sws_scale(video_sws, avframe_camera->data, avframe_camera->linesize, 0, ysize, avframe_rgb->data, avframe_rgb->linesize );
+  sws_freeContext(video_sws);  
+
+  int size = avpicture_layout((AVPicture *) avframe_rgb, PIX_FMT_RGB24, xsize, ysize, (uint8_t *)RGB, avframe_rgb_size);
+  if (size != avframe_rgb_size) {
+    fprintf(stderr,"webcam: avpicture_layout error: %d\n",size);
+    return;
+  }
+}
+
 static void process_image(const void * src, int len, usb_cam_camera_image_t *dest)
 {
+  /*if(pixelformat==V4L2_PIX_FMT_YUYV)*/
     yuyv2rgb((char*)src, dest->image, dest->width*dest->height);
+  /*else if(pixelformat==V4L2_PIX_FMT_UYVY)
+    uyvy2rgb((char*)src, dest->image, dest->width*dest->height);
+  else if(pixelformat==V4L2_PIX_FMT_MJPEG)
+    mjpeg2rgb((char*)src, len, dest->image, dest->width*dest->height);*/
 }
 
 static int read_frame(usb_cam_camera_image_t *image)
@@ -290,7 +384,31 @@ static int read_frame(usb_cam_camera_image_t *image)
   struct v4l2_buffer buf;
   unsigned int i;
   int len;
+#if 0
+  switch (io) {
+  case IO_METHOD_READ:
+    len = read(fd, buffers[0].start, buffers[0].length);
+    if (len==-1) {
+      switch (errno) {
+      case EAGAIN:
+        return 0;
 
+      case EIO:
+        /* Could ignore EIO, see spec. */
+
+        /* fall through */
+
+      default:
+        errno_exit("read");
+      }
+    }
+
+    process_image(buffers[0].start, len, image);
+
+    break;
+
+  case IO_METHOD_MMAP: 
+#endif
     CLEAR (buf);
 
     buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -317,7 +435,44 @@ static int read_frame(usb_cam_camera_image_t *image)
 
     if (-1==xioctl(fd, VIDIOC_QBUF, &buf))
       errno_exit("VIDIOC_QBUF");
+#if 0
+    break;
 
+  case IO_METHOD_USERPTR:
+    CLEAR (buf);
+
+    buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    buf.memory = V4L2_MEMORY_USERPTR;
+
+    if (-1==xioctl(fd, VIDIOC_DQBUF, &buf)) {
+      switch (errno) {
+      case EAGAIN:
+        return 0;
+
+      case EIO:
+        /* Could ignore EIO, see spec. */
+
+        /* fall through */
+
+      default:
+        errno_exit("VIDIOC_DQBUF");
+      }
+    }
+
+    for(i = 0; i<n_buffers; ++i)
+      if (buf.m.userptr==(unsigned long) buffers[i].start&&buf.length==buffers[i].length)
+        break;
+
+    assert (i < n_buffers);
+    len = buf.bytesused;
+    process_image((void *) buf.m.userptr, len, image);
+
+    if (-1==xioctl(fd, VIDIOC_QBUF, &buf))
+      errno_exit("VIDIOC_QBUF");
+
+    break;
+  }
+#endif
 
   return 1;
 }
@@ -326,10 +481,20 @@ static void stop_capturing(void)
 {
   enum v4l2_buf_type type;
 
+  switch (io) {
+  case IO_METHOD_READ:
+    /* Nothing to do. */
+    break;
+
+  case IO_METHOD_MMAP:
+  case IO_METHOD_USERPTR:
     type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
     if (-1==xioctl(fd, VIDIOC_STREAMOFF, &type))
       errno_exit("VIDIOC_STREAMOFF");
+
+    break;
+  }
 }
 
 static void start_capturing(void)
@@ -337,6 +502,12 @@ static void start_capturing(void)
   unsigned int i;
   enum v4l2_buf_type type;
 
+  switch (io) {
+  case IO_METHOD_READ:
+    /* Nothing to do. */
+    break;
+
+  case IO_METHOD_MMAP:
     for(i = 0; i<n_buffers; ++i) {
       struct v4l2_buffer buf;
 
@@ -354,17 +525,74 @@ static void start_capturing(void)
 
     if (-1==xioctl(fd, VIDIOC_STREAMON, &type))
       errno_exit("VIDIOC_STREAMON");
+
+    break;
+
+  case IO_METHOD_USERPTR:
+    for(i = 0; i<n_buffers; ++i) {
+      struct v4l2_buffer buf;
+
+      CLEAR (buf);
+
+      buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+      buf.memory = V4L2_MEMORY_USERPTR;
+      buf.index = i;
+      buf.m.userptr = (unsigned long) buffers[i].start;
+      buf.length = buffers[i].length;
+
+      if (-1==xioctl(fd, VIDIOC_QBUF, &buf))
+        errno_exit("VIDIOC_QBUF");
+    }
+
+    type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+
+    if (-1==xioctl(fd, VIDIOC_STREAMON, &type))
+      errno_exit("VIDIOC_STREAMON");
+
+    break;
+  }
 }
 
 static void uninit_device(void)
 {
   unsigned int i;
 
+  switch (io) {
+  case IO_METHOD_READ:
+    free(buffers[0].start);
+    break;
+
+  case IO_METHOD_MMAP:
     for(i = 0; i<n_buffers; ++i)
       if (-1==munmap(buffers[i].start, buffers[i].length))
         errno_exit("munmap");
+    break;
+
+  case IO_METHOD_USERPTR:
+    for(i = 0; i<n_buffers; ++i)
+      free(buffers[i].start);
+    break;
+  }
 
   free(buffers);
+}
+
+static void init_read(unsigned int buffer_size)
+{
+  buffers = (buffer*)calloc(1, sizeof(*buffers));
+
+  if (!buffers) {
+    fprintf(stderr, "Out of memory\n");
+    exit(EXIT_FAILURE);
+  }
+
+  buffers[0].length = buffer_size;
+  buffers[0].start = malloc(buffer_size);
+
+  if (!buffers[0].start) {
+    fprintf(stderr, "Out of memory\n");
+    exit(EXIT_FAILURE);
+  }
 }
 
 static void init_mmap(void)
@@ -418,6 +646,48 @@ static void init_mmap(void)
   }
 }
 
+static void init_userp(unsigned int buffer_size)
+{
+  struct v4l2_requestbuffers req;
+  unsigned int page_size;
+
+  page_size = getpagesize();
+  buffer_size = (buffer_size+page_size-1)&~(page_size-1);
+
+  CLEAR (req);
+
+  req.count = 4;
+  req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  req.memory = V4L2_MEMORY_USERPTR;
+
+  if (-1==xioctl(fd, VIDIOC_REQBUFS, &req)) {
+    if (EINVAL==errno) {
+      fprintf(stderr, "%s does not support "
+        "user pointer i/o\n", camera_dev);
+      exit(EXIT_FAILURE);
+    } else {
+      errno_exit("VIDIOC_REQBUFS");
+    }
+  }
+
+  buffers = (buffer*)calloc(4, sizeof(*buffers));
+
+  if (!buffers) {
+    fprintf(stderr, "Out of memory\n");
+    exit(EXIT_FAILURE);
+  }
+
+  for(n_buffers = 0; n_buffers<4; ++n_buffers) {
+    buffers[n_buffers].length = buffer_size;
+    buffers[n_buffers].start = memalign(/* boundary */page_size, buffer_size);
+
+    if (!buffers[n_buffers].start) {
+      fprintf(stderr, "Out of memory\n");
+      exit(EXIT_FAILURE);
+    }
+  }
+}
+
 static void init_device(int image_width, int image_height)
 {
   struct v4l2_capability cap;
@@ -439,11 +709,25 @@ static void init_device(int image_width, int image_height)
     fprintf(stderr, "%s is no video capture device\n", camera_dev);
     exit(EXIT_FAILURE);
   }
-  
+
+  switch (io) {
+  case IO_METHOD_READ:
+    if (!(cap.capabilities&V4L2_CAP_READWRITE)) {
+      fprintf(stderr, "%s does not support read i/o\n", camera_dev);
+      exit(EXIT_FAILURE);
+    }
+
+    break;
+
+  case IO_METHOD_MMAP:
+  case IO_METHOD_USERPTR:
     if (!(cap.capabilities&V4L2_CAP_STREAMING)) {
       fprintf(stderr, "%s does not support streaming i/o\n", camera_dev);
       exit(EXIT_FAILURE);
     }
+
+    break;
+  }
 
   /* Select video input, video standard and tune here. */
 
@@ -480,7 +764,7 @@ static void init_device(int image_width, int image_height)
   fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   fmt.fmt.pix.width = image_width;
   fmt.fmt.pix.height = image_height;
-  fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
+  fmt.fmt.pix.pixelformat = pixelformat;
   fmt.fmt.pix.field = V4L2_FIELD_INTERLACED;
 
 
@@ -500,7 +784,19 @@ static void init_device(int image_width, int image_height)
   image_width = fmt.fmt.pix.width;
   image_height = fmt.fmt.pix.height;
 
+  switch (io) {
+  case IO_METHOD_READ:
+    init_read(fmt.fmt.pix.sizeimage);
+    break;
+
+  case IO_METHOD_MMAP:
     init_mmap();
+    break;
+
+  case IO_METHOD_USERPTR:
+    init_userp(fmt.fmt.pix.sizeimage);
+    break;
+  }
 }
 
 static void close_device(void)
@@ -533,12 +829,26 @@ static void open_device(void)
   }
 }
 
-usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, int image_width, int image_height)
+usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, usb_cam_io_method io_method,
+    usb_cam_pixel_format pixel_format, int image_width, int image_height)
 {
   camera_dev = (char*)calloc(1,strlen(dev)+1);
   strcpy(camera_dev,dev);
 
   usb_cam_camera_image_t *image;
+  io = io_method;
+  if(pixel_format == PIXEL_FORMAT_YUYV)
+    pixelformat = V4L2_PIX_FMT_YUYV;
+  else if(pixel_format == PIXEL_FORMAT_UYVY)
+    pixelformat = V4L2_PIX_FMT_UYVY;
+  else if(pixel_format == PIXEL_FORMAT_MJPEG) {
+    pixelformat = V4L2_PIX_FMT_MJPEG;
+    init_mjpeg_decoder(image_width, image_height);
+  }
+  else {
+    fprintf(stderr, "Unknown pixelformat.\n");
+    exit(EXIT_FAILURE);
+  }
 
   open_device();
   init_device(image_width, image_height);
@@ -596,17 +906,17 @@ void usb_cam_camera_grab_image(usb_cam_camera_image_t *image)
     if (EINTR==errno)
       return;
 
-    errno_exit("select");
+    errno_exit("select interrupt");
   }
 
   if (0==r) {
     //fprintf(stderr, "select timeout\n");
-    errno_exit("select");
+    errno_exit("select timeout");
     //exit(EXIT_FAILURE);
   }
 
   read_frame(image);
-  image->is_new = 1;
+  //image->is_new = 1;
 }
 
 // enables/disables auto focus
@@ -640,6 +950,3 @@ void usb_cam_camera_set_auto_focus(int value)
     }
   }
 }
-
-
-
