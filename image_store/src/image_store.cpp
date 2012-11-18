@@ -97,7 +97,7 @@ void imageDeltaPoseHandler(const mobots_msgs::ImageWithPoseAndID::ConstPtr& msg)
         if(msg->image.encoding == "jpg" || msg->image.encoding == "png"){
             mat = cv::imdecode(msg->image.data, 1);
         } else {
-            cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg->image, "rgb8");
+            cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg->image, "bgr8");
             mat = cv_ptr->image;
         }
         IplImage mat_ipl = mat;
