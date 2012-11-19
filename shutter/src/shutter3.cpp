@@ -114,6 +114,7 @@ void* cameraThread(void* data){
 static void copyImage(){
   memcpy(&images_circle_buffer[circle_buffer_index].image.data[0], camera_image_->image, imageWidth*imageHeight*3);
   circle_buffer_index++;
+	cout << "got pic" << endl;
   if(circle_buffer_index == circle_buffer_count)
 	 cout << "resetting index" << endl;
   circle_buffer_index %= circle_buffer_count;
