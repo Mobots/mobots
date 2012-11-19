@@ -112,10 +112,11 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 			std::cout << "Error, wrong size\n" << std::endl;
 			return;
 		}
+		cout << "meh" << endl;
 		struct MouseData *delta_vals = (struct MouseData*) data;
 		 //publish
 		
-		if(delta_vals->x != 0 || delta_vals->y != 0 || delta_vals->theta != 0){ //das kann wieder raus, wenn stm keine 0 daten mehr schickt
+		//if(delta_vals->x != 0 || delta_vals->y != 0 || delta_vals->theta != 0){ //das kann wieder raus, wenn stm keine 0 daten mehr schickt
 			globalPose.x += delta_vals->x;
 			globalPose.y += delta_vals->y;
 			globalPose.theta += delta_vals->theta;
@@ -130,7 +131,7 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 				mousePosePub.publish(mouse);
 				globalPosePub.publish(globalPose);
 			}
-		}
+		//}
 		
 
 		if (!targetPoses.empty()) {
