@@ -68,7 +68,8 @@ void startWeg()
     bParam=pow(vMax,rootParam)/sBrems;
 
     initCom();
-    pthread_create(&receiveThread_t, 0, receiveMethod, 0);
+    //pthread_create(&receiveThread_t, 0, receiveMethod, 0);
+		receiveMethod(NULL);
     counter=0; //used to send mouse deltas every XXX incoming message
     ros::spin();
 
@@ -82,8 +83,11 @@ void initCom(){
 }
 
 void* receiveMethod(void* data){
-    while(1){
+  ros::Rate rate(20); 
+	while(1){
 		proto->receiveData();
+		ros::spinOnce();
+		rate.sleep();
 	}
 	return 0;
 }
@@ -108,10 +112,11 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 			std::cout << "Error, wrong size\n" << std::endl;
 			return;
 		}
+		cout << "meh" << endl;
 		struct MouseData *delta_vals = (struct MouseData*) data;
 		 //publish
 		
-		if(delta_vals->x != 0 || delta_vals->y != 0 || delta_vals->theta != 0){ //das kann wieder raus, wenn stm keine 0 daten mehr schickt
+		//if(delta_vals->x != 0 || delta_vals->y != 0 || delta_vals->theta != 0){ //das kann wieder raus, wenn stm keine 0 daten mehr schickt
 			globalPose.x += delta_vals->x;
 			globalPose.y += delta_vals->y;
 			globalPose.theta += delta_vals->theta;
@@ -126,7 +131,7 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 				mousePosePub.publish(mouse);
 				globalPosePub.publish(globalPose);
 			}
-		}
+		//}
 		
 
 		if (!targetPoses.empty()) {

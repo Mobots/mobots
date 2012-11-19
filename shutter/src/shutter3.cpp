@@ -10,7 +10,7 @@
 
 using namespace std;
 
-static const int circle_buffer_count = 3;
+static const int circle_buffer_count = 10;
 static usb_cam_camera_image_t* camera_image_;
 static mobots_msgs::ImageWithPoseAndID images_circle_buffer[circle_buffer_count];
 static int circle_buffer_index = 0;
@@ -158,7 +158,7 @@ void mouseCallback2(const geometry_msgs::Pose2D &mouse_data) {
 			double currentOverlap = g->checkPicture(dX, dY, dTheta); //entspricht der derzeitigen überlappung
 			std::cout << "dx " << dX << " dy " << dY  << " dTheta " << dTheta << " overlap " << currentOverlap << " need < " << overlap << std::endl;
 			if (currentOverlap < overlap){
-			  int index = circle_buffer_index-2;
+			  int index = circle_buffer_index-1;
 			  if(index >= circle_buffer_count) //possible because we don't use mutex
 				 index = circle_buffer_count-1;
 				if(index < 0)
