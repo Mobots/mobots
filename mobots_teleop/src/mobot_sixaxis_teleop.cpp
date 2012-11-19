@@ -84,7 +84,7 @@ int main(int argc, char** argv){
 	cout << endl;
 	std::stringstream namess;
 	namess << "mobot_sixaxis_teleop_" << mobotID;
-	ros::init(argc, argv, namess.str(), ros::init_options::NoSigintHandler);
+	ros::init(argc, argv, namess.str(), ros::init_options::NoSigintHandler|ros::init_options::AnonymousName);
   nh = new ros::NodeHandle;
 	joySub = nh->subscribe("/joy", 2, joyCallback);
 	cout << "searching for sixaxis driver..." << flush;
