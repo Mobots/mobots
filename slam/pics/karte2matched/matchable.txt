@@ -1,0 +1,75 @@
+0-1 -> NOT matchable
+0-2 -> NOT matchable
+1-2 -> matchable
+1-3 -> NOT matchable
+2-3 -> matchable
+2-4 -> matchable
+2-11 -> matchable
+3-4 -> matchable
+3-5 -> matchable
+3-11 -> matchable
+3-13 -> matchable
+3-14 -> matchable ############FALSCH
+4-5 -> matchable
+4-6 -> NOT matchable
+4-11 -> matchable
+4-13 -> matchable
+5-6 -> matchable
+5-7 -> NOT matchable
+5-10 -> matchable
+5-11 -> matchable
+6-7 -> matchable
+6-8 -> NOT matchable
+6-10 -> matchable
+7-8 -> matchable
+7-9 -> NOT matchable
+7-10 -> matchable
+7-19 -> matchable
+7-20 -> matchable
+7-25 -> matchable ############FALSCH
+8-9 -> matchable
+8-10 -> NOT matchable
+8-14 -> matchable ############FALSCH
+8-19 -> matchable
+8-20 -> matchable
+9-10 -> NOT matchable
+9-11 -> NOT matchable
+9-21 -> matchable
+9-24 -> matchable
+9-25 -> matchable
+10-11 -> NOT matchable
+10-12 -> NOT matchable
+10-13 -> matchable
+10-14 -> matchable
+10-15 -> matchable
+10-18 -> matchable
+11-12 -> matchable
+11-13 -> matchable
+11-14 -> matchable
+12-13 -> matchable
+12-14 -> matchable 
+12-15 -> matchable
+13-14 -> matchable
+13-15 -> NOT matchable
+14-15 -> matchable
+14-16 -> matchable
+15-16 -> matchable
+15-17 -> NOT matchable
+15-18 -> matchable
+16-17 -> matchable
+16-18 -> matchable
+17-18 -> NOT matchable
+17-19 -> NOT matchable
+18-19 -> NOT matchable
+18-20 -> NOT matchable
+19-20 -> matchable
+19-21 -> NOT matchable
+20-21 -> NOT matchable
+20-22 -> NOT matchable
+21-22 -> matchable
+21-23 -> matchable ############FALSCH
+22-23 -> matchable
+22-24 -> NOT matchable
+23-24 -> matchable
+23-25 -> matchable ############FALSCH
+24-25 -> matchable

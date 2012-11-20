@@ -1,12 +1,9 @@
 #include <iostream>
 #include <ros/ros.h>
 #include <mobots_msgs/ImageWithPoseAndID.h>
-#include <math.h>
 #include "geometry.h"
-#include <pthread.h>
 #include "libusb_cam/usb_cam.h"
 #include "mobots_common/utils.h"
-#include "sensor_msgs/fill_image.h"
 #include "signal.h"
 
 using namespace std;
@@ -41,8 +38,8 @@ void sigHandler(int signum);
 void checkOverlap();
 
 
- const int imageWidth = 640;
- const int imageHeight = 480;
+const int imageWidth = 640;
+const int imageHeight = 480;
  
 
 int main(int argc, char** argv){
@@ -124,7 +121,7 @@ void stopCamera(){
 }
 
  void copyImage(){
-  memcpy((void*)msg.image.data[0], camera_image_->image, imageWidth*imageHeight*3);
+  memcpy(&msg.image.data[0], camera_image_->image, imageWidth*imageHeight*3);
 }
 
 void publishMessage() {
@@ -143,7 +140,6 @@ void checkOverlap(){
   cout << "dx " << dX << " dy " << dY  << " dTheta " << dTheta << " overlap ";
   cout << currentOverlap << " need < " << overlap << endl;
   if (currentOverlap < overlap){
-	 //msg.image.data = camera_circle_buffer[index].image;
 	 std::cout << __FILE__ << "shuttering "  << endl;
 	 publishMessage();
 	 dX = 0;
@@ -162,7 +158,7 @@ void handleError(const char* error){
 	//like we give a fuck
 	//just restart the damn camera
 	if(!initialized){
-	 cout << "error while initializing, please restart this shit" << endl;
+	 cout << "error while initializing, please restart this shit by hand" << endl;
 	 exit(1);
 	}
 	restartNeeded = true;
