@@ -15,7 +15,6 @@ bool restartNeeded = false;
 bool initialized = false;
 
 ros::Subscriber pose_sub;
-ros::Subscriber image_sub;
 ros::Publisher poseImage_pub;
 
 int sessionID;
@@ -48,28 +47,25 @@ int main(int argc, char** argv){
 	int mobotID = 0;
 	if(!mobots_common::utils::parseNamespace(nh->getNamespace(), mobotID))
 		ROS_ERROR("%s mobotID cannot be parsed from namespace: %s", __PRETTY_FUNCTION__, nh->getNamespace().c_str());
-	
-	//Shutter shutter(0,1.06805,0.80104); //l/b für Simulator: 1.06805,0.80104
-	//Shutter shutter(mobotID, 3000.06805, 2500.80104);
-			sessionID = 0;
-		if(!ros::param::get("/sessionID", sessionID))
-		  ROS_ERROR("[%s] /sessionID or gtfo, sessionID set to 0", __PRETTY_FUNCTION__);
-		
-						overlap = 0.3;
-		ros::param::get("/shutter/overlap", overlap);
-		//ros::param::get("/shutter/height", imageHeight);
-		//ros::param::get("/shutter/width", imageWidth);
-		  msg.image.encoding = string("rgb8");
-		  msg.image.data.resize(imageWidth*imageHeight*3);
-		  msg.image.is_bigendian = 0;
-		  msg.image.width = imageWidth;
-		  msg.image.height = imageHeight;
-		  msg.image.step = 3*imageWidth;
-		  msg.id.mobot_id = mobotID;
-		  msg.id.session_id = sessionID;
-		usb_cam_setErrorHandler(handleError);
-	 signal(SIGINT, sigHandler);
-	startShutter();
+  sessionID = 0;
+  if(!ros::param::get("/sessionID", sessionID))
+	 ROS_ERROR("[%s] /sessionID or gtfo, sessionID set to 0", __PRETTY_FUNCTION__);
+
+  overlap = 0.3;
+  ros::param::get("/shutter/overlap", overlap);
+  //ros::param::get("/shutter/height", imageHeight);
+  //ros::param::get("/shutter/width", imageWidth);
+  msg.image.encoding = string("rgb8");
+  msg.image.data.resize(imageWidth*imageHeight*3);
+  msg.image.is_bigendian = 0;
+  msg.image.width = imageWidth;
+  msg.image.height = imageHeight;
+  msg.image.step = 3*imageWidth;
+  msg.id.mobot_id = mobotID;
+  msg.id.session_id = sessionID;
+  usb_cam_setErrorHandler(handleError);
+  signal(SIGINT, sigHandler);
+  startShutter();
 }
 
 void sigHandler(int signum){
@@ -80,7 +76,6 @@ void sigHandler(int signum){
 void startShutter(){
   ROS_INFO("[%s] Mobot %d: Shutterfunktion gestartet (ultra method444).", __PRETTY_FUNCTION__, mobotID);
   poseImage_pub = nh->advertise<mobots_msgs::ImageWithPoseAndID>("image_pose_id", 20);
-	 
   pose_sub = nh->subscribe("mouse", 1000, mouseCallback);
 	 
   imageID = 0;
@@ -99,6 +94,7 @@ void cameraThread(){
 	 if(restartNeeded){
 		stopCamera();
 		startCamera();
+		restartNeeded = false;
 	  }
 	 ros::spinOnce();
 	 checkOverlap();
@@ -118,6 +114,7 @@ void stopCamera(){
 	usb_cam_camera_shutdown();
 	free(camera_image_);
 	initialized = false;
+	sleep(1);
 }
 
  void copyImage(){

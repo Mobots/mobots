@@ -910,16 +910,18 @@ void usb_cam_camera_grab_image(usb_cam_camera_image_t *image)
       return;
 
     errno_exit("select interrupt");
+	 return;
   }
 
   if (0==r) {
     //fprintf(stderr, "select timeout\n");
     errno_exit("select timeout");
+	 return;
     //exit(EXIT_FAILURE);
   }
 
   read_frame(image);
-  image->is_new = 1;
+  //image->is_new = 1; //like someone would care
 }
 
 // enables/disables auto focus
