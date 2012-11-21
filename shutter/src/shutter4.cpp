@@ -104,7 +104,7 @@ void cameraThread(){
 void startCamera(){
 	camera_image_ = usb_cam_camera_start("/dev/video0",
 		IO_METHOD_MMAP,
-		PIXEL_FORMAT_YUYV,
+		PIXEL_FORMAT_MJPEG, //much faster than yuyv
 		imageWidth,
 		imageHeight);
 	initialized = true;

@@ -371,12 +371,12 @@ mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
 
 static void process_image(const void * src, int len, usb_cam_camera_image_t *dest)
 {
-  //if(pixelformat==V4L2_PIX_FMT_YUYV)
+  if(pixelformat==V4L2_PIX_FMT_YUYV)
     yuyv2rgb((char*)src, dest->image, dest->width*dest->height);
-  /*else if(pixelformat==V4L2_PIX_FMT_UYVY)
+  else if(pixelformat==V4L2_PIX_FMT_UYVY)
     uyvy2rgb((char*)src, dest->image, dest->width*dest->height);
   else if(pixelformat==V4L2_PIX_FMT_MJPEG)
-    mjpeg2rgb((char*)src, len, dest->image, dest->width*dest->height);*/
+    mjpeg2rgb((char*)src, len, dest->image, dest->width*dest->height);
 }
 
 static int read_frame(usb_cam_camera_image_t *image)
@@ -386,7 +386,6 @@ static int read_frame(usb_cam_camera_image_t *image)
   int len;
 
   switch (io) {
-#if 0
   case IO_METHOD_READ:
     len = read(fd, buffers[0].start, buffers[0].length);
     if (len==-1) {
@@ -407,7 +406,7 @@ static int read_frame(usb_cam_camera_image_t *image)
     process_image(buffers[0].start, len, image);
 
     break;
-#endif
+
   case IO_METHOD_MMAP:
     CLEAR (buf);
 
@@ -426,7 +425,6 @@ static int read_frame(usb_cam_camera_image_t *image)
 
       default:
         errno_exit("VIDIOC_DQBUF");
-		  return 0;
       }
     }
 
@@ -434,13 +432,11 @@ static int read_frame(usb_cam_camera_image_t *image)
     len = buf.bytesused;
     process_image(buffers[buf.index].start, len, image);
 
-    if (-1==xioctl(fd, VIDIOC_QBUF, &buf)){
+    if (-1==xioctl(fd, VIDIOC_QBUF, &buf))
       errno_exit("VIDIOC_QBUF");
-		return 0;
-	 }
 
     break;
-#if 0
+
   case IO_METHOD_USERPTR:
     CLEAR (buf);
 
@@ -474,7 +470,6 @@ static int read_frame(usb_cam_camera_image_t *image)
       errno_exit("VIDIOC_QBUF");
 
     break;
-#endif 
   }
 
   return 1;
@@ -909,19 +904,19 @@ void usb_cam_camera_grab_image(usb_cam_camera_image_t *image)
     if (EINTR==errno)
       return;
 
-    errno_exit("select interrupt");
-	 return;
+    errno_exit("select");
+		return;
   }
 
   if (0==r) {
     //fprintf(stderr, "select timeout\n");
-    errno_exit("select timeout");
-	 return;
     //exit(EXIT_FAILURE);
+    errno_exit("select timeout");
+		return;
   }
 
   read_frame(image);
-  //image->is_new = 1; //like someone would care
+  image->is_new = 1;
 }
 
 // enables/disables auto focus
@@ -955,6 +950,4 @@ void usb_cam_camera_set_auto_focus(int value)
     }
   }
 }
-
-
 
