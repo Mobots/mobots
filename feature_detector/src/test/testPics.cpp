@@ -2,6 +2,7 @@
 #include "cv_bridge/cv_bridge.h"
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
+#include <fstream>
 
 #include "feature_detector/FeaturesFinder.h"
 #include "feature_detector/MessageBridge.h"
@@ -32,6 +33,7 @@ int main(int argc, char** argv){
   ros::NodeHandle nodeHandle;
 	FILE* pf = fopen("/dev/null", "r"); //stdout stfu
   *stdout = *pf;
+	ofstream out("matchable.txt");
   string base = string("/home/jonas/mobots/slam") + string("/pics/karte2/");
   for(int i = 0; i < picCount; i++){
 		for(int i2 = i+1; i2 < picCount; i2++){
@@ -48,8 +50,13 @@ int main(int argc, char** argv){
 			strcpy(meh, ss.str().c_str());
 			pthread_t thread;
 			//pthread_create(&thread, 0, systemThreaded, meh);
-			system(meh);
-			cerr << ss.str() << endl;
+			int status = system(meh);
+			if(status == 0)
+				out << i << "-" << i2 << " -> matchable" << endl;
+			else{
+				if(abs(i-i2) <= 2)
+					out << i << "-" << i2 << " -> NOT matchable" << endl; 
+			}
 		  /*char** paths = (char**) malloc(3*sizeof(char*));
 		  char* path0 = (char*) calloc(1000, 1);
 		  char* path1 = (char*) calloc(1000, 1);
@@ -72,5 +79,7 @@ int main(int argc, char** argv){
 			  cerr << i << ".png and " << i2 << ".png are NOT matchable" << endl;*/
 		}
   }
+  out.flush();
+  out.close();
   exit(1);
 }
