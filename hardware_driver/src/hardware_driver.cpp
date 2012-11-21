@@ -1,7 +1,12 @@
 #include "hardware_driver.h"
 #include "mobots_common/utils.h"
+#include "signal.h"
 
 using namespace std;
+
+void sigHandler(int signum){
+  exit(0);
+}
 
 int main(int argc, char** argv)
 {
@@ -9,6 +14,7 @@ ros::init(argc, argv, "hardware_driver");
   nh = new ros::NodeHandle;
   if(!mobots_common::utils::parseNamespace(nh->getNamespace(), mobotID))
     ROS_ERROR("%s mobotID cannot be parsed from namespace: %s", __PRETTY_FUNCTION__, nh->getNamespace().c_str());
+	signal(SIGINT, sigHandler);
   startWeg();
 }
 
@@ -112,7 +118,6 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 			std::cout << "Error, wrong size\n" << std::endl;
 			return;
 		}
-		cout << "meh" << endl;
 		struct MouseData *delta_vals = (struct MouseData*) data;
 		 //publish
 		
