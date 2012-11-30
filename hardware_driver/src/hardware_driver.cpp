@@ -1,7 +1,12 @@
 #include "hardware_driver.h"
 #include "mobots_common/utils.h"
+#include "signal.h"
 
 using namespace std;
+
+void sigHandler(int signum){
+  exit(0);
+}
 
 int main(int argc, char** argv)
 {
@@ -9,6 +14,7 @@ ros::init(argc, argv, "hardware_driver");
   nh = new ros::NodeHandle;
   if(!mobots_common::utils::parseNamespace(nh->getNamespace(), mobotID))
     ROS_ERROR("%s mobotID cannot be parsed from namespace: %s", __PRETTY_FUNCTION__, nh->getNamespace().c_str());
+	signal(SIGINT, sigHandler);
   startWeg();
 }
 
@@ -68,7 +74,8 @@ void startWeg()
     bParam=pow(vMax,rootParam)/sBrems;
 
     initCom();
-    pthread_create(&receiveThread_t, 0, receiveMethod, 0);
+    //pthread_create(&receiveThread_t, 0, receiveMethod, 0);
+		receiveMethod(NULL);
     counter=0; //used to send mouse deltas every XXX incoming message
     ros::spin();
 
@@ -82,8 +89,11 @@ void initCom(){
 }
 
 void* receiveMethod(void* data){
-    while(1){
+  ros::Rate rate(20); 
+	while(1){
 		proto->receiveData();
+		ros::spinOnce();
+		rate.sleep();
 	}
 	return 0;
 }
@@ -111,20 +121,23 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		struct MouseData *delta_vals = (struct MouseData*) data;
 		 //publish
 		
-		globalPose.x += delta_vals->x;
-		globalPose.y += delta_vals->y;
-		globalPose.theta += delta_vals->theta;
-		correctAngle(*(&globalPose.theta));
+		//if(delta_vals->x != 0 || delta_vals->y != 0 || delta_vals->theta != 0){ //das kann wieder raus, wenn stm keine 0 daten mehr schickt
+			globalPose.x += delta_vals->x;
+			globalPose.y += delta_vals->y;
+			globalPose.theta += delta_vals->theta;
+			correctAngle(*(&globalPose.theta));
 
-		if (POST_EVERY_X_MESSAGE == counter) { //yoda condition ftw
-			counter=0;
-			geometry_msgs::Pose2D mouse;
-			mouse.x = delta_vals->x;
-			mouse.y = delta_vals->y;
-			mouse.theta = delta_vals->theta;
-			mousePosePub.publish(mouse);
-			globalPosePub.publish(globalPose);
-		}
+			if (POST_EVERY_X_MESSAGE == counter) { //yoda condition ftw
+				counter=0;
+				geometry_msgs::Pose2D mouse;
+				mouse.x = delta_vals->x;
+				mouse.y = delta_vals->y;
+				mouse.theta = delta_vals->theta;
+				mousePosePub.publish(mouse);
+				globalPosePub.publish(globalPose);
+			}
+		//}
+		
 
 		if (!targetPoses.empty()) {
 			if(!velocityControlled)
@@ -195,7 +208,7 @@ void absPoseCallback(const mobots_msgs::Pose2DPrio& next_pose){
 
 
 void relPoseCallback(const mobots_msgs::Pose2DPrio& msg){
-
+	cout << "relPoseCallback x " << msg.pose.x << " y " << msg.pose.y << " theta " << msg.pose.theta << endl;
   //retrieve position, to sum up with new delta pose:
   mobots_msgs::Pose2DPrio next;
   if (msg.prio == -1 || msg.prio == 0 || targetPoses.empty()) 	//current position, if set as current target positon or list empty
@@ -337,6 +350,6 @@ void speedCallback(const mobots_msgs::Twist2D& msg){
 	vel.x = msg.x;
 	vel.y = msg.y;
 	vel.theta = msg.theta;
-	cerr << "vel x " << msg.x << " y " << msg.y << " theta " << msg.theta << endl;
+	//cerr << "vel x " << msg.x << " y " << msg.y << " theta " << msg.theta << endl;
 	proto->sendData(VELOCITY, (unsigned char*) &vel, sizeof(struct Velocity));
 }

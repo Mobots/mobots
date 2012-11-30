@@ -5,7 +5,6 @@
 
   </description>
   <author>Jonas Rahlf</author>
-  <license>BSD</license>
   <depend package="roscpp" />
   <depend package="roslib"/>
   <depend package="mobots_msgs" />
@@ -13,9 +12,8 @@
   <depend package="cv_bridge" />
   <depend package="geometry_msgs" />
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/feature_detector</url>
   <export>
-    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -Wl,-rpath,${prefix}/lib -lmessageBridge -lfeaturesMatcher"/>
+    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -Wl,-rpath,${prefix}/lib -lmessageBridge -lfeaturesMatcher -lparallelMatcher"/>
   </export>
 
 </package>

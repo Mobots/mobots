@@ -36,17 +36,17 @@ void ImageMapWaypoint::process(){
     nh = &nh_;
 
     // Input: User Waypoints from Rviz
-    ros::Subscriber poseRelaySub_ = nh->subscribe("/image_map/pose", 10,
+    ros::Subscriber poseRelaySub_ = nh->subscribe("/image_map/pose", 100,
             &ImageMapWaypoint::poseRelayHandler, this);
     poseRelaySub = &poseRelaySub_;
 
     // Output: User Waypoints to path_planner
     ros::Publisher poseRelayPub_ = nh->advertise
-            <mobots_msgs::PoseAndID>("/path_planner/waypoint_user", 10);
+            <mobots_msgs::PoseAndID>("/path_planner/waypoint_user", 100);
     poseRelayPub = &poseRelayPub_;
 
     // Input: Update data in the table
-    ros::Subscriber updateInfoSub_ = nh->subscribe("/image_map/update_push", 10,
+    ros::Subscriber updateInfoSub_ = nh->subscribe("/image_map/update_push", 1000,
             &ImageMapWaypoint::updateInfoHandler, this);
     updateInfoSub = &updateInfoSub_;
 
@@ -115,9 +115,8 @@ void ImageMapWaypoint::poseRelayHandler(const geometry_msgs::PoseStamped::ConstP
 
 // Handles the incoming updates about the 3D scene in Rviz
 void ImageMapWaypoint::updateInfoHandler(const mobots_msgs::IDKeyValue::ConstPtr& msg){
-
     Q_EMIT rvizChanged(msg->id.session_id, msg->id.mobot_id, msg->key, msg->value);
-    return;}
+}
 
 // Sends commands (remote procedure calls) to the 3D scene in Rviz
 int ImageMapWaypoint::updateRviz(int sessionID, int mobotID, int key, int value){
@@ -129,13 +128,13 @@ int ImageMapWaypoint::updateRviz(int sessionID, int mobotID, int key, int value)
     case ENABLED:
         switch(value){
         case -1:
-            srv.request.function = DELETE_MOBOT;
+            srv.request.function = DELETE_MOBOT_IMAGES;
             break;
         case 0:
-            srv.request.function = HIDE_MOBOT;
+            srv.request.function = HIDE_MOBOT_IMAGES;
             break;
         case 1:
-            srv.request.function = SHOW_MOBOT;
+            srv.request.function = SHOW_MOBOT_IMAGES;
             break;
         }
         break;
@@ -165,6 +164,9 @@ int ImageMapWaypoint::updateRviz(int sessionID, int mobotID, int key, int value)
             break;
         }
         break;
+    default:
+        ROS_ERROR("[ImageMapInfo] Unkown RPC (session,mobot,key,value):(%i,%i,%i,%i)",
+                  sessionID, mobotID, key, value);
     }
 
     if (updateRvizClient->call(srv)){

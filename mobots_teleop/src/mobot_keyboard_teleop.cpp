@@ -162,7 +162,7 @@ void keyboardLoop(){
     
     // get the next event from the keyboard
     int num;
-    
+		
     if((num = poll(&ufd, 1, 500)) < 0){
       perror("poll():");
       return;
@@ -185,6 +185,7 @@ void keyboardLoop(){
       }
       continue;
     }
+    cout << "keycode " << c << endl;
     //float heading = currentPosition.theta;
     switch(c){
 	case KEYCODE_W:
@@ -247,6 +248,6 @@ void keyboardLoop(){
     pub_pose.y = /*currentPosition.y + (heading)**/0;
     pub_pose.theta =/*currentPosition.theta +*/ turn*max_rv/100;
 		//cout << pub_pose.pose.x << " and " << speed*max_tv << endl;
-	 velocity_pub.publish(pub_pose);
+		velocity_pub.publish(pub_pose);
   }
 }

@@ -89,7 +89,7 @@ void Slam::callback(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID
     return;
   }
   
-  findEdgesBruteforce();
+  findEdgesBruteforce(false);
 
   runToro();
 
@@ -155,7 +155,7 @@ void Slam::addNewVertexFromMouseData(const boost::shared_ptr<mobots_msgs::Featur
   MY_INFO_STREAM("Added edge with x = " << t.translation().x() << ", y = " << t.translation().y() << ", theta = " << t.rotation() << ". Result: " << result);
 }
 
-void Slam::findEdgesBruteforce()
+void Slam::findEdgesBruteforce(bool distance_check)
 {  
   BOOST_FOREACH(TreeOptimizer2::VertexMap::value_type &v, pose_graph_.vertices)
   {
@@ -165,12 +165,16 @@ void Slam::findEdgesBruteforce()
       if (&v == &w)
         break;
       
-      /* Nur matchen, wenn die Bildmittelpunkte ausreichend nah beieinander liegen. */
-      double norm = sqrt( TreeOptimizer2::Translation(w.second->pose.x() - v.second->pose.x(), w.second->pose.y() - v.second->pose.y()).norm2() );
-      ROS_INFO_STREAM("Distance between image " << split(v.first).image_id << " and " << split(w.first).image_id << " is " << norm);
-      if (norm > mobots_common::constants::image_width_in_meters) {
-        ROS_INFO_STREAM("Skipping combination because of to big distance.");
-        continue;
+      if (distance_check)
+      {
+        /* Nur matchen, wenn die Bildmittelpunkte ausreichend nah beieinander liegen. */
+        double norm = sqrt( TreeOptimizer2::Translation(w.second->pose.x() - v.second->pose.x(), w.second->pose.y() - v.second->pose.y()).norm2() );
+        ROS_INFO_STREAM("Distance between image " << split(v.first).image_id << " and " << split(w.first).image_id << " is " << norm);
+        if (norm > mobots_common::constants::image_width_in_meters)
+        {
+          ROS_INFO_STREAM("Skipping combination because of to big distance.");
+          continue;
+        }
       }
       
       tryToMatch(v.first, w.first);
@@ -231,8 +235,8 @@ TreeOptimizer2::Transformation Slam::convertPixelsToMeters(const MatchResult& re
 {
   float x_in_meters = result.delta.x * mobots_common::constants::image_height_in_meters / mobots_common::constants::image_width_in_pixels;
   float y_in_meters = -result.delta.y * mobots_common::constants::image_height_in_meters / mobots_common::constants::image_height_in_pixels;
-  assert(0 <= result.delta.theta && result.delta.theta < 2 * M_PI);
-  return TreeOptimizer2::Transformation(x_in_meters, y_in_meters, result.delta.theta);
+  //assert(0 <= result.delta.theta && result.delta.theta < 2 * M_PI);
+  return TreeOptimizer2::Transformation(x_in_meters, y_in_meters, -result.delta.theta);
 }
 
 geometry_msgs::Pose2D Slam::convert(const TreeOptimizer2::Pose& toro_pose)
