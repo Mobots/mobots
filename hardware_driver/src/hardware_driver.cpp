@@ -47,7 +47,7 @@ void startWeg()
     ros::param::param<double>("sBrems",sBrems,0.2);
     ros::param::param<double>("rootParam",rootParam,2.0);
     ros::param::param<double>("dParam",dParam,0.4297);   //calculate: bParam=vMax/4/(desired start-to-break-point in degrees)*180/pi/radiusInnen
-    ros::param::param<double>("radiusInnen",radiusInnen,0.14); //TODO, genauer radiusInnenius, messen Mitte- Räder-Bodenkontakt
+    ros::param::param<double>("radiusInnen",radiusInnen,0.102); //TODO, genauer radiusInnenius, messen Mitte- Räder-Bodenkontakt
     ros::param::param<double>("vMax",vMax,0.15); //theoretisch maximal 0.18, weniger, um nicht mit maximum zu laufen
     ros::param::param<double>("minS",minS,0.02);	//Toleranz für erreichten Wegpunkt
     ros::param::param<double>("minDegree",minDegree,1); //Toleranz für erreichte Drehrichtung
@@ -88,6 +88,7 @@ void initCom(){
 	proto->protocol_registerHandler(MOUSE_DATA, sensorValHandler);
 }
 
+//gets it from the microcontroller
 void* receiveMethod(void* data){
   ros::Rate rate(20); 
 	while(1){
@@ -121,13 +122,9 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		struct MouseData *delta_vals = (struct MouseData*) data;
 		 //publish
 		
-		//if(delta_vals->x != 0 || delta_vals->y != 0 || delta_vals->theta != 0){ //das kann wieder raus, wenn stm keine 0 daten mehr schickt
-			globalPose.x += delta_vals->x;
-			globalPose.y += delta_vals->y;
-			globalPose.theta += delta_vals->theta;
-			correctAngle(*(&globalPose.theta));
+		if(delta_vals->x != 0 || delta_vals->y != 0 || delta_vals->theta != 0){ //das kann wieder raus, wenn stm keine 0 daten mehr schickt
 
-			if (POST_EVERY_X_MESSAGE == counter) { //yoda condition ftw
+        if (POST_EVERY_X_MESSAGE == counter) { //yoda condition 
 				counter=0;
 				geometry_msgs::Pose2D mouse;
 				mouse.x = delta_vals->x;
@@ -136,7 +133,24 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 				mousePosePub.publish(mouse);
 				globalPosePub.publish(globalPose);
 			}
-		//}
+
+//***************************+++ Transform +++********************************
+    //mobot-> global
+  double cost = cos(-globalPose.theta);
+  double sint = sin(-globalPose.theta);
+  delta_vals->y = sint*delta_vals->x + cost*delta_vals->y;
+  delta_vals->x = cost*delta_vals->x - sint*delta_vals->y;
+
+
+
+//****************************************************************************
+			globalPose.x += delta_vals->x;
+			globalPose.y += delta_vals->y;
+			globalPose.theta += delta_vals->theta;
+			correctAngle(*(&globalPose.theta));
+
+			
+		}
 		
 
 		if (!targetPoses.empty()) {
@@ -232,6 +246,8 @@ void relPoseCallback(const mobots_msgs::Pose2DPrio& msg){
   next.prio = msg.prio;
   absPoseCallback(next);
 }
+
+
 /***********************************************************************************
  * changeGlobalPose kann zwecks aktualisierung der jeweiligen globalen mobot-pose
  * aufgerufen werden. zB durch toro, wenn dieser eine frische fehlerfreiere Position
@@ -304,9 +320,18 @@ void regel()
         vel.x = eX*vel_ges/dist;//Strahlensatz //in meter/s, s3 ist auch bahngeschwindigkeit, dann /vFac zur skalierung für servo geschw.
         vel.y = eY*vel_ges/dist;
     } 
-     vel.theta = regelFktDreh(eTheta)/vFac;
-     proto->sendData(VELOCITY, (unsigned char*) &vel, sizeof(struct Velocity));
+//***************************+++ Transform +++********************************
+    
+  double cost = cos(globalPose.theta);
+  double sint = sin(globalPose.theta);
+  vel.y = sint*vel.x + cost*vel.y;
+  vel.x = cost*vel.x - sint*vel.y;
 
+
+
+//****************************************************************************
+     vel.theta = regelFktDreh(eTheta);
+     proto->sendData(VELOCITY, (unsigned char*) &vel, sizeof(struct Velocity));
 }
 
 void stopMobot(){
