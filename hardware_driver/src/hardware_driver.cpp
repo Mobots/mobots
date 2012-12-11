@@ -275,27 +275,35 @@ void regel()
 {
     double eX =  currentTargetPose.x - globalPose.x;
     double eY =  currentTargetPose.y - globalPose.y;
+    double dist= sqrt(eX*eX+eY*eY);
     double eTheta=0;
     if (wayType == FAST) {
-    	eTheta =  tan(eY/eX) - M_PI/2 - globalPose.theta; 		//-Pi/2, um ziel mit y als hauptfahrrichtung anzufahren
+        if ( eX != 0) {
+        	eTheta =  tan(eY/eX) - M_PI/2 - globalPose.theta; 		//-Pi/2, um ziel mit y als hauptfahrrichtung anzufahren
+        } else eTheta = 0 - M_PI/2 - globalPose.theta;
     } else {
         eTheta =  currentTargetPose.theta - globalPose.theta;
     }
     correctAngle(eTheta);    // correct with 2Pi problem: (this also guarentees to turn optimal)
-    if (eX < minS && eY < minS && eTheta*radiusInnen < minDegree*(M_PI * radiusInnen / 180))
+    if (dist < minS && eTheta*radiusInnen < minDegree*(M_PI * radiusInnen / 180))
     { //Ziel erreicht
        //geometry_msgs::Pose2D p={0,0,0};
 			targetPoses.pop_front(); //aktuelles ziel erreicht => aus liste löschen
 			if(!targetPoses.empty())
 				currentTargetPose = targetPoses.front();
-			else
+			else {
 				currentTargetPose = globalPose; //bleiben wir halt stehn
 				stopMobot();
+            }
 			return;
+       
     }
      struct Velocity vel;
-     vel.x = regelFkt(eX)/vFac; //in meter/s, s3 ist auch bahngeschwindigkeit, dann /vFac zur skalierung für servo geschw.
-     vel.y = regelFkt(eY)/vFac;
+     double vel_ges =regelFkt(dist);
+    if (dist != 0) {
+        vel.x = eX*vel_ges/dist;//Strahlensatz //in meter/s, s3 ist auch bahngeschwindigkeit, dann /vFac zur skalierung für servo geschw.
+        vel.y = eY*vel_ges/dist;
+    } 
      vel.theta = regelFktDreh(eTheta)/vFac;
      proto->sendData(VELOCITY, (unsigned char*) &vel, sizeof(struct Velocity));
 
