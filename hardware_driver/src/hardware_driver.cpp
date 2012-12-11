@@ -124,15 +124,7 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		
 		if(delta_vals->x != 0 || delta_vals->y != 0 || delta_vals->theta != 0){ //das kann wieder raus, wenn stm keine 0 daten mehr schickt
 
-        if (POST_EVERY_X_MESSAGE == counter) { //yoda condition 
-				counter=0;
-				geometry_msgs::Pose2D mouse;
-				mouse.x = delta_vals->x;
-				mouse.y = delta_vals->y;
-				mouse.theta = delta_vals->theta;
-				mousePosePub.publish(mouse);
-				globalPosePub.publish(globalPose);
-			}
+
 
 //***************************+++ Transform +++********************************
     //mobot-> global
@@ -149,7 +141,15 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 			globalPose.theta += delta_vals->theta;
 			correctAngle(*(&globalPose.theta));
 
-			
+        if (POST_EVERY_X_MESSAGE == counter) { //yoda condition 
+				counter=0;
+				geometry_msgs::Pose2D mouse;
+				mouse.x = delta_vals->x;
+				mouse.y = delta_vals->y;
+				mouse.theta = delta_vals->theta;
+				mousePosePub.publish(mouse);
+				globalPosePub.publish(globalPose);
+			}			
 		}
 		
 
