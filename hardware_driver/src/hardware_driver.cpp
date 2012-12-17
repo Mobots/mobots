@@ -30,8 +30,8 @@ void startWeg()
     ROS_INFO("Mobot %d: Weg angeben", mobotID);
 
     //Publisher and Subscriber
-    nextPoseSubRel = nh->subscribe("waypoint_rel", 5, relPoseCallback);
-    nextPoseSubAbs = nh->subscribe("waypoint_abs", 5, absPoseCallback);
+    nextPoseSubRel = nh->subscribe<geometry_msgs::Pose2DPrio>("waypoint_rel", 5, relPoseCallback);
+    nextPoseSubAbs = nh->subscribe<geometry_msgs::Pose2DPrio>("waypoint_abs", 5, absPoseCallback);
     speedSub = nh->subscribe("velocity", 5, speedCallback);
 
     mousePosePub = nh->advertise<geometry_msgs::Pose2D>("mouse", 5);
