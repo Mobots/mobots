@@ -30,8 +30,8 @@ void startWeg()
     ROS_INFO("Mobot %d: Weg angeben", mobotID);
 
     //Publisher and Subscriber
-    nextPoseSubRel = nh->subscribe<geometry_msgs::Pose2DPrio>("waypoint_rel", 5, relPoseCallback);
-    nextPoseSubAbs = nh->subscribe<geometry_msgs::Pose2DPrio>("waypoint_abs", 5, absPoseCallback);
+    nextPoseSubRel = nh->subscribe("waypoint_rel", 5, relPoseCallback);
+    nextPoseSubAbs = nh->subscribe("waypoint_abs", 5, absPoseCallback);
     speedSub = nh->subscribe("velocity", 5, speedCallback);
 
     mousePosePub = nh->advertise<geometry_msgs::Pose2D>("mouse", 5);
@@ -122,7 +122,9 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		struct MouseData *delta_vals = (struct MouseData*) data;
 		 //publish
 		
-		if(delta_vals->x != 0 || delta_vals->y != 0 || delta_vals->theta != 0){ //das kann wieder raus, wenn stm keine 0 daten mehr schickt
+		//cout << delta_vals->x << ' ' << delta_vals->y << ' ' << delta_vals->theta << endl;
+		
+		//if(delta_vals->x != 0 || delta_vals->y != 0 || delta_vals->theta != 0){ //das kann wieder raus, wenn stm keine 0 daten mehr schickt
 
 
 
@@ -150,7 +152,7 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 				mousePosePub.publish(mouse);
 				globalPosePub.publish(globalPose);
 			}			
-		}
+		//}
 		
 
 		if (!targetPoses.empty()) {
@@ -217,7 +219,9 @@ void absPoseCallback(const mobots_msgs::Pose2DPrio& next_pose){
 		targetPoses.insert(it, next_pose.pose);
 		break;		
   }
-  
+  cout << "absPoseCallback new target: x " << currentTargetPose.x << " y " << currentTargetPose.y << " theta " << currentTargetPose.theta << endl;
+	cout << "current globalPose: x " << globalPose.x << " y " << globalPose.y << " theta " << globalPose.theta << endl;
+  regel();
 }
 
 
@@ -301,8 +305,9 @@ void regel()
         eTheta =  currentTargetPose.theta - globalPose.theta;
     }
     correctAngle(eTheta);    // correct with 2Pi problem: (this also guarentees to turn optimal)
-    if (dist < minS && eTheta*radiusInnen < minDegree*(M_PI * radiusInnen / 180))
-    { //Ziel erreicht
+    cout << "eX " << eX << " eY " << eY << " eTheta " << eTheta << endl;
+    if (dist < minS && eTheta*radiusInnen < minDegree*(M_PI * radiusInnen / 180)){ //Ziel erreicht
+			cout << "reached waypoint: x " << currentTargetPose.x << " y " << currentTargetPose.y << " theta " << currentTargetPose.theta << endl;
        //geometry_msgs::Pose2D p={0,0,0};
 			targetPoses.pop_front(); //aktuelles ziel erreicht => aus liste löschen
 			if(!targetPoses.empty())
@@ -310,9 +315,8 @@ void regel()
 			else {
 				currentTargetPose = globalPose; //bleiben wir halt stehn
 				stopMobot();
-            }
+			}
 			return;
-       
     }
      struct Velocity vel;
      double vel_ges =regelFkt(dist);
