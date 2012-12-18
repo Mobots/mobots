@@ -75,6 +75,7 @@ void startWeg()
 
     initCom();
     //pthread_create(&receiveThread_t, 0, receiveMethod, 0);
+		sleep(1);
 		receiveMethod(NULL);
     counter=0; //used to send mouse deltas every XXX incoming message
     ros::spin();
@@ -92,8 +93,8 @@ void initCom(){
 void* receiveMethod(void* data){
   ros::Rate rate(20); 
 	while(1){
-		proto->receiveData();
 		ros::spinOnce();
+		proto->receiveData();
 		rate.sleep();
 	}
 	return 0;
