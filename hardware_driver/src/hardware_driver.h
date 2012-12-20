@@ -62,7 +62,7 @@ typedef enum{STIFF,FAST} way_type;
     void initCom();
     /**
      * Start receiving sensor data     */
-    void* receiveMethod(void* data);
+    void mainLoop();
 		/**
 		 * stop the mobot */
 		void stopMobot();
@@ -107,6 +107,7 @@ typedef enum{STIFF,FAST} way_type;
 		double sBrems,bParam,vFac,dParam,rootParam, radiusInnen, vMax, minS, minDegree,drehFac;
 
 		int mobotID, counter;
+		int mainLoopFrequency;
 		
 		bool velocityControlled;
 
