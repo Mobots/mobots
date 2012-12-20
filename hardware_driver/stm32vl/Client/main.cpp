@@ -6,6 +6,10 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <boost/lexical_cast.hpp>
+#include <signal.h>
+
+UARTCommunication com;
+ComProtocol protocol(&com);
 
 void readPrintfs(Communication* com) {
 	unsigned char buf;
@@ -36,13 +40,18 @@ void mouseDataHandler(enum PROTOCOL_IDS id, unsigned char *data, unsigned short 
 	std::cout << "mouse->theta:" << mouse->theta << std::endl << std::endl;
 }
 
+void sigint_handler(int signal) {
+    struct Velocity v_mobot = {0, 0, 0};
+    std::cout << "sending: v_mobot = (" << v_mobot.x << ',' << v_mobot.y << ',' << v_mobot.theta << ")" << std::endl;
+	protocol.sendData(VELOCITY, (unsigned char*) &v_mobot, sizeof(struct Velocity));
+}
+
 
 int main(int argc, char *argv[]) {
-
-	UARTCommunication com;
-	ComProtocol protocol(&com);
 	protocol.protocol_init(defaultHandler);
 	protocol.protocol_registerHandler(MOUSE_DATA, mouseDataHandler);
+
+    signal(SIGINT, sigint_handler);
 
 	struct Velocity v_mobot = {0, 0, 0};
 
@@ -73,4 +82,5 @@ int main(int argc, char *argv[]) {
 
 	return EXIT_SUCCESS;
 }
+
 
