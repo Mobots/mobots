@@ -35,9 +35,12 @@ void mouseDataHandler(enum PROTOCOL_IDS id, unsigned char *data, unsigned short 
 
 	struct MouseData *mouse = (struct MouseData*) data;
 
-	std::cout << "mouse->x: " << mouse->x << std::endl;
-	std::cout << "mouse->y: " << mouse->y << std::endl;
-	std::cout << "mouse->theta:" << mouse->theta << std::endl << std::endl;
+	std::cout << "mouse->x: " << mouse->x << " mouse->y: " << mouse->y << " mouse->theta:" << mouse->theta << std::endl;
+
+    static struct MouseData integral = {0, 0, 0};
+    
+    std::cout << "integral->x: " << (integral.x += mouse->x) << " integral->y: " << (integral.y += mouse->y) << " integral->theta:" << (integral.theta +=mouse->theta) << std::endl;
+
 }
 
 void sigint_handler(int signal) {
