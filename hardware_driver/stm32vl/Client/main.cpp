@@ -44,6 +44,7 @@ void sigint_handler(int signal) {
     struct Velocity v_mobot = {0, 0, 0};
     std::cout << "sending: v_mobot = (" << v_mobot.x << ',' << v_mobot.y << ',' << v_mobot.theta << ")" << std::endl;
 	protocol.sendData(VELOCITY, (unsigned char*) &v_mobot, sizeof(struct Velocity));
+    exit(EXIT_SUCCESS);
 }
 
 
