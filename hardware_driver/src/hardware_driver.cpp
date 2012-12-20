@@ -122,7 +122,7 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		struct MouseData *delta_vals = (struct MouseData*) data;
 		 //publish
 		
-		//cout << delta_vals->x << ' ' << delta_vals->y << ' ' << delta_vals->theta << endl;
+		cout << delta_vals->x << ' ' << delta_vals->y << ' ' << delta_vals->theta << endl;
 
 
 
