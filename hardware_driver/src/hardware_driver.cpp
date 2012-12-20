@@ -5,6 +5,7 @@
 using namespace std;
 
 void sigHandler(int signum){
+	stopMobot();
   exit(0);
 }
 
@@ -36,12 +37,12 @@ void startWeg()
 
     mousePosePub = nh->advertise<geometry_msgs::Pose2D>("mouse", 5);
     globalPosePub = nh->advertise<geometry_msgs::Pose2D>("pose", 2);
-    infraredScanPub = nh->advertise<mobots_msgs::InfraredScan>("infrared", 5); //TODO Handler dafür
+    //infraredScanPub = nh->advertise<mobots_msgs::InfraredScan>("infrared", 5); //TODO Handler dafür
 
 
-    //Services
-      client = nh->serviceClient<shutter::delta>("getDelta");
-      service = nh->advertiseService("setGlobalPose", changeGlobalPose);
+    //Services werden aktuell nicht benutzt
+      //client = nh->serviceClient<shutter::delta>("getDelta");
+      //service = nh->advertiseService("setGlobalPose", changeGlobalPose);
 
     //Parameter übernehmen
     ros::param::param<double>("sBrems",sBrems,0.2);
@@ -52,6 +53,7 @@ void startWeg()
     ros::param::param<double>("minS",minS,0.02);	//Toleranz für erreichten Wegpunkt
     ros::param::param<double>("minDegree",minDegree,1); //Toleranz für erreichte Drehrichtung
     ros::param::param<double>("vFac", vFac, 0.00015);     //vFac ist der zusammenhang: Vmaximal/1000 zwischen promilledaten und realität
+		ros::param::param<double>("mainLoopFrequency", mainLoopFrequency, 20);     //vFac ist der zusammenhang: Vmaximal/1000 zwischen promilledaten und realität
 
     string wayTypeString;
     ros::param::param<string>("fahrTyp",wayTypeString, "FAST");
@@ -74,9 +76,7 @@ void startWeg()
     bParam=pow(vMax,rootParam)/sBrems;
 
     initCom();
-    //pthread_create(&receiveThread_t, 0, receiveMethod, 0);
-		sleep(1);
-		receiveMethod(NULL);
+		mainLoop();
     counter=0; //used to send mouse deltas every XXX incoming message
     ros::spin();
 
@@ -90,8 +90,8 @@ void initCom(){
 }
 
 //gets it from the microcontroller
-void* receiveMethod(void* data){
-  ros::Rate rate(20); 
+void mainLoop(){
+  ros::Rate rate(mainLoopFrequency); 
 	while(1){
 		ros::spinOnce();
 		proto->receiveData();
@@ -124,8 +124,6 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		 //publish
 		
 		//cout << delta_vals->x << ' ' << delta_vals->y << ' ' << delta_vals->theta << endl;
-		
-		//if(delta_vals->x != 0 || delta_vals->y != 0 || delta_vals->theta != 0){ //das kann wieder raus, wenn stm keine 0 daten mehr schickt
 
 
 
@@ -153,7 +151,6 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 				mousePosePub.publish(mouse);
 				globalPosePub.publish(globalPose);
 			}			
-		//}
 		
 
 		if (!targetPoses.empty()) {
@@ -329,8 +326,10 @@ void regel()
     
   double cost = cos(globalPose.theta);
   double sint = sin(globalPose.theta);
-  vel.y = sint*vel.x + cost*vel.y;
-  vel.x = cost*vel.x - sint*vel.y;
+	double x = vel.x;
+	double y = vel.y;
+  vel.y = sint*x + cost*y;
+  vel.x = cost*x - sint*y;
 
 
 
@@ -381,6 +380,7 @@ void speedCallback(const mobots_msgs::Twist2D& msg){
 	if(msg.x > 1){ //values are normalized between [-1,1]
 		velocityControlled = false;
 		cerr << "disabling velocity control" << endl;
+		regel();
 		return;
 	}
 	velocityControlled = true;
