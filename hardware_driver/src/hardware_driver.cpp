@@ -49,7 +49,7 @@ void startWeg()
     ros::param::param<double>("rootParam",rootParam,2.0);
     ros::param::param<double>("dParam",dParam,0.4297);   //calculate: bParam=vMax/4/(desired start-to-break-point in degrees)*180/pi/radiusInnen
     ros::param::param<double>("radiusInnen",radiusInnen,0.102); //TODO, genauer radiusInnenius, messen Mitte- Räder-Bodenkontakt
-    ros::param::param<double>("vMax",vMax,0.15); //theoretisch maximal 0.18, weniger, um nicht mit maximum zu laufen
+    ros::param::param<double>("vMax",vMax,1); //theoretisch maximal 0.18, weniger, um nicht mit maximum zu laufen
     ros::param::param<double>("minS",minS,0.02);	//Toleranz für erreichten Wegpunkt
     ros::param::param<double>("minDegree",minDegree,1); //Toleranz für erreichte Drehrichtung
     ros::param::param<double>("vFac", vFac, 0.00015);     //vFac ist der zusammenhang: Vmaximal/1000 zwischen promilledaten und realität
@@ -122,7 +122,7 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		struct MouseData *delta_vals = (struct MouseData*) data;
 		 //publish
 		
-		cout << delta_vals->x << ' ' << delta_vals->y << ' ' << delta_vals->theta << endl;
+		//cout << delta_vals->x << ' ' << delta_vals->y << ' ' << delta_vals->theta << endl;
 
 
 
