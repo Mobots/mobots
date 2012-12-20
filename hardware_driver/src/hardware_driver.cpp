@@ -53,7 +53,7 @@ void startWeg()
     ros::param::param<double>("minS",minS,0.02);	//Toleranz für erreichten Wegpunkt
     ros::param::param<double>("minDegree",minDegree,1); //Toleranz für erreichte Drehrichtung
     ros::param::param<double>("vFac", vFac, 0.00015);     //vFac ist der zusammenhang: Vmaximal/1000 zwischen promilledaten und realität
-		ros::param::param<double>("mainLoopFrequency", mainLoopFrequency, 20);     //vFac ist der zusammenhang: Vmaximal/1000 zwischen promilledaten und realität
+		ros::param::param<int>("mainLoopFrequency", mainLoopFrequency, 20);     //vFac ist der zusammenhang: Vmaximal/1000 zwischen promilledaten und realität
 
     string wayTypeString;
     ros::param::param<string>("fahrTyp",wayTypeString, "FAST");
@@ -97,7 +97,6 @@ void mainLoop(){
 		proto->receiveData();
 		rate.sleep();
 	}
-	return 0;
 }
 
 void defaultHandler(enum PROTOCOL_IDS id, unsigned char *data,
