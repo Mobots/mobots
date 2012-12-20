@@ -30,9 +30,9 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 
 rosbuild_add_library(${PROJECT_NAME}
-  src/image_map_visual.cpp
-  ${uis_h} ${qt_srcs} ${qt_moc_srcs}
+    src/image_map_visual.cpp
+    ${uis_h} ${qt_srcs} ${qt_moc_srcs}
 )
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_LIBRARIES})
 rosbuild_add_boost_directories()
-rosbuild_add_executable(guiTest src/guiTest.cpp)
+rosbuild_add_executable(guiTest src/test/guiTest.cpp)

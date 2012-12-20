@@ -14,7 +14,7 @@
   <depend package="mobots_msgs"/>
   <depend package="toro"/>
   <depend package="feature_detector"/>
-    <depend package="mobots_common"/>
+  <depend package="mobots_common"/>
 
 </package>
 

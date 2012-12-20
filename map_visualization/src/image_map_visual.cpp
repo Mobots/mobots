@@ -1,6 +1,6 @@
 #include "image_map_visual.h"
 
-#include "definitions.h"
+#include "../include/map_visualization/definitions.h"
 #include "mobots_common/constants.h"
 #include "image_map_display.h"
 

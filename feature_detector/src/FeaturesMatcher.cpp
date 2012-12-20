@@ -209,7 +209,7 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, M
   Mat transformMatrix;
 	if(points1Refined.size() >= 10){
 		vector<uchar> status;
-		homo = findHomography(points2Refined, points1Refined, CV_RANSAC, 3, status);
+		homo = findHomography(points2Refined, points1Refined, CV_RANSAC, 1.5, status);
 		for(int i = 0; i < status.size(); i++){
 			if(status[i]){
 				points1Refinedx2.push_back(points1Refined[i]);
