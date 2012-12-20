@@ -131,8 +131,10 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
     //mobot-> global
   double cost = cos(-globalPose.theta);
   double sint = sin(-globalPose.theta);
-  delta_vals->y = sint*delta_vals->x + cost*delta_vals->y;
-  delta_vals->x = cost*delta_vals->x - sint*delta_vals->y;
+	double x = delta_vals->x;
+	double y = delta_vals->y;
+  delta_vals->y = sint*x + cost*y;
+  delta_vals->x = cost*x - sint*y;
 
 
 
@@ -163,17 +165,6 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 				return;
 		}
 }
-
-/*
-void* infraredReader(void* data){
-  ros::Rate rate(infraredFrequency);
-  ros::Publisher pub = nh->advertise<>("", 2);
-  while(ros::ok()){
-    read(infraredFD, XX, X);
-    pub.publish(XX);
-    rate.sleep();
-  }
-}*/
 
 
 void correctAngle(double& theta) {
