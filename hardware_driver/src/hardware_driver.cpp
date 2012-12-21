@@ -293,7 +293,6 @@ void regel()
         eTheta =  currentTargetPose.theta - globalPose.theta;
     }
     correctAngle(eTheta);    // correct with 2Pi problem: (this also guarentees to turn optimal)
-    cout << "eX " << eX << " eY " << eY << " eTheta " << eTheta << endl;
     if (dist < minS && eTheta*radiusInnen < minDegree*(M_PI * radiusInnen / 180)){ //Ziel erreicht
 			cout << "reached waypoint: x " << currentTargetPose.x << " y " << currentTargetPose.y << " theta " << currentTargetPose.theta << endl;
        //geometry_msgs::Pose2D p={0,0,0};
@@ -320,6 +319,9 @@ void regel()
 	double y = vel.y;
   vel.y = sint*x + cost*y;
   vel.x = cost*x - sint*y;
+	
+	cout << "eX " << eX << " eY " << eY << " eTheta " << eTheta << " || ";
+	cout << "velx " << vel.x << " vely " << vel.y << " veltheta " << vel.theta << endl;
 
 
 
