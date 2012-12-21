@@ -11,7 +11,7 @@
 #include "stm32f10x_gpio.h"
 #include "util.h"
 #include "protocol.h"
-#include <math.h>
+#include "math.h"
 
 volatile struct Mouse_Data_All mouse_data;
 volatile struct DualMouseData mouse_integral = {0, 0, 0, 0};
@@ -19,18 +19,46 @@ volatile struct DualMouseData mouse_integral = {0, 0, 0, 0};
 DATA_STAT spi1_datastat;
 DATA_STAT spi2_datastat;
 
-#define r_aussen 0.125
-#define r_innen  0.10
-#define v_max 0.15
-#define sqrt3 1,73205081
-#define omega -r_innen/r_aussen*y1/sqrt3-r_innen/r_aussen*2/3*x2-r_innen/r_aussen*x1/3
+#define r_maus 0.1419 //m
+//#define sqrt3 1,73205081
+//#define omega -r_innen/r_aussen*y1/sqrt3-r_innen/r_aussen*2/3*x2-r_innen/r_aussen*x1/3
+
+static const float ALPHA_MAUS=  0.1272;  //IN GRAD: 7.288
+
+//winkel  positiv startend vom alten zum neuen koordinatensystem
+// also, wenn gegen den uhrzeigersinn gedreht wird, negativen winkel angeben!
+void transformAchse(float* x_val,float* y_val, float theta) {
+	float x_temp=*x_val;
+	float y_temp=*y_val;
+
+	*y_val=cos(theta)*y_temp+sin(theta)*x_temp;
+	*x_val=cos(theta)*x_temp-sin(theta)*y_temp;
+}
 
 /* gibt die pixel als strecke in meter im mobot_koordinatensystem aus */
 void mouse_transformation(const struct DualMouseData * const dual, struct MouseData * const fusion) {
-	// Workaround: Rückkopplung der Sollwerte als Mausmesswerte
+	float x1_t=dual->x1;
+		float * x1 =&x1_t;
+		float y1_t=dual->y1;
+		float * y1=&y1_t;
+		float x2_t=dual->x2;
+		float * x2=&x2_t;
+		float y2_t=dual->y2;
+		float * y2=&y2_t;
+
+		//koordinatentransformation
+		fusion->x = (-0.3775*(*y2)-1.0783*(*x2)+0.2451*(*y1)) / 198400; //letzter faktorauf metrisches mass bringen
+		fusion->y = 0.57735*((*y2)-(*y1)) / 198400;
+		fusion->theta = (-0.313*(*y2)+0.54318*(*x2)-0.6272*(*y1)) / 198400 /  2 / r_maus; //allerletzter Faktor: von metrischer Strecke auf Bogenmass
+
+
+#if 0
+
 	fusion->x = last_velocity_command.x * 0.100;
 	fusion->y = last_velocity_command.y * 0.100;
-	fusion->theta = last_velocity_command.theta * 0.100;
+	fusion->theta = 0;
+
+
 
 
 	/*static const float ALPHA = 30;
@@ -55,6 +83,7 @@ void mouse_transformation(const struct DualMouseData * const dual, struct MouseD
 	dataOut->y = (x1 - x2) / 3 * 5040 / 0.0254;
 	dataOut->theta = (y1 * 0.5774 + 0.6667 * x2 + x1 * 0.3333) / r_aussen	* 5040 / 0.0254; //TODO eventuell nicht bogenmass
 	*/
+#endif
 }
 
 

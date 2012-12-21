@@ -11,6 +11,6 @@
 #include "protocol.h"
 
 void servo_init();
-void servo_set(const struct ServoSpeed * const servo_speed);
+void servo_set(struct ServoSpeed * const servo_speed);
 
 #endif /* SERVO_H_ */

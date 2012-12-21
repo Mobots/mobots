@@ -32,6 +32,7 @@
 #include "led.h"
 #include "util.h"
 #include "protocol.h"
+#include "controller.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -42,6 +43,15 @@
 
 /* Private variables ---------------------------------------------------------*/
 unsigned int time_in_ms = 0;
+
+static const int CONTROL_TIME=10;		//in ms, every X control the velocity
+static const int SEND_MESSAGE_TIME=100;	//in ms, every X send messages
+static const float CONTORL_T_I=0.1;	//in s
+static const float CONTROL_K_P=15;	//gain factor
+
+static struct MouseData output_ges = {0, 0, 0};
+
+static struct DualMouseData cache_ges = {0, 0, 0, 0};
 /* Private function prototypes -----------------------------------------------*/
 
 /* Private functions ---------------------------------------------------------*/
@@ -66,22 +76,24 @@ int main() {
 	struct ServoSpeed initial_speed = {{0, 0, 0}};
 	servo_set(&initial_speed);
 
-	if (Sensor_init(SPI_1) && Sensor_init(SPI_2)) {
-		//print("Sensor Initialisierung erfolgreich!\n");
-	} else {
-		//print("Sensor Initialisierung fehlgeschlagen!\n");
-		while (1)
-		{
-			GPIO_SetBits(GPIOC, GPIO_Pin_9);
-			delay_ms(50);
-			GPIO_ResetBits(GPIOC, GPIO_Pin_9);
-			delay_ms(50);
+	int aasd = sizeof(enum PROTOCOL_IDS);
 
-		}
+	if(!Sensor_init(SPI_1)) {
+		print("Maussensor 1 geht nicht.");
+		assert_param(0);
 	}
+	if(!Sensor_init(SPI_2)) {
+		print("Maussensor 2 geht nicht.");
+        assert_param(0);
+	}
+
+
+
+	//assert_param( Sensor_init(SPI_1) && Sensor_init(SPI_2) );
 
 	SysTick_Config(SystemCoreClock / 100); // Systick auf 10 ms stellen
 
+	control_init(CONTORL_T_I, CONTROL_K_P, CONTROL_TIME);	//configures controller
 
 	//---------------------------------------------------------------------
 
@@ -101,6 +113,7 @@ void SysTick_Handler() {
 	if (time_in_ms >= 1000)
 		time_in_ms = 0;
 
+
 	if (spi_ReadRegister(REG_Motion, SPI_1)) {
 		mouse_integral.x1 += (s16) spi_ReadRegister(REG_Delta_X_L, SPI_1)	| (s16) (spi_ReadRegister(REG_Delta_X_H, SPI_1) << 8);
 		mouse_integral.y1 += (s16) spi_ReadRegister(REG_Delta_Y_L, SPI_1)	| (s16) (spi_ReadRegister(REG_Delta_Y_H, SPI_1) << 8);
@@ -110,20 +123,38 @@ void SysTick_Handler() {
 		mouse_integral.y2 += (s16) spi_ReadRegister(REG_Delta_Y_L, SPI_2)	| (s16) (spi_ReadRegister(REG_Delta_Y_H, SPI_2) << 8);
 	}
 
-	// Alle 100 ms
-	if (time_in_ms % 100 == 0) {
 		static const struct DualMouseData reset = {0, 0, 0, 0};
 		static struct DualMouseData cache = {0, 0, 0, 0};
 		static struct MouseData output = {0, 0, 0};
+		static struct MouseData output_temp = {0, 0, 0};
 
 		cache = mouse_integral;
-		mouse_integral = reset;
+
+		cache_ges.x1+=cache.x1;
+		cache_ges.y1+=cache.y1;
+		cache_ges.x2+=cache.x2;
+		cache_ges.y2+=cache.y2;
+		output_ges.x+=output.x;
+		output_ges.y+=output.y;
+		output_ges.theta+=output.theta;
+		mouse_transformation(&cache_ges, &output_temp);
 
 		mouse_transformation(&cache, &output);
-		protocol_sendData(MOUSE_DATA, (unsigned char*) &output, sizeof(struct MouseData));
-	}
+		mouse_integral = reset;
 
-	// LED mit 1 Hz blinken lassen
+		if (time_in_ms % CONTROL_TIME == 0) {
+			//control(&output);
+		}
+
+
+		if (time_in_ms % SEND_MESSAGE_TIME == 0) {
+			if (output.x != 0 || output.y != 0 || output.theta !=0)
+				protocol_sendData(MOUSE_DATA, (unsigned char*) &output, sizeof(struct MouseData));
+		}
+
+
+
+	// LED mit 10 Hz blinken lassen
 	if (time_in_ms == 10) {
 		GPIO_SetBits(GPIOC, GPIO_Pin_8);
 	}

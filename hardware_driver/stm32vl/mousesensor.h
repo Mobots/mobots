@@ -96,5 +96,6 @@ extern DATA_STAT spi2_datastat;
 
 int Sensor_init(SPI spi);
 void mouse_transformation(const struct DualMouseData * const dual, struct MouseData * const dataOut);
+void transformAchse(float* x_val,float* y_val, float theta);
 
 #endif /* MOUSESENSOR_H_ */

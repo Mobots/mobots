@@ -10,6 +10,8 @@
 #include "mousesensor.h"
 #include "util.h"
 #include "spi_1.h"
+#include "stm32f10x_rcc.h"
+#include "stm32f10x_gpio.h"
 
 #define SPI_BUFFER_SIZE 256
 
