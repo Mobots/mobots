@@ -132,8 +132,8 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
   double sint = sin(-globalPose.theta);
 	double x = delta_vals->x;
 	double y = delta_vals->y;
-  //delta_vals->y = sint*x + cost*y;
-  //delta_vals->x = cost*x - sint*y;
+	delta_vals->x = cost*x - sint*y;
+  delta_vals->y = sint*x + cost*y;
 
 
 
