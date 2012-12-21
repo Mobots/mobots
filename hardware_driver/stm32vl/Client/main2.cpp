@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <boost/lexical_cast.hpp>
 #include <signal.h>
+#include <math.h>
 
 UARTCommunication com;
 ComProtocol protocol(&com);
@@ -74,7 +75,7 @@ int main(int argc, char *argv[]) {
 		break;
 
 	case 1+3:
-		v_mobot = { boost::lexical_cast<float>(argv[1]), boost::lexical_cast<float>(argv[2]), boost::lexical_cast<float>(argv[3]) };
+		destination = { boost::lexical_cast<float>(argv[1]), boost::lexical_cast<float>(argv[2]), boost::lexical_cast<float>(argv[3]) };
 		break;
 
 	default:
