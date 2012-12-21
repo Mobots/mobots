@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
 
 	case 1+3:
 		destination = { boost::lexical_cast<float>(argv[1]), boost::lexical_cast<float>(argv[2]), boost::lexical_cast<float>(argv[3]) };
-        v_mobot = {destination.x, destinaton.y, destinaton.theta};
+        v_mobot = {destination.x, destination.y, destination.theta};
 		break;
 
 	default:
