@@ -43,7 +43,7 @@ void mouseDataHandler(enum PROTOCOL_IDS id, unsigned char *data, unsigned short 
     integral.x += cos(integral.theta) * mouse->x - sin(integral.theta) * mouse->y;
 	integral.y += sin(integral.theta) * mouse->x + cos(integral.theta) * mouse->y;
 
-    std::cout << "integral->x: " << integral.x << "\tintegral->y: " << integral.y << "\tintegral->theta:" << integral.theta << std::endl;
+    std::cout << "integral.x: " << integral.x << "\tintegral.y: " << integral.y << "\tintegral.theta:" << integral.theta << std::endl;
     
 	struct Velocity v_mobot = {destination.x - integral.x, destination.y - integral.y, 0};
     std::cout << "sending: v_mobot = (" << v_mobot.x << ',' << v_mobot.y << ',' << v_mobot.theta << ")" << std::endl << std::endl;
