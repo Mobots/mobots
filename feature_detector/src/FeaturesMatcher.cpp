@@ -101,8 +101,8 @@ static void planeTest(const vector<Point2f>& points1, const vector<Point2f>& poi
 
 Mat affine3;
 Mat affine2;
-//  Mat gimage1;
-//  Mat gimage2;
+  Mat gimage1;
+  Mat gimage2;
 Mat mm1, mm2;
 Mat mega;
 Mat kpoints1;
@@ -182,8 +182,16 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, M
 	vector<Point2f> points1Refinedx2;
 	vector<Point2f> points2Refinedx2;
   //cout << img1.keyPoints.size() << " " << img1.descriptors.size() << cout << img2.keyPoints.size() << " " << img2.descriptors.size() << endl;  
-  matcher->match(img1.descriptors, img2.descriptors, matches1);
-  matcher->match(img2.descriptors, img1.descriptors, matches2);
+	const int maxTryCount = 2;
+	for(int i = 0; i < maxTryCount; i++){
+		try{
+			matcher->match(img1.descriptors, img2.descriptors, matches1);
+			matcher->match(img2.descriptors, img1.descriptors, matches2);
+		}catch(const cv::Exception& exception){
+			if(i == maxTryCount)
+				return false;
+		}
+	}
   symmetryTest(matches1, matches2, img1.keyPoints, img2.keyPoints, points1, points2);
   /*gimage1 = image1;
 	gimage2 = image2;
@@ -209,7 +217,7 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, M
   Mat transformMatrix;
 	if(points1Refined.size() >= 10){
 		vector<uchar> status;
-		homo = findHomography(points2Refined, points1Refined, CV_RANSAC, 1.5, status);
+		homo = findHomography(points2Refined, points1Refined, CV_RANSAC, 0.5, status);
 		for(int i = 0; i < status.size(); i++){
 			if(status[i]){
 				points1Refinedx2.push_back(points1Refined[i]);
@@ -232,7 +240,7 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, M
   }
 
 
-  result.delta.theta = atan2(-transformMatrix.at<double>(0,1), transformMatrix.at<double>(0,0));
+  result.delta.theta = -atan2(-transformMatrix.at<double>(0,1), transformMatrix.at<double>(0,0));
 	if(result.delta.theta < 0)
 		result.delta.theta += 2*M_PI;
 	
@@ -292,15 +300,20 @@ bool CpuFeaturesMatcher::match(const FeatureSet& img1, const FeatureSet& img2, M
 		result.varTheta = maxVarTheta;
 	moduleEnded();
   
-  /*if(points1Refinedx2.empty())
+	/*for(int i = 0; i < points1Refinedx2.size(); i++){
+		points1Refinedx2[i].x += 320;
+		points1Refinedx2[i].y += 240;
+		points2Refinedx2[i].x += 320;
+		points2Refinedx2[i].y += 240;
+	}
+  if(points1Refinedx2.empty())
 		  drawing::drawMatches2(gimage1, points1Refined, gimage2, points2Refined,
                good_matches_r, Scalar::all(-1), Scalar::all(-1),
-               DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);
+               DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 500);
 	else
 		drawing::drawMatches2(gimage1, points1Refinedx2, gimage2, points2Refinedx2,
                good_matches_r, Scalar::all(-1), Scalar::all(-1),
-               DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 50);*/
-
+               DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS, 500);*/
 
 
   return true;
