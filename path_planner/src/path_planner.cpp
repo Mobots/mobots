@@ -1,6 +1,7 @@
 #include "ros/ros.h"
 
 #include "geometry_msgs/Pose2D.h"
+#include "geometry_msgs/PoseStamped.h"
 #include "mobots_msgs/Pose2DPrio.h"
 #include "mobots_msgs/InfraredScan.h"
 #include "mobots_msgs/PoseAndID.h"
@@ -12,6 +13,7 @@
 #include <stdio.h>
 #include <sstream>
 #include <string>
+#include "../../mobots_msgs/msg_gen/cpp/include/mobots_msgs/Pose2DPrio.h"
 
 /* global attributes */
 ros::Publisher nextPoseRel_1;
@@ -57,7 +59,7 @@ void irCallback(const mobots_msgs::InfraredScan& irScan, int id);
 void irCallback1(const mobots_msgs::InfraredScan& irScan);
 void irCallback2(const mobots_msgs::InfraredScan& irScan);
 void irCallback3(const mobots_msgs::InfraredScan& irScan);
-void userCallback(const mobots_msgs::PoseAndID& input);
+void userCallback(const geometry_msgs::PoseStamped& input);
 bool keyReqCallback(path_planner::KeyboardRequest::Request& req,
 		path_planner::KeyboardRequest::Response& res);
 
@@ -74,9 +76,9 @@ int main(int argc, char **argv) {
 	ros::NodeHandle nh;
 
 	//initialising Mobot 1
-	ros::Subscriber infraredScan_1 = nh.subscribe("/mobot1/infrared", 1, irCallback1);
-	ros::Subscriber userInput_1 = nh.subscribe("/mobot1/waypoint_user", 20, userCallback);
-	nextPoseRel_1 = nh.advertise<mobots_msgs::Pose2DPrio> ("/mobot1/waypoint_rel", 20);
+	ros::Subscriber infraredScan_1 = nh.subscribe("/mobot0/infrared", 1, irCallback1);
+	ros::Subscriber userInput_1 = nh.subscribe("/mobot0/waypoint_user", 20, userCallback);
+	nextPoseRel_1 = nh.advertise<mobots_msgs::Pose2DPrio> ("/mobot0/waypoint_rel", 20);
 	mobots[0].id = 1;
 	mobots[0].theta = 0.0;
 	mobots[0].x = 0.0;
@@ -85,7 +87,7 @@ int main(int argc, char **argv) {
 	mobots[0].userControlled = 0;
 	mobots[0].timer = 0;
 	timerMobot_1 = nh.createTimer(ros::Duration(1), timerCallback1);
-
+#if 0
 	if(mobot_count > 1){ //initialising Mobot 2
 		ros::Subscriber infraredScan_2 = nh.subscribe("/mobot2/infrared", 1, irCallback2);
 		ros::Subscriber userInput_2 = nh.subscribe("/mobot2/waypoint_user", 20, userCallback);
@@ -136,6 +138,8 @@ int main(int argc, char **argv) {
 	if(mobot_count > 1)	timerMobot_2.stop();
 	if(mobot_count > 2) timerMobot_3.stop();
 	return 0;
+#endif
+	ros::spin();
 }
 /* Autoexploring a given Square with edge length "a".
  * Starting while driving straight and proceeding turning right.*/
@@ -644,7 +648,13 @@ int handleObstacle(int id, bool scan[6]) {
 /* This method deals with user inputs over the gui. Everytime a new command is recieved
  * the timer of the specific Mobot is set to 0 and the Mobot is stopping and deleting all
  * queued waypoints. */
-void userCallback(const mobots_msgs::PoseAndID& input) {
+void userCallback(const geometry_msgs::PoseStamped& input) {
+	mobots_msgs::Pose2DPrio msg;
+	msg.pose.x = input.pose.position.x;
+	msg.pose.y = input.pose.position.y;
+	msg.prio = 0;
+	nextPoseRel_1.publish(msg);
+#if 0
 	int id = input.id.mobot_id;
 	if (id == 1 || id == 2 || id == 3) {
 		mobots[id - 1].userControlled = 1;
@@ -656,6 +666,7 @@ void userCallback(const mobots_msgs::PoseAndID& input) {
 		ROS_INFO("&i is an invalid Mobot ID, user waypoint not released", id);
 		return;
 	}
+#endif
 }
 
 /* This method activates the keyboard teleop control for a mobot */
