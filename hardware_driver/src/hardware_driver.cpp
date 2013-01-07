@@ -71,6 +71,8 @@ void startWeg()
 	}
 	else
 		ROS_ERROR("unknown type %s", wayTypeString.c_str());
+	
+	ROS_INFO("wayType is %s", wayTypeString.c_str());
 
 
     bParam=pow(vMax,rootParam)/sBrems;
@@ -141,7 +143,7 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 			globalPose.x += delta_vals->x;
 			globalPose.y += delta_vals->y;
 			globalPose.theta += delta_vals->theta;
-			correctAngle(*(&globalPose.theta));
+			correctAngle(&(globalPose.theta));
 
         if (POST_EVERY_X_MESSAGE == counter) { //yoda condition 
 				counter=0;
@@ -166,11 +168,11 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 }
 
 
-void correctAngle(double& theta) {
-	if(theta < -M_PI)
-		theta += 2*M_PI;
-	else if(theta > M_PI)
-		theta -= 2*M_PI;
+void correctAngle(double* theta) {
+	if(*theta < -M_PI)
+		*theta += 2*M_PI;
+	else if(*theta > M_PI)
+		*theta -= 2*M_PI;
 }
 
 /**
@@ -292,7 +294,7 @@ void regel()
     } else {
         eTheta =  currentTargetPose.theta - globalPose.theta;
     }
-    correctAngle(eTheta);    // correct with 2Pi problem: (this also guarentees to turn optimal)
+    correctAngle(&eTheta);    // correct with 2Pi problem: (this also guarentees to turn optimal)
     if (dist < minS && eTheta*radiusInnen < minDegree*(M_PI * radiusInnen / 180)){ //Ziel erreicht
 			cout << "reached waypoint: x " << currentTargetPose.x << " y " << currentTargetPose.y << " theta " << currentTargetPose.theta << endl;
        //geometry_msgs::Pose2D p={0,0,0};
@@ -306,27 +308,33 @@ void regel()
 			return;
     }
      struct Velocity vel;
-     double vel_ges =regelFkt(dist);
-    if (dist != 0) {
-        vel.x = eX*vel_ges/dist;//Strahlensatz //in meter/s, s3 ist auch bahngeschwindigkeit, dann /vFac zur skalierung für servo geschw.
-        vel.y = eY*vel_ges/dist;
-    } 
-//***************************+++ Transform +++********************************
-    
-  double cost = cos(globalPose.theta);
-  double sint = sin(globalPose.theta);
-	double x = vel.x;
-	double y = vel.y;
-  vel.y = sint*x + cost*y;
-  vel.x = cost*x - sint*y;
-	
-	cout << "eX " << eX << " eY " << eY << " eTheta " << eTheta << " || ";
-	cout << "velx " << vel.x << " vely " << vel.y << " veltheta " << vel.theta << endl;
-
+		 if(dist >= minS){
+				double vel_ges =regelFkt(dist);
+				if (dist != 0) {
+						vel.x = eX*vel_ges/dist;//Strahlensatz //in meter/s, s3 ist auch bahngeschwindigkeit, dann /vFac zur skalierung für servo geschw.
+						vel.y = eY*vel_ges/dist;
+				} 
+		//***************************+++ Transform +++********************************
+				
+			double cost = cos(globalPose.theta);
+			double sint = sin(globalPose.theta);
+			double x = vel.x;
+			double y = vel.y;
+			vel.y = sint*x + cost*y;
+			vel.x = cost*x - sint*y;
+			vel.theta = 0;
+		 }else{
+			 vel.x = 0;
+			 vel.y = 0;
+			 vel.theta = regelFktDreh(eTheta);
+		 }
 
 
 //****************************************************************************
-     vel.theta = regelFktDreh(eTheta);
+		 
+		cout << "eX " << eX << " eY " << eY << " eTheta " << eTheta << " || ";
+		cout << "velx " << vel.x << " vely " << vel.y << " veltheta " << vel.theta << endl;
+	
      proto->sendData(VELOCITY, (unsigned char*) &vel, sizeof(struct Velocity));
 }
 

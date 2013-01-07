@@ -76,7 +76,7 @@ typedef enum{STIFF,FAST} way_type;
     double regelFktDreh(double e);
     void startWeg();
     void regel();
-    void correctAngle(double& theta);
+    void correctAngle(double* theta);
 
     // -- values in Hz --
     int mouseFrequency;
