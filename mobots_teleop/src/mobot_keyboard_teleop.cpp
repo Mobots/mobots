@@ -131,6 +131,9 @@ int main(int argc, char** argv){
   return(0);
 }
 
+mobots_msgs::Twist2D twist;
+mobots_msgs::Twist2D lastTwist;
+
 void keyboardLoop(){
   char c;
   double max_tv = linear_vel;
@@ -180,12 +183,10 @@ void keyboardLoop(){
 				pub_pose.y = 0;
 				pub_pose.theta = 0;
 				velocity_pub.publish(pub_pose);
-				cout << "stopping robot" << endl;
 				dirty = false;
       }
       continue;
     }
-    cout << "keycode " << c << endl;
     //float heading = currentPosition.theta;
     switch(c){
 	case KEYCODE_W:
@@ -243,11 +244,12 @@ void keyboardLoop(){
 	  turn = 0;
 	  break;*/
     }
-    mobots_msgs::Twist2D pub_pose;
-    pub_pose.x = /*currentPosition.x + (heading)**/speed*max_tv/100;
-    pub_pose.y = /*currentPosition.y + (heading)**/0;
-    pub_pose.theta =/*currentPosition.theta +*/ turn*max_rv/100;
-		//cout << pub_pose.pose.x << " and " << speed*max_tv << endl;
-		velocity_pub.publish(pub_pose);
+    twist.x = speed*max_tv;
+    twist.y = 0;
+    twist.theta = turn*max_rv;
+		if(twist.x == lastTwist.x && twist.y == lastTwist.y && twist.theta == lastTwist.theta)
+			continue;
+		velocity_pub.publish(twist);
+		lastTwist = twist;
   }
 }
