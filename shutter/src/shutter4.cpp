@@ -89,6 +89,7 @@ void startShutter(){
 }
 
 void cameraThread(){
+	ros::Rate rate(10);
 	while(1){
 	 usb_cam_camera_grab_image(camera_image_);
 	 if(restartNeeded){
@@ -97,6 +98,7 @@ void cameraThread(){
 		restartNeeded = false;
 	  }
 	 ros::spinOnce();
+	 rate.sleep();
 	}
 }
 
