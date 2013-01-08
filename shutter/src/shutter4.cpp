@@ -97,7 +97,6 @@ void cameraThread(){
 		restartNeeded = false;
 	  }
 	 ros::spinOnce();
-	 checkOverlap();
 	}
 }
 
@@ -149,6 +148,7 @@ void mouseCallback(const geometry_msgs::Pose2D &mouse_data) {
   dX += mouse_data.x;
   dY += mouse_data.y;
   dTheta += mouse_data.theta;
+	checkOverlap();
 }
 
 void handleError(const char* error){
