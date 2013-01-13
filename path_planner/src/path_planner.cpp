@@ -23,6 +23,7 @@ ros::ServiceServer keyReqServer;
 ros::Timer timerMobot_1;
 ros::Timer timerMobot_2;
 ros::Timer timerMobot_3;
+std::map<int, ros::Publisher> mobotPosePub;
 
 /* Mobot data structure for saving the state of one Mobot. */
 struct mobot {
@@ -37,6 +38,7 @@ struct mobot {
 
 struct mobot mobots[3]; //array for saving the different Mobot states
 const double pi = 3.14159265; //pi for angular calculations
+ros::NodeHandle* nh_;
 
 /* Declaring the member functions.
  * Member functions for the Mobot control. */
@@ -60,6 +62,7 @@ void irCallback1(const mobots_msgs::InfraredScan& irScan);
 void irCallback2(const mobots_msgs::InfraredScan& irScan);
 void irCallback3(const mobots_msgs::InfraredScan& irScan);
 void userCallback(const geometry_msgs::PoseStamped& input);
+void userInputCallback(const mobots_msgs::PoseAndID& input);
 bool keyReqCallback(path_planner::KeyboardRequest::Request& req,
 		path_planner::KeyboardRequest::Response& res);
 
@@ -74,10 +77,12 @@ int main(int argc, char **argv) {
 	//initialising ROS
 	ros::init(argc, argv, "path_planner");
 	ros::NodeHandle nh;
+	nh_ = &nh;
 
 	//initialising Mobot 1
 	ros::Subscriber infraredScan_1 = nh.subscribe("/mobot0/infrared", 1, irCallback1);
 	ros::Subscriber userInput_1 = nh.subscribe("/mobot0/waypoint_user", 20, userCallback);
+	ros::Subscriber userInput = nh.subscribe("/path_planner/waypoint_user", 20, userInputCallback);
 	nextPoseRel_1 = nh.advertise<mobots_msgs::Pose2DPrio> ("/mobot0/waypoint_rel", 20);
 	mobots[0].id = 1;
 	mobots[0].theta = 0.0;
@@ -667,6 +672,19 @@ void userCallback(const geometry_msgs::PoseStamped& input) {
 		return;
 	}
 #endif
+}
+
+void userInputCallback(const mobots_msgs::PoseAndID& input) {
+	if(mobotPosePub[input.id.mobot_id] == 0){
+		std::string topic = "/mobot" + boost::lexical_cast<std::string>(input.id.mobot_id);
+		topic += "/waypoint_rel";
+		mobotPosePub[input.id.mobot_id] = nh_->advertise<mobots_msgs::Pose2DPrio> (topic, 20);
+	}
+	mobots_msgs::Pose2DPrio output;
+	output.pose.x = input.pose.x;
+	output.pose.y = input.pose.y;
+	output.prio = 0;
+	mobotPosePub[input.id.mobot_id].publish(output);
 }
 
 /* This method activates the keyboard teleop control for a mobot */
