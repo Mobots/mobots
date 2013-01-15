@@ -5,6 +5,7 @@
 using namespace std;
 
 void sigHandler(int signum){
+	stopMobot();
   exit(0);
 }
 
@@ -30,28 +31,29 @@ void startWeg()
     ROS_INFO("Mobot %d: Weg angeben", mobotID);
 
     //Publisher and Subscriber
-    nextPoseSubRel = nh->subscribe<geometry_msgs::Pose2DPrio>("waypoint_rel", 5, relPoseCallback);
-    nextPoseSubAbs = nh->subscribe<geometry_msgs::Pose2DPrio>("waypoint_abs", 5, absPoseCallback);
+    nextPoseSubRel = nh->subscribe("waypoint_rel", 5, relPoseCallback);
+    nextPoseSubAbs = nh->subscribe("waypoint_abs", 5, absPoseCallback);
     speedSub = nh->subscribe("velocity", 5, speedCallback);
 
     mousePosePub = nh->advertise<geometry_msgs::Pose2D>("mouse", 5);
     globalPosePub = nh->advertise<geometry_msgs::Pose2D>("pose", 2);
-    infraredScanPub = nh->advertise<mobots_msgs::InfraredScan>("infrared", 5); //TODO Handler dafür
+    //infraredScanPub = nh->advertise<mobots_msgs::InfraredScan>("infrared", 5); //TODO Handler dafür
 
 
-    //Services
-      client = nh->serviceClient<shutter::delta>("getDelta");
-      service = nh->advertiseService("setGlobalPose", changeGlobalPose);
+    //Services werden aktuell nicht benutzt
+      //client = nh->serviceClient<shutter::delta>("getDelta");
+      //service = nh->advertiseService("setGlobalPose", changeGlobalPose);
 
     //Parameter übernehmen
     ros::param::param<double>("sBrems",sBrems,0.2);
     ros::param::param<double>("rootParam",rootParam,2.0);
     ros::param::param<double>("dParam",dParam,0.4297);   //calculate: bParam=vMax/4/(desired start-to-break-point in degrees)*180/pi/radiusInnen
     ros::param::param<double>("radiusInnen",radiusInnen,0.102); //TODO, genauer radiusInnenius, messen Mitte- Räder-Bodenkontakt
-    ros::param::param<double>("vMax",vMax,0.15); //theoretisch maximal 0.18, weniger, um nicht mit maximum zu laufen
+    ros::param::param<double>("vMax",vMax,1); //theoretisch maximal 0.18, weniger, um nicht mit maximum zu laufen
     ros::param::param<double>("minS",minS,0.02);	//Toleranz für erreichten Wegpunkt
     ros::param::param<double>("minDegree",minDegree,1); //Toleranz für erreichte Drehrichtung
     ros::param::param<double>("vFac", vFac, 0.00015);     //vFac ist der zusammenhang: Vmaximal/1000 zwischen promilledaten und realität
+		ros::param::param<int>("mainLoopFrequency", mainLoopFrequency, 20);     //vFac ist der zusammenhang: Vmaximal/1000 zwischen promilledaten und realität
 
     string wayTypeString;
     ros::param::param<string>("fahrTyp",wayTypeString, "FAST");
@@ -69,13 +71,14 @@ void startWeg()
 	}
 	else
 		ROS_ERROR("unknown type %s", wayTypeString.c_str());
+	
+	ROS_INFO("wayType is %s", wayTypeString.c_str());
 
 
     bParam=pow(vMax,rootParam)/sBrems;
 
     initCom();
-    //pthread_create(&receiveThread_t, 0, receiveMethod, 0);
-		receiveMethod(NULL);
+		mainLoop();
     counter=0; //used to send mouse deltas every XXX incoming message
     ros::spin();
 
@@ -89,14 +92,13 @@ void initCom(){
 }
 
 //gets it from the microcontroller
-void* receiveMethod(void* data){
-  ros::Rate rate(20); 
+void mainLoop(){
+  ros::Rate rate(mainLoopFrequency); 
 	while(1){
-		proto->receiveData();
 		ros::spinOnce();
+		proto->receiveData();
 		rate.sleep();
 	}
-	return 0;
 }
 
 void defaultHandler(enum PROTOCOL_IDS id, unsigned char *data,
@@ -122,7 +124,7 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		struct MouseData *delta_vals = (struct MouseData*) data;
 		 //publish
 		
-		if(delta_vals->x != 0 || delta_vals->y != 0 || delta_vals->theta != 0){ //das kann wieder raus, wenn stm keine 0 daten mehr schickt
+		//cout << delta_vals->x << ' ' << delta_vals->y << ' ' << delta_vals->theta << endl;
 
 
 
@@ -130,8 +132,10 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
     //mobot-> global
   double cost = cos(-globalPose.theta);
   double sint = sin(-globalPose.theta);
-  delta_vals->y = sint*delta_vals->x + cost*delta_vals->y;
-  delta_vals->x = cost*delta_vals->x - sint*delta_vals->y;
+	double x = delta_vals->x;
+	double y = delta_vals->y;
+	delta_vals->x = cost*x - sint*y;
+  delta_vals->y = sint*x + cost*y;
 
 
 
@@ -139,7 +143,7 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 			globalPose.x += delta_vals->x;
 			globalPose.y += delta_vals->y;
 			globalPose.theta += delta_vals->theta;
-			correctAngle(*(&globalPose.theta));
+			correctAngle(&(globalPose.theta));
 
         if (POST_EVERY_X_MESSAGE == counter) { //yoda condition 
 				counter=0;
@@ -150,7 +154,6 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 				mousePosePub.publish(mouse);
 				globalPosePub.publish(globalPose);
 			}			
-		}
 		
 
 		if (!targetPoses.empty()) {
@@ -164,23 +167,12 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		}
 }
 
-/*
-void* infraredReader(void* data){
-  ros::Rate rate(infraredFrequency);
-  ros::Publisher pub = nh->advertise<>("", 2);
-  while(ros::ok()){
-    read(infraredFD, XX, X);
-    pub.publish(XX);
-    rate.sleep();
-  }
-}*/
 
-
-void correctAngle(double& theta) {
-	if(theta < -M_PI)
-		theta += 2*M_PI;
-	else if(theta > M_PI)
-		theta -= 2*M_PI;
+void correctAngle(double* theta) {
+	if(*theta < -M_PI)
+		*theta += 2*M_PI;
+	else if(*theta > M_PI)
+		*theta -= 2*M_PI;
 }
 
 /**
@@ -217,7 +209,9 @@ void absPoseCallback(const mobots_msgs::Pose2DPrio& next_pose){
 		targetPoses.insert(it, next_pose.pose);
 		break;		
   }
-  
+  cout << "absPoseCallback new target: x " << currentTargetPose.x << " y " << currentTargetPose.y << " theta " << currentTargetPose.theta << endl;
+	cout << "current globalPose: x " << globalPose.x << " y " << globalPose.y << " theta " << globalPose.theta << endl;
+  regel();
 }
 
 
@@ -300,9 +294,9 @@ void regel()
     } else {
         eTheta =  currentTargetPose.theta - globalPose.theta;
     }
-    correctAngle(eTheta);    // correct with 2Pi problem: (this also guarentees to turn optimal)
-    if (dist < minS && eTheta*radiusInnen < minDegree*(M_PI * radiusInnen / 180))
-    { //Ziel erreicht
+    correctAngle(&eTheta);    // correct with 2Pi problem: (this also guarentees to turn optimal)
+    if (dist < minS && eTheta*radiusInnen < minDegree*(M_PI * radiusInnen / 180)){ //Ziel erreicht
+			cout << "reached waypoint: x " << currentTargetPose.x << " y " << currentTargetPose.y << " theta " << currentTargetPose.theta << endl;
        //geometry_msgs::Pose2D p={0,0,0};
 			targetPoses.pop_front(); //aktuelles ziel erreicht => aus liste löschen
 			if(!targetPoses.empty())
@@ -310,27 +304,37 @@ void regel()
 			else {
 				currentTargetPose = globalPose; //bleiben wir halt stehn
 				stopMobot();
-            }
+			}
 			return;
-       
     }
      struct Velocity vel;
-     double vel_ges =regelFkt(dist);
-    if (dist != 0) {
-        vel.x = eX*vel_ges/dist;//Strahlensatz //in meter/s, s3 ist auch bahngeschwindigkeit, dann /vFac zur skalierung für servo geschw.
-        vel.y = eY*vel_ges/dist;
-    } 
-//***************************+++ Transform +++********************************
-    
-  double cost = cos(globalPose.theta);
-  double sint = sin(globalPose.theta);
-  vel.y = sint*vel.x + cost*vel.y;
-  vel.x = cost*vel.x - sint*vel.y;
-
+		 if(dist >= minS){
+				double vel_ges =regelFkt(dist);
+				if (dist != 0) {
+						vel.x = eX*vel_ges/dist;//Strahlensatz //in meter/s, s3 ist auch bahngeschwindigkeit, dann /vFac zur skalierung für servo geschw.
+						vel.y = eY*vel_ges/dist;
+				} 
+		//***************************+++ Transform +++********************************
+				
+			double cost = cos(globalPose.theta);
+			double sint = sin(globalPose.theta);
+			double x = vel.x;
+			double y = vel.y;
+			vel.y = sint*x + cost*y;
+			vel.x = cost*x - sint*y;
+			vel.theta = 0;
+		 }else{
+			 vel.x = 0;
+			 vel.y = 0;
+			 vel.theta = regelFktDreh(eTheta);
+		 }
 
 
 //****************************************************************************
-     vel.theta = regelFktDreh(eTheta);
+		 
+		cout << "eX " << eX << " eY " << eY << " eTheta " << eTheta << " || ";
+		cout << "velx " << vel.x << " vely " << vel.y << " veltheta " << vel.theta << endl;
+	
      proto->sendData(VELOCITY, (unsigned char*) &vel, sizeof(struct Velocity));
 }
 
@@ -376,6 +380,7 @@ void speedCallback(const mobots_msgs::Twist2D& msg){
 	if(msg.x > 1){ //values are normalized between [-1,1]
 		velocityControlled = false;
 		cerr << "disabling velocity control" << endl;
+		regel();
 		return;
 	}
 	velocityControlled = true;

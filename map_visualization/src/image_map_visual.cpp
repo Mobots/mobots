@@ -95,6 +95,13 @@ int ImageMapVisual::insertImage(int sessionID, int mobotID,	int imageID,
 	pixelBuffer->lock(Ogre::HardwareBuffer::HBL_NORMAL); // for best performance use HBL_DISCARD!
 	const Ogre::PixelBox& pixelBox = pixelBuffer->getCurrentLock();
 	Ogre::uint32* pDest = static_cast<Ogre::uint32*>(pixelBox.data);
+
+    /*if(guasFilter == true){
+void GaussianBlur( InputArray src,
+                                               OutputArray dst, Size ksize,
+                                               double sigmaX, double sigmaY=0,
+                                               int borderType=BORDER_DEFAULT );
+      */
 	
 	// Fill in the pixel data.
 	int k = 0;

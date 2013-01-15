@@ -19,7 +19,7 @@
  * This is an example of how to interface with the image_store server.
  */
 void saveRequest(std::string filePath, ros::NodeHandle* handle){
-	ros::Publisher pub = handle->advertise<mobots_msgs::ImageWithPoseAndID>("/mobot1/image_pose_id", 10);
+	ros::Publisher pub = handle->advertise<mobots_msgs::ImageWithPoseAndID>("/mobot0/image_pose_id", 10);
 	mobots_msgs::ImageWithPoseAndID msg;
 	// Set image info data
 	msg.pose.x = 1.23;

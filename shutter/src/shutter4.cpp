@@ -89,6 +89,7 @@ void startShutter(){
 }
 
 void cameraThread(){
+	//ros::Rate rate(10);
 	while(1){
 	 usb_cam_camera_grab_image(camera_image_);
 	 if(restartNeeded){
@@ -97,7 +98,7 @@ void cameraThread(){
 		restartNeeded = false;
 	  }
 	 ros::spinOnce();
-	 checkOverlap();
+	 //rate.sleep();
 	}
 }
 
@@ -149,6 +150,7 @@ void mouseCallback(const geometry_msgs::Pose2D &mouse_data) {
   dX += mouse_data.x;
   dY += mouse_data.y;
   dTheta += mouse_data.theta;
+	checkOverlap();
 }
 
 void handleError(const char* error){

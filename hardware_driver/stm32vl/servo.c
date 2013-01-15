@@ -60,7 +60,7 @@ void servo_init()
 	TIM_Cmd(TIM4, ENABLE);
 }
 
-void servo_set(const struct ServoSpeed * const servo_speed)
+void servo_set(struct ServoSpeed * const servo_speed)
 {
 	int value[3];
 
