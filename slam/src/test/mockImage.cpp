@@ -51,7 +51,6 @@ int main(int argc, char** argv){
   ros::NodeHandle nodeHandle;
   ros::Publisher pub = nodeHandle.advertise<mobots_msgs::ImageWithPoseAndID>("/mobot0/image_pose_id", 2);
   double x, y, theta;
-  geometry_msgs::Pose2D pose;
   string slam_path = ros::package::getPath("slam");
   signal(SIGINT, sigHandler);
   cout << "input delta values in CENTI meters" << endl;
@@ -74,20 +73,17 @@ int main(int argc, char** argv){
 	 cin >> theta;
 	 cout << "new position: " << x << ", " <<
 		y << ", " << theta << endl << endl;
-	 pose.x = x;
-	 pose.y = y;
-	 pose.theta = theta;
 	 
     mobots_msgs::ImageWithPoseAndID mobot_image;
     copyMatToImageMSg(image, mobot_image);
     mobot_image.id.session_id = 0;
     mobot_image.id.mobot_id = 0;
     mobot_image.id.image_id = id;
-    mobot_image.pose.x = x*100;
-    mobot_image.pose.y = y*100;
+    mobot_image.pose.x = x/100;
+    mobot_image.pose.y = y/100;
     mobot_image.pose.theta = theta;
 	 cout << "send pic " << id << "with delta: " << x << ", " <<
 		y << ", " << theta << endl << endl;
-    pub.publish(pose);
+    pub.publish(mobot_image);
   }
 }

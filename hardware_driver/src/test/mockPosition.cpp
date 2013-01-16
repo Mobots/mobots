@@ -21,6 +21,7 @@ int main(int argc, char** argv){
   double x, y, theta;
   geometry_msgs::Pose2D pose;
   signal(SIGINT, sigHandler);
+	cout << "Enter positions in CENTI meters" << endl;
   while(true){
 	 cout << "x: " << flush;
 	 cin >> x;
@@ -30,8 +31,8 @@ int main(int argc, char** argv){
 	 cin >> theta;
 	 cout << "new position: " << x << ", " <<
 		y << ", " << theta << endl << endl;
-	 pose.x = x;
-	 pose.y = y;
+	 pose.x = x/100;
+	 pose.y = y/100;
 	 pose.theta = theta;
 	 pub.publish(pose);
   }
