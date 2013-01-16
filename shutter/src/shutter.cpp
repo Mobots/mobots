@@ -51,7 +51,7 @@ int main(int argc, char** argv){
   if(!ros::param::get("/sessionID", sessionID))
 	 ROS_ERROR("[%s] /sessionID or gtfo, sessionID set to 0", __PRETTY_FUNCTION__);
 
-  overlap = 0.3;
+  overlap = 0.8;
   ros::param::get("/shutter/overlap", overlap);
   //ros::param::get("/shutter/height", imageHeight);
   //ros::param::get("/shutter/width", imageWidth);
@@ -76,7 +76,7 @@ void sigHandler(int signum){
 void startShutter(){
   ROS_INFO("[%s] Mobot %d: Shutterfunktion gestartet (ultra method444).", __PRETTY_FUNCTION__, mobotID);
   poseImage_pub = nh->advertise<mobots_msgs::ImageWithPoseAndID>("image_pose_id", 20);
-  pose_sub = nh->subscribe("mouse", 1000, mouseCallback);
+  pose_sub = nh->subscribe("mouse", 100, mouseCallback);
 	 
   imageID = 0;
   dX = 0;
