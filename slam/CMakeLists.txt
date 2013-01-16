@@ -30,6 +30,6 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #target_link_libraries(example ${PROJECT_NAME})
 
 rosbuild_add_executable(slam src/slam.cpp)
-rosbuild_add_executable(mockImage src/test/mockImage.cpp)
+#rosbuild_add_executable(mockImage src/test/mockImage.cpp)
 rosbuild_add_executable(testFeatures src/testFeatures.cpp)
 target_link_libraries(testFeatures messageBridge featuresMatcher)

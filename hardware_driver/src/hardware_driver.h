@@ -34,11 +34,8 @@ typedef enum{STIFF,FAST} way_type;
 
   // TODO potentielles Laufzeitproblem: TORO-Laufzeit länger als ein "Shutter"==> getdelta bezieht sich auf ein falsches Bild
 
-    //Service später einfügen
-    bool changeGlobalPose(hardware_driver::ChangeGlobalPose::Request &req, hardware_driver::ChangeGlobalPose::Response &res);
-
-    //Publisher
-    void publishGlobalPose(const geometry_msgs::Pose2D &pose2D);
+    //Service später einfügen //currently unused
+    //bool changeGlobalPose(hardware_driver::ChangeGlobalPose::Request &req, hardware_driver::ChangeGlobalPose::Response &res);
 	
     /**
      * Receives (absolute) waypoints with a priority      */
@@ -79,8 +76,6 @@ typedef enum{STIFF,FAST} way_type;
     void correctAngle(double* theta);
 
     // -- values in Hz --
-    int mouseFrequency;
-
     geometry_msgs::Pose2D globalPose, currentTargetPose;
     std::list<geometry_msgs::Pose2D> targetPoses;
 
@@ -99,12 +94,18 @@ typedef enum{STIFF,FAST} way_type;
     ros::Publisher pose2D_pub;
     ros::Publisher sollV_pub;
 
-    ros::ServiceClient client;
+		//currently unused
+    /*ros::ServiceClient client;
     ros::ServiceServer service;
-    shutter::delta srv;
+    shutter::delta srv;*/
+		
+		//the mouse data which gets sent to the shutter
+		geometry_msgs::Pose2D mouse;
 		
 		way_type wayType;
 		double sBrems,bParam,vFac,dParam,rootParam, radiusInnen, vMax, minS, minDegree,drehFac;
+		//the integrated mouse values before they get sent
+		double dX, dY, dTheta;
 
 		int mobotID, counter;
 		int mainLoopFrequency;
