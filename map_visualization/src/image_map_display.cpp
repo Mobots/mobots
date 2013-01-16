@@ -133,6 +133,10 @@ void ImageMapDisplay::subscribe(){
                         mobotPoseSub.size(), _1);
                 sub = update_nh_.subscribe<geometry_msgs::Pose2D>(topic, 10, callback);
                 mobotPoseSub.push_back(sub);
+
+				const geometry_msgs::Pose2D::ConstPtr msg(new geometry_msgs::Pose2D);
+				int size = mobotPoseSub.size();
+				mobotPoseCallback(size, msg);
             }
         }
         catch(ros::Exception& e){

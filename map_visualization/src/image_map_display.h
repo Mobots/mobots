@@ -60,12 +60,12 @@ public:
 
     // Setter and getter functions for user-editable properties.
     void setRelPoseTopic(const std::string& relPoseTopic);
-    const std::string& getRelPoseTopic(){return relPoseTopic;}
     void setAbsPoseTopic(const std::string& absPoseTopic);
-    const std::string& getAbsPoseTopic(){return absPoseTopic;}
     void setImageStoreTopic(const std::string& imageStoreTopic);
-    const std::string& getImageStoreTopic(){return imageStoreTopic;}
     void setMobotPoseCount(const std::string& topic);
+    const std::string& getRelPoseTopic(){return relPoseTopic;}
+    const std::string& getAbsPoseTopic(){return absPoseTopic;}
+    const std::string& getImageStoreTopic(){return imageStoreTopic;}
     const std::string& getMobotPoseCount();
 
     void sendInfoUpdate(int sessionID, int mobotID, int key, int value);
