@@ -107,8 +107,14 @@ void Slam::addNewVertexToGraph(const boost::shared_ptr<mobots_msgs::FeatureSetWi
   }
     
   if (tryToMatch(last_id_[bot], current_id_[bot]) == MATCHING_IMPOSSIBLE)
-  {
-    addNewVertexFromMouseData(msg, bot);
+  {    
+    bool doUseMouse;
+    node_handle_.param<bool>("doUseMouse",doUseMouse,true);
+
+    if (doUseMouse)
+        addNewVertexFromMouseData(msg, bot);
+    else
+        addNewVertexToNirvana(msg, bot);
   }
 
   MY_INFO_STREAM("map size: " << pose_graph_.vertices.size());
@@ -149,6 +155,16 @@ void Slam::addNewVertexFromMouseData(const boost::shared_ptr<mobots_msgs::Featur
 {
   /* DeltaPose als Edge zwischen den zwei Vertices einfügen */
   TreeOptimizer2::Transformation t = TreeOptimizer2::Transformation(msg->pose.x, msg->pose.y, msg->pose.theta);
+
+  TreeOptimizer2::Edge* result = pose_graph_.addIncrementalEdge(last_id_[bot], current_id_[bot], t, mouse_covarianz_matrix);
+  
+  MY_INFO_STREAM("Added edge with x = " << t.translation().x() << ", y = " << t.translation().y() << ", theta = " << t.rotation() << ". Result: " << result);
+}
+
+void Slam::addNewVertexToNirvana(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg, uint bot)
+{
+  /* DeltaPose als Edge zwischen den zwei Vertices einfügen */
+  TreeOptimizer2::Transformation t = TreeOptimizer2::Transformation(5, 0, 0);
 
   TreeOptimizer2::Edge* result = pose_graph_.addIncrementalEdge(last_id_[bot], current_id_[bot], t, mouse_covarianz_matrix);
   

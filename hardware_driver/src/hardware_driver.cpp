@@ -25,10 +25,11 @@ void startWeg()
 {
   nh = new ros::NodeHandle;
 
+	//zurzeit unbenutzt
   //shutterClient = nh->serviceClient<shutter::delta>("getDelta");
-  setGlobalPoseServer = nh->advertiseService("set_pose", changeGlobalPose);
+  //setGlobalPoseServer = nh->advertiseService("set_pose", changeGlobalPose);
 
-    ROS_INFO("Mobot %d: Weg angeben", mobotID);
+    ROS_INFO("Mobot %d: hardware_driver gestartet", mobotID);
 
     //Publisher and Subscriber
     nextPoseSubRel = nh->subscribe("waypoint_rel", 5, relPoseCallback);
@@ -39,11 +40,6 @@ void startWeg()
     globalPosePub = nh->advertise<geometry_msgs::Pose2D>("pose", 2);
     //infraredScanPub = nh->advertise<mobots_msgs::InfraredScan>("infrared", 5); //TODO Handler dafür
 
-
-    //Services werden aktuell nicht benutzt
-      //client = nh->serviceClient<shutter::delta>("getDelta");
-      //service = nh->advertiseService("setGlobalPose", changeGlobalPose);
-
     //Parameter übernehmen
     ros::param::param<double>("sBrems",sBrems,0.2);
     ros::param::param<double>("rootParam",rootParam,2.0);
@@ -53,7 +49,7 @@ void startWeg()
     ros::param::param<double>("minS",minS,0.02);	//Toleranz für erreichten Wegpunkt
     ros::param::param<double>("minDegree",minDegree,1); //Toleranz für erreichte Drehrichtung
     ros::param::param<double>("vFac", vFac, 0.00015);     //vFac ist der zusammenhang: Vmaximal/1000 zwischen promilledaten und realität
-		ros::param::param<int>("mainLoopFrequency", mainLoopFrequency, 20);     //vFac ist der zusammenhang: Vmaximal/1000 zwischen promilledaten und realität
+		ros::param::param<int>("mainLoopFrequency", mainLoopFrequency, 20);    
 
     string wayTypeString;
     ros::param::param<string>("fahrTyp",wayTypeString, "FAST");
@@ -116,13 +112,12 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 	if (id == MOUSE_DATA) {
 		counter++;
 			//check:
-		int i = sizeof(struct MouseData);
+		/*int i = sizeof(struct MouseData);
 		if (size != i) {
 			std::cout << "Error, wrong size\n" << std::endl;
 			return;
-		}
+		}*/
 		struct MouseData *delta_vals = (struct MouseData*) data;
-		 //publish
 		
 		//cout << delta_vals->x << ' ' << delta_vals->y << ' ' << delta_vals->theta << endl;
 
@@ -143,16 +138,21 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 			globalPose.x += delta_vals->x;
 			globalPose.y += delta_vals->y;
 			globalPose.theta += delta_vals->theta;
+			dX += delta_vals->x;
+			dY += delta_vals->y;
+			dTheta += delta_vals->theta;
 			correctAngle(&(globalPose.theta));
 
-        if (POST_EVERY_X_MESSAGE == counter) { //yoda condition 
+			if (POST_EVERY_X_MESSAGE == counter) { //yoda condition 
 				counter=0;
-				geometry_msgs::Pose2D mouse;
-				mouse.x = delta_vals->x;
-				mouse.y = delta_vals->y;
-				mouse.theta = delta_vals->theta;
+				mouse.x = dX;
+				mouse.y = dY;
+				mouse.theta = dTheta;
 				mousePosePub.publish(mouse);
 				globalPosePub.publish(globalPose);
+				dX = 0;
+				dY = 0;
+				dTheta = 0;
 			}			
 		
 
@@ -242,40 +242,6 @@ void relPoseCallback(const mobots_msgs::Pose2DPrio& msg){
 }
 
 
-/***********************************************************************************
- * changeGlobalPose kann zwecks aktualisierung der jeweiligen globalen mobot-pose
- * aufgerufen werden. zB durch toro, wenn dieser eine frische fehlerfreiere Position
- * als die des Maussensor-Integrals errechnet hat. Die Methode besorgt die delta-beträge
- * vom shutter, da sich die aktualisierte globalpose auf den letzten "shut" bezieht.
- *
- * Dieser Ablauf ist eventuell systematisch fehlerbehaftet, falls in der Toro-Rechenzeit ein
- * erneuter "shut" auftritt. Dieser Fall sollte dann vorm globalPose-AUfruf durch den Toro-
- * Node überprüft werden, der dann auch das Delta vom shutter besorgen  und bereits
- * aufadiert an diesen Node weitergeben sollte
- *****************************************************************************************/
-bool changeGlobalPose(hardware_driver::ChangeGlobalPose::Request& req,
-							 hardware_driver::ChangeGlobalPose::Response& res){
-  /*shutter::delta srv;
-  if (1client.call(srv))
-  {						//LOCK ???
-   globalPose.x=srv.response.x+req.x;
-   globalPose.y=srv.response.y+req.y;
-   globalPose.theta=srv.response.theta+req.theta;*/
-  if(false){
-  } else {
-    ROS_ERROR("Failed to call getDelta");
-    //change to request-values, as this is ours best bet
-    globalPose.x=req.x;
-    globalPose.y=req.y;
-    globalPose.theta=req.theta;
-    return false;   //t
-  }
-  return true;
-}
-
-
-
-
 //Streckenregelung: Strecken in m
 /*************************************************************************************
 *
@@ -310,19 +276,17 @@ void regel()
      struct Velocity vel;
 		 if(dist >= minS){
 				double vel_ges =regelFkt(dist);
-				if (dist != 0) {
-						vel.x = eX*vel_ges/dist;//Strahlensatz //in meter/s, s3 ist auch bahngeschwindigkeit, dann /vFac zur skalierung für servo geschw.
-						vel.y = eY*vel_ges/dist;
-				} 
+				vel.x = eX*vel_ges/dist;//Strahlensatz //in meter/s, s3 ist auch bahngeschwindigkeit, dann /vFac zur skalierung für servo geschw.
+				vel.y = eY*vel_ges/dist;
 		//***************************+++ Transform +++********************************
 				
-			double cost = cos(globalPose.theta);
-			double sint = sin(globalPose.theta);
-			double x = vel.x;
-			double y = vel.y;
-			vel.y = sint*x + cost*y;
-			vel.x = cost*x - sint*y;
-			vel.theta = 0;
+				double cost = cos(globalPose.theta);
+				double sint = sin(globalPose.theta);
+				double x = vel.x;
+				double y = vel.y;
+				vel.x = cost*x - sint*y;
+				vel.y = sint*x + cost*y;
+				vel.theta = 0;
 		 }else{
 			 vel.x = 0;
 			 vel.y = 0;
@@ -391,3 +355,37 @@ void speedCallback(const mobots_msgs::Twist2D& msg){
 	//cerr << "vel x " << msg.x << " y " << msg.y << " theta " << msg.theta << endl;
 	proto->sendData(VELOCITY, (unsigned char*) &vel, sizeof(struct Velocity));
 }
+
+
+#if 0
+/***********************************************************************************
+ * changeGlobalPose kann zwecks aktualisierung der jeweiligen globalen mobot-pose
+ * aufgerufen werden. zB durch toro, wenn dieser eine frische fehlerfreiere Position
+ * als die des Maussensor-Integrals errechnet hat. Die Methode besorgt die delta-beträge
+ * vom shutter, da sich die aktualisierte globalpose auf den letzten "shut" bezieht.
+ *
+ * Dieser Ablauf ist eventuell systematisch fehlerbehaftet, falls in der Toro-Rechenzeit ein
+ * erneuter "shut" auftritt. Dieser Fall sollte dann vorm globalPose-AUfruf durch den Toro-
+ * Node überprüft werden, der dann auch das Delta vom shutter besorgen  und bereits
+ * aufadiert an diesen Node weitergeben sollte
+ *****************************************************************************************/
+bool changeGlobalPose(hardware_driver::ChangeGlobalPose::Request& req,
+							 hardware_driver::ChangeGlobalPose::Response& res){
+  /*shutter::delta srv;
+  if (1client.call(srv))
+  {						//LOCK ???
+   globalPose.x=srv.response.x+req.x;
+   globalPose.y=srv.response.y+req.y;
+   globalPose.theta=srv.response.theta+req.theta;*/
+  if(false){
+  } else {
+    ROS_ERROR("Failed to call getDelta");
+    //change to request-values, as this is ours best bet
+    globalPose.x=req.x;
+    globalPose.y=req.y;
+    globalPose.theta=req.theta;
+    return false;   //t
+  }
+  return true;
+}
+#endif

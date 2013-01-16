@@ -57,6 +57,7 @@ private:
     void addNewVertexToGraph(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg, uint bot);
     enum Slam::EdgeState tryToMatch(const uint32_t v, const uint32_t w);
     void addNewVertexFromMouseData(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg, uint bot);
+    void addNewVertexToNirvana(const boost::shared_ptr<mobots_msgs::FeatureSetWithPoseAndID const>& msg, uint bot);
     
     void findEdgesBruteforce(bool distance_check = true);
     void tryToMatchWithAllOthers(const AISNavigation::TreeOptimizer2::VertexMap::value_type &v, bool distance_check = true);

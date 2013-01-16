@@ -19,7 +19,8 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 rosbuild_add_executable(hardware_driver src/hardware_driver.cpp stm32vl/Client/ComProtocol.cpp stm32vl/Client/UARTCommunication.cpp stm32vl/Client/UARTCommunication.cpp stm32vl/crc.c)
-rosbuild_add_executable(minemu src/minemu.cpp)
+#rosbuild_add_executable(minemu src/minemu.cpp)
+#rosbuild_add_executable(mockupPosition src/test/mockPosition.cpp)
 
 INCLUDE_DIRECTORIES( stm32vl/stm32_lib/inc )
 
