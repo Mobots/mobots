@@ -38,7 +38,7 @@ void startWeg()
 
     mousePosePub = nh->advertise<geometry_msgs::Pose2D>("mouse", 5);
     globalPosePub = nh->advertise<geometry_msgs::Pose2D>("pose", 2);
-    //infraredScanPub = nh->advertise<mobots_msgs::InfraredScan>("infrared", 5); //TODO Handler dafür
+    infraredScanPub = nh->advertise<mobots_msgs::InfraredScan>("infrared", 5); //TODO Handler dafür
 
     //Parameter übernehmen
     ros::param::param<double>("sBrems",sBrems,0.2);
@@ -108,7 +108,11 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 
 
 	//std::cout <<"datavalHandler"<<std::endl;
-
+	
+	if(id == INFRARED_DATA){
+		handleInfraredData(data);
+		return;
+	}
 	if (id == MOUSE_DATA) {
 		counter++;
 			//check:
@@ -165,6 +169,15 @@ void sensorValHandler(enum PROTOCOL_IDS id, unsigned char *data,
 		//case: no mouse delta vals
 				return;
 		}
+}
+
+void handleInfraredData(unsigned char* data){
+	struct InfraredData* infraredData = (struct InfraredData*)data;
+	for(int i = 0; i < 6; i++){
+		infraredScan.data[i] = infraredData->COLLISION_SENSOR[i];
+		cout << "i: " << infraredData->COLLISION_SENSOR[i] << endl;
+	}
+	infraredScanPub.publish(infraredScan);
 }
 
 
