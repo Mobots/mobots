@@ -108,12 +108,12 @@ void Slam::addNewVertexToGraph(const boost::shared_ptr<mobots_msgs::FeatureSetWi
     
   if (tryToMatch(last_id_[bot], current_id_[bot]) == MATCHING_IMPOSSIBLE)
   {    
-    bool doUseMouse;
+    /*bool doUseMouse;
     node_handle_.param<bool>("doUseMouse",doUseMouse,true);
 
     if (doUseMouse)
         addNewVertexFromMouseData(msg, bot);
-    else
+    else*/
         addNewVertexToNirvana(msg, bot);
   }
 
