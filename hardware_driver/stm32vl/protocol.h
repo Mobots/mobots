@@ -8,6 +8,7 @@ enum PROTOCOL_IDS
     VELOCITY,
     SERVO_SPEED,
     MOUSE_DATA,
+    INFRARED_DATA,
     NUM_IDS // muss immer an letzter stelle stehen
 };
 
@@ -30,6 +31,11 @@ struct MouseData
 	float x;
 	float y;
 	float theta;
+} __attribute__ ((packed)) __attribute__((__may_alias__));
+
+//wird eine kollision vom sensor erkannt ist der wert true
+struct InfraredData{
+	bool COLLISION_SENSOR[6];
 } __attribute__ ((packed)) __attribute__((__may_alias__));
 
 struct ProtocolHeader
