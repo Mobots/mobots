@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<launch>
+	<machine name="rasp0" address="192.168.0.1" env-loader="/opt/ros/fuerte/env.sh" default="false" user="pi" password="raspberry"/>
+	<machine name="rasp1" address="192.168.0.2" env-loader="/opt/ros/fuerte/env.sh" default="false" user="pi" password="raspberry"/>
+
+	<node machine="rasp0" name="hardware_driver0" pkg="hardware_driver" type="hardware_driver"/>
+	<node machine="rasp1" name="hardware_driver1" pkg="hardware_driver" type="hardware_driver"/>
+
+	<node machine="rasp0" name="shutter0" pkg="shutter" type="shutter" respawn="true"/>
+	<node machine="rasp1" name="shutter1" pkg="shutter" type="shutter" respawn="true"/>
+
+
+	<!-- feature detector -->
+	<param name="/feature_detector/slice_count" type="int" value="5" />
+	<param name="/feature_detector/features_per_slice" type="int" value="500" />
+	<include file="$(find feature_detector)/launch/feature_detector.launch" />
+
+	<!-- slam -->
+	<node name="slam" pkg="slam" type="slam" output="screen" >
+
+	<!-- rviz -->
+	<node name="rviz" pkg="rviz" type="rviz" />
+
+	<!-- image store -->
+	<param name="/image_store/path" type="string" value="$HOME/mofoxdata" />
+	<node name="image_store" pkg="image_store" type="image_store" />
+
+	<!-- optional: image_view to see the pics of the mobots -->
+	<!-- only works if usb_cam is running on the mobots -->
+	<!--
+		<node name="camView0" pkg="image_view" type="image_view" args="image:=/mobot0/usb_cam/image_raw"/>
+		<node name="camView1" pkg="image_view" type="image_view" args="image:=/mobot1/usb_cam/image_raw"/>
+		<node name="camView2" pkg="image_view" type="image_view" args="image:=/mobot2/usb_cam/image_raw"/>
+		<include file="$(find shutter)/launch/usb_cam.launch" />
+		-->
+
+</launch>
+		
